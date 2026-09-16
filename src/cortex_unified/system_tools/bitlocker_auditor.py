@@ -22,6 +22,7 @@ logger = logging.getLogger("cortex.system_tools.bitlocker_auditor")
 @dataclass
 class EncryptedVolumeInfo:
     """Encrypted Volume Info data container."""
+
     drive_letter: str
     volume_name: str
     size_str: str
@@ -47,6 +48,7 @@ class EncryptedVolumeInfo:
 @dataclass
 class BitLockerAuditReport:
     """Bit Locker Audit Report data container."""
+
     volumes: list[EncryptedVolumeInfo] = field(default_factory=list)
     fully_protected_count: int = 0
     unprotected_count: int = 0
@@ -160,8 +162,7 @@ class BitLockerAuditor:
                 elif "Key Protectors:" in line:
                     pass
                 elif any(
-                    kp in line
-                    for kp in ["TPM", "Numerical Password", "Password", "Recovery Key", "External Key"]
+                    kp in line for kp in ["TPM", "Numerical Password", "Password", "Recovery Key", "External Key"]
                 ):
                     protectors.append(line.strip())
 

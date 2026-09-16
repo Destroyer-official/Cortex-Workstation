@@ -82,8 +82,7 @@ def test_igd_control_url_is_resolved_and_kept_local(monkeypatch):
         <controlURL>/upnp/control/wanip</controlURL>
       </service></serviceList></device></root>"""
     auditor = WanAuditor()
-    monkeypatch.setattr(
-        auditor, "_http_request", lambda *args, **kwargs: (200, {}, description))
+    monkeypatch.setattr(auditor, "_http_request", lambda *args, **kwargs: (200, {}, description))
     service, control = auditor._load_igd(
         "http://192.168.50.1:5000/root.xml",
         [ipaddress.IPv4Network("192.168.50.0/24")],
@@ -103,8 +102,7 @@ def test_igd_rejects_control_url_to_other_network(monkeypatch):
       <controlURL>http://10.0.0.1/admin</controlURL>
       </service></root>"""
     auditor = WanAuditor()
-    monkeypatch.setattr(
-        auditor, "_http_request", lambda *args, **kwargs: (200, {}, description))
+    monkeypatch.setattr(auditor, "_http_request", lambda *args, **kwargs: (200, {}, description))
     with pytest.raises(ValueError, match="control URL"):
         auditor._load_igd(
             "http://192.168.50.1/root.xml",
@@ -124,7 +122,7 @@ def _soap_response(action: str, content: str) -> bytes:
     """
     return (
         '<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/">'
-        f"<s:Body><u:{action} xmlns:u=\"urn:test\">{content}"
+        f'<s:Body><u:{action} xmlns:u="urn:test">{content}'
         f"</u:{action}></s:Body></s:Envelope>"
     ).encode()
 
@@ -144,20 +142,19 @@ def test_soap_allowlist_and_mapping_parser(monkeypatch):
         "<NewEnabled>1</NewEnabled><NewPortMappingDescription>HTTPS</NewPortMappingDescription>"
         "<NewLeaseDuration>3600</NewLeaseDuration>",
     )
-    monkeypatch.setattr(
-        auditor, "_http_request", lambda *args, **kwargs: (200, {}, payload))
+    monkeypatch.setattr(auditor, "_http_request", lambda *args, **kwargs: (200, {}, payload))
     root = auditor._soap(
-        "http://192.168.50.1/control", "urn:test",
-        "GetGenericPortMappingEntry", {"NewPortMappingIndex": "0"})
+        "http://192.168.50.1/control", "urn:test", "GetGenericPortMappingEntry", {"NewPortMappingIndex": "0"}
+    )
     mapping = auditor._mapping_from_xml(0, root)
-    assert mapping == PortMapping(
-        0, "", 8443, "TCP", 443, "192.168.50.10", True, "HTTPS", 3600)
+    assert mapping == PortMapping(0, "", 8443, "TCP", 443, "192.168.50.10", True, "HTTPS", 3600)
     with pytest.raises(ValueError, match="unsupported"):
         auditor._soap("http://192.168.50.1/control", "urn:test", "AddPortMapping")
 
 
 class SyntheticAuditor(WanAuditor):
     """Helper syntheticauditor using ValueError, InterfaceStatus, _safe_xml."""
+
     @staticmethod
     def local_interfaces():
         """Local interfaces using InterfaceStatus."""
@@ -201,9 +198,11 @@ class SyntheticAuditor(WanAuditor):
             arguments: The arguments parameter.
         """
         if action == "GetExternalIPAddress":
-            return _safe_xml(_soap_response(
-                "GetExternalIPAddressResponse",
-                "<NewExternalIPAddress>100.64.2.3</NewExternalIPAddress>"))
+            return _safe_xml(
+                _soap_response(
+                    "GetExternalIPAddressResponse", "<NewExternalIPAddress>100.64.2.3</NewExternalIPAddress>"
+                )
+            )
         raise ValueError("synthetic end")
 
 
@@ -228,7 +227,8 @@ def test_pre_cancelled_audit_does_not_discover(monkeypatch):
     event.set()
     auditor = SyntheticAuditor()
     monkeypatch.setattr(
-        auditor, "discover_locations",
+        auditor,
+        "discover_locations",
         lambda *args, **kwargs: pytest.fail("discovery must not run"),
     )
     assert auditor.audit(cancel_event=event).cancelled is True

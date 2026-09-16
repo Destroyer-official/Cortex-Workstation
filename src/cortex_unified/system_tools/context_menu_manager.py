@@ -24,6 +24,7 @@ else:
 @dataclass
 class ContextMenuItem:
     """Context Menu Item data container."""
+
     name: str
     command: str
     registry_path: str
@@ -37,6 +38,7 @@ class ContextMenuItem:
 @dataclass
 class ContextMenuReport:
     """Context Menu Report data container."""
+
     total_entries: int
     orphaned_entries: int
     entries: List[ContextMenuItem]
@@ -134,16 +136,18 @@ class ContextMenuManager:
                             prog_exists = cls._check_program_exists(command)
                             is_orphaned = bool(command) and not prog_exists
 
-                            items.append(ContextMenuItem(
-                                name=display_name,
-                                command=command,
-                                registry_path=full_path,
-                                icon=icon,
-                                scope=scope,
-                                is_enabled=is_enabled,
-                                is_orphaned=is_orphaned,
-                                program_exists=prog_exists,
-                            ))
+                            items.append(
+                                ContextMenuItem(
+                                    name=display_name,
+                                    command=command,
+                                    registry_path=full_path,
+                                    icon=icon,
+                                    scope=scope,
+                                    is_enabled=is_enabled,
+                                    is_orphaned=is_orphaned,
+                                    program_exists=prog_exists,
+                                )
+                            )
                             idx += 1
                         except OSError:
                             break
@@ -169,8 +173,7 @@ class ContextMenuManager:
         if winreg is None:
             return False, "Windows only"
         try:
-            with winreg.OpenKey(winreg.HKEY_CLASSES_ROOT, registry_path,
-                                0, winreg.KEY_SET_VALUE) as key:
+            with winreg.OpenKey(winreg.HKEY_CLASSES_ROOT, registry_path, 0, winreg.KEY_SET_VALUE) as key:
                 winreg.SetValueEx(key, "LegacyDisable", 0, winreg.REG_SZ, "")
                 return True, "Context menu entry disabled."
         except PermissionError:
@@ -184,8 +187,7 @@ class ContextMenuManager:
         if winreg is None:
             return False, "Windows only"
         try:
-            with winreg.OpenKey(winreg.HKEY_CLASSES_ROOT, registry_path,
-                                0, winreg.KEY_SET_VALUE) as key:
+            with winreg.OpenKey(winreg.HKEY_CLASSES_ROOT, registry_path, 0, winreg.KEY_SET_VALUE) as key:
                 winreg.DeleteValue(key, "LegacyDisable")
                 return True, "Context menu entry enabled."
         except FileNotFoundError:

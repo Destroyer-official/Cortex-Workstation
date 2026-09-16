@@ -139,9 +139,7 @@ class StatePanel(QWidget):
         # reads as the focal point of the panel.
         self._glyph = QLabel()
         self._glyph.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self._glyph.setStyleSheet(
-            f"color: {p.text_muted}; font-size: {title_size * 2}px; font-weight: 800;"
-        )
+        self._glyph.setStyleSheet(f"color: {p.text_muted}; font-size: {title_size * 2}px; font-weight: 800;")
 
         # A short kicker naming the state ("LOADING" / "NOTHING HERE" / "ERROR").
         # It conveys the state through text (not color alone) so the meaning is
@@ -159,12 +157,8 @@ class StatePanel(QWidget):
         self._message = QLabel()
         self._message.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self._message.setWordWrap(True)
-        self._message.setTextInteractionFlags(
-            Qt.TextInteractionFlag.TextSelectableByMouse
-        )
-        self._message.setStyleSheet(
-            f"color: {p.text}; font-size: {body_size}px; font-weight: 600;"
-        )
+        self._message.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
+        self._message.setStyleSheet(f"color: {p.text}; font-size: {body_size}px; font-weight: 600;")
 
         # Loading indicator. Defaults to indeterminate (range 0..0) so an
         # unmeasurable operation never shows a synthetic percentage (Req 2.4);
@@ -318,12 +312,9 @@ class StatePanel(QWidget):
         """Recolor the glyph + kicker to ``color`` for the active state."""
         cap_size, cap_weight, cap_ls = TYPE_ROLES["caption"]
         title_size = TYPE_ROLES["section_title"][0]
-        self._glyph.setStyleSheet(
-            f"color: {color}; font-size: {title_size * 2}px; font-weight: 800;"
-        )
+        self._glyph.setStyleSheet(f"color: {color}; font-size: {title_size * 2}px; font-weight: 800;")
         self._kicker.setStyleSheet(
-            f"color: {color}; font-size: {cap_size}px; "
-            f"font-weight: {cap_weight}; letter-spacing: {cap_ls}px;"
+            f"color: {color}; font-size: {cap_size}px; " f"font-weight: {cap_weight}; letter-spacing: {cap_ls}px;"
         )
 
 

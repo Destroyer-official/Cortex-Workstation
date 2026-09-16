@@ -46,6 +46,7 @@ def window(app):
     """
     from cortex_unified.ui.premium.theme import apply_theme
     from cortex_unified.ui.premium.window import PremiumMainWindow
+
     apply_theme(app, "dark")
     win = PremiumMainWindow("dark")
     yield win
@@ -145,8 +146,7 @@ def test_cooperative_worker_lets_close_return_promptly(app, window):
     window.close()
     elapsed = time.perf_counter() - t0
 
-    assert elapsed < window._CLOSE_GRACE_S, \
-        "a cancellable worker must not need the full grace period"
+    assert elapsed < window._CLOSE_GRACE_S, "a cancellable worker must not need the full grace period"
     assert not getattr(window, "_workers_stuck", None)
 
 

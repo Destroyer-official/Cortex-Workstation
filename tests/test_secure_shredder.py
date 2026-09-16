@@ -81,6 +81,7 @@ def _patch_storage(monkeypatch):
 
 class TestShredStandard:
     """Group testshredstandard tests covering all expected standards exist; member count at least 17; pass count varies; gutmann has exactly 35 passes; name property returns human readable; recommended for ssd."""
+
     def test_all_expected_standards_exist(self):
         """Verify all expected standards exist."""
         expected = {
@@ -168,9 +169,7 @@ class TestShredStandard:
     def test_last_pass_always_verifies(self):
         """Every standard's final pass should verify so failures are detected."""
         for std in ShredStandard:
-            assert (
-                std.passes[-1]["verify"] is True
-            ), f"{std.value} last pass not verified"
+            assert std.passes[-1]["verify"] is True, f"{std.value} last pass not verified"
 
 
 # ===========================================================================
@@ -180,6 +179,7 @@ class TestShredStandard:
 
 class TestStorageType:
     """Group teststoragetype tests covering all values; member count."""
+
     def test_all_values(self):
         """Verify all values."""
         expected = {"hdd", "ssd_nvme", "ssd_sata", "usb_flash", "unknown"}
@@ -197,6 +197,7 @@ class TestStorageType:
 
 class TestShredResult:
     """Group testshredresult tests covering success result fields; failure result with error; to dict serializes standard; to dict all expected keys; frozen dataclass."""
+
     def test_success_result_fields(self):
         """Verify success result fields via ShredResult."""
         r = ShredResult(
@@ -287,6 +288,7 @@ class TestShredResult:
 
 class TestSecureShredderInit:
     """Group testsecureshredderinit tests covering default init; custom init."""
+
     def test_default_init(self):
         """Verify default init via SecureShredder."""
         s = SecureShredder()
@@ -318,6 +320,7 @@ class TestSecureShredderInit:
 
 class TestShredFileBasic:
     """Group testshredfilebasic tests covering shred nonexistent file returns failure; shred zero byte file; shred reports correct byte count; shred duration non negative; shred random 1pass removes file; shred nist clear removes file."""
+
     def test_shred_nonexistent_file_returns_failure(self):
         """Verify shred nonexistent file returns failure via SecureShredder, s.shred_file, r.error.lower."""
         s = SecureShredder()
@@ -420,9 +423,7 @@ class TestShredRandomOnlyStandards:
             tmp_path: Filesystem path to the target file or directory.
         """
         p = _make_file(tmp_path, "r1.bin")
-        r = SecureShredder(verify_passes=False).shred_file(
-            p, ShredStandard.RANDOM_1PASS
-        )
+        r = SecureShredder(verify_passes=False).shred_file(p, ShredStandard.RANDOM_1PASS)
         assert r.passes_completed == 1
         assert r.success is True
 
@@ -433,9 +434,7 @@ class TestShredRandomOnlyStandards:
             tmp_path: Filesystem path to the target file or directory.
         """
         p = _make_file(tmp_path, "r3.bin")
-        r = SecureShredder(verify_passes=False).shred_file(
-            p, ShredStandard.RANDOM_3PASS
-        )
+        r = SecureShredder(verify_passes=False).shred_file(p, ShredStandard.RANDOM_3PASS)
         assert r.passes_completed == 3
         assert r.success is True
 
@@ -486,6 +485,7 @@ class TestGutmannPartialProgress:
 
     Updates progress bar widgets, percentage counters, and status indicators with streaming status updates from the running worker.
     """
+
     def test_gutmann_fails_after_4_random_passes(self, tmp_path):
         """Gutmann has 4 random passes before first byte pattern.
 
@@ -506,6 +506,7 @@ class TestGutmannPartialProgress:
 
 class TestVerifyOption:
     """Group testverifyoption tests covering verify disabled random 1pass succeeds; verify enabled random 1pass fails verification; verify disabled prevents crash on byte patterns."""
+
     def test_verify_disabled_random_1pass_succeeds(self, tmp_path):
         """Verify verify disabled random 1pass succeeds via SecureShredder, _make_file, shred_file.
 
@@ -513,9 +514,7 @@ class TestVerifyOption:
             tmp_path: Filesystem path to the target file or directory.
         """
         p = _make_file(tmp_path, "nv.bin")
-        r = SecureShredder(verify_passes=False).shred_file(
-            p, ShredStandard.RANDOM_1PASS
-        )
+        r = SecureShredder(verify_passes=False).shred_file(p, ShredStandard.RANDOM_1PASS)
         assert r.success is True
 
     def test_verify_enabled_random_1pass_fails_verification(self, tmp_path):
@@ -550,6 +549,7 @@ class TestProgressCallback:
 
     Updates progress bar widgets, percentage counters, and status indicators with streaming status updates from the running worker.
     """
+
     def test_progress_called_for_random_1pass(self, tmp_path):
         """test_progress_called_for_random_1pass.
 
@@ -629,6 +629,7 @@ class TestProgressCallback:
 
 class TestCancellation:
     """Group testcancellation tests covering cancel before start prevents shred; cancel during shred stops early; cancel in shred files stops batch."""
+
     def test_cancel_before_start_prevents_shred(self, tmp_path):
         """Verify cancel before start prevents shred via threading.Event, cancel.set, r.error.lower.
 
@@ -638,9 +639,7 @@ class TestCancellation:
         p = _make_file(tmp_path, "cancel.bin", b"C" * 256)
         cancel = threading.Event()
         cancel.set()
-        r = SecureShredder(cancel_event=cancel).shred_file(
-            p, ShredStandard.RANDOM_1PASS
-        )
+        r = SecureShredder(cancel_event=cancel).shred_file(p, ShredStandard.RANDOM_1PASS)
         assert r.success is False
         assert "cancel" in r.error.lower()
 
@@ -700,6 +699,7 @@ class TestCancellation:
 
 class TestShredFilesBatch:
     """Group testshredfilesbatch tests covering batch shreds all random 1pass; batch empty list; batch cancelled event returns empty."""
+
     def test_batch_shreds_all_random_1pass(self, tmp_path):
         """Verify batch shreds all random 1pass via SecureShredder, shred_files, _make_file.
 
@@ -707,9 +707,7 @@ class TestShredFilesBatch:
             tmp_path: Filesystem path to the target file or directory.
         """
         files = [_make_file(tmp_path, f"b{i}.bin") for i in range(5)]
-        results = SecureShredder(verify_passes=False).shred_files(
-            files, ShredStandard.RANDOM_1PASS
-        )
+        results = SecureShredder(verify_passes=False).shred_files(files, ShredStandard.RANDOM_1PASS)
         assert len(results) == 5
         assert all(r.success for r in results)
         assert all(not os.path.exists(f) for f in files)
@@ -728,9 +726,7 @@ class TestShredFilesBatch:
         files = [_make_file(tmp_path, f"c{i}.bin") for i in range(3)]
         cancel = threading.Event()
         cancel.set()
-        results = SecureShredder(cancel_event=cancel).shred_files(
-            files, ShredStandard.RANDOM_1PASS
-        )
+        results = SecureShredder(cancel_event=cancel).shred_files(files, ShredStandard.RANDOM_1PASS)
         assert results == []
         assert all(os.path.exists(f) for f in files)
 
@@ -742,6 +738,7 @@ class TestShredFilesBatch:
 
 class TestDryRun:
     """Group testdryrun tests covering dry run does not remove random standard; dry run zero byte file not removed; dry run nonzero byte file size unchanged."""
+
     def test_dry_run_does_not_remove_random_standard(self, tmp_path):
         """Verify dry run does not remove random standard via SecureShredder, _make_file, shred_file.
 
@@ -749,9 +746,7 @@ class TestDryRun:
             tmp_path: Filesystem path to the target file or directory.
         """
         p = _make_file(tmp_path, "dry.bin", b"KEEP")
-        r = SecureShredder(dry_run=True, verify_passes=False).shred_file(
-            p, ShredStandard.RANDOM_1PASS
-        )
+        r = SecureShredder(dry_run=True, verify_passes=False).shred_file(p, ShredStandard.RANDOM_1PASS)
         assert r.success is True
         assert os.path.exists(p)
         assert _read_all(p) == b"KEEP"
@@ -775,9 +770,7 @@ class TestDryRun:
         """
         content = b"X" * 1024
         p = _make_file(tmp_path, "dry_size.bin", content)
-        SecureShredder(dry_run=True, verify_passes=False).shred_file(
-            p, ShredStandard.RANDOM_1PASS
-        )
+        SecureShredder(dry_run=True, verify_passes=False).shred_file(p, ShredStandard.RANDOM_1PASS)
         assert os.path.getsize(p) == 1024
 
 
@@ -788,6 +781,7 @@ class TestDryRun:
 
 class TestAutoDetect:
     """Group testautodetect tests covering auto detect uses hdd standard; auto detect disabled defaults to nist clear."""
+
     def test_auto_detect_uses_hdd_standard(self, tmp_path):
         """With HDD monkeypatched, auto-detect should pick DoD 3-pass.
 
@@ -806,9 +800,7 @@ class TestAutoDetect:
             tmp_path: Filesystem path to the target file or directory.
         """
         p = _make_file(tmp_path, "autod_off.bin")
-        r = SecureShredder(verify_passes=False).shred_file(
-            p, standard=None, auto_detect=False
-        )
+        r = SecureShredder(verify_passes=False).shred_file(p, standard=None, auto_detect=False)
         assert r.standard == ShredStandard.NIST_CLEAR
         assert r.success is True
 
@@ -820,6 +812,7 @@ class TestAutoDetect:
 
 class TestPatternBytes:
     """Group testpatternbytes tests covering random returns correct length; random returns different bytes; int pattern; int pattern 0xff; crypto erase returns empty; block erase returns empty."""
+
     def test_random_returns_correct_length(self):
         """Verify random returns correct length via _pattern_bytes."""
         data = _pattern_bytes("random", 512)
@@ -877,6 +870,7 @@ class TestPatternBytes:
 
 class TestVerifyPattern:
     """Group testverifypattern tests covering crypto erase always true; block erase always true; random on small file returns false; nonexistent file returns false; byte pattern verify returns false."""
+
     def test_crypto_erase_always_true(self, tmp_path):
         """Verify crypto erase always true via _verify_pattern.
 
@@ -924,6 +918,7 @@ class TestVerifyPattern:
 
 class TestFileSizeEdgeCases:
     """Group testfilesizeedgecases tests covering single byte file random; 64k file random 3pass; 1mb file nist clear."""
+
     def test_single_byte_file_random(self, tmp_path):
         """Verify single byte file random via SecureShredder, _make_file, shred_file.
 
@@ -931,9 +926,7 @@ class TestFileSizeEdgeCases:
             tmp_path: Filesystem path to the target file or directory.
         """
         p = _make_file(tmp_path, "one.bin", b"Z")
-        r = SecureShredder(verify_passes=False).shred_file(
-            p, ShredStandard.RANDOM_1PASS
-        )
+        r = SecureShredder(verify_passes=False).shred_file(p, ShredStandard.RANDOM_1PASS)
         assert r.success is True
         assert r.bytes_shredded == 1
 
@@ -944,9 +937,7 @@ class TestFileSizeEdgeCases:
             tmp_path: Filesystem path to the target file or directory.
         """
         p = _make_file(tmp_path, "64k.bin", b"L" * 65536)
-        r = SecureShredder(verify_passes=False).shred_file(
-            p, ShredStandard.RANDOM_3PASS
-        )
+        r = SecureShredder(verify_passes=False).shred_file(p, ShredStandard.RANDOM_3PASS)
         assert r.success is True
         assert r.bytes_shredded == 65536
         assert r.passes_completed == 3
@@ -970,6 +961,7 @@ class TestFileSizeEdgeCases:
 
 class TestGutmannStructure:
     """Group testgutmannstructure tests covering first four passes are random; passes 5 to 31 are deterministic bytes; last four passes are random; only final pass verifies."""
+
     def test_first_four_passes_are_random(self):
         """Verify first four passes are random via range."""
         for i in range(4):

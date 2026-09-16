@@ -30,6 +30,7 @@ IS_WINDOWS = sys.platform == "win32"
 
 class _GameModeQueryWorker(QObject):
     """Background worker (_GameModeQueryWorker) performing GameModeQueryWorker. Signals finished, failed report status. Its run() step calls GameMode, gm.preview, emit, str."""
+
     finished = Signal(dict)
     failed = Signal(str)
 
@@ -40,6 +41,7 @@ class _GameModeQueryWorker(QObject):
         """
         try:
             from cortex_unified.system_tools.game_mode import GameMode
+
             gm = GameMode()
             preview = gm.preview()
             self.finished.emit(preview)
@@ -49,6 +51,7 @@ class _GameModeQueryWorker(QObject):
 
 class _GameModeActionWorker(QObject):
     """Background worker (_GameModeActionWorker) performing GameModeActionWorker. Signals finished, failed report status. Configured with action, game_mode_instance. Its run() step calls GameMode, gm.start, emit, gm.stop."""
+
     finished = Signal(object)  # BoostReport
     failed = Signal(str)
 
@@ -72,6 +75,7 @@ class _GameModeActionWorker(QObject):
         """
         try:
             from cortex_unified.system_tools.game_mode import GameMode
+
             gm = self._gm or GameMode()
             if self._action == "start":
                 report = gm.start()
@@ -95,17 +99,18 @@ class GameModePage(_Page):
             win: Parent window or shell controller instance.
         """
         super().__init__(win)
-        self.v.addWidget(title_block(
-            "Gaming Session & FPS Booster",
-            "One-click, safe and fully reversible PC boost for game sessions. "
-            "Temporarily switches to Ultimate Performance power plan and suspends "
-            "background noise processes (sync clients, updaters). Zero data loss: "
-            "all suspended processes resume cleanly when you exit.",
-        ))
+        self.v.addWidget(
+            title_block(
+                "Gaming Session & FPS Booster",
+                "One-click, safe and fully reversible PC boost for game sessions. "
+                "Temporarily switches to Ultimate Performance power plan and suspends "
+                "background noise processes (sync clients, updaters). Zero data loss: "
+                "all suspended processes resume cleanly when you exit.",
+            )
+        )
 
         if not IS_WINDOWS:
-            self.v.addWidget(status_note(
-                self.p, "info", "Gaming Session Booster is only available on Windows."))
+            self.v.addWidget(status_note(self.p, "info", "Gaming Session Booster is only available on Windows."))
             return
 
         self._game_mode = None
@@ -133,9 +138,7 @@ class GameModePage(_Page):
         self.v.addWidget(self._action_card)
 
         # Details Header
-        self._info_note = QLabel(
-            "Current Power Plan: Detecting...  |  Target Boost Plan: Ultimate Performance"
-        )
+        self._info_note = QLabel("Current Power Plan: Detecting...  |  Target Boost Plan: Ultimate Performance")
         self._info_note.setObjectName("Muted")
         self.v.addWidget(self._info_note)
 
@@ -187,9 +190,7 @@ class GameModePage(_Page):
         self._refresh_btn.setEnabled(True)
         power_now = preview.get("power_now") or "Balanced"
         power_to = preview.get("power_would_switch_to") or "High Performance"
-        self._info_note.setText(
-            f"Active Power Plan: {power_now}  |  Boost Target: {power_to}"
-        )
+        self._info_note.setText(f"Active Power Plan: {power_now}  |  Boost Target: {power_to}")
 
         candidates = preview.get("would_suspend", [])
         self.tbl.setRowCount(len(candidates))
@@ -220,6 +221,7 @@ class GameModePage(_Page):
         self._toggle_btn.setEnabled(False)
         self._status_label.setText("Status: Activating Boost Mode...")
         from cortex_unified.system_tools.game_mode import GameMode
+
         self._game_mode = GameMode()
         w = _GameModeActionWorker("start", self._game_mode)
         self.win.run_worker(w, self._on_boost_started, self._fail)
@@ -267,9 +269,7 @@ class GameModePage(_Page):
         self._toggle_btn.setObjectName("Primary")
         self._status_label.setText("Status: Normal Mode Restored")
         self._status_label.setStyleSheet("font-size: 14px; font-weight: 600;")
-        self.win.statusBar().showMessage(
-            f"Restored: {len(report.resumed)} processes resumed cleanly", 6000
-        )
+        self.win.statusBar().showMessage(f"Restored: {len(report.resumed)} processes resumed cleanly", 6000)
         self._query()
 
     def _fail(self, err: str):

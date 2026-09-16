@@ -38,6 +38,7 @@ def window(app):
     """
     from cortex_unified.ui.premium.theme import apply_theme
     from cortex_unified.ui.premium.window import PremiumMainWindow
+
     apply_theme(app, "dark")
     win = PremiumMainWindow("dark")
     yield win
@@ -51,8 +52,7 @@ def test_only_the_initial_page_is_built_at_startup(window):
         window: Parent window or shell controller instance.
     """
     built = window._pages.built_ids
-    assert built == {"dashboard"}, (
-        f"expected only the dashboard at startup, got {sorted(built)}")
+    assert built == {"dashboard"}, f"expected only the dashboard at startup, got {sorted(built)}"
 
 
 def test_registry_reports_every_page_without_building_them(window):

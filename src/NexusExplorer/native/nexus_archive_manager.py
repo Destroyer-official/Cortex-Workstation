@@ -18,6 +18,7 @@ class ArchiveFormat(Enum):
 
     Converts raw numeric values into formatted, localized, and human-readable string representations.
     """
+
     ZIP = "ZIP Archive (.zip)"
     TAR = "Tarball (.tar)"
     TAR_GZ = "Gzipped Tarball (.tar.gz)"
@@ -30,6 +31,7 @@ class CompressionLevel(Enum):
 
     Maps STORE/FAST/NORMAL/MAXIMUM to zipfile compresslevel values 0/1/6/9.
     """
+
     STORE = 0
     FAST = 1
     NORMAL = 6
@@ -42,6 +44,7 @@ class ArchiveEntryInfo:
 
     Stores filename, uncompressed/compressed sizes, directory flag, mtime, and CRC hex.
     """
+
     filename: str
     uncompressed_size: int
     compressed_size: int
@@ -56,6 +59,7 @@ class ArchiveOperationResult:
 
     Records success, archive path, file counts, byte totals, elapsed seconds, and error.
     """
+
     success: bool
     archive_path: str
     total_files: int
@@ -120,26 +124,30 @@ class ArchiveManager:
                 with zipfile.ZipFile(path, "r") as zf:
                     for info in zf.infolist():
                         dt = time.mktime((*info.date_time, 0, 0, -1)) if info.date_time else 0.0
-                        entries.append(ArchiveEntryInfo(
-                            filename=info.filename,
-                            uncompressed_size=info.file_size,
-                            compressed_size=info.compress_size,
-                            is_directory=info.is_dir(),
-                            modified_time=dt,
-                            crc=f"{info.CRC & 0xFFFFFFFF:08X}" if info.CRC else "",
-                        ))
+                        entries.append(
+                            ArchiveEntryInfo(
+                                filename=info.filename,
+                                uncompressed_size=info.file_size,
+                                compressed_size=info.compress_size,
+                                is_directory=info.is_dir(),
+                                modified_time=dt,
+                                crc=f"{info.CRC & 0xFFFFFFFF:08X}" if info.CRC else "",
+                            )
+                        )
             elif fmt in (ArchiveFormat.TAR, ArchiveFormat.TAR_GZ, ArchiveFormat.TAR_BZ2, ArchiveFormat.TAR_XZ):
                 mode = "r:*"
                 with tarfile.open(path, mode) as tf:
                     for member in tf.getmembers():
-                        entries.append(ArchiveEntryInfo(
-                            filename=member.name,
-                            uncompressed_size=member.size,
-                            compressed_size=member.size,
-                            is_directory=member.isdir(),
-                            modified_time=member.mtime,
-                            crc="",
-                        ))
+                        entries.append(
+                            ArchiveEntryInfo(
+                                filename=member.name,
+                                uncompressed_size=member.size,
+                                compressed_size=member.size,
+                                is_directory=member.isdir(),
+                                modified_time=member.mtime,
+                                crc="",
+                            )
+                        )
         except Exception:
             pass
 
@@ -225,7 +233,15 @@ class ArchiveManager:
                     total = len(infolist)
                     for idx, info in enumerate(infolist):
                         if cancel_check and cancel_check():
-                            return ArchiveOperationResult(False, str(arc_p), total_extracted, total_bytes, 0, time.perf_counter() - start, "Cancelled")
+                            return ArchiveOperationResult(
+                                False,
+                                str(arc_p),
+                                total_extracted,
+                                total_bytes,
+                                0,
+                                time.perf_counter() - start,
+                                "Cancelled",
+                            )
                         zf.extract(info, dest_p, pwd=pwd)
                         total_extracted += 1
                         total_bytes += info.file_size
@@ -237,7 +253,15 @@ class ArchiveManager:
                     total = len(members)
                     for idx, member in enumerate(members):
                         if cancel_check and cancel_check():
-                            return ArchiveOperationResult(False, str(arc_p), total_extracted, total_bytes, 0, time.perf_counter() - start, "Cancelled")
+                            return ArchiveOperationResult(
+                                False,
+                                str(arc_p),
+                                total_extracted,
+                                total_bytes,
+                                0,
+                                time.perf_counter() - start,
+                                "Cancelled",
+                            )
                         tf.extract(member, dest_p, filter="data" if hasattr(tarfile, "data_filter") else None)
                         total_extracted += 1
                         total_bytes += member.size
@@ -247,7 +271,9 @@ class ArchiveManager:
             elapsed = max(0.001, time.perf_counter() - start)
             return ArchiveOperationResult(True, str(arc_p), total_extracted, total_bytes, arc_p.stat().st_size, elapsed)
         except Exception as exc:
-            return ArchiveOperationResult(False, str(arc_p), total_extracted, total_bytes, 0, time.perf_counter() - start, str(exc))
+            return ArchiveOperationResult(
+                False, str(arc_p), total_extracted, total_bytes, 0, time.perf_counter() - start, str(exc)
+            )
 
     @classmethod
     def create_archive(
@@ -295,7 +321,9 @@ class ArchiveManager:
                 with zipfile.ZipFile(out_p, "w", compression=comp_type, compresslevel=compression_level.value) as zf:
                     for idx, (src_file, arcname) in enumerate(files_to_add):
                         if cancel_check and cancel_check():
-                            return ArchiveOperationResult(False, str(out_p), idx, 0, 0, time.perf_counter() - start, "Cancelled")
+                            return ArchiveOperationResult(
+                                False, str(out_p), idx, 0, 0, time.perf_counter() - start, "Cancelled"
+                            )
                         zf.write(src_file, arcname)
                         if progress_cb:
                             progress_cb(idx + 1, total_files, arcname)
@@ -310,7 +338,9 @@ class ArchiveManager:
                 with tarfile.open(out_p, mode) as tf:
                     for idx, (src_file, arcname) in enumerate(files_to_add):
                         if cancel_check and cancel_check():
-                            return ArchiveOperationResult(False, str(out_p), idx, 0, 0, time.perf_counter() - start, "Cancelled")
+                            return ArchiveOperationResult(
+                                False, str(out_p), idx, 0, 0, time.perf_counter() - start, "Cancelled"
+                            )
                         tf.add(src_file, arcname=arcname)
                         if progress_cb:
                             progress_cb(idx + 1, total_files, arcname)
@@ -319,4 +349,6 @@ class ArchiveManager:
             compressed_size = out_p.stat().st_size if out_p.exists() else 0
             return ArchiveOperationResult(True, str(out_p), total_files, total_uncompressed, compressed_size, elapsed)
         except Exception as exc:
-            return ArchiveOperationResult(False, str(out_p), 0, total_uncompressed, 0, time.perf_counter() - start, str(exc))
+            return ArchiveOperationResult(
+                False, str(out_p), 0, total_uncompressed, 0, time.perf_counter() - start, str(exc)
+            )

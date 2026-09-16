@@ -11,6 +11,7 @@ IS_WINDOWS = platform.system() == "Windows"
 
 class TestPendingParse:
     """Group testpendingparse tests covering empty; single; array; titleless skipped; no kb."""
+
     def test_empty(self):
         """Verify empty via WindowsUpdate._parse_pending."""
         assert WindowsUpdate._parse_pending(None) == []
@@ -18,8 +19,7 @@ class TestPendingParse:
 
     def test_single(self):
         """Verify single via WindowsUpdate._parse_pending."""
-        payload = ('{"Title":"2026-07 Cumulative Update","KB":"5001234",'
-                   '"Severity":"Critical","Size":123456789}')
+        payload = '{"Title":"2026-07 Cumulative Update","KB":"5001234",' '"Severity":"Critical","Size":123456789}'
         ups = WindowsUpdate._parse_pending(payload)
         assert len(ups) == 1
         u = ups[0]
@@ -30,8 +30,7 @@ class TestPendingParse:
 
     def test_array(self):
         """Verify array via WindowsUpdate._parse_pending."""
-        payload = ('[{"Title":"Update A","KB":"1","Size":10},'
-                   '{"Title":"Update B","KB":"2","Size":20}]')
+        payload = '[{"Title":"Update A","KB":"1","Size":10},' '{"Title":"Update B","KB":"2","Size":20}]'
         assert len(WindowsUpdate._parse_pending(payload)) == 2
 
     def test_titleless_skipped(self):
@@ -46,13 +45,16 @@ class TestPendingParse:
 
 class TestHistoryParse:
     """Group testhistoryparse tests covering success and fail; date formatted; empty."""
+
     def test_success_and_fail(self):
         """Handle an operation failure and notify the user.
 
         Captures error details, displays an informative failure state in the UI, resets progress indicators, and re-enables interactive controls.
         """
-        payload = ('[{"Title":"KB1","Date":"2026-07-01T10:00:00","Result":2},'
-                   '{"Title":"KB2","Date":"2026-06-01T10:00:00","Result":4}]')
+        payload = (
+            '[{"Title":"KB1","Date":"2026-07-01T10:00:00","Result":2},'
+            '{"Title":"KB2","Date":"2026-06-01T10:00:00","Result":4}]'
+        )
         rows = WindowsUpdate._parse_history(payload)
         assert len(rows) == 2
         assert rows[0]["result"] == "Succeeded" and rows[0]["succeeded"] is True
@@ -74,6 +76,7 @@ class TestHistoryParse:
 
 class TestGating:
     """Group testgating tests covering is supported; last activity shape; check pending returns list; to dict."""
+
     def test_is_supported(self):
         """Verify is supported via WindowsUpdate.is_supported."""
         assert WindowsUpdate.is_supported() == IS_WINDOWS

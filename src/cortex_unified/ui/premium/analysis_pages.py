@@ -41,8 +41,10 @@ IS_WINDOWS = sys.platform == "win32"
 #  Workers
 # =====================================================================
 
+
 class DiskAnalyzeWorker(QObject):
     """Background worker that analyzes disk usage via DiskAnalyzer."""
+
     finished = Signal(dict)
     failed = Signal(str)
 
@@ -64,6 +66,7 @@ class DiskAnalyzeWorker(QObject):
         """
         try:
             from cortex_unified.analyzers.disk_analyzer import DiskAnalyzer
+
             an = DiskAnalyzer(root_path=self._root)
             an.analyze_disk_usage()
             an.analyze_file_types()
@@ -75,6 +78,7 @@ class DiskAnalyzeWorker(QObject):
 
 class DiskHealthWorker(QObject):
     """Background worker that reads drive health via DiskHealthMonitor."""
+
     finished = Signal(list)
     failed = Signal(str)
 
@@ -85,6 +89,7 @@ class DiskHealthWorker(QObject):
         """
         try:
             from cortex_unified.system_tools.disk_health import DiskHealthMonitor
+
             self.finished.emit([d.to_dict() for d in DiskHealthMonitor().get_health()])
         except Exception as exc:  # noqa: BLE001
             self.failed.emit(str(exc))
@@ -92,6 +97,7 @@ class DiskHealthWorker(QObject):
 
 class ScheduledTasksWorker(QObject):
     """Background worker that lists scheduled tasks via TaskScheduler."""
+
     finished = Signal(list)
     failed = Signal(str)
 
@@ -102,6 +108,7 @@ class ScheduledTasksWorker(QObject):
         """
         try:
             from cortex_unified.scheduler.scheduler import TaskScheduler
+
             self.finished.emit(TaskScheduler().list_scheduled_tasks())
         except Exception as exc:  # noqa: BLE001
             self.failed.emit(str(exc))
@@ -109,6 +116,7 @@ class ScheduledTasksWorker(QObject):
 
 class BootPerfWorker(QObject):
     """Background worker that analyzes boot performance via BootPerformanceMonitor."""
+
     finished = Signal(dict)
     failed = Signal(str)
 
@@ -119,6 +127,7 @@ class BootPerfWorker(QObject):
         """
         try:
             from cortex_unified.system_tools.boot_performance import BootPerformanceMonitor
+
             self.finished.emit(BootPerformanceMonitor().analyze())
         except Exception as exc:  # noqa: BLE001
             self.failed.emit(str(exc))
@@ -126,6 +135,7 @@ class BootPerfWorker(QObject):
 
 class SystemRepairWorker(QObject):
     """Background worker that runs SFC/DISM/CHKDSK via SystemRepair."""
+
     finished = Signal(dict)
     failed = Signal(str)
 
@@ -149,6 +159,7 @@ class SystemRepairWorker(QObject):
         """
         try:
             from cortex_unified.system_tools.system_repair import SystemRepair
+
             sr = SystemRepair()
             a = self._action
             if a == "sfc":
@@ -167,7 +178,8 @@ class SystemRepairWorker(QObject):
 
 class DeleteTaskWorker(QObject):
     """Background worker that deletes a scheduled task via TaskScheduler."""
-    finished = Signal(bool, str)   # (success, task_name)
+
+    finished = Signal(bool, str)  # (success, task_name)
     failed = Signal(str)
 
     def __init__(self, name: str):
@@ -188,6 +200,7 @@ class DeleteTaskWorker(QObject):
         """
         try:
             from cortex_unified.scheduler.scheduler import TaskScheduler
+
             ok = TaskScheduler().delete_scheduled_task(self._name)
             self.finished.emit(bool(ok), self._name)
         except Exception as exc:  # noqa: BLE001
@@ -197,6 +210,7 @@ class DeleteTaskWorker(QObject):
 # =====================================================================
 #  Disk Analyzer  (feature A)
 # =====================================================================
+
 
 class DiskAnalyzerPage(_Page):
     """Disk Analyzer page with folder picker, usage cards and file-type/directory tables."""
@@ -210,11 +224,13 @@ class DiskAnalyzerPage(_Page):
             win: Parent window or shell controller instance.
         """
         super().__init__(win)
-        self.v.addWidget(title_block(
-            "Disk Analyzer",
-            "See exactly where your space goes: usage summary, biggest file "
-            "types, and the heaviest directories under a chosen folder.",
-        ))
+        self.v.addWidget(
+            title_block(
+                "Disk Analyzer",
+                "See exactly where your space goes: usage summary, biggest file "
+                "types, and the heaviest directories under a chosen folder.",
+            )
+        )
 
         picker = QHBoxLayout()
         pick_btn = QPushButton("Choose Folder\u2026")
@@ -332,6 +348,7 @@ class DiskAnalyzerPage(_Page):
             if ext.lower() in AI_MODEL_EXTENSIONS:
                 # Flag AI models — HIGH risk, 1-2GB each, re-downloadable but not auto-deleted
                 from PySide6.QtGui import QColor
+
                 for it in (item0, item1, item2):
                     it.setForeground(QColor("#FB7185"))
                     it.setToolTip("AI model file — 1-2GB each, re-downloadable but HIGH risk (disabled by default).")
@@ -351,8 +368,7 @@ class DiskAnalyzerPage(_Page):
         else:
             self.state.clear()
 
-        self.win.statusBar().showMessage(
-            f"Analyzed {len(types)} file types, {len(dirs)} directories", 5000)
+        self.win.statusBar().showMessage(f"Analyzed {len(types)} file types, {len(dirs)} directories", 5000)
 
     def _fail(self, msg: str):
         """Handle an operation failure and notify the user.
@@ -370,6 +386,7 @@ class DiskAnalyzerPage(_Page):
 #  Disk Health  (feature D - read-only S.M.A.R.T.)
 # =====================================================================
 
+
 class DiskHealthPage(_Page):
     """Disk Health page with S.M.A.R.T. table, hint label and state panel."""
 
@@ -382,11 +399,13 @@ class DiskHealthPage(_Page):
             win: Parent window or shell controller instance.
         """
         super().__init__(win)
-        self.v.addWidget(title_block(
-            "Disk Health",
-            "Read-only S.M.A.R.T. overview: health status, wear, temperature and "
-            "power-on hours where your drive reports them. Nothing is modified.",
-        ))
+        self.v.addWidget(
+            title_block(
+                "Disk Health",
+                "Read-only S.M.A.R.T. overview: health status, wear, temperature and "
+                "power-on hours where your drive reports them. Nothing is modified.",
+            )
+        )
         if not IS_WINDOWS:
             note = status_note(self.p, "info", "Disk health reporting is only available on Windows.")
             self.v.addWidget(note)
@@ -407,8 +426,7 @@ class DiskHealthPage(_Page):
         self.v.addWidget(self.progress)
 
         self.tbl = QTableWidget(0, 7)
-        self.tbl.setHorizontalHeaderLabels(
-            ["Drive", "Media", "Health", "Size", "Wear %", "Temp \u00b0C", "Power-on h"])
+        self.tbl.setHorizontalHeaderLabels(["Drive", "Media", "Health", "Size", "Wear %", "Temp \u00b0C", "Power-on h"])
         # Scroll policy (Req 5.2, 5.5): small floor so the page fits the viewport
         # and only the inner table scrolls; route the wheel to one container.
         self.tbl.setMinimumHeight(self.LIST_MIN_HEIGHT)
@@ -475,8 +493,9 @@ class DiskHealthPage(_Page):
                 unhealthy += 1
                 health_item.setForeground(Qt.GlobalColor.red)
             self.tbl.setItem(r, 2, health_item)
-            self.tbl.setItem(r, 3, QTableWidgetItem(
-                fmt_bytes(d.get("size_bytes", 0)) if d.get("size_bytes") else "\u2014"))
+            self.tbl.setItem(
+                r, 3, QTableWidgetItem(fmt_bytes(d.get("size_bytes", 0)) if d.get("size_bytes") else "\u2014")
+            )
             self.tbl.setItem(r, 4, QTableWidgetItem(self._dash(d.get("wear_percent"))))
             self.tbl.setItem(r, 5, QTableWidgetItem(self._dash(d.get("temperature_c"))))
             self.tbl.setItem(r, 6, QTableWidgetItem(self._dash(d.get("power_on_hours"))))
@@ -484,11 +503,13 @@ class DiskHealthPage(_Page):
             self.hint.setText("No physical disks reported. This may require Administrator.")
         elif unhealthy:
             self.hint.setText(
-                f"{unhealthy} drive(s) not reporting 'Healthy'. "
-                "Back up important data and investigate.")
+                f"{unhealthy} drive(s) not reporting 'Healthy'. " "Back up important data and investigate."
+            )
         else:
-            self.hint.setText("All drives report healthy. Values shown are read directly "
-                              "from the drive; blank means the drive doesn't expose that metric.")
+            self.hint.setText(
+                "All drives report healthy. Values shown are read directly "
+                "from the drive; blank means the drive doesn't expose that metric."
+            )
         self.win.statusBar().showMessage(f"{len(disks)} physical disk(s)", 5000)
 
     def _fail(self, msg: str):
@@ -507,6 +528,7 @@ class DiskHealthPage(_Page):
 #  Scheduled Tasks  (feature C / H)
 # =====================================================================
 
+
 class ScheduledTasksPage(_Page):
     """Scheduled Tasks page with refresh/delete controls, task table and state panel."""
 
@@ -519,11 +541,13 @@ class ScheduledTasksPage(_Page):
             win: Parent window or shell controller instance.
         """
         super().__init__(win)
-        self.v.addWidget(title_block(
-            "Scheduled Tasks",
-            "Review the tasks your OS runs on a schedule. You can remove tasks "
-            "created by Cortex for automatic cleanup here.",
-        ))
+        self.v.addWidget(
+            title_block(
+                "Scheduled Tasks",
+                "Review the tasks your OS runs on a schedule. You can remove tasks "
+                "created by Cortex for automatic cleanup here.",
+            )
+        )
 
         row = QHBoxLayout()
         self.refresh_btn = QPushButton("Refresh")
@@ -555,16 +579,16 @@ class ScheduledTasksPage(_Page):
         self.tbl.verticalHeader().setVisible(False)
         self.tbl.setAlternatingRowColors(True)
         self.tbl.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
-        self.tbl.itemSelectionChanged.connect(
-            lambda: self.del_btn.setEnabled(bool(self.tbl.selectedIndexes())))
+        self.tbl.itemSelectionChanged.connect(lambda: self.del_btn.setEnabled(bool(self.tbl.selectedIndexes())))
         self.v.addWidget(self.tbl, 1)
 
         self.state = StatePanel(self.p)
         self.state.bind_content(self.tbl)
         self.v.addWidget(self.state, 1)
 
-        note = QLabel("Deleting an unfamiliar system task can break Windows features. "
-                      "Only remove tasks you recognize.")
+        note = QLabel(
+            "Deleting an unfamiliar system task can break Windows features. " "Only remove tasks you recognize."
+        )
         note.setObjectName("Muted")
         note.setWordWrap(True)
         self.v.addWidget(note)
@@ -610,7 +634,8 @@ class ScheduledTasksPage(_Page):
             return
         name = self.tbl.item(sel[0].row(), 0).text()
         confirm = QMessageBox.question(
-            self, "Delete scheduled task",
+            self,
+            "Delete scheduled task",
             f"Delete the scheduled task:\n\n{name}\n\n"
             "This cannot be undone. Only proceed if you recognize this task.",
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
@@ -633,9 +658,11 @@ class ScheduledTasksPage(_Page):
         if ok:
             QMessageBox.information(self, "Task deleted", f"Removed '{name}'.")
         else:
-            QMessageBox.warning(self, "Delete failed",
-                                f"Could not delete '{name}'. It may require Administrator "
-                                "or be protected by the system.")
+            QMessageBox.warning(
+                self,
+                "Delete failed",
+                f"Could not delete '{name}'. It may require Administrator " "or be protected by the system.",
+            )
         self._load()
 
     def _fail(self, msg: str):
@@ -654,6 +681,7 @@ class ScheduledTasksPage(_Page):
 #  Boot Performance
 # =====================================================================
 
+
 class BootPerformancePage(_Page):
     """Boot Performance page with boot cards, slowdown table and hint label."""
 
@@ -666,11 +694,13 @@ class BootPerformancePage(_Page):
             win: Parent window or shell controller instance.
         """
         super().__init__(win)
-        self.v.addWidget(title_block(
-            "Boot Performance",
-            "How long your PC takes to start, and exactly what slows it down - "
-            "read straight from Windows' own boot diagnostics, not estimated.",
-        ))
+        self.v.addWidget(
+            title_block(
+                "Boot Performance",
+                "How long your PC takes to start, and exactly what slows it down - "
+                "read straight from Windows' own boot diagnostics, not estimated.",
+            )
+        )
         if not IS_WINDOWS:
             note = status_note(self.p, "info", "Boot diagnostics are only available on Windows.")
             self.v.addWidget(note)
@@ -750,8 +780,7 @@ class BootPerformancePage(_Page):
         boots = data.get("boots", [])
         issues = data.get("issues", [])
         if not boots:
-            self.state.show_empty("No boot diagnostics available yet (may need "
-                                  "Administrator or a few reboots).")
+            self.state.show_empty("No boot diagnostics available yet (may need " "Administrator or a few reboots).")
         else:
             self.state.clear()
         self.card_latest.set_value(f"{latest:.0f} s" if latest else "\u2014")
@@ -774,8 +803,10 @@ class BootPerformancePage(_Page):
             self.tbl.setItem(r, 3, QTableWidgetItem(it["when"].replace("T", " ")))
 
         if not boots:
-            self.hint.setText("No boot diagnostics available yet (this may need "
-                              "Administrator, or a few reboots to accumulate data).")
+            self.hint.setText(
+                "No boot diagnostics available yet (this may need "
+                "Administrator, or a few reboots to accumulate data)."
+            )
         elif issues:
             worst = issues[0]
             self.hint.setText(
@@ -783,12 +814,13 @@ class BootPerformancePage(_Page):
                 f"contributor was <b>{worst['name']}</b> (+{worst['impact_seconds']}s). "
                 "Apps in red add 10s or more - consider disabling the ones you don't "
                 "need at startup via 'Manage Startup Apps'. These are Windows' own "
-                "measurements, not estimates.")
+                "measurements, not estimates."
+            )
         else:
-            self.hint.setText(f"Your last boot was {latest:.0f}s and Windows flagged "
-                              "no significant slowdowns. Nice and clean.")
-        self.win.statusBar().showMessage(
-            f"Boot: last {latest:.0f}s, {len(issues)} slowdown(s) flagged", 5000)
+            self.hint.setText(
+                f"Your last boot was {latest:.0f}s and Windows flagged " "no significant slowdowns. Nice and clean."
+            )
+        self.win.statusBar().showMessage(f"Boot: last {latest:.0f}s, {len(issues)} slowdown(s) flagged", 5000)
 
     def _fail(self, msg: str):
         """Handle an operation failure and notify the user.
@@ -806,6 +838,7 @@ class BootPerformancePage(_Page):
 #  System File Health & Repair
 # =====================================================================
 
+
 class SystemRepairPage(_Page):
     """System File Health page with SFC/DISM/CHKDSK rows, progress and result card."""
 
@@ -818,12 +851,14 @@ class SystemRepairPage(_Page):
             win: Parent window or shell controller instance.
         """
         super().__init__(win)
-        self.v.addWidget(title_block(
-            "System File Health",
-            "Check and repair Windows using its own built-in tools (SFC, DISM, "
-            "CHKDSK) - the Microsoft-recommended fix for corruption, crashes, "
-            "failed updates and unexplained slowness.",
-        ))
+        self.v.addWidget(
+            title_block(
+                "System File Health",
+                "Check and repair Windows using its own built-in tools (SFC, DISM, "
+                "CHKDSK) - the Microsoft-recommended fix for corruption, crashes, "
+                "failed updates and unexplained slowness.",
+            )
+        )
         if not IS_WINDOWS:
             note = status_note(self.p, "info", "System repair tools are only available on Windows.")
             self.v.addWidget(note)
@@ -831,11 +866,11 @@ class SystemRepairPage(_Page):
             return
 
         from cortex_unified.system_tools.system_repair import SystemRepair
+
         if not SystemRepair.is_elevated():
             warn = status_note(
-                self.p, "warning",
-                "These tools need Administrator. Restart Cortex as "
-                "Administrator to run repairs.")
+                self.p, "warning", "These tools need Administrator. Restart Cortex as " "Administrator to run repairs."
+            )
             self.v.addWidget(warn)
 
         card = Card(self.p)
@@ -845,27 +880,42 @@ class SystemRepairPage(_Page):
 
         # Recommended order: quick check -> repair store -> repair files.
         self.check_btn = self._tool_row(
-            cl, "1. Quick Health Check", "Fast check of the component store (seconds).",
-            lambda: self._run("CheckHealth", "Quick health check",
-                              "This is a fast, read-only check. Proceed?"))
+            cl,
+            "1. Quick Health Check",
+            "Fast check of the component store (seconds).",
+            lambda: self._run("CheckHealth", "Quick health check", "This is a fast, read-only check. Proceed?"),
+        )
         self.dism_btn = self._tool_row(
-            cl, "2. Repair Component Store", "DISM RestoreHealth - repairs the store SFC "
+            cl,
+            "2. Repair Component Store",
+            "DISM RestoreHealth - repairs the store SFC "
             "relies on. Can take 10-30 min and may download from Windows Update.",
-            lambda: self._run("RestoreHealth", "Repair component store (DISM)",
-                              "DISM RestoreHealth can take 10-30 minutes and may use the "
-                              "internet to fetch repair files. Proceed?"))
+            lambda: self._run(
+                "RestoreHealth",
+                "Repair component store (DISM)",
+                "DISM RestoreHealth can take 10-30 minutes and may use the " "internet to fetch repair files. Proceed?",
+            ),
+        )
         self.sfc_btn = self._tool_row(
-            cl, "3. Repair System Files", "SFC /scannow - verifies and repairs protected "
-            "Windows files. Takes 10-20 min.",
-            lambda: self._run("sfc", "Repair system files (SFC)",
-                              "SFC /scannow can take 10-20 minutes and may repair system "
-                              "files. Proceed?"))
+            cl,
+            "3. Repair System Files",
+            "SFC /scannow - verifies and repairs protected " "Windows files. Takes 10-20 min.",
+            lambda: self._run(
+                "sfc",
+                "Repair system files (SFC)",
+                "SFC /scannow can take 10-20 minutes and may repair system " "files. Proceed?",
+            ),
+        )
         self.chkdsk_btn = self._tool_row(
-            cl, "4. Check Disk (read-only)", "CHKDSK scan of C: for filesystem errors. A "
-            "full fix (/F) must be scheduled for reboot.",
-            lambda: self._run("chkdsk", "Check disk (read-only)",
-                              "This runs a read-only CHKDSK scan of C:. It does not change "
-                              "anything. Proceed?"))
+            cl,
+            "4. Check Disk (read-only)",
+            "CHKDSK scan of C: for filesystem errors. A " "full fix (/F) must be scheduled for reboot.",
+            lambda: self._run(
+                "chkdsk",
+                "Check disk (read-only)",
+                "This runs a read-only CHKDSK scan of C:. It does not change " "anything. Proceed?",
+            ),
+        )
         self.v.addWidget(card)
 
         self.progress = QProgressBar()
@@ -924,7 +974,9 @@ class SystemRepairPage(_Page):
             prompt (str): The prompt parameter.
         """
         confirm = QMessageBox.question(
-            self, title, prompt + "\n\nRequires Administrator. Cortex stays responsive "
+            self,
+            title,
+            prompt + "\n\nRequires Administrator. Cortex stays responsive "
             "while it runs, but don't shut down until it finishes.",
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
             QMessageBox.StandardButton.No,
@@ -955,24 +1007,34 @@ class SystemRepairPage(_Page):
         # Windows, and this is rich text where an SVG cannot be dropped in
         # cheaply. The outcome word is also clearer for screen readers.
         outcome = {
-            "clean": "No issues found", "repaired": "Repaired",
-            "repairable": "Repairable", "errors": "Errors found",
-            "partial": "Partly completed", "error": "Failed",
+            "clean": "No issues found",
+            "repaired": "Repaired",
+            "repairable": "Repairable",
+            "errors": "Errors found",
+            "partial": "Partly completed",
+            "error": "Failed",
             "busy": "Already running",
         }.get(r["status"], "Result")
         color = {
-            "clean": self.p.success, "repaired": self.p.success,
-            "repairable": self.p.warning, "errors": self.p.warning,
-            "busy": self.p.warning, "partial": self.p.danger,
+            "clean": self.p.success,
+            "repaired": self.p.success,
+            "repairable": self.p.warning,
+            "errors": self.p.warning,
+            "busy": self.p.warning,
+            "partial": self.p.danger,
             "error": self.p.danger,
         }.get(r["status"], self.p.text_muted)
-        reboot = ("<br><b>A restart is recommended</b> to complete the changes."
-                  if r.get("needs_reboot") else "")
-        tail = ("<br><br><span style='font-size:11px'>Tool output (tail):<br>"
-                f"{r['raw_tail'].replace(chr(10), '<br>')}</span>" if r.get("raw_tail") else "")
+        reboot = "<br><b>A restart is recommended</b> to complete the changes." if r.get("needs_reboot") else ""
+        tail = (
+            "<br><br><span style='font-size:11px'>Tool output (tail):<br>"
+            f"{r['raw_tail'].replace(chr(10), '<br>')}</span>"
+            if r.get("raw_tail")
+            else ""
+        )
         self.result.setText(
             f"<span style='color:{color}'><b>{outcome}</b></span> &middot; "
-            f"<b>{r['tool']}:</b> {r['message']}{reboot}{tail}")
+            f"<b>{r['tool']}:</b> {r['message']}{reboot}{tail}"
+        )
         self.win.statusBar().showMessage(f"{r['tool']}: {r['status']}", 6000)
 
     def _fail(self, msg: str):
@@ -988,16 +1050,18 @@ class SystemRepairPage(_Page):
         for b in self._buttons:
             b.setEnabled(True)
         self.result.setText(
-            f"<span style='color:{self.p.danger}'><b>Failed</b></span> "
-            f"&middot; Repair failed: {msg}")
+            f"<span style='color:{self.p.danger}'><b>Failed</b></span> " f"&middot; Repair failed: {msg}"
+        )
 
 
 # =====================================================================
 #  Storage Sense
 # =====================================================================
 
+
 class StorageSenseWorker(QObject):
     """Background worker that reads or updates Storage Sense via StorageSense."""
+
     finished = Signal(dict)
     failed = Signal(str)
 
@@ -1021,6 +1085,7 @@ class StorageSenseWorker(QObject):
         """
         try:
             from cortex_unified.system_tools.storage_sense import StorageSense
+
             ss = StorageSense()
             if self._action == "enable":
                 ss.set_enabled(bool(self._value))
@@ -1036,8 +1101,7 @@ class StorageSenseWorker(QObject):
 class StorageSensePage(_Page):
     """Storage Sense page with enable checkbox, cadence combos and status label."""
 
-    _CADENCE = [(0, "When disk space is low"), (1, "Every day"),
-                (7, "Every week"), (30, "Every month")]
+    _CADENCE = [(0, "When disk space is low"), (1, "Every day"), (7, "Every week"), (30, "Every month")]
     _DAYS = [(0, "Never"), (1, "1 day"), (14, "14 days"), (30, "30 days"), (60, "60 days")]
 
     def __init__(self, win):
@@ -1049,12 +1113,14 @@ class StorageSensePage(_Page):
             win: Parent window or shell controller instance.
         """
         super().__init__(win)
-        self.v.addWidget(title_block(
-            "Storage Sense",
-            "Let Windows clean up automatically on a schedule - temp files, the "
-            "Recycle Bin and old downloads. This configures the built-in Windows "
-            "feature, so it keeps working even when Cortex isn't open.",
-        ))
+        self.v.addWidget(
+            title_block(
+                "Storage Sense",
+                "Let Windows clean up automatically on a schedule - temp files, the "
+                "Recycle Bin and old downloads. This configures the built-in Windows "
+                "feature, so it keeps working even when Cortex isn't open.",
+            )
+        )
         if not IS_WINDOWS:
             note = status_note(self.p, "info", "Storage Sense is only available on Windows.")
             self.v.addWidget(note)
@@ -1097,7 +1163,7 @@ class StorageSensePage(_Page):
         self.v.addWidget(self.status)
         self.v.addStretch(1)
 
-        self._loading = True   # guard so programmatic updates don't re-trigger writes
+        self._loading = True  # guard so programmatic updates don't re-trigger writes
         self._autoload = self._load
         self._loaded = False
 
@@ -1116,8 +1182,7 @@ class StorageSensePage(_Page):
         """
         self._loading = True
         self.enable_chk.setChecked(s.get("enabled", False))
-        self.enable_chk.setText("Storage Sense is ON" if s.get("enabled")
-                                else "Storage Sense is OFF")
+        self.enable_chk.setText("Storage Sense is ON" if s.get("enabled") else "Storage Sense is OFF")
         cad = s.get("cadence", 0)
         for i, (val, _) in enumerate(self._CADENCE):
             if val == cad:
@@ -1133,8 +1198,12 @@ class StorageSensePage(_Page):
             extras.append(f"downloads older than {s.get('downloads_days_label')}")
         self.status.setText(
             ("Configured. " if s.get("configured") else "Not yet configured. ")
-            + (f"Also cleaning: {', '.join(extras)}." if extras else
-               "Tip: enabling weekly cleanup keeps free space healthy automatically."))
+            + (
+                f"Also cleaning: {', '.join(extras)}."
+                if extras
+                else "Tip: enabling weekly cleanup keeps free space healthy automatically."
+            )
+        )
         self._loading = False
 
     def _toggle_enable(self, on: bool):
@@ -1147,8 +1216,7 @@ class StorageSensePage(_Page):
         """
         if self._loading:
             return
-        self.win.run_worker(StorageSenseWorker("enable", 1 if on else 0),
-                            self._on_status, self._fail)
+        self.win.run_worker(StorageSenseWorker("enable", 1 if on else 0), self._on_status, self._fail)
 
     def _set_cadence(self, idx: int):
         """Update Storage Sense cleanup cadence via StorageSenseWorker.
@@ -1158,8 +1226,7 @@ class StorageSensePage(_Page):
         """
         if self._loading:
             return
-        self.win.run_worker(StorageSenseWorker("cadence", self._CADENCE[idx][0]),
-                            self._on_status, self._fail)
+        self.win.run_worker(StorageSenseWorker("cadence", self._CADENCE[idx][0]), self._on_status, self._fail)
 
     def _set_recycle(self, idx: int):
         """Update Recycle Bin cleanup age via StorageSenseWorker.
@@ -1169,8 +1236,7 @@ class StorageSensePage(_Page):
         """
         if self._loading:
             return
-        self.win.run_worker(StorageSenseWorker("recycle", self._DAYS[idx][0]),
-                            self._on_status, self._fail)
+        self.win.run_worker(StorageSenseWorker("recycle", self._DAYS[idx][0]), self._on_status, self._fail)
 
     def _fail(self, msg: str):
         """Handle an operation failure and notify the user.
@@ -1187,8 +1253,10 @@ class StorageSensePage(_Page):
 #  Security (Windows Defender)
 # =====================================================================
 
+
 class DefenderStatusWorker(QObject):
     """Background worker that reads Defender status and threats via WindowsDefender."""
+
     finished = Signal(dict, list)
     failed = Signal(str)
 
@@ -1199,6 +1267,7 @@ class DefenderStatusWorker(QObject):
         """
         try:
             from cortex_unified.system_tools.defender import WindowsDefender
+
             d = WindowsDefender()
             self.finished.emit(d.status().to_dict(), d.recent_threats())
         except Exception as exc:  # noqa: BLE001
@@ -1207,6 +1276,7 @@ class DefenderStatusWorker(QObject):
 
 class DefenderScanWorker(QObject):
     """Background worker that starts a Defender quick scan via WindowsDefender."""
+
     finished = Signal(bool, str)
     failed = Signal(str)
 
@@ -1217,6 +1287,7 @@ class DefenderScanWorker(QObject):
         """
         try:
             from cortex_unified.system_tools.defender import WindowsDefender
+
             ok, msg = WindowsDefender().start_quick_scan()
             self.finished.emit(ok, msg)
         except Exception as exc:  # noqa: BLE001
@@ -1235,11 +1306,13 @@ class SecurityPage(_Page):
             win: Parent window or shell controller instance.
         """
         super().__init__(win)
-        self.v.addWidget(title_block(
-            "Security",
-            "Your Windows Defender protection at a glance - real-time protection, "
-            "signature freshness, last scan - and a one-click quick scan.",
-        ))
+        self.v.addWidget(
+            title_block(
+                "Security",
+                "Your Windows Defender protection at a glance - real-time protection, "
+                "signature freshness, last scan - and a one-click quick scan.",
+            )
+        )
         if not IS_WINDOWS:
             note = status_note(self.p, "info", "Windows Security status is only available on Windows.")
             self.v.addWidget(note)
@@ -1312,15 +1385,14 @@ class SecurityPage(_Page):
         self.state.clear()
         self.refresh_btn.setEnabled(True)
         if not s.get("available"):
-            self.info.setText("Windows Defender is not available or is managed by "
-                              "another security product.")
+            self.info.setText("Windows Defender is not available or is managed by " "another security product.")
             return
         # Colour + word rather than a pictograph: the old marks rendered as
         # colour emoji on Windows, and the word keeps it readable without them.
         badge = (
             f"<span style='color:{self.p.success}'>Protected</span>"
-            if s["healthy"] else
-            f"<span style='color:{self.p.warning}'>Needs attention</span>"
+            if s["healthy"]
+            else f"<span style='color:{self.p.warning}'>Needs attention</span>"
         )
         age = s.get("signature_age_days")
         age_txt = f"{age} day(s) old" if age is not None else "unknown"
@@ -1335,11 +1407,14 @@ class SecurityPage(_Page):
             f"Engine: {s['engine_version'] or 'n/a'}",
         ]
         if not s["realtime_protection"]:
-            lines.append("<span style='color:#e0a000'>Real-time protection is off - turn "
-                         "it on in Windows Security unless another antivirus manages it.</span>")
+            lines.append(
+                "<span style='color:#e0a000'>Real-time protection is off - turn "
+                "it on in Windows Security unless another antivirus manages it.</span>"
+            )
         if age is not None and age > 7:
-            lines.append("<span style='color:#e0a000'>Signatures are stale - run a quick "
-                         "scan or check for updates.</span>")
+            lines.append(
+                "<span style='color:#e0a000'>Signatures are stale - run a quick " "scan or check for updates.</span>"
+            )
         self.info.setText("<br>".join(lines))
 
         self.tbl.setRowCount(len(threats))
@@ -1357,7 +1432,8 @@ class SecurityPage(_Page):
         Launches an asynchronous scan across the target subsystem, showing a loading indicator and disabling triggering controls.
         """
         confirm = QMessageBox.question(
-            self, "Run quick scan",
+            self,
+            "Run quick scan",
             "Run a Windows Defender quick scan now? This checks the most common "
             "locations and may take a few minutes. It only scans - it won't delete "
             "your files.",
@@ -1403,8 +1479,10 @@ class SecurityPage(_Page):
 #  One-click Health Check
 # =====================================================================
 
+
 class HealthCheckWorker(QObject):
     """Background worker that runs HealthChecker with progress signals."""
+
     progress = Signal(str)
     finished = Signal(dict)
     failed = Signal(str)
@@ -1416,6 +1494,7 @@ class HealthCheckWorker(QObject):
         """
         try:
             from cortex_unified.system_tools.health_check import HealthChecker
+
             report = HealthChecker().run(progress=self.progress.emit)
             self.finished.emit(report.to_dict())
         except Exception as exc:  # noqa: BLE001
@@ -1445,11 +1524,13 @@ class HealthCheckPage(_Page):
             win: Parent window or shell controller instance.
         """
         super().__init__(win)
-        self.v.addWidget(title_block(
-            "Health Check",
-            "One click to assess your PC across disk space, drive health, memory, "
-            "boot speed and security - honest checks, with a jump to fix each issue.",
-        ))
+        self.v.addWidget(
+            title_block(
+                "Health Check",
+                "One click to assess your PC across disk space, drive health, memory, "
+                "boot speed and security - honest checks, with a jump to fix each issue.",
+            )
+        )
 
         hero = QHBoxLayout()
         hero.setSpacing(18)
@@ -1459,6 +1540,7 @@ class HealthCheckPage(_Page):
         self.gauge = CircularGauge(self.p, caption="health score")
         # Glow matches the Dashboard gauge so both hero cards read the same way.
         from .widgets import attach_glow
+
         attach_glow(self.gauge, self.p.accent, 34, 55)
         gc.addWidget(self.gauge, alignment=Qt.AlignmentFlag.AlignCenter)
         self.grade_label = QLabel("")
@@ -1469,7 +1551,8 @@ class HealthCheckPage(_Page):
         self.run_btn.setObjectName("Primary")
         self.run_btn.clicked.connect(self._run)
         from . import motion
-        motion.press_feedback(self.run_btn)   # pressed-state feedback on the primary action
+
+        motion.press_feedback(self.run_btn)  # pressed-state feedback on the primary action
         gc.addWidget(self.run_btn)
         self.progress = QProgressBar()
         self.progress.setRange(0, 0)
@@ -1511,6 +1594,7 @@ class HealthCheckPage(_Page):
         # Loading state: a shimmer skeleton stands in for the results
         # table while the checks run, then is swapped out when they arrive.
         from .skeleton import ShimmerSkeleton
+
         self.skeleton = ShimmerSkeleton(self.p, rows=6)
         self.skeleton.setVisible(False)
         checks_col.addWidget(self.skeleton, 1)
@@ -1531,8 +1615,7 @@ class HealthCheckPage(_Page):
         self.tbl.setVisible(False)
         self.skeleton.setVisible(True)
         self.skeleton.start()
-        self.win.run_worker(HealthCheckWorker(), self._on_done, self._fail,
-                            on_progress=self._on_progress)
+        self.win.run_worker(HealthCheckWorker(), self._on_done, self._fail, on_progress=self._on_progress)
 
     def _on_progress(self, msg: str):
         """Handle worker results: update widgets and clear the busy state.
@@ -1570,18 +1653,16 @@ class HealthCheckPage(_Page):
         # ones used here rendered as colour emoji on Windows.
         if criticals:
             self.summary.setText(
-                f"{criticals} issue(s) need attention"
-                + (f" and {warnings} to review." if warnings else "."))
+                f"{criticals} issue(s) need attention" + (f" and {warnings} to review." if warnings else ".")
+            )
         elif warnings:
-            self.summary.setText(
-                f"{warnings} item(s) worth reviewing - otherwise healthy.")
+            self.summary.setText(f"{warnings} item(s) worth reviewing - otherwise healthy.")
         else:
             self.summary.setText("Everything looks healthy.")
 
         self.tbl.setRowCount(len(checks))
         for r, c in enumerate(checks):
-            icon_name, color, sev_label = self._SEV.get(
-                c["severity"], ("info", "#888888", "Unknown"))
+            icon_name, color, sev_label = self._SEV.get(c["severity"], ("info", "#888888", "Unknown"))
             sev_item = QTableWidgetItem()
             sev_item.setIcon(icons.icon(icon_name, 15, color))
             # Non-color signalling (Req 10.5): the severity glyph/colour is
@@ -1622,9 +1703,11 @@ class HealthCheckPage(_Page):
 #  Windows Update
 # =====================================================================
 
+
 class WUActivityWorker(QObject):
     """Background worker that reads update activity and history via WindowsUpdate."""
-    finished = Signal(dict, list)   # (last_activity, history)
+
+    finished = Signal(dict, list)  # (last_activity, history)
     failed = Signal(str)
 
     def run(self):
@@ -1634,6 +1717,7 @@ class WUActivityWorker(QObject):
         """
         try:
             from cortex_unified.system_tools.windows_update import WindowsUpdate
+
             wu = WindowsUpdate()
             self.finished.emit(wu.last_activity(), wu.recent_history())
         except Exception as exc:  # noqa: BLE001
@@ -1642,6 +1726,7 @@ class WUActivityWorker(QObject):
 
 class WUPendingWorker(QObject):
     """Background worker that checks pending updates via WindowsUpdate."""
+
     finished = Signal(list)
     failed = Signal(str)
 
@@ -1652,6 +1737,7 @@ class WUPendingWorker(QObject):
         """
         try:
             from cortex_unified.system_tools.windows_update import WindowsUpdate
+
             self.finished.emit([u.to_dict() for u in WindowsUpdate().check_pending()])
         except Exception as exc:  # noqa: BLE001
             self.failed.emit(str(exc))
@@ -1669,12 +1755,14 @@ class WindowsUpdatePage(_Page):
             win: Parent window or shell controller instance.
         """
         super().__init__(win)
-        self.v.addWidget(title_block(
-            "Windows Update",
-            "When Windows last updated (offline, instant) and what's pending "
-            "(checking reaches Microsoft, so it needs internet). Cortex reports "
-            "updates - Windows installs them, handling reboots safely.",
-        ))
+        self.v.addWidget(
+            title_block(
+                "Windows Update",
+                "When Windows last updated (offline, instant) and what's pending "
+                "(checking reaches Microsoft, so it needs internet). Cortex reports "
+                "updates - Windows installs them, handling reboots safely.",
+            )
+        )
         if not IS_WINDOWS:
             note = status_note(self.p, "info", "Windows Update status is only available on Windows.")
             self.v.addWidget(note)
@@ -1798,6 +1886,7 @@ class WindowsUpdatePage(_Page):
         """Open the Windows Update Settings page."""
         try:
             import os
+
             os.startfile("ms-settings:windowsupdate")  # type: ignore[attr-defined]
         except Exception as exc:  # noqa: BLE001
             QMessageBox.warning(self, "Open failed", str(exc))
@@ -1818,6 +1907,7 @@ class WindowsUpdatePage(_Page):
 #  Component Store (WinSxS) + Windows upgrade leftovers
 # =====================================================================
 
+
 class ComponentStorePage(_Page):
     """Shrink WinSxS the supported way, and clear upgrade leftovers.
 
@@ -1837,12 +1927,14 @@ class ComponentStorePage(_Page):
             win: Parent window or shell controller instance.
         """
         super().__init__(win)
-        self.v.addWidget(title_block(
-            "Windows Component Store",
-            "The usual reason C:\\Windows is huge. Cortex asks Windows to measure "
-            "it, then cleans it the supported way - and refuses to hand-delete "
-            "anything Windows manages itself.",
-        ))
+        self.v.addWidget(
+            title_block(
+                "Windows Component Store",
+                "The usual reason C:\\Windows is huge. Cortex asks Windows to measure "
+                "it, then cleans it the supported way - and refuses to hand-delete "
+                "anything Windows manages itself.",
+            )
+        )
         if not IS_WINDOWS:
             note = status_note(self.p, "info", "The component store is a Windows-only concept.")
             self.v.addWidget(note)
@@ -1876,7 +1968,9 @@ class ComponentStorePage(_Page):
         self.task_btn.clicked.connect(self._run_task)
         row.addWidget(self.task_btn)
         self.fix_24h2_btn = QPushButton("Fix 24H2 Staged Packages")
-        self.fix_24h2_btn.setToolTip("Removes stuck Windows 11 24H2 checkpoint cumulative update packages (Package_for_RollupFix)")
+        self.fix_24h2_btn.setToolTip(
+            "Removes stuck Windows 11 24H2 checkpoint cumulative update packages (Package_for_RollupFix)"
+        )
         self.fix_24h2_btn.clicked.connect(self._fix_24h2)
         row.addWidget(self.fix_24h2_btn)
         row.addStretch(1)
@@ -1889,10 +1983,11 @@ class ComponentStorePage(_Page):
 
         self.reset_chk = QCheckBox(
             "Also remove all superseded versions (/ResetBase) - frees more, but "
-            "permanently blocks uninstalling the updates you have now")
+            "permanently blocks uninstalling the updates you have now"
+        )
         self.reset_chk.setToolTip(
-            "ResetBase cannot be undone. Only use it when you are confident the "
-            "current updates are stable.")
+            "ResetBase cannot be undone. Only use it when you are confident the " "current updates are stable."
+        )
         self.v.addWidget(self.reset_chk)
 
         self.progress = QProgressBar()
@@ -1976,11 +2071,13 @@ class ComponentStorePage(_Page):
     def _analyze(self):
         """Analyze the component store via ComponentStoreAnalyzeWorker."""
         from .workers import ComponentStoreAnalyzeWorker
+
         self.analyze_btn.setEnabled(False)
         self.clean_btn.setEnabled(False)
         self.state.show_loading("Measuring the component store\u2026")
-        self.win.run_worker(ComponentStoreAnalyzeWorker(), self._on_analyzed,
-                            self._fail, on_progress=self.status.setText)
+        self.win.run_worker(
+            ComponentStoreAnalyzeWorker(), self._on_analyzed, self._fail, on_progress=self.status.setText
+        )
 
     def _on_analyzed(self, analysis, leftovers: list):
         """Show analysis cards, verdict and leftovers table.
@@ -2004,8 +2101,7 @@ class ComponentStorePage(_Page):
 
         parts = [analysis.message]
         if analysis.reclaimable_packages:
-            parts.append(f"{analysis.reclaimable_packages} superseded package(s) "
-                         f"can be removed.")
+            parts.append(f"{analysis.reclaimable_packages} superseded package(s) " f"can be removed.")
         if analysis.last_cleanup:
             parts.append(f"Last cleanup: {analysis.last_cleanup}.")
         if analysis.explorer_gap_note:
@@ -2023,8 +2119,7 @@ class ComponentStorePage(_Page):
             if item.risk.value == "managed":
                 cost = f"[managed by Windows] {cost}  {item.supported_removal}"
             elif item.risk.value == "rollback" and item.rollback_expired:
-                cost = (f"{cost} (Windows' 10-day rollback window has already "
-                        f"passed for this item.)")
+                cost = f"{cost} (Windows' 10-day rollback window has already " f"passed for this item.)"
             self.tbl.setItem(r, 2, QTableWidgetItem(cost))
             self.tbl.setItem(r, 3, QTableWidgetItem(str(item.path)))
 
@@ -2037,8 +2132,7 @@ class ComponentStorePage(_Page):
             self.state.clear()
             removable = sum(item.size_bytes for item in leftovers if item.removable_here)
             if removable:
-                self.win.statusBar().showMessage(
-                    f"{fmt_bytes(removable)} of removable leftovers found", 6000)
+                self.win.statusBar().showMessage(f"{fmt_bytes(removable)} of removable leftovers found", 6000)
 
     # -- actions -------------------------------------------------------------
 
@@ -2048,14 +2142,18 @@ class ComponentStorePage(_Page):
         Permanently purges or removes specified target items, reclaiming storage space and logging actions taken.
         """
         from .workers import ComponentStoreCleanWorker
+
         reset = self.reset_chk.isChecked()
-        estimate = (fmt_bytes(self._analysis.reclaimable_estimate)
-                    if self._analysis else "an unknown amount")
-        extra = ("\n\nResetBase is selected: after this, the updates currently "
-                 "installed can no longer be uninstalled. This cannot be undone."
-                 if reset else "")
+        estimate = fmt_bytes(self._analysis.reclaimable_estimate) if self._analysis else "an unknown amount"
+        extra = (
+            "\n\nResetBase is selected: after this, the updates currently "
+            "installed can no longer be uninstalled. This cannot be undone."
+            if reset
+            else ""
+        )
         confirm = QMessageBox.question(
-            self, "Clean component store",
+            self,
+            "Clean component store",
             f"Clean the Windows component store?\n\n"
             f"Windows estimates up to {estimate} can be reclaimed. The operation "
             f"needs Administrator and typically takes 10-30 minutes. Nothing you "
@@ -2068,8 +2166,9 @@ class ComponentStorePage(_Page):
         self.clean_btn.setEnabled(False)
         self.analyze_btn.setEnabled(False)
         self.progress.setVisible(True)
-        self.win.run_worker(ComponentStoreCleanWorker(reset), self._on_cleaned,
-                            self._fail, on_progress=self.status.setText)
+        self.win.run_worker(
+            ComponentStoreCleanWorker(reset), self._on_cleaned, self._fail, on_progress=self.status.setText
+        )
 
     def _on_cleaned(self, outcome):
         """Report the cleanup outcome, then re-analyze on success.
@@ -2091,8 +2190,7 @@ class ComponentStorePage(_Page):
         box = QMessageBox(self)
         box.setWindowTitle("Component store cleanup")
         box.setText(msg)
-        box.setIcon(QMessageBox.Icon.Information if outcome.success
-                    else QMessageBox.Icon.Warning)
+        box.setIcon(QMessageBox.Icon.Information if outcome.success else QMessageBox.Icon.Warning)
         if outcome.raw_tail:
             box.setDetailedText(outcome.raw_tail)
         box.exec()
@@ -2102,8 +2200,10 @@ class ComponentStorePage(_Page):
     def _run_task(self):
         """Start Windows' own component cleanup task after confirmation."""
         from .workers import ServicingTaskWorker
+
         confirm = QMessageBox.question(
-            self, "Let Windows clean it",
+            self,
+            "Let Windows clean it",
             "Start Windows' own component cleanup task?\n\n"
             "This is the gentler option: Windows limits itself to an hour and "
             "keeps components newer than 30 days. It runs in the background.",
@@ -2135,7 +2235,8 @@ class ComponentStorePage(_Page):
     def _fix_24h2(self):
         """Fix stuck 24H2 staged packages via ComponentStoreCleaner."""
         confirm = QMessageBox.question(
-            self, "Fix 24H2 Staged Packages",
+            self,
+            "Fix 24H2 Staged Packages",
             "This targets stuck 'Staged' checkpoint cumulative update packages in Windows 11 24H2 "
             "(known Microsoft bug) and unblocks DISM component store reclamation.\n\n"
             "Proceed with fix?",
@@ -2148,6 +2249,7 @@ class ComponentStorePage(_Page):
         self.progress.setVisible(True)
         try:
             from cortex_unified.system_tools.component_store_cleaner import ComponentStoreCleaner
+
             cleaner = ComponentStoreCleaner()
             result = cleaner.fix_staged_packages()
             self.progress.setVisible(False)
@@ -2161,19 +2263,22 @@ class ComponentStorePage(_Page):
     def _delete_leftovers(self):
         """Permanently remove selected removable leftovers after confirmation."""
         from .workers import LeftoverDeleteWorker
+
         chosen = [item for item in self._selected_leftovers() if item.removable_here]
         if not chosen:
             return
         total = sum(item.size_bytes for item in chosen)
         rollback = [item for item in chosen if item.risk.value == "rollback"]
-        lines = "\n".join(f"  \u2022 {item.label}  ({fmt_bytes(item.size_bytes)})"
-                          for item in chosen)
+        lines = "\n".join(f"  \u2022 {item.label}  ({fmt_bytes(item.size_bytes)})" for item in chosen)
         warn = ""
         if rollback:
-            warn = ("\n\nThis includes rollback data: you will no longer be able "
-                    "to go back to your previous Windows version.")
+            warn = (
+                "\n\nThis includes rollback data: you will no longer be able "
+                "to go back to your previous Windows version."
+            )
         confirm = QMessageBox.question(
-            self, "Remove leftovers",
+            self,
+            "Remove leftovers",
             f"Permanently remove {len(chosen)} item(s), freeing about "
             f"{fmt_bytes(total)}?\n\n{lines}\n\n"
             f"These are system folders, so they cannot go to the Recycle Bin - "
@@ -2188,7 +2293,10 @@ class ComponentStorePage(_Page):
         sizes = {str(item.path): item.size_bytes for item in chosen}
         self.win.run_worker(
             LeftoverDeleteWorker([str(item.path) for item in chosen], sizes),
-            self._on_deleted, self._fail, on_progress=self.status.setText)
+            self._on_deleted,
+            self._fail,
+            on_progress=self.status.setText,
+        )
 
     def _on_deleted(self, freed: int, removed: int, blocked: int):
         """Report freed space and re-analyze.
@@ -2201,8 +2309,7 @@ class ComponentStorePage(_Page):
         self.progress.setVisible(False)
         msg = f"Removed {removed} item(s), freeing {fmt_bytes(freed)}."
         if blocked:
-            msg += (f" {blocked} could not be removed - they are in use or the "
-                    f"safety guard blocked them.")
+            msg += f" {blocked} could not be removed - they are in use or the " f"safety guard blocked them."
         self.status.setText(msg)
         self.win.statusBar().showMessage(msg, 8000)
         QMessageBox.information(self, "Leftovers removed", msg)

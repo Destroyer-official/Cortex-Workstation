@@ -23,6 +23,7 @@ from cortex_unified.core.config import Config
 # workload; blake2b is the always-available stdlib fallback and still beats MD5.
 try:
     import xxhash
+
     HAS_XXHASH = True
 except ImportError:
     HAS_XXHASH = False
@@ -46,7 +47,9 @@ def _gear_hash(data: bytes) -> int:
     return int.from_bytes(hashlib.blake2b(data, digest_size=4).digest(), "little")
 
 
-def fastcdc_chunk(data: bytes, min_size: int = FCDC_MIN, avg_size: int = FCDC_AVG, max_size: int = FCDC_MAX) -> List[bytes]:
+def fastcdc_chunk(
+    data: bytes, min_size: int = FCDC_MIN, avg_size: int = FCDC_AVG, max_size: int = FCDC_MAX
+) -> List[bytes]:
     """FastCDC content-defined chunking (paper Algorithm 1).
 
     Slides a 48-byte window, cuts when (hash & mask)==0 and within [min,max).
@@ -99,7 +102,7 @@ class DuplicateFinder:
 
     Manages DuplicateFinder operations and coordinates related state changes for the component.
     """
-    
+
     def __init__(self, config: Config = None, root_path: str = "."):
         """
         Args:
@@ -112,19 +115,19 @@ class DuplicateFinder:
         self.exclude_dirs = set(self.config.exclude_dirs)
         self.follow_symlinks = self.config.follow_symlinks
         self.chunk_size = 8192
-        
+
         if HAS_XXHASH:
             self.hash_algorithm = "xxhash"
         else:
             self.hash_algorithm = "blake2b"
-        
+
         # Hashing runs on a thread pool; counters must survive concurrent updates.
         self._lock = threading.Lock()
-        
+
         self.duplicates: Dict[str, List[Path]] = {}
         self.file_count = 0
         self.error_count = 0
-    
+
     def _should_exclude_path(self, path: Path) -> bool:
         """True when *path* hits an excluded directory name or pattern.
 
@@ -138,14 +141,14 @@ class DuplicateFinder:
         """
         if path.name in self.exclude_dirs:
             return True
-        
+
         path_str = str(path)
         for pattern in self.exclude_patterns:
             if pattern in path_str or pattern in path.name:
                 return True
-        
+
         return False
-    
+
     def _get_file_hash(self, filepath: Path) -> Optional[str]:
         """Content hash of *filepath*, or None when unreadable.
 
@@ -155,51 +158,51 @@ class DuplicateFinder:
         """
         try:
             file_size = filepath.stat().st_size
-            
+
             if file_size < 1024:
-                with open(filepath, 'rb') as f:
+                with open(filepath, "rb") as f:
                     data = f.read()
                     if HAS_XXHASH:
                         return xxhash.xxh3_64(data).hexdigest()
                     else:
                         return hashlib.blake2b(data).hexdigest()
-            
+
             if file_size < 1_000_000:
                 if HAS_XXHASH:
                     hash_obj = xxhash.xxh3_64()
                 else:
                     hash_obj = hashlib.blake2b()
-                
-                with open(filepath, 'rb') as f:
+
+                with open(filepath, "rb") as f:
                     for chunk in iter(lambda: f.read(self.chunk_size), b""):
                         hash_obj.update(chunk)
                 return hash_obj.hexdigest()
-            
+
             if HAS_XXHASH:
                 hash_obj = xxhash.xxh3_64()
             else:
                 hash_obj = hashlib.blake2b()
-            
+
             # The size alone disambiguates most same-region collisions.
             hash_obj.update(str(file_size).encode())
-            
-            with open(filepath, 'rb') as f:
+
+            with open(filepath, "rb") as f:
                 hash_obj.update(f.read(65536))
-                
+
                 f.seek(file_size // 2)
                 hash_obj.update(f.read(65536))
-                
+
                 f.seek(max(0, file_size - 65536))
                 hash_obj.update(f.read(65536))
-            
+
             return hash_obj.hexdigest()
-            
+
         except Exception:
             # Unreadable files simply cannot participate in duplicate groups.
             with self._lock:
                 self.error_count += 1
             return None
-    
+
     def _get_file_size(self, filepath: Path) -> int:
         """Size in bytes, or -1 when the file cannot be stat'ed.
 
@@ -215,7 +218,7 @@ class DuplicateFinder:
             return filepath.stat().st_size
         except Exception:
             return -1
-    
+
     def _find_files_by_size(self) -> Dict[int, List[Path]]:
         """Group files by exact size; only sizes shared by 2+ files survive.
 
@@ -223,30 +226,30 @@ class DuplicateFinder:
         the expensive hashing pass proportional to actual duplication.
         """
         size_map: Dict[int, List[Path]] = {}
-        
+
         try:
             for root, dirs, files in os.walk(self.root_path):
                 dirs[:] = [d for d in dirs if d not in self.exclude_dirs]
-                
+
                 root_path = Path(root)
                 if self._should_exclude_path(root_path):
                     dirs[:] = []
                     continue
-                
+
                 for file in files:
                     filepath = root_path / file
                     if self._should_exclude_path(filepath):
                         continue
-                    
+
                     try:
                         size = self._get_file_size(filepath)
                         if size <= 0:
                             continue
-                        
+
                         if size not in size_map:
                             size_map[size] = []
                         size_map[size].append(filepath)
-                        
+
                         with self._lock:
                             self.file_count += 1
                     except Exception:
@@ -255,9 +258,9 @@ class DuplicateFinder:
                         continue
         except Exception:
             pass
-        
+
         return {size: paths for size, paths in size_map.items() if len(paths) > 1}
-    
+
     def find_duplicates(self, threads: int = 0) -> Dict[str, List[Path]]:
         """Return ``{hash: [paths]}`` for groups of 2+ identical files.
 
@@ -271,21 +274,21 @@ class DuplicateFinder:
         """
         if threads <= 0:
             threads = min(32, (os.cpu_count() or 4) + 4)
-        
+
         size_groups = self._find_files_by_size()
-        
+
         hash_map: Dict[str, List[Path]] = {}
-        
+
         # Hashing is I/O-bound; the GIL is released during file reads, so a
         # thread pool gives near-linear speedup on spinning/SSD media alike.
         with ThreadPoolExecutor(max_workers=threads) as executor:
             future_to_file = {}
-            
+
             for size, files in size_groups.items():
                 for filepath in files:
                     future = executor.submit(self._get_file_hash, filepath)
                     future_to_file[future] = filepath
-            
+
             for future in as_completed(future_to_file):
                 filepath = future_to_file[future]
                 try:
@@ -297,10 +300,10 @@ class DuplicateFinder:
                 except Exception:
                     with self._lock:
                         self.error_count += 1
-        
+
         self.duplicates = {hash_val: paths for hash_val, paths in hash_map.items() if len(paths) > 1}
         return self.duplicates
-    
+
     def get_stats(self) -> dict:
         """Get statistics about the duplicate finding process.
 
@@ -311,15 +314,15 @@ class DuplicateFinder:
         """
         duplicate_count = sum(len(paths) for paths in self.duplicates.values())
         unique_files = len(self.duplicates)
-        
+
         return {
             "total_files_scanned": self.file_count,
             "duplicate_groups": unique_files,
             "total_duplicates": duplicate_count,
             "errors": self.error_count,
-            "bytes_saved_if_deleted": self._calculate_potential_savings()
+            "bytes_saved_if_deleted": self._calculate_potential_savings(),
         }
-    
+
     def _calculate_potential_savings(self) -> int:
         """Calculate potential bytes that could be saved by removing duplicates.
 
@@ -338,7 +341,7 @@ class DuplicateFinder:
                 except Exception:
                     continue
         return total_savings
-    
+
     def auto_select_duplicates(self, strategy: str = "keep_newest") -> List[Path]:
         """Pick the redundant copies from each duplicate group.
 
@@ -348,11 +351,11 @@ class DuplicateFinder:
                 group is returned for deletion.
         """
         files_to_delete = []
-        
+
         for hash_val, paths in self.duplicates.items():
             if len(paths) <= 1:
                 continue
-            
+
             if strategy == "keep_newest":
                 sorted_paths = sorted(paths, key=lambda p: p.stat().st_mtime, reverse=True)
                 files_to_delete.extend(sorted_paths[1:])
@@ -368,9 +371,9 @@ class DuplicateFinder:
             else:
                 # Unknown strategy: keep the first entry as-is.
                 files_to_delete.extend(paths[1:])
-        
+
         return files_to_delete
-    
+
     def _format_bytes(self, size: int) -> str:
         """Format bytes to human-readable string.
 
@@ -382,12 +385,12 @@ class DuplicateFinder:
         Returns:
             str: Formatted string or path.
         """
-        for unit in ['B', 'KB', 'MB', 'GB', 'TB']:
+        for unit in ["B", "KB", "MB", "GB", "TB"]:
             if size < 1024.0:
                 return f"{size:.2f} {unit}"
             size /= 1024.0
         return f"{size:.2f} PB"
-    
+
     def get_hash_algorithm_info(self) -> dict:
         """Get information about the current hash algorithm.
 
@@ -400,7 +403,11 @@ class DuplicateFinder:
             "algorithm": self.hash_algorithm,
             "xxhash_available": HAS_XXHASH,
             "performance": "10x faster than MD5" if HAS_XXHASH else "2.5x faster than MD5",
-            "recommendation": "Install xxhash for best performance: pip install xxhash" if not HAS_XXHASH else "Using optimal hash algorithm"
+            "recommendation": (
+                "Install xxhash for best performance: pip install xxhash"
+                if not HAS_XXHASH
+                else "Using optimal hash algorithm"
+            ),
         }
 
     # ------------------------------------------------------------------

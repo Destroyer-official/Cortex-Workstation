@@ -32,48 +32,49 @@ from sqlalchemy import (
 from sqlalchemy.orm import DeclarativeBase, sessionmaker, relationship
 from sqlalchemy.pool import StaticPool
 
+
 class Base(DeclarativeBase):
     """Base state.
 
- SQLAlchemy declarative base for all Cortex tables.
- """
+    SQLAlchemy declarative base for all Cortex tables.
+    """
+
     pass
+
 
 class ScanRun(Base):
     """Record of a scan operation.
 
     Launches an asynchronous scan across the target subsystem, showing a loading indicator and disabling triggering controls.
     """
-    
+
     __tablename__ = "scan_runs"
-    
+
     id = Column(Integer, primary_key=True, autoincrement=True)
     scan_type = Column(String(64), nullable=False, index=True)
     root_path = Column(String(1024), nullable=False)
     started_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False, index=True)
     finished_at = Column(DateTime, nullable=True)
     status = Column(String(32), default="running")  # running, completed, failed, interrupted
-    
+
     # Results
     items_found = Column(Integer, default=0)
     bytes_found = Column(Integer, default=0)
     items_deleted = Column(Integer, default=0)
     bytes_freed = Column(Integer, default=0)
-    
+
     # Health metrics
     health_score_before = Column(Integer, nullable=True)
     health_score_after = Column(Integer, nullable=True)
-    
+
     # Error tracking
     error_message = Column(Text, nullable=True)
-    
+
     # Relationships
     deleted_items = relationship("DeletedItem", back_populates="scan_run", cascade="all, delete-orphan")
-    
-    __table_args__ = (
-        Index("idx_scan_type_date", "scan_type", "started_at"),
-    )
-    
+
+    __table_args__ = (Index("idx_scan_type_date", "scan_type", "started_at"),)
+
     def __repr__(self) -> str:
         """Return an informative string representation of the instance.
 
@@ -83,20 +84,20 @@ class ScanRun(Base):
             str: Formatted string or path.
         """
         return f"<ScanRun(id={self.id}, type={self.scan_type}, started={self.started_at})>"
-    
+
     @property
     def duration_seconds(self) -> Optional[float]:
         """Duration seconds.
 
- Wall-clock seconds between start and finish, or None while running.
+        Wall-clock seconds between start and finish, or None while running.
 
- Returns:
- Optional[float]: Result of the operation.
- """
+        Returns:
+        Optional[float]: Result of the operation.
+        """
         if self.finished_at and self.started_at:
             return (self.finished_at - self.started_at).total_seconds()
         return None
-    
+
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary for JSON serialization.
 
@@ -121,47 +122,48 @@ class ScanRun(Base):
             "duration_seconds": self.duration_seconds,
         }
 
+
 class DeletedItem(Base):
     """Deleted Item.
 
     Marks trash/quarantine deletions restorable while shred deletions are permanent; groups candidates by size then hashes to confirm true duplicates.
     """
-    
+
     __tablename__ = "deleted_items"
-    
+
     id = Column(Integer, primary_key=True, autoincrement=True)
     run_id = Column(Integer, ForeignKey("scan_runs.id"), nullable=False, index=True)
-    
+
     # File information
     path = Column(String(4096), nullable=False, index=True)
     original_name = Column(String(512), nullable=False)
     size_bytes = Column(Integer, default=0)
     file_type = Column(String(64), nullable=True)  # file, directory, symlink
-    
+
     # Hashing for verification
     sha256 = Column(String(64), nullable=True)
     xxhash = Column(String(32), nullable=True)
-    
+
     # Backup information
     backup_path = Column(String(4096), nullable=True)
     in_quarantine = Column(Boolean, default=False)
-    
+
     # Timestamps
     deleted_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False, index=True)
     restored_at = Column(DateTime, nullable=True)
-    
+
     # Metadata
     deletion_method = Column(String(32), default="trash")  # trash, delete, shred
     can_restore = Column(Boolean, default=True)
-    
+
     # Relationships
     scan_run = relationship("ScanRun", back_populates="deleted_items")
-    
+
     __table_args__ = (
         Index("idx_deleted_date", "deleted_at"),
         Index("idx_quarantine", "in_quarantine", "deleted_at"),
     )
-    
+
     def __repr__(self) -> str:
         """Return an informative string representation of the instance.
 
@@ -171,7 +173,7 @@ class DeletedItem(Base):
             str: Formatted string or path.
         """
         return f"<DeletedItem(id={self.id}, path={self.path}, deleted={self.deleted_at})>"
-    
+
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary for JSON serialization.
 
@@ -195,38 +197,41 @@ class DeletedItem(Base):
             "can_restore": self.can_restore,
         }
 
+
 class ScheduledJob(Base):
     """Scheduled Job.
 
- Scheduled cleanup job with cron or interval schedule, target roots, and run status.
- """
-    
+    Scheduled cleanup job with cron or interval schedule, target roots, and run status.
+    """
+
     __tablename__ = "scheduled_jobs"
-    
+
     id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String(256), nullable=False, unique=True)
     description = Column(Text, nullable=True)
-    
+
     # Schedule
     cron_expression = Column(String(128), nullable=True)
     interval_seconds = Column(Integer, nullable=True)
     next_run = Column(DateTime, nullable=True, index=True)
     last_run = Column(DateTime, nullable=True)
-    
+
     # Job configuration
     scan_type = Column(String(64), nullable=False)
     root_paths = Column(Text, nullable=False)  # JSON array of paths
     config_json = Column(Text, nullable=True)  # JSON configuration
-    
+
     # Status
     enabled = Column(Boolean, default=True, index=True)
     run_count = Column(Integer, default=0)
     last_status = Column(String(32), nullable=True)
     last_error = Column(Text, nullable=True)
-    
+
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
-    updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
-    
+    updated_at = Column(
+        DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc)
+    )
+
     def __repr__(self) -> str:
         """Return an informative string representation of the instance.
 
@@ -237,53 +242,55 @@ class ScheduledJob(Base):
         """
         return f"<ScheduledJob(id={self.id}, name={self.name}, enabled={self.enabled})>"
 
+
 class SystemMetric(Base):
     """System Metric.
 
     Derives a 0-100 health score from junk volume, registry, startup, and privacy findings.
     """
-    
+
     __tablename__ = "system_metrics"
-    
+
     id = Column(Integer, primary_key=True, autoincrement=True)
     recorded_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False, index=True)
-    
+
     # Disk metrics
     disk_total_gb = Column(Float, nullable=True)
     disk_used_gb = Column(Float, nullable=True)
     disk_free_gb = Column(Float, nullable=True)
     disk_usage_percent = Column(Float, nullable=True)
-    
+
     # Health score
     health_score = Column(Integer, nullable=True)
-    
+
     # Performance metrics
     scan_duration_seconds = Column(Float, nullable=True)
     items_scanned = Column(Integer, nullable=True)
-    
+
     # System info
     drive_path = Column(String(256), nullable=True, index=True)
-    
-    __table_args__ = (
-        Index("idx_metrics_drive_date", "drive_path", "recorded_at"),
-    )
+
+    __table_args__ = (Index("idx_metrics_drive_date", "drive_path", "recorded_at"),)
+
 
 class UserPreference(Base):
     """User Preference.
 
- Single typed key-value user preference row.
- """
-    
+    Single typed key-value user preference row.
+    """
+
     __tablename__ = "user_preferences"
-    
+
     id = Column(Integer, primary_key=True, autoincrement=True)
     key = Column(String(256), nullable=False, unique=True, index=True)
     value = Column(Text, nullable=True)
     value_type = Column(String(32), default="string")  # string, int, float, bool, json
-    
+
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
-    updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
-    
+    updated_at = Column(
+        DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc)
+    )
+
     def __repr__(self) -> str:
         """Return an informative string representation of the instance.
 
@@ -294,17 +301,18 @@ class UserPreference(Base):
         """
         return f"<UserPreference(key={self.key}, value={self.value})>"
 
+
 class Database:
     """
     Database manager for Cortex Cleaner.
-    
+
     Provides high-level interface for all database operations.
     """
-    
+
     def __init__(self, db_path: Optional[Path] = None, echo: bool = False):
         """
         Initialize database connection.
-        
+
         Args:
             db_path: Path to SQLite database file (None = in-memory)
             echo: Enable SQL query logging
@@ -320,22 +328,22 @@ class Database:
         else:
             db_path = Path(db_path)
             db_path.parent.mkdir(parents=True, exist_ok=True)
-            
+
             self.engine = create_engine(
                 f"sqlite:///{db_path}",
                 connect_args={"check_same_thread": False},
                 echo=echo,
             )
-        
+
         self.SessionLocal = sessionmaker(
             autocommit=False,
             autoflush=False,
             bind=self.engine,
         )
-        
+
         # Create all tables
         Base.metadata.create_all(bind=self.engine)
-    
+
     @contextmanager
     def session(self):
         """Session helper.
@@ -351,9 +359,9 @@ class Database:
             raise
         finally:
             session.close()
-    
+
     # Scan Run Operations
-    
+
     def create_scan_run(
         self,
         scan_type: str,
@@ -383,7 +391,7 @@ class Database:
             session.commit()
             session.refresh(scan_run)
             return scan_run
-    
+
     def update_scan_run(
         self,
         run_id: int,
@@ -428,7 +436,7 @@ class Database:
                     scan_run.health_score_after = health_score_after
                 if error_message:
                     scan_run.error_message = error_message
-    
+
     def get_scan_history(
         self,
         limit: int = 100,
@@ -437,29 +445,29 @@ class Database:
     ) -> List[ScanRun]:
         """Get scan history with optional filters.
 
- Queries scan_runs newest-first with optional type and since filters.
+        Queries scan_runs newest-first with optional type and since filters.
 
- Args:
- limit (int): The limit parameter.
- scan_type (Optional[str]): The scan type parameter.
- since (Optional[datetime]): The since parameter.
+        Args:
+        limit (int): The limit parameter.
+        scan_type (Optional[str]): The scan type parameter.
+        since (Optional[datetime]): The since parameter.
 
- Returns:
- List[ScanRun]: List of processed items or identifiers.
- """
+        Returns:
+        List[ScanRun]: List of processed items or identifiers.
+        """
         with self.session() as session:
             query = session.query(ScanRun)
-            
+
             if scan_type:
                 query = query.filter(ScanRun.scan_type == scan_type)
-            
+
             if since:
                 query = query.filter(ScanRun.started_at >= since)
-            
+
             query = query.order_by(ScanRun.started_at.desc()).limit(limit)
-            
+
             return query.all()
-    
+
     def get_scan_stats(self, days: int = 30) -> Dict[str, Any]:
         """Get aggregate statistics for recent scans.
 
@@ -472,13 +480,10 @@ class Database:
             Dict[str, Any]: Dictionary mapping identifiers to status or values.
         """
         since = datetime.now(timezone.utc) - timedelta(days=days)
-        
+
         with self.session() as session:
-            scans = session.query(ScanRun).filter(
-                ScanRun.started_at >= since,
-                ScanRun.status == "completed"
-            ).all()
-            
+            scans = session.query(ScanRun).filter(ScanRun.started_at >= since, ScanRun.status == "completed").all()
+
             if not scans:
                 return {
                     "total_scans": 0,
@@ -486,21 +491,18 @@ class Database:
                     "total_bytes_freed": 0,
                     "avg_health_improvement": 0,
                 }
-            
+
             total_bytes_freed = sum(s.bytes_freed or 0 for s in scans)
             total_items_found = sum(s.items_found or 0 for s in scans)
-            
+
             health_improvements = [
                 (s.health_score_after - s.health_score_before)
                 for s in scans
                 if s.health_score_before and s.health_score_after
             ]
-            
-            avg_health_improvement = (
-                sum(health_improvements) / len(health_improvements)
-                if health_improvements else 0
-            )
-            
+
+            avg_health_improvement = sum(health_improvements) / len(health_improvements) if health_improvements else 0
+
             return {
                 "total_scans": len(scans),
                 "total_items_found": total_items_found,
@@ -508,9 +510,9 @@ class Database:
                 "avg_health_improvement": round(avg_health_improvement, 1),
                 "period_days": days,
             }
-    
+
     # Deleted Item Operations
-    
+
     def add_deleted_item(
         self,
         run_id: int,
@@ -554,7 +556,7 @@ class Database:
             session.commit()
             session.refresh(item)
             return item
-    
+
     def get_restorable_items(
         self,
         limit: int = 100,
@@ -576,28 +578,28 @@ class Database:
                 DeletedItem.can_restore == True,
                 DeletedItem.restored_at.is_(None),
             )
-            
+
             if in_quarantine_only:
                 query = query.filter(DeletedItem.in_quarantine == True)
-            
+
             query = query.order_by(DeletedItem.deleted_at.desc()).limit(limit)
-            
+
             return query.all()
-    
+
     def mark_item_restored(self, item_id: int) -> None:
         """Mark an item as restored.
 
- Stamps restored_at and clears the quarantine flag.
+        Stamps restored_at and clears the quarantine flag.
 
- Args:
- item_id (int): The item id parameter.
- """
+        Args:
+        item_id (int): The item id parameter.
+        """
         with self.session() as session:
             item = session.query(DeletedItem).filter(DeletedItem.id == item_id).first()
             if item:
                 item.restored_at = datetime.now(timezone.utc)
                 item.in_quarantine = False
-    
+
     def cleanup_old_quarantine(self, days: int = 30) -> int:
         """Remove quarantine records older than specified days.
 
@@ -610,17 +612,21 @@ class Database:
             int: Result of the operation.
         """
         cutoff = datetime.now(timezone.utc) - timedelta(days=days)
-        
+
         with self.session() as session:
-            count = session.query(DeletedItem).filter(
-                DeletedItem.in_quarantine == True,
-                DeletedItem.deleted_at < cutoff,
-            ).delete()
-            
+            count = (
+                session.query(DeletedItem)
+                .filter(
+                    DeletedItem.in_quarantine == True,
+                    DeletedItem.deleted_at < cutoff,
+                )
+                .delete()
+            )
+
             return count
-    
+
     # System Metrics Operations
-    
+
     def record_metric(
         self,
         disk_total_gb: Optional[float] = None,
@@ -648,10 +654,7 @@ class Database:
                 disk_total_gb=disk_total_gb,
                 disk_used_gb=disk_used_gb,
                 disk_free_gb=disk_free_gb,
-                disk_usage_percent=(
-                    (disk_used_gb / disk_total_gb * 100)
-                    if disk_total_gb and disk_used_gb else None
-                ),
+                disk_usage_percent=((disk_used_gb / disk_total_gb * 100) if disk_total_gb and disk_used_gb else None),
                 health_score=health_score,
                 drive_path=drive_path,
             )
@@ -659,7 +662,7 @@ class Database:
             session.commit()
             session.refresh(metric)
             return metric
-    
+
     def get_metrics_history(
         self,
         days: int = 30,
@@ -667,31 +670,29 @@ class Database:
     ) -> List[SystemMetric]:
         """Get historical metrics.
 
- Queries system metrics since the cutoff, optionally per drive.
+        Queries system metrics since the cutoff, optionally per drive.
 
- Args:
- days (int): The days parameter.
- drive_path (Optional[str]): Filesystem path to the target file or directory.
+        Args:
+        days (int): The days parameter.
+        drive_path (Optional[str]): Filesystem path to the target file or directory.
 
- Returns:
- List[SystemMetric]: List of processed items or identifiers.
- """
+        Returns:
+        List[SystemMetric]: List of processed items or identifiers.
+        """
         since = datetime.now(timezone.utc) - timedelta(days=days)
-        
+
         with self.session() as session:
-            query = session.query(SystemMetric).filter(
-                SystemMetric.recorded_at >= since
-            )
-            
+            query = session.query(SystemMetric).filter(SystemMetric.recorded_at >= since)
+
             if drive_path:
                 query = query.filter(SystemMetric.drive_path == drive_path)
-            
+
             query = query.order_by(SystemMetric.recorded_at.asc())
-            
+
             return query.all()
-    
+
     # Cleanup Operations
-    
+
     def cleanup_old_history(self, max_entries: int = 1000) -> int:
         """Keep only the most recent scan history entries.
 
@@ -706,40 +707,37 @@ class Database:
         with self.session() as session:
             # Get count of total entries
             total = session.query(ScanRun).count()
-            
+
             if total <= max_entries:
                 return 0
-            
+
             # Get IDs of entries to keep
             keep_ids = [
-                r.id for r in session.query(ScanRun.id)
-                .order_by(ScanRun.started_at.desc())
-                .limit(max_entries)
-                .all()
+                r.id for r in session.query(ScanRun.id).order_by(ScanRun.started_at.desc()).limit(max_entries).all()
             ]
-            
+
             # Delete old entries (cascade will handle deleted_items)
-            deleted = session.query(ScanRun).filter(
-                ScanRun.id.notin_(keep_ids)
-            ).delete(synchronize_session=False)
-            
+            deleted = session.query(ScanRun).filter(ScanRun.id.notin_(keep_ids)).delete(synchronize_session=False)
+
             return deleted
+
 
 # Global database instance
 _db_instance: Optional[Database] = None
 _db_lock = threading.Lock()
 
+
 def get_database(db_path: Optional[Path] = None) -> Database:
     """Get database.
 
- Returns the process-wide Database singleton, creating and migrating it on first use.
+    Returns the process-wide Database singleton, creating and migrating it on first use.
 
- Args:
- db_path (Optional[Path]): Filesystem path to the target file or directory.
+    Args:
+    db_path (Optional[Path]): Filesystem path to the target file or directory.
 
- Returns:
- Database: Result of the operation.
- """
+    Returns:
+    Database: Result of the operation.
+    """
     global _db_instance
     if _db_instance is not None:
         return _db_instance
@@ -751,21 +749,23 @@ def get_database(db_path: Optional[Path] = None) -> Database:
         _db_instance = Database(db_path)
     return _db_instance
 
+
 @contextmanager
 def db_session():
     """Convenience context manager for database sessions.
 
- Yields a Database session with commit/rollback handling.
- """
+    Yields a Database session with commit/rollback handling.
+    """
     db = get_database()
     with db.session() as session:
         yield session
+
 
 if __name__ == "__main__":
     # Example usage and testing
     print("Initializing database...")
     db = Database()  # In-memory for testing
-    
+
     print("Creating scan run...")
     scan = db.create_scan_run(
         scan_type="empty_files",
@@ -773,7 +773,7 @@ if __name__ == "__main__":
         health_score_before=75,
     )
     print(f"✓ Created scan run: {scan.id}")
-    
+
     print("Adding deleted items...")
     for i in range(5):
         db.add_deleted_item(
@@ -783,7 +783,7 @@ if __name__ == "__main__":
             backup_path=f"/backup/file{i}.tmp",
         )
     print("✓ Added 5 deleted items")
-    
+
     print("Updating scan run...")
     db.update_scan_run(
         run_id=scan.id,
@@ -795,15 +795,15 @@ if __name__ == "__main__":
         health_score_after=85,
     )
     print("✓ Updated scan run")
-    
+
     print("\nScan history:")
     history = db.get_scan_history(limit=10)
     for run in history:
         print(f"  - {run.scan_type}: {run.items_found} items, {run.bytes_freed} bytes freed")
-    
+
     print("\nRestorable items:")
     restorable = db.get_restorable_items()
     for item in restorable:
         print(f"  - {item.path} ({item.size_bytes} bytes)")
-    
+
     print("\n✓ Database tests passed!")

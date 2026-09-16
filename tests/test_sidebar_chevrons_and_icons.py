@@ -26,28 +26,33 @@ def test_sidebar_group_headers_have_valid_chevrons_and_escaped_titles(app):
         app: The app parameter.
     """
     win = PremiumMainWindow()
-    win._toggle_sidebar()  # Expand sidebar
+    try:
+        win._toggle_sidebar()  # Expand sidebar
 
-    assert len(win._nav_sections) == 10
+        assert len(win._nav_sections) == 10
 
-    for gid, sec in win._nav_sections.items():
-        header = sec["header"]
-        # Check icon exists and is not null
-        assert not header.icon().isNull(), f"Header {gid} has null icon"
-        
-        # Check text is non-empty and has no misplaced single '&' that turns into '_'
-        text = header.text().strip()
-        assert text != "", f"Header {gid} text is empty"
-        assert "_" not in text, f"Header {gid} has accidental underscore mnemonic: {text}"
-        
-        # When expanded or collapsed, chevron updates properly
-        win._update_nav_header(gid, expanded=True)
-        assert header.property("expanded") is True
-        assert not header.icon().isNull()
+        for gid, sec in win._nav_sections.items():
+            header = sec["header"]
+            # Check icon exists and is not null
+            assert not header.icon().isNull(), f"Header {gid} has null icon"
 
-        win._update_nav_header(gid, expanded=False)
-        assert header.property("expanded") is False
-        assert not header.icon().isNull()
+            # Check text is non-empty and has no misplaced single '&' that turns into '_'
+            text = header.text().strip()
+            assert text != "", f"Header {gid} text is empty"
+            assert "_" not in text, f"Header {gid} has accidental underscore mnemonic: {text}"
+
+            # When expanded or collapsed, chevron updates properly
+            win._update_nav_header(gid, expanded=True)
+            assert header.property("expanded") is True
+            assert not header.icon().isNull()
+
+            win._update_nav_header(gid, expanded=False)
+            assert header.property("expanded") is False
+            assert not header.icon().isNull()
+    finally:
+        win.close()
+        win.deleteLater()
+        app.processEvents()
 
 
 def test_sidebar_expand_collapse_preserves_chevrons(app):
@@ -57,26 +62,30 @@ def test_sidebar_expand_collapse_preserves_chevrons(app):
         app: The app parameter.
     """
     win = PremiumMainWindow()
+    try:
+        # Initial state after constructor toggle
+        for gid, sec in win._nav_sections.items():
+            assert not sec["header"].icon().isNull()
 
-    # Initial state after constructor toggle
-    for gid, sec in win._nav_sections.items():
-        assert not sec["header"].icon().isNull()
+        # Expand sidebar
+        win._toggle_sidebar()
+        for gid, sec in win._nav_sections.items():
+            assert not sec["header"].icon().isNull()
+            assert sec["header"].text().strip() != ""
 
-    # Expand sidebar
-    win._toggle_sidebar()
-    for gid, sec in win._nav_sections.items():
-        assert not sec["header"].icon().isNull()
-        assert sec["header"].text().strip() != ""
+        # Hover collapse & hover expand
+        win._sidebar_hover_collapse()
+        for gid, sec in win._nav_sections.items():
+            assert not sec["header"].icon().isNull()
 
-    # Hover collapse & hover expand
-    win._sidebar_hover_collapse()
-    for gid, sec in win._nav_sections.items():
-        assert not sec["header"].icon().isNull()
-
-    win._sidebar_hover_expand()
-    for gid, sec in win._nav_sections.items():
-        assert not sec["header"].icon().isNull()
-        assert sec["header"].text().strip() != ""
+        win._sidebar_hover_expand()
+        for gid, sec in win._nav_sections.items():
+            assert not sec["header"].icon().isNull()
+            assert sec["header"].text().strip() != ""
+    finally:
+        win.close()
+        win.deleteLater()
+        app.processEvents()
 
 
 def test_all_pages_have_unique_icons_with_uniform_palette_tint(app):

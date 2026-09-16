@@ -29,6 +29,7 @@ class BrowserExtension:
 
     Holds browser, name, version, id, and requested permission list.
     """
+
     browser: str
     name: str
     version: str
@@ -44,9 +45,20 @@ class BrowserExtension:
         Returns:
             bool: True if the operation succeeded, False otherwise.
         """
-        risky = {"<all_urls>", "tabs", "webRequest", "webRequestBlocking",
-                 "history", "cookies", "downloads", "management",
-                 "nativeMessaging", "debugger", "proxy", "*://*/*"}
+        risky = {
+            "<all_urls>",
+            "tabs",
+            "webRequest",
+            "webRequestBlocking",
+            "history",
+            "cookies",
+            "downloads",
+            "management",
+            "nativeMessaging",
+            "debugger",
+            "proxy",
+            "*://*/*",
+        }
         return any(p in risky for p in self.permissions)
 
     def to_dict(self) -> dict[str, Any]:
@@ -204,8 +216,9 @@ class BrowserExtensionAuditor:
             Path: Result of the operation.
         """
         if _IS_WINDOWS:
-            return Path(os.environ.get("APPDATA", self._home / "AppData" / "Roaming")) \
-                / "Mozilla" / "Firefox" / "Profiles"
+            return (
+                Path(os.environ.get("APPDATA", self._home / "AppData" / "Roaming")) / "Mozilla" / "Firefox" / "Profiles"
+            )
         return self._home / ".mozilla" / "firefox"
 
     def _scan_firefox(self) -> list[BrowserExtension]:
@@ -231,15 +244,23 @@ class BrowserExtensionAuditor:
                     continue
                 defaults = addon.get("defaultLocale") or {}
                 name = defaults.get("name") if isinstance(defaults, dict) else None
-                found.append(BrowserExtension(
-                    browser="Firefox",
-                    name=str(name or addon.get("id", "?")),
-                    version=str(addon.get("version", "?")),
-                    ext_id=str(addon.get("id", "?")),
-                    permissions=[p for p in (addon.get("userPermissions") or {})
-                                 .get("permissions", []) if isinstance(p, str)]
-                    if isinstance(addon.get("userPermissions"), dict) else [],
-                ))
+                found.append(
+                    BrowserExtension(
+                        browser="Firefox",
+                        name=str(name or addon.get("id", "?")),
+                        version=str(addon.get("version", "?")),
+                        ext_id=str(addon.get("id", "?")),
+                        permissions=(
+                            [
+                                p
+                                for p in (addon.get("userPermissions") or {}).get("permissions", [])
+                                if isinstance(p, str)
+                            ]
+                            if isinstance(addon.get("userPermissions"), dict)
+                            else []
+                        ),
+                    )
+                )
         return found
 
     # -- helpers ------------------------------------------------------------

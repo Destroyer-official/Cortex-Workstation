@@ -138,55 +138,179 @@ class ServiceObservation:
 
 
 _TARGETED_TCP = (
-    21, 22, 23, 25, 53, 80, 110, 139, 143, 443, 445, 548, 631, 993,
-    995, 1883, 2375, 3389, 5555, 5900, 6379, 8000, 8008, 8009, 8080,
-    8081, 8123, 8443, 8883, 9100, 32400, 62078,
+    21,
+    22,
+    23,
+    25,
+    53,
+    80,
+    110,
+    139,
+    143,
+    443,
+    445,
+    548,
+    631,
+    993,
+    995,
+    1883,
+    2375,
+    3389,
+    5555,
+    5900,
+    6379,
+    8000,
+    8008,
+    8009,
+    8080,
+    8081,
+    8123,
+    8443,
+    8883,
+    9100,
+    32400,
+    62078,
 )
-_ADVANCED_TCP = tuple(sorted(set(_TARGETED_TCP + (
-    20, 26, 37, 49, 67, 68, 69, 79, 81, 88, 111, 119, 123, 135, 137,
-    138, 161, 389, 427, 465, 500, 514, 515, 554, 587, 636, 873, 902,
-    1080, 1433, 1521, 1723, 2049, 2376, 3000, 3128, 3306, 5000, 5060,
-    5432, 5672, 5985, 5986, 7001, 8088, 8181, 8888, 9000, 9090, 9200,
-    11211, 27017,
-))))
+_ADVANCED_TCP = tuple(
+    sorted(
+        set(
+            _TARGETED_TCP
+            + (
+                20,
+                26,
+                37,
+                49,
+                67,
+                68,
+                69,
+                79,
+                81,
+                88,
+                111,
+                119,
+                123,
+                135,
+                137,
+                138,
+                161,
+                389,
+                427,
+                465,
+                500,
+                514,
+                515,
+                554,
+                587,
+                636,
+                873,
+                902,
+                1080,
+                1433,
+                1521,
+                1723,
+                2049,
+                2376,
+                3000,
+                3128,
+                3306,
+                5000,
+                5060,
+                5432,
+                5672,
+                5985,
+                5986,
+                7001,
+                8088,
+                8181,
+                8888,
+                9000,
+                9090,
+                9200,
+                11211,
+                27017,
+            )
+        )
+    )
+)
 
 _NAMES = {
-    21: "ftp", 22: "ssh", 23: "telnet", 25: "smtp", 53: "dns",
-    80: "http", 110: "pop3", 139: "netbios", 143: "imap",
-    443: "https", 445: "smb", 548: "afp", 631: "ipp",
-    993: "imaps", 995: "pop3s", 1883: "mqtt", 2375: "docker",
-    2376: "docker-tls", 3389: "rdp", 5555: "adb", 5900: "vnc",
-    6379: "redis", 8080: "http", 8081: "http", 8443: "https",
-    8883: "mqtt-tls", 9100: "printer", 9200: "elasticsearch",
+    21: "ftp",
+    22: "ssh",
+    23: "telnet",
+    25: "smtp",
+    53: "dns",
+    80: "http",
+    110: "pop3",
+    139: "netbios",
+    143: "imap",
+    443: "https",
+    445: "smb",
+    548: "afp",
+    631: "ipp",
+    993: "imaps",
+    995: "pop3s",
+    1883: "mqtt",
+    2375: "docker",
+    2376: "docker-tls",
+    3389: "rdp",
+    5555: "adb",
+    5900: "vnc",
+    6379: "redis",
+    8080: "http",
+    8081: "http",
+    8443: "https",
+    8883: "mqtt-tls",
+    9100: "printer",
+    9200: "elasticsearch",
 }
-_HTTP_PORTS = {80, 81, 631, 2375, 3000, 3128, 5000, 5985, 7001, 8000,
-               8008, 8080, 8081, 8088, 8181, 8888, 9000, 9090, 9200}
+_HTTP_PORTS = {
+    80,
+    81,
+    631,
+    2375,
+    3000,
+    3128,
+    5000,
+    5985,
+    7001,
+    8000,
+    8008,
+    8080,
+    8081,
+    8088,
+    8181,
+    8888,
+    9000,
+    9090,
+    9200,
+}
 _TLS_PORTS = {443, 465, 636, 993, 995, 2376, 5986, 8443, 8883}
 
 # All UDP requests are bounded, read-only requests. SNMP is added only for
 # advanced/deep profiles and asks for sysDescr.0 using the conventional public
 # community; a finding is possible only if the peer actually responds.
 _UDP_PROBES = (
-    (53, "dns", bytes.fromhex(
-        "4352010000010000000000000776657273696f6e0462696e640000100003")),
+    (53, "dns", bytes.fromhex("4352010000010000000000000776657273696f6e0462696e640000100003")),
     (123, "ntp", b"\x23" + b"\x00" * 47),
-    (137, "netbios", bytes.fromhex(
-        "43520110000100000000000020434b4141414141414141414141414141414141"
-        "4141414141414141414141414141410000210001")),
-    (1900, "ssdp", (
-        b"M-SEARCH * HTTP/1.1\r\nST: upnp:rootdevice\r\n"
-        b"MAN: \"ssdp:discover\"\r\nMX: 1\r\n\r\n")),
-    (3702, "wsd", (
-        b"<?xml version='1.0'?><Probe xmlns='http://schemas.xmlsoap."
-        b"org/ws/2005/04/discovery'/>")),
-    (5353, "mdns", bytes.fromhex(
-        "435200000001000000000000095f7365727669636573075f646e732d736404"
-        "5f756470056c6f63616c00000c8001")),
+    (
+        137,
+        "netbios",
+        bytes.fromhex(
+            "43520110000100000000000020434b4141414141414141414141414141414141"
+            "4141414141414141414141414141410000210001"
+        ),
+    ),
+    (1900, "ssdp", (b"M-SEARCH * HTTP/1.1\r\nST: upnp:rootdevice\r\n" b'MAN: "ssdp:discover"\r\nMX: 1\r\n\r\n')),
+    (3702, "wsd", (b"<?xml version='1.0'?><Probe xmlns='http://schemas.xmlsoap." b"org/ws/2005/04/discovery'/>")),
+    (
+        5353,
+        "mdns",
+        bytes.fromhex(
+            "435200000001000000000000095f7365727669636573075f646e732d736404" "5f756470056c6f63616c00000c8001"
+        ),
+    ),
 )
-_SNMP_PROBE = bytes.fromhex(
-    "302602010004067075626c6963a019020143020100020100300e300c06082b0601"
-    "020101000500"
-)
+_SNMP_PROBE = bytes.fromhex("302602010004067075626c6963a019020143020100020100300e300c06082b0601" "020101000500")
 
 
 def parse_allowed_networks(values: Iterable[str | ipaddress.IPv4Network]) -> tuple[ipaddress.IPv4Network, ...]:
@@ -199,8 +323,7 @@ def parse_allowed_networks(values: Iterable[str | ipaddress.IPv4Network]) -> tup
             raise ValueError(f"invalid IPv4 network scope: {value!r}") from exc
         if not isinstance(network, ipaddress.IPv4Network):
             raise ValueError(f"network scope is not IPv4: {value!r}")
-        if (not network.is_private or network.is_loopback
-                or network.is_link_local or network.is_multicast):
+        if not network.is_private or network.is_loopback or network.is_link_local or network.is_multicast:
             raise ValueError(f"network scope is not a usable private LAN: {value!r}")
         networks.append(network)
     return tuple(sorted(set(networks), key=lambda item: (int(item.network_address), item.prefixlen)))
@@ -227,9 +350,11 @@ def parse_network_scope_spec(value: str) -> tuple[str, ...]:
             end = ipaddress.ip_address(end_text.strip())
         except ValueError as exc:
             raise ValueError(f"invalid IPv4 address range: {part!r}") from exc
-        if (not isinstance(start, ipaddress.IPv4Address)
-                or not isinstance(end, ipaddress.IPv4Address)
-                or int(start) > int(end)):
+        if (
+            not isinstance(start, ipaddress.IPv4Address)
+            or not isinstance(end, ipaddress.IPv4Address)
+            or int(start) > int(end)
+        ):
             raise ValueError(f"invalid IPv4 address range: {part!r}")
         summarized = tuple(ipaddress.summarize_address_range(start, end))
         networks.extend(parse_allowed_networks(summarized))
@@ -286,8 +411,7 @@ def normalize_custom_ports(values: Iterable[int] | None) -> tuple[int, ...]:
             raise ValueError(f"invalid TCP port: {value!r}")
         ports.add(port)
         if len(ports) > MAX_CUSTOM_PORTS:
-            raise ValueError(
-                f"custom TCP-port count exceeds {MAX_CUSTOM_PORTS}")
+            raise ValueError(f"custom TCP-port count exceeds {MAX_CUSTOM_PORTS}")
     return tuple(sorted(ports))
 
 
@@ -319,10 +443,7 @@ def parse_custom_port_spec(value: str) -> tuple[int, ...]:
 def _clean(data: bytes) -> str:
     """Decode response bytes to printable, length-capped text."""
     text = data[:_MAX_RESPONSE].decode("utf-8", "replace")
-    return "".join(
-        char if char.isprintable() or char in "\r\n\t" else "."
-        for char in text
-    ).strip()
+    return "".join(char if char.isprintable() or char in "\r\n\t" else "." for char in text).strip()
 
 
 def _recv(sock: socket.socket, limit: int = _MAX_RESPONSE) -> bytes:
@@ -430,8 +551,7 @@ class NetworkServiceScanner:
         extra_ports = normalize_custom_ports(custom_ports)
         profile_ports = ports_for_profile(selected)
         if extra_ports and selected is not ScanProfile.DEEP:
-            tcp_ports: Iterable[int] = tuple(sorted(
-                set(profile_ports).union(extra_ports)))
+            tcp_ports: Iterable[int] = tuple(sorted(set(profile_ports).union(extra_ports)))
         else:
             tcp_ports = profile_ports
         addresses: list[ipaddress.IPv4Address] = []
@@ -445,14 +565,14 @@ class NetworkServiceScanner:
         self._progress(progress, f"Scanning {len(addresses)} authorized private host(s)")
         observations: list[ServiceObservation] = []
         limiter = _RateLimiter(self.rate_limit)
-        self._scan_tcp(
-            addresses, selected, tcp_ports, limiter, cancel, observations,
-            progress)
+        self._scan_tcp(addresses, selected, tcp_ports, limiter, cancel, observations, progress)
         if selected in {ScanProfile.ADVANCED, ScanProfile.DEEP} and not cancel.is_set():
             self._scan_udp(addresses, selected, limiter, cancel, observations)
         unique = {(item.ip, item.port, item.transport, item.name): item for item in observations}
-        return sorted(unique.values(), key=lambda item: (
-            int(ipaddress.IPv4Address(item.ip)), item.port, item.transport, item.name))
+        return sorted(
+            unique.values(),
+            key=lambda item: (int(ipaddress.IPv4Address(item.ip)), item.port, item.transport, item.name),
+        )
 
     @staticmethod
     def _progress(progress: ProgressFn | None, message: str) -> None:
@@ -488,9 +608,7 @@ class NetworkServiceScanner:
         pending: set[Future[ServiceObservation | None]] = set()
         exhausted = False
         completed = 0
-        with ThreadPoolExecutor(
-            max_workers=self.workers, thread_name_prefix="cortex-private-lan"
-        ) as pool:
+        with ThreadPoolExecutor(max_workers=self.workers, thread_name_prefix="cortex-private-lan") as pool:
             while not cancel.is_set() and (pending or not exhausted):
                 while len(pending) < self.workers * 2 and not exhausted:
                     try:
@@ -498,12 +616,10 @@ class NetworkServiceScanner:
                     except StopIteration:
                         exhausted = True
                         break
-                    pending.add(pool.submit(
-                        self._probe_tcp, ip, port, profile, limiter, cancel))
+                    pending.add(pool.submit(self._probe_tcp, ip, port, profile, limiter, cancel))
                 if not pending:
                     break
-                done, pending = wait(
-                    pending, timeout=0.05, return_when=FIRST_COMPLETED)
+                done, pending = wait(pending, timeout=0.05, return_when=FIRST_COMPLETED)
                 for future in done:
                     completed += 1
                     try:
@@ -568,8 +684,7 @@ class NetworkServiceScanner:
 
     def _connect(self, observation: ServiceObservation) -> socket.socket:
         """Open a TCP socket to the observed endpoint with the scan timeout."""
-        sock = socket.create_connection(
-            (observation.ip, observation.port), timeout=self.timeout)
+        sock = socket.create_connection((observation.ip, observation.port), timeout=self.timeout)
         sock.settimeout(self.timeout)
         return sock
 
@@ -584,9 +699,11 @@ class NetworkServiceScanner:
             self._probe_tls(observation)
         if (observation.port in _HTTP_PORTS or observation.port in _TLS_PORTS) and not cancel.is_set():
             self._probe_http(observation, "/version" if observation.port == 2375 else "/")
-        elif (observation.name == "unknown"
-              and profile in {ScanProfile.ADVANCED, ScanProfile.DEEP}
-              and not cancel.is_set()):
+        elif (
+            observation.name == "unknown"
+            and profile in {ScanProfile.ADVANCED, ScanProfile.DEEP}
+            and not cancel.is_set()
+        ):
             # One bounded HEAD request identifies web consoles on unusual ports.
             # It is attempted only after the port accepted a connection and did
             # not provide an unambiguous passive greeting.
@@ -653,13 +770,11 @@ class NetworkServiceScanner:
                 headers[key.strip().lower()] = value.strip()[:512]
         observation.banner = text
         observation.name = "https" if observation.port in _TLS_PORTS else "http"
-        docker_identified = (
-            observation.port == 2375
-            and any(marker in text for marker in ('"ApiVersion"', '"DockerRootDir"', 'Docker/'))
+        docker_identified = observation.port == 2375 and any(
+            marker in text for marker in ('"ApiVersion"', '"DockerRootDir"', "Docker/")
         )
-        elasticsearch_identified = (
-            observation.port == 9200
-            and any(marker in text for marker in ('"cluster_name"', '"tagline"', 'You Know, for Search'))
+        elasticsearch_identified = observation.port == 9200 and any(
+            marker in text for marker in ('"cluster_name"', '"tagline"', "You Know, for Search")
         )
         if docker_identified:
             observation.name = "docker"
@@ -673,9 +788,7 @@ class NetworkServiceScanner:
         observation.metadata["evidence"].append("Bounded HTTP response received")
         if docker_identified:
             observation.metadata["docker_api_unauthenticated"] = (
-                status_line.startswith("HTTP/")
-                and " 401" not in status_line
-                and " 403" not in status_line
+                status_line.startswith("HTTP/") and " 401" not in status_line and " 403" not in status_line
             )
         product, version = _product_version(text)
         observation.product = observation.product or product
@@ -695,13 +808,14 @@ class NetworkServiceScanner:
         if len(reply) >= 4 and reply[:2] == b"\x20\x02":
             code = reply[3]
             observation.name = "mqtt"
-            observation.metadata.update({
-                "mqtt_connack": True,
-                "mqtt_return_code": code,
-                "mqtt_anonymous_accepted": code == 0,
-            })
-            observation.metadata["evidence"].append(
-                f"MQTT CONNACK received for credential-free CONNECT (code {code})")
+            observation.metadata.update(
+                {
+                    "mqtt_connack": True,
+                    "mqtt_return_code": code,
+                    "mqtt_anonymous_accepted": code == 0,
+                }
+            )
+            observation.metadata["evidence"].append(f"MQTT CONNACK received for credential-free CONNECT (code {code})")
             observation.confidence = 0.98
 
     def _probe_redis(self, observation: ServiceObservation) -> None:

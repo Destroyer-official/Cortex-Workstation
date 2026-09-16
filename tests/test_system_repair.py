@@ -16,24 +16,24 @@ IS_WINDOWS = platform.system() == "Windows"
 
 class TestSfcParse:
     """Group testsfcparse tests covering clean; repaired; partial; error when none."""
+
     def test_clean(self):
         """Verify clean via SystemRepair._parse_sfc."""
-        r = SystemRepair._parse_sfc(
-            "Windows Resource Protection did not find any integrity violations.")
+        r = SystemRepair._parse_sfc("Windows Resource Protection did not find any integrity violations.")
         assert r.success and r.status == "clean"
 
     def test_repaired(self):
         """Verify repaired via SystemRepair._parse_sfc."""
         r = SystemRepair._parse_sfc(
-            "Windows Resource Protection found corrupt files and successfully "
-            "repaired them.")
+            "Windows Resource Protection found corrupt files and successfully " "repaired them."
+        )
         assert r.success and r.status == "repaired" and r.needs_reboot
 
     def test_partial(self):
         """Verify partial via SystemRepair._parse_sfc, r.message.lower."""
         r = SystemRepair._parse_sfc(
-            "Windows Resource Protection found corrupt files but was unable to fix "
-            "some of them.")
+            "Windows Resource Protection found corrupt files but was unable to fix " "some of them."
+        )
         assert r.success is False and r.status == "partial"
         assert "dism" in r.message.lower()
 
@@ -45,6 +45,7 @@ class TestSfcParse:
 
 class TestDismParse:
     """Group testdismparse tests covering clean; repairable; repaired; error code."""
+
     def test_clean(self):
         """Verify clean via SystemRepair._parse_dism."""
         r = SystemRepair._parse_dism("No component store corruption detected.", "CheckHealth")
@@ -58,29 +59,26 @@ class TestDismParse:
 
     def test_repaired(self):
         """Verify repaired via SystemRepair._parse_dism."""
-        r = SystemRepair._parse_dism(
-            "The restore operation completed successfully.", "RestoreHealth")
+        r = SystemRepair._parse_dism("The restore operation completed successfully.", "RestoreHealth")
         assert r.success and r.status == "repaired" and r.needs_reboot
 
     def test_error_code(self):
         """Verify error code via SystemRepair._parse_dism."""
-        r = SystemRepair._parse_dism("Error: 0x800f081f\nThe source files could not be found.",
-                                    "RestoreHealth")
+        r = SystemRepair._parse_dism("Error: 0x800f081f\nThe source files could not be found.", "RestoreHealth")
         assert r.success is False and "0x800f081f" in r.message
 
 
 class TestChkdskParse:
     """Group testchkdskparse tests covering clean; errors; invalid drive."""
+
     def test_clean(self):
         """Verify clean via SystemRepair._parse_chkdsk."""
-        r = SystemRepair._parse_chkdsk(
-            "Windows has scanned the file system and found no problems.", "C")
+        r = SystemRepair._parse_chkdsk("Windows has scanned the file system and found no problems.", "C")
         assert r.success and r.status == "clean"
 
     def test_errors(self):
         """Verify errors via SystemRepair._parse_chkdsk."""
-        r = SystemRepair._parse_chkdsk(
-            "Errors found. CHKDSK cannot continue in read-only mode.", "C")
+        r = SystemRepair._parse_chkdsk("Errors found. CHKDSK cannot continue in read-only mode.", "C")
         assert r.status == "errors" and r.needs_reboot
 
     def test_invalid_drive(self):
@@ -91,6 +89,7 @@ class TestChkdskParse:
 
 class TestGating:
     """Group testgating tests covering is supported; is elevated bool; dism invalid action defaults."""
+
     def test_is_supported(self):
         """Verify is supported via SystemRepair.is_supported."""
         assert SystemRepair.is_supported() == IS_WINDOWS
@@ -103,13 +102,17 @@ class TestGating:
         # An unknown action must not crash; it falls back to CheckHealth path.
         # We only verify it returns a RepairResult (may be error off-Windows).
         """Verify dism invalid action defaults via SystemRepair._parse_dism, SystemRepair, run_dism."""
-        r = SystemRepair().run_dism("BogusAction") if IS_WINDOWS else \
-            SystemRepair._parse_dism("No component store corruption detected.", "CheckHealth")
+        r = (
+            SystemRepair().run_dism("BogusAction")
+            if IS_WINDOWS
+            else SystemRepair._parse_dism("No component store corruption detected.", "CheckHealth")
+        )
         assert isinstance(r, RepairResult)
 
 
 class TestDecode:
     """Group testdecode tests covering utf16 with nuls; plain utf8; empty."""
+
     def test_utf16_with_nuls(self):
         """Verify utf16 with nuls via SystemRepair._decode, encode."""
         raw = "No component store corruption detected.".encode("utf-16-le")

@@ -36,33 +36,29 @@ def current_version() -> str:
     """The installed package version, from package metadata."""
     try:
         from importlib.metadata import version
+
         return version("cortex-cleaner")
     except Exception:  # noqa: BLE001 - unfrozen dev checkout
         return "0.0.0"
 
 
-def fetch_latest_tag(api_url: str = RELEASES_API,
-                     timeout: float = _TIMEOUT_S) -> str | None:
+def fetch_latest_tag(api_url: str = RELEASES_API, timeout: float = _TIMEOUT_S) -> str | None:
     """Latest release tag from GitHub, or None when offline/blocked."""
     req = urllib.request.Request(
         api_url,
-        headers={"Accept": "application/vnd.github+json",
-                 "User-Agent": "cortex-cleaner-update-check"},
+        headers={"Accept": "application/vnd.github+json", "User-Agent": "cortex-cleaner-update-check"},
     )
     try:
         with urllib.request.urlopen(req, timeout=timeout) as resp:
             payload = json.loads(resp.read().decode("utf-8"))
-    except (urllib.error.URLError, TimeoutError, ValueError,
-            json.JSONDecodeError) as exc:
+    except (urllib.error.URLError, TimeoutError, ValueError, json.JSONDecodeError) as exc:
         logger.debug("update check failed: %s", exc)
         return None
     tag = payload.get("tag_name")
     return tag if isinstance(tag, str) else None
 
 
-def check_for_update(api_url: str = RELEASES_API,
-                     timeout: float = _TIMEOUT_S,
-                     installed: str | None = None) -> dict:
+def check_for_update(api_url: str = RELEASES_API, timeout: float = _TIMEOUT_S, installed: str | None = None) -> dict:
     """Compare installed version against the latest published release.
 
     Returns ``{"status": "up_to_date" | "update_available" | "unknown",
@@ -72,15 +68,11 @@ def check_for_update(api_url: str = RELEASES_API,
     installed = installed if installed is not None else current_version()
     installed_v = parse_version(installed)
     if installed_v is None:
-        return {"status": "unknown", "installed": installed,
-                "reason": "installed version not parseable"}
+        return {"status": "unknown", "installed": installed, "reason": "installed version not parseable"}
     tag = fetch_latest_tag(api_url, timeout)
     latest_v = parse_version(tag or "")
     if tag is None or latest_v is None:
-        return {"status": "unknown", "installed": installed,
-                "reason": "could not reach releases"}
+        return {"status": "unknown", "installed": installed, "reason": "could not reach releases"}
     if latest_v > installed_v:
-        return {"status": "update_available", "installed": installed,
-                "latest": tag}
-    return {"status": "up_to_date", "installed": installed,
-            "latest": tag}
+        return {"status": "update_available", "installed": installed, "latest": tag}
+    return {"status": "up_to_date", "installed": installed, "latest": tag}

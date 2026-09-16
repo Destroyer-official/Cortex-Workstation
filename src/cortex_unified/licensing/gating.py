@@ -38,12 +38,9 @@ T = TypeVar("T")
 
 
 class EntitlementError(PermissionError):
-    """Raised when a feature requires a higher tier.
+    """Raised when a feature requires a higher tier."""
 
-    """
-
-    def __init__(self, feature: Feature, required: Tier, current: Tier,
-                 message: str | None = None):
+    def __init__(self, feature: Feature, required: Tier, current: Tier, message: str | None = None):
         """Initialize the entitlement error with feature and tier context.
 
         Initializes the instance and configures internal state.
@@ -59,8 +56,7 @@ class EntitlementError(PermissionError):
         self.current = current
         super().__init__(
             message
-            or f"'{feature.value}' requires the {required.value.title()} tier "
-               f"(current tier: {current.value})."
+            or f"'{feature.value}' requires the {required.value.title()} tier " f"(current tier: {current.value})."
         )
 
 
@@ -141,6 +137,7 @@ def gate(feature: Feature) -> Callable[[Callable[..., T]], Callable[..., T]]:
         Returns:
             Callable[..., T]: Result of the operation.
         """
+
         def wrapper(*args: object, **kwargs: object) -> T:
             """Enforce the required feature then call the wrapped function.
 
@@ -165,8 +162,6 @@ _RESET_LOCK = threading.Lock()
 
 
 def reset_cache() -> None:
-    """Drop memoised validation state (tests only).
-
-    """
+    """Drop memoised validation state (tests only)."""
     with _RESET_LOCK:
         get_license_manager().invalidate()

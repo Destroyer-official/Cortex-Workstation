@@ -34,6 +34,7 @@ from .window import _Page, fmt_bytes
 
 class _SrumBamWorker(QObject):
     """Background worker (_SrumBamWorker) performing SrumBamWorker. Signals finished, clean_finished report status. Configured with cleaner, entries."""
+
     finished = Signal(object)
     clean_finished = Signal(int)
 
@@ -160,7 +161,9 @@ class SrumBamCleanerPage(_Page):
         self.stat_bam.set_value(str(len(report.bam_entries)))
         if report.srum_info:
             self.stat_srum_size.set_value(fmt_bytes(report.srum_info.size_bytes))
-            self.stat_srum_state.set_value("Exclusively Locked" if report.srum_info.is_locked_by_system else "Accessible")
+            self.stat_srum_state.set_value(
+                "Exclusively Locked" if report.srum_info.is_locked_by_system else "Accessible"
+            )
 
         self.lbl_status.setText(f"Found {len(report.bam_entries)} execution trace records.")
 

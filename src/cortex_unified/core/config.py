@@ -16,6 +16,7 @@ import yaml
 
 _LOG = logging.getLogger("cortex.core.config")
 
+
 class Config:
     """Configuration class for Cortex Cleaner.
 
@@ -40,14 +41,14 @@ class Config:
     def _get_default_config_path(self) -> str:
         """Get the default configuration file path.
 
- Resolves the legacy ~/.deepcleaner.yaml location.
+        Resolves the legacy ~/.deepcleaner.yaml location.
 
- Returns:
- str: Formatted string or path.
- """
+        Returns:
+        str: Formatted string or path.
+        """
         home = Path.home()
         return str(home / ".deepcleaner.yaml")
-    
+
     def _load_config(self) -> Dict[str, Any]:
         """Return ``DEFAULT_CONFIG`` overlaid with the user's YAML file.
 
@@ -73,18 +74,18 @@ class Config:
             with open(self.config_path, "r", encoding="utf-8") as f:
                 data = yaml.safe_load(f) or {}
         except (OSError, UnicodeDecodeError) as exc:
-            _LOG.warning("could not read config %s: %s; using defaults",
-                         self.config_path, exc)
+            _LOG.warning("could not read config %s: %s; using defaults", self.config_path, exc)
             return self._defaults()
         except yaml.YAMLError as exc:
-            _LOG.warning("config %s is not valid YAML: %s; using defaults",
-                         self.config_path, exc)
+            _LOG.warning("config %s is not valid YAML: %s; using defaults", self.config_path, exc)
             return self._defaults()
 
         if not isinstance(data, dict):
-            _LOG.warning("config %s must contain a mapping at the top level, "
-                         "got %s; using defaults",
-                         self.config_path, type(data).__name__)
+            _LOG.warning(
+                "config %s must contain a mapping at the top level, " "got %s; using defaults",
+                self.config_path,
+                type(data).__name__,
+            )
             return self._defaults()
 
         # User settings win over the defaults, key by key.
@@ -100,11 +101,8 @@ class Config:
         by assigning into ``config_data``) mutate the result, so the nested
         lists must not be shared with the module-level constant.
         """
-        return {
-            key: list(value) if isinstance(value, list) else value
-            for key, value in DEFAULT_CONFIG.items()
-        }
-    
+        return {key: list(value) if isinstance(value, list) else value for key, value in DEFAULT_CONFIG.items()}
+
     @property
     def exclude_patterns(self) -> List[str]:
         """Get exclude patterns from config.
@@ -115,7 +113,7 @@ class Config:
             List[str]: List of processed items or identifiers.
         """
         return self.config_data.get("exclude_patterns", [])
-    
+
     @property
     def exclude_dirs(self) -> List[str]:
         """Get exclude directories from config.
@@ -126,7 +124,7 @@ class Config:
             List[str]: List of processed items or identifiers.
         """
         return self.config_data.get("exclude_dirs", [])
-    
+
     @property
     def exclude_regex_patterns(self) -> List[str]:
         """Get exclude regex patterns from config.
@@ -137,7 +135,7 @@ class Config:
             List[str]: List of processed items or identifiers.
         """
         return self.config_data.get("exclude_regex_patterns", [])
-    
+
     @property
     def min_age_days(self) -> int:
         """Get minimum age in days.
@@ -148,7 +146,7 @@ class Config:
             int: Result of the operation.
         """
         return self.config_data.get("min_age_days", 0)
-    
+
     @property
     def default_action(self) -> str:
         """Default action.
@@ -159,7 +157,7 @@ class Config:
             str: Formatted string or path.
         """
         return self.config_data.get("default_action", "dry_run")
-    
+
     @property
     def log_file(self) -> str:
         """Log file.
@@ -170,7 +168,7 @@ class Config:
             str: Formatted string or path.
         """
         return self.config_data.get("log_file", "")
-    
+
     @property
     def json_logging(self) -> bool:
         """Json logging.
@@ -181,7 +179,7 @@ class Config:
             bool: True if the operation succeeded, False otherwise.
         """
         return self.config_data.get("json_logging", False)
-    
+
     @property
     def threads(self) -> int:
         """Threads helper.
@@ -192,7 +190,7 @@ class Config:
             int: Result of the operation.
         """
         return self.config_data.get("threads", 0)  # 0 means use CPU count
-    
+
     @property
     def follow_symlinks(self) -> bool:
         """Follow symlinks.
@@ -203,7 +201,7 @@ class Config:
             bool: True if the operation succeeded, False otherwise.
         """
         return self.config_data.get("follow_symlinks", False)
-    
+
     def matches_exclude_patterns(self, path: str) -> bool:
         """Check if a path matches any exclude patterns (glob or regex).
 
@@ -216,18 +214,18 @@ class Config:
             bool: True if the operation succeeded, False otherwise.
         """
         from fnmatch import fnmatch
-        
+
         path_obj = Path(path)
-        
+
         # Check glob patterns
         for pattern in self.exclude_patterns:
             if fnmatch(path, pattern) or fnmatch(path_obj.name, pattern):
                 return True
-        
+
         # Check directory exclusions
         if path_obj.name in self.exclude_dirs:
             return True
-        
+
         # Check regex patterns
         for regex_pattern in self.exclude_regex_patterns:
             try:
@@ -236,8 +234,9 @@ class Config:
             except re.error:
                 # Invalid regex, skip it
                 continue
-        
+
         return False
+
 
 #: Baseline configuration. Applied by :meth:`Config._load_config` as the
 #: starting point, with any user YAML settings layered on top. The exclusion
@@ -266,7 +265,7 @@ DEFAULT_CONFIG = {
     ],
     "exclude_regex_patterns": [
         r".*\.log\.\d+$",  # Log files with numbers (e.g., file.log.1)
-        r".*~$",           # Backup files ending with ~
+        r".*~$",  # Backup files ending with ~
     ],
     "min_age_days": 0,
     "default_action": "dry_run",

@@ -28,8 +28,8 @@ class NicSample:
     name: str
     bytes_sent: int
     bytes_recv: int
-    send_rate: float = 0.0   # bytes/sec
-    recv_rate: float = 0.0   # bytes/sec
+    send_rate: float = 0.0  # bytes/sec
+    recv_rate: float = 0.0  # bytes/sec
 
     def to_dict(self) -> dict[str, Any]:
         """Serialize to a plain dict with keys name, bytes_sent, bytes_recv, send_rate, recv_rate.
@@ -103,10 +103,10 @@ class TrafficMonitor:
 
         Initializes the instance and configures internal state.
         """
-        self._last_total: tuple[int, int] | None = None      # (sent, recv)
+        self._last_total: tuple[int, int] | None = None  # (sent, recv)
         self._last_nic: dict[str, tuple[int, int]] = {}
         self._last_t: float | None = None
-        self._start_total: tuple[int, int] | None = None      # baseline at first sample
+        self._start_total: tuple[int, int] | None = None  # baseline at first sample
         self._sample_lock = threading.Lock()
 
     def sample(self) -> TrafficSample:
@@ -144,10 +144,15 @@ class TrafficMonitor:
                 if prev is not None and dt > 0:
                     s_rate = max(0.0, (cur[0] - prev[0]) / dt)
                     r_rate = max(0.0, (cur[1] - prev[1]) / dt)
-                nic_samples.append(NicSample(
-                    name=name, bytes_sent=cur[0], bytes_recv=cur[1],
-                    send_rate=s_rate, recv_rate=r_rate,
-                ))
+                nic_samples.append(
+                    NicSample(
+                        name=name,
+                        bytes_sent=cur[0],
+                        bytes_recv=cur[1],
+                        send_rate=s_rate,
+                        recv_rate=r_rate,
+                    )
+                )
                 self._last_nic[name] = cur
 
             self._last_total = cur_total
@@ -160,6 +165,5 @@ class TrafficMonitor:
                 total_recv=cur_total[1],
                 sent_since_start=cur_total[0] - self._start_total[0],
                 recv_since_start=cur_total[1] - self._start_total[1],
-                per_nic=sorted(nic_samples,
-                               key=lambda n: n.recv_rate + n.send_rate, reverse=True),
+                per_nic=sorted(nic_samples, key=lambda n: n.recv_rate + n.send_rate, reverse=True),
             )

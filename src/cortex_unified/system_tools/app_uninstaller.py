@@ -18,9 +18,9 @@ class AppUninstaller:
 
     # The three standard registry locations where Windows stores uninstall info.
     _UNINSTALL_PATHS = [
-        (0x80000002, r"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall"),           # HKLM
-        (0x80000002, r"SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall"), # HKLM 32-bit
-        (0x80000001, r"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall"),           # HKCU
+        (0x80000002, r"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall"),  # HKLM
+        (0x80000002, r"SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall"),  # HKLM 32-bit
+        (0x80000001, r"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall"),  # HKCU
     ]
 
     def __init__(self):
@@ -119,6 +119,7 @@ class AppUninstaller:
             # commands via cmd.exe. Without a shell, Windows' CreateProcess runs
             # the program directly and does not interpret those metacharacters.
             import shlex
+
             try:
                 argv = shlex.split(cmd, posix=False)
             except ValueError:

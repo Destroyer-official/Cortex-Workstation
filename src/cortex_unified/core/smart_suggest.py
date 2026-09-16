@@ -32,9 +32,9 @@ from typing import Any
 _LOG = logging.getLogger("cortex.core.smart_suggest")
 
 _MODEL_VERSION = 1
-_MAX_FEATURES = 4000        # hard cap => bounded memory (~tens of KB)
-_DEFAULT_LR = 0.15          # SGD learning rate
-_L2 = 1e-4                  # tiny L2 regularization to keep weights bounded
+_MAX_FEATURES = 4000  # hard cap => bounded memory (~tens of KB)
+_DEFAULT_LR = 0.15  # SGD learning rate
+_L2 = 1e-4  # tiny L2 regularization to keep weights bounded
 
 
 def _sigmoid(z: float) -> float:
@@ -58,14 +58,14 @@ def _sigmoid(z: float) -> float:
 def _size_bucket(size_bytes: int) -> str:
     """Size bucket.
 
- Maps byte counts to sz:0, <1mb, 1-10mb, 10-100mb, 100mb-1gb, >1gb features.
+    Maps byte counts to sz:0, <1mb, 1-10mb, 10-100mb, 100mb-1gb, >1gb features.
 
- Args:
- size_bytes (int): The size bytes parameter.
+    Args:
+    size_bytes (int): The size bytes parameter.
 
- Returns:
- str: Formatted string or path.
- """
+    Returns:
+    str: Formatted string or path.
+    """
     if size_bytes <= 0:
         return "sz:0"
     mb = size_bytes / (1024 * 1024)
@@ -83,14 +83,14 @@ def _size_bucket(size_bytes: int) -> str:
 def _age_bucket(age_days: float) -> str:
     """Age bucket.
 
- Maps age days to <1d, 1-7d, 7-30d, 30-180d, >180d features.
+    Maps age days to <1d, 1-7d, 7-30d, 30-180d, >180d features.
 
- Args:
- age_days (float): The age days parameter.
+    Args:
+    age_days (float): The age days parameter.
 
- Returns:
- str: Formatted string or path.
- """
+    Returns:
+    str: Formatted string or path.
+    """
     if age_days < 1:
         return "age:<1d"
     if age_days < 7:
@@ -171,30 +171,30 @@ class SmartSuggester:
     def recommend(self, context: dict[str, Any], threshold: float = 0.5) -> bool:
         """Recommend helper.
 
- Returns True until 10 feedback updates exist, then thresholds the score.
+        Returns True until 10 feedback updates exist, then thresholds the score.
 
- Args:
- context (dict[str, Any]): The context parameter.
- threshold (float): The threshold parameter.
+        Args:
+        context (dict[str, Any]): The context parameter.
+        threshold (float): The threshold parameter.
 
- Returns:
- bool: True if the operation succeeded, False otherwise.
- """
-        if self._updates < 10:      # not enough signal yet -> don't second-guess
+        Returns:
+        bool: True if the operation succeeded, False otherwise.
+        """
+        if self._updates < 10:  # not enough signal yet -> don't second-guess
             return True
         return self.score(context) >= threshold
 
     def rank(self, items: list[dict[str, Any]]) -> list[tuple[dict[str, Any], float]]:
         """Rank helper.
 
- Scores every item and sorts descending by probability.
+        Scores every item and sorts descending by probability.
 
- Args:
- items (list[dict[str, Any]]): Collection of items or entries to process.
+        Args:
+        items (list[dict[str, Any]]): Collection of items or entries to process.
 
- Returns:
- list[tuple[dict[str, Any], float]]: List of processed items or identifiers.
- """
+        Returns:
+        list[tuple[dict[str, Any], float]]: List of processed items or identifiers.
+        """
         scored = [(it, self.score(it)) for it in items]
         scored.sort(key=lambda t: t[1], reverse=True)
         return scored
@@ -215,7 +215,7 @@ class SmartSuggester:
         with self._lock:
             z = sum(self._weights.get(f, 0.0) for f in feats)
             pred = _sigmoid(z)
-            err = pred - label                      # gradient of logistic loss
+            err = pred - label  # gradient of logistic loss
             for f in feats:
                 w = self._weights.get(f, 0.0)
                 w -= self._lr * (err + _L2 * w)
@@ -226,12 +226,12 @@ class SmartSuggester:
     def observe_batch(self, items: list[dict[str, Any]], cleaned: bool) -> None:
         """Observe batch.
 
- Applies observe() to each item with the same cleaned label.
+        Applies observe() to each item with the same cleaned label.
 
- Args:
- items (list[dict[str, Any]]): Collection of items or entries to process.
- cleaned (bool): The cleaned parameter.
- """
+        Args:
+        items (list[dict[str, Any]]): Collection of items or entries to process.
+        cleaned (bool): The cleaned parameter.
+        """
         for it in items:
             self.observe(it, cleaned)
 
@@ -290,11 +290,11 @@ class SmartSuggester:
     def stats(self) -> dict[str, Any]:
         """Stats helper.
 
- Reports update count, feature count, trained flag, and model path.
+        Reports update count, feature count, trained flag, and model path.
 
- Returns:
- dict[str, Any]: Dictionary mapping identifiers to status or values.
- """
+        Returns:
+        dict[str, Any]: Dictionary mapping identifiers to status or values.
+        """
         with self._lock:
             return {
                 "updates": self._updates,
@@ -306,8 +306,8 @@ class SmartSuggester:
     def reset(self) -> None:
         """Clear weights and update counter.
 
- Handles reset for.
- """
+        Handles reset for.
+        """
         with self._lock:
             self._weights.clear()
             self._updates = 0

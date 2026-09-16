@@ -98,7 +98,7 @@ class ModelStore:
     root: Path
     exists: bool
     total_bytes_logical: int = 0  # explorer sum (double-counts hardlinks)
-    total_bytes_actual: int = 0   # unique inode sum
+    total_bytes_actual: int = 0  # unique inode sum
     file_count: int = 0
     orphan_bytes: int = 0
     orphan_count: int = 0
@@ -192,6 +192,7 @@ class ModelCacheManager:
         Path.home() / "Library" / "Application Support" / "lmstudio" / "models",  # macOS
         Path(os.environ.get("APPDATA", "")) / "lmstudio" / "models" if _IS_WINDOWS else None,
     ]
+
     @classmethod
     def _get_comfyui_candidates(cls) -> List[Path]:
         """_get_comfyui_candidates.
@@ -209,6 +210,7 @@ class ModelCacheManager:
         if _IS_WINDOWS:
             try:
                 import psutil
+
                 for p in psutil.disk_partitions(all=False):
                     d = Path(p.mountpoint)
                     candidates.append(d / "ComfyUI" / "models" / "checkpoints")
@@ -345,8 +347,18 @@ class ModelCacheManager:
         logical, actual, count, _ = _hardlink_aware_size(root)
         # Ollama manifests vs blobs: manifests/blobs/sha256-* ; blobs are flat
         savings = max(0, logical - actual)
-        return ModelStore("ollama", root, True, logical, actual, count, 0, 0, savings,
-                          f"Ollama blob store (blobs/sha256-*, manifests). Manage via 'ollama rm <model>' or 'ollama list'. Hardlink-aware size {actual/1e9:.2f}GB.")
+        return ModelStore(
+            "ollama",
+            root,
+            True,
+            logical,
+            actual,
+            count,
+            0,
+            0,
+            savings,
+            f"Ollama blob store (blobs/sha256-*, manifests). Manage via 'ollama rm <model>' or 'ollama list'. Hardlink-aware size {actual/1e9:.2f}GB.",
+        )
 
     def scan_all(self, progress=None, cancel_event=None) -> List[ModelStore]:
         """Scan all.
@@ -373,8 +385,20 @@ class ModelCacheManager:
             root = self._first_existing(cands)
             if root and root.exists():
                 logical, actual, count, _ = _hardlink_aware_size(root)
-                stores.append(ModelStore(kind, root, True, logical, actual, count, 0, 0, max(0, logical - actual),
-                                         f"{kind} models at {root}"))
+                stores.append(
+                    ModelStore(
+                        kind,
+                        root,
+                        True,
+                        logical,
+                        actual,
+                        count,
+                        0,
+                        0,
+                        max(0, logical - actual),
+                        f"{kind} models at {root}",
+                    )
+                )
             elif root:
                 stores.append(ModelStore(kind, root, False, explain=f"{kind} not found"))
         # Stray large model files across common model dirs (for stray .gguf outside stores)
@@ -392,16 +416,26 @@ class ModelCacheManager:
         """
         hf_cli = shutil.which("huggingface-cli")
         if not hf_cli:
-            return False, "huggingface-cli not found (pip install huggingface_hub). Or delete orphans manually after verifying they are *.incomplete debris.", 0
+            return (
+                False,
+                "huggingface-cli not found (pip install huggingface_hub). Or delete orphans manually after verifying they are *.incomplete debris.",
+                0,
+            )
         # Dry run estimate via before scan
         before = self.scan_hf_hub()
         if before.orphan_count == 0:
             return True, "No orphan blobs found – cache is healthy.", 0
         if dry_run:
-            return True, f"Dry-run: would remove {before.orphan_count} orphan blobs (~{before.orphan_bytes/1e9:.2f}GB). Run without dry_run to execute.", before.orphan_bytes
+            return (
+                True,
+                f"Dry-run: would remove {before.orphan_count} orphan blobs (~{before.orphan_bytes/1e9:.2f}GB). Run without dry_run to execute.",
+                before.orphan_bytes,
+            )
         # Real run
         try:
-            proc = _proc.run([hf_cli, "delete-cache", "--orphans", "-y"], timeout=timeout, text=True, creationflags=_NO_WINDOW)
+            proc = _proc.run(
+                [hf_cli, "delete-cache", "--orphans", "-y"], timeout=timeout, text=True, creationflags=_NO_WINDOW
+            )
             out = (proc.stdout or "") + (proc.stderr or "")
             if proc.returncode == 0:
                 after = self.scan_hf_hub()
@@ -411,7 +445,9 @@ class ModelCacheManager:
         except Exception as exc:  # noqa: BLE001
             return False, f"Failed to run huggingface-cli: {exc}", 0
 
-    def delete_hf_revision(self, repo: str, revision: str, dry_run: bool = True, timeout: int = 300) -> Tuple[bool, str]:
+    def delete_hf_revision(
+        self, repo: str, revision: str, dry_run: bool = True, timeout: int = 300
+    ) -> Tuple[bool, str]:
         """Delete a specific HF revision via ``huggingface-cli delete-cache`` (verified).
 
         ``repo`` is ``org/repo`` and ``revision`` is the snapshot hash or tag.
@@ -454,6 +490,7 @@ class ModelCacheManager:
             return {}
         try:
             import struct
+
             with open(p, "rb") as f:
                 header_len_bytes = f.read(8)
                 if len(header_len_bytes) < 8:
@@ -513,6 +550,7 @@ class ModelCacheManager:
             return {}
         try:
             import struct
+
             with open(p, "rb") as f:
                 magic = f.read(4)
                 if magic != b"GGUF":

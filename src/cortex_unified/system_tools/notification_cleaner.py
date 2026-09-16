@@ -19,6 +19,7 @@ from typing import Dict, List, Optional, Tuple
 @dataclass
 class NotificationDatabaseStatus:
     """Record holding database_path, database_size_bytes, appmetadata_size_bytes, total_size_bytes, is_present."""
+
     database_path: str
     database_size_bytes: int
     appmetadata_size_bytes: int
@@ -29,6 +30,7 @@ class NotificationDatabaseStatus:
 @dataclass
 class NotificationCleanResult:
     """Record holding success, bytes_freed, message, errors."""
+
     success: bool
     bytes_freed: int
     message: str

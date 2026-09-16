@@ -1,4 +1,5 @@
 """Network filesystem and remote share explorer."""
+
 from __future__ import annotations
 
 import sys
@@ -44,4 +45,3 @@ if _mod:
     __all__ = getattr(_mod, "__all__", [k for k in dir(_mod) if not k.startswith("_")])
     for _name in __all__:
         globals()[_name] = getattr(_mod, _name)
-

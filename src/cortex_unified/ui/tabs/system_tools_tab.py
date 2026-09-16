@@ -3,9 +3,20 @@
 import logging
 from pathlib import Path
 from PySide6.QtWidgets import (
-    QWidget, QVBoxLayout, QHBoxLayout, QTabWidget, QLabel, QPushButton,
-    QTableWidget, QTableWidgetItem, QHeaderView, QProgressBar, QMessageBox,
-    QFileDialog, QTextEdit, QSplitter
+    QWidget,
+    QVBoxLayout,
+    QHBoxLayout,
+    QTabWidget,
+    QLabel,
+    QPushButton,
+    QTableWidget,
+    QTableWidgetItem,
+    QHeaderView,
+    QProgressBar,
+    QMessageBox,
+    QFileDialog,
+    QTextEdit,
+    QSplitter,
 )
 from PySide6.QtCore import QThread, Signal, Qt
 
@@ -13,8 +24,10 @@ from .base_tab import BaseTab
 
 from cortex_unified.ui.tabs.process_analyzer_tab import ProcessAnalyzerTab
 from cortex_unified.ui.tabs.startup_manager_tab import StartupManagerTab
+
 try:
     from cortex_unified.ui.tabs.registry_cleaner_tab import RegistryCleanerTab
+
     HAS_REGISTRY_CLEANER = True
 except ImportError:
     HAS_REGISTRY_CLEANER = False
@@ -22,6 +35,7 @@ except ImportError:
 
 class LanScanWorker(QThread):
     """Background worker for LAN ARP/OUI subnet scanning."""
+
     finished = Signal(list)
     error = Signal(str)
 
@@ -29,6 +43,7 @@ class LanScanWorker(QThread):
         """Scan ARP cache and resolve OUI vendors off the main thread."""
         try:
             from cortex_unified.system_tools.lan_scanner import LanScanner
+
             scanner = LanScanner()
             devices = scanner.scan()
             self.finished.emit(devices)
@@ -38,6 +53,7 @@ class LanScanWorker(QThread):
 
 class WanAuditWorker(QThread):
     """Background worker for WAN connectivity, gateway, and IGD auditing."""
+
     finished = Signal(object)
     error = Signal(str)
 
@@ -45,6 +61,7 @@ class WanAuditWorker(QThread):
         """Execute WAN audit off the main thread."""
         try:
             from cortex_unified.system_tools.wan_audit import WanAuditor
+
             auditor = WanAuditor()
             report = auditor.audit()
             self.finished.emit(report)
@@ -68,23 +85,23 @@ class SystemToolsTab(BaseTab):
         """
         layout = QVBoxLayout(self)
         layout.setSpacing(10)
-        
+
         tools_tab_widget = QTabWidget()
         layout.addWidget(tools_tab_widget)
-        
+
         # Instantiate natively directly into view rather than faking creation
         startup_tab = StartupManagerTab(self.config, self.logger, self.safety_manager)
-        tools_tab_widget.addTab(startup_tab, 'Startup Manager')
-        
+        tools_tab_widget.addTab(startup_tab, "Startup Manager")
+
         process_tab = ProcessAnalyzerTab(self.config, self.logger, self.safety_manager)
-        tools_tab_widget.addTab(process_tab, 'Process Analyzer')
-        
+        tools_tab_widget.addTab(process_tab, "Process Analyzer")
+
         if HAS_REGISTRY_CLEANER:
             registry_tab = RegistryCleanerTab(self.config, self.logger, self.safety_manager)
-            tools_tab_widget.addTab(registry_tab, 'Registry Cleaner')
+            tools_tab_widget.addTab(registry_tab, "Registry Cleaner")
 
         network_tab = self.create_network_tools_subtab()
-        tools_tab_widget.addTab(network_tab, 'Network Tools')
+        tools_tab_widget.addTab(network_tab, "Network Tools")
 
     def create_network_tools_subtab(self) -> QWidget:
         """Create the integrated Network Tools sub-tab.
@@ -104,12 +121,16 @@ class SystemToolsTab(BaseTab):
         controls.addWidget(self.btn_lan_scan)
 
         self.btn_wan_audit = QPushButton("🌐 Audit WAN / Gateway")
-        self.btn_wan_audit.setToolTip("Inspect public IP classification, default gateway, DNS servers, and UPnP/IGD state.")
+        self.btn_wan_audit.setToolTip(
+            "Inspect public IP classification, default gateway, DNS servers, and UPnP/IGD state."
+        )
         self.btn_wan_audit.clicked.connect(self._run_wan_audit)
         controls.addWidget(self.btn_wan_audit)
 
         self.btn_export_inventory = QPushButton("💾 Export Inventory (CSV)")
-        self.btn_export_inventory.setToolTip("Export snapshot of discovered devices into NetworkInventory SQLite and CSV.")
+        self.btn_export_inventory.setToolTip(
+            "Export snapshot of discovered devices into NetworkInventory SQLite and CSV."
+        )
         self.btn_export_inventory.clicked.connect(self._export_network_inventory)
         controls.addWidget(self.btn_export_inventory)
 
@@ -184,10 +205,10 @@ class SystemToolsTab(BaseTab):
             # Record in NetworkInventory
             try:
                 from cortex_unified.system_tools.network_inventory import NetworkInventory, InventoryDevice
+
                 inv = NetworkInventory()
                 inv_devices = [
-                    InventoryDevice(ip=dev.ip, mac=dev.mac, hostname="", vendor=dev.vendor)
-                    for dev in devices
+                    InventoryDevice(ip=dev.ip, mac=dev.mac, hostname="", vendor=dev.vendor) for dev in devices
                 ]
                 inv.record_snapshot(inv_devices)
             except Exception as e:
@@ -221,7 +242,7 @@ class SystemToolsTab(BaseTab):
             self.btn_wan_audit.setEnabled(True)
             self.remove_worker_thread(worker)
             worker.deleteLater()
-            
+
             ext_ip = getattr(report, "external_ip", "") or "Not detected"
             gateway = getattr(report, "gateway", "") or "Default"
             dns_list = ", ".join(getattr(report, "dns_servers", [])) or "System default"
@@ -267,6 +288,7 @@ class SystemToolsTab(BaseTab):
             return
         try:
             from cortex_unified.system_tools.network_inventory import NetworkInventory, InventoryDevice
+
             inv = NetworkInventory()
             # If we have recent scan devices, ensure snapshot is saved
             if self._last_lan_devices:
@@ -277,8 +299,7 @@ class SystemToolsTab(BaseTab):
                 inv.record_snapshot(inv_devices)
             count = inv.export_inventory_csv(file_path)
             QMessageBox.information(
-                self, "Export Complete",
-                f"Network inventory exported to:\n{file_path}\nTotal devices exported: {count}"
+                self, "Export Complete", f"Network inventory exported to:\n{file_path}\nTotal devices exported: {count}"
             )
         except Exception as exc:
             QMessageBox.critical(self, "Export Error", f"Failed to export inventory CSV:\n{exc}")
@@ -287,8 +308,8 @@ class SystemToolsTab(BaseTab):
         """Open the interactive Remote Server Browser dialog."""
         try:
             from cortex_unified.ui.premium.network_pages import RemoteServerDialog
+
             dlg = RemoteServerDialog(self)
             dlg.exec()
         except Exception as exc:
             QMessageBox.critical(self, "Remote Server Error", f"Could not launch Remote Server dialog:\n{exc}")
-

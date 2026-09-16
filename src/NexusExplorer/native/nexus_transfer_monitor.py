@@ -23,8 +23,12 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from nexus_transfer_queue import JobState, TransferQueue, fmt_eta, human_bytes
-from nexus_icons import action_icon as _fluent_action
+try:
+    from nexus_transfer_queue import JobState, TransferQueue, fmt_eta, human_bytes
+    from nexus_icons import action_icon as _fluent_action
+except ImportError:
+    from .nexus_transfer_queue import JobState, TransferQueue, fmt_eta, human_bytes
+    from .nexus_icons import action_icon as _fluent_action
 
 log = logging.getLogger("nexus.transfer.monitor")
 
@@ -70,8 +74,7 @@ class _JobRow(QWidget):
         top.addWidget(self.badge)
 
         self.title = QLabel(self._describe(job))
-        self.title.setTextInteractionFlags(
-            Qt.TextInteractionFlag.TextSelectableByMouse)
+        self.title.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
         f = self.title.font()
         f.setBold(True)
         self.title.setFont(f)
@@ -169,15 +172,13 @@ class _JobRow(QWidget):
             self.btn_pause.setText("Pause")
             self.btn_pause.setIcon(_fluent_action("expand_down", size=14))
         self.btn_pause.setEnabled(running or paused)
-        self.btn_cancel.setEnabled(job.state in (
-            JobState.QUEUED, JobState.RUNNING, JobState.PAUSED))
+        self.btn_cancel.setEnabled(job.state in (JobState.QUEUED, JobState.RUNNING, JobState.PAUSED))
         if job.state in (JobState.COMPLETED, JobState.CANCELLED):
             self.bar.setStyleSheet("")
             self.btn_pause.hide()
             self.btn_cancel.hide()
         if job.state is JobState.FAILED:
-            self.badge.setStyleSheet(
-                "color:#f85149; font-weight:700;")
+            self.badge.setStyleSheet("color:#f85149; font-weight:700;")
 
     # ------------------------------------------------------------ handlers
     def _toggle_pause(self):
@@ -315,14 +316,11 @@ class TransferMonitorDialog(QDialog):
         Averages progress across QUEUED/RUNNING/PAUSED jobs and counts COMPLETED for the summary label.
         """
         jobs = self._queue.get_all_jobs()
-        active = [j for j in jobs if j.state in (
-            JobState.QUEUED, JobState.RUNNING, JobState.PAUSED)]
+        active = [j for j in jobs if j.state in (JobState.QUEUED, JobState.RUNNING, JobState.PAUSED)]
         done = [j for j in jobs if j.state is JobState.COMPLETED]
         if active:
             agg = sum(j.progress for j in active) / len(active)
-            self.summary.setText(
-                f"{len(active)} active  ·  {agg:.0f}% overall  ·  "
-                f"{len(done)} completed")
+            self.summary.setText(f"{len(active)} active  ·  {agg:.0f}% overall  ·  " f"{len(done)} completed")
         elif jobs:
             self.summary.setText(f"{len(done)} completed  ·  queue idle")
         else:

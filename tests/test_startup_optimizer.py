@@ -29,6 +29,7 @@ from cortex_unified.system_tools.startup_optimizer import (
 
 class TestAppType:
     """Group testapptype tests covering all members; member count."""
+
     def test_all_members(self):
         """Verify all members."""
         members = {e.value for e in AppType}
@@ -44,6 +45,7 @@ class TestAppType:
 
 class TestStartupEntry:
     """Group teststartupentry tests covering required fields exist; optional fields exist; defaults; to dict round trip; slots prevents arbitrary attr."""
+
     REQUIRED_FIELDS = {
         "id",
         "name",
@@ -129,6 +131,7 @@ class TestStartupEntry:
 
 class TestInit:
     """Group testinit tests covering default progress and cancel; custom progress and cancel."""
+
     def test_default_progress_and_cancel(self):
         """test_default_progress_and_cancel.
 
@@ -158,6 +161,7 @@ class TestInit:
 
 class TestConfigPath:
     """Group testconfigpath tests covering config path is json; config path creates dirs."""
+
     def test_config_path_is_json(self, tmp_path, monkeypatch):
         """Verify config path is json via monkeypatch.setenv, _config_path.
 
@@ -187,6 +191,7 @@ class TestConfigPath:
 
 class TestPersistence:
     """Group testpersistence tests covering load delays missing file; save and load round trip; load corrupt json returns empty."""
+
     def test_load_delays_missing_file(self, tmp_path, monkeypatch):
         """Verify load delays missing file via monkeypatch.setenv, StartupOptimizer, opt._load_delays.
 
@@ -231,6 +236,7 @@ class TestPersistence:
 
 class TestDelayOperations:
     """Group testdelayoperations tests covering set delay persists; set delay clamps to 0 120; set delay with conditions; remove delay; remove delay nonexistent is noop."""
+
     def test_set_delay_persists(self, tmp_path, monkeypatch):
         """Verify set delay persists via monkeypatch.setenv, StartupOptimizer, opt.set_delay.
 
@@ -303,6 +309,7 @@ class TestDelayOperations:
 
 class TestRegistryEnumeration:
     """Group testregistryenumeration tests covering empty on no keys; returns entries."""
+
     def test_empty_on_no_keys(self, monkeypatch):
         """Verify empty on no keys via monkeypatch.setattr, FileNotFoundError, _enumerate_registry.
 
@@ -344,6 +351,7 @@ class TestRegistryEnumeration:
 
         class FakeKey:
             """Helper fakekey."""
+
             def __enter__(self):
                 """Manage context lifecycle and resource acquisition or cleanup.
 
@@ -427,6 +435,7 @@ class TestRegistryEnumeration:
 
 class TestStartupFolderEnumeration:
     """Group teststartupfolderenumeration tests covering no env vars returns empty; finds lnk files."""
+
     def test_no_env_vars_returns_empty(self, monkeypatch):
         """Verify no env vars returns empty via monkeypatch.delenv, _enumerate_startup_folders.
 
@@ -482,6 +491,7 @@ class TestStartupFolderEnumeration:
 
 class TestClassifyEntry:
     """Group testclassifyentry tests covering nonexistent exe no change; pe with gui symbols; pe with network symbols; pe with service symbols."""
+
     def test_nonexistent_exe_no_change(self, tmp_path):
         """Verify nonexistent exe no change via StartupEntry, _classify_entry.
 
@@ -550,14 +560,7 @@ class TestClassifyEntry:
             tmp_path: Filesystem path to the target file or directory.
         """
         exe = tmp_path / "svc_app.exe"
-        exe.write_bytes(
-            b"MZ"
-            + b"\x00" * 100
-            + b"ADVAPI32"
-            + b"\x00" * 20
-            + b"OpenService"
-            + b"\x00" * 20
-        )
+        exe.write_bytes(b"MZ" + b"\x00" * 100 + b"ADVAPI32" + b"\x00" * 20 + b"OpenService" + b"\x00" * 20)
         e = StartupEntry(
             id="s",
             name="S",
@@ -576,6 +579,7 @@ class TestClassifyEntry:
 
 class TestImpactRating:
     """Group testimpactrating tests covering impact low for small exe; impact high for large exe."""
+
     def _make_opt_with_mock_enumerate(self, tmp_path, monkeypatch):
         """Make opt with mock enumerate using monkeypatch.setenv, monkeypatch.setattr, StartupOptimizer.
 
@@ -687,6 +691,7 @@ class TestImpactRating:
 
 class TestBackupRestore:
     """Group testbackuprestore tests covering backup creates file; restore overwrites current."""
+
     def test_backup_creates_file(self, tmp_path, monkeypatch):
         """Verify backup creates file via monkeypatch.setenv, StartupOptimizer, opt.set_delay.
 
@@ -728,6 +733,7 @@ class TestProgressCallback:
 
     Updates progress bar widgets, percentage counters, and status indicators with streaming status updates from the running worker.
     """
+
     def test_progress_called_on_enumerate_error(self, tmp_path, monkeypatch):
         """test_progress_called_on_enumerate_error.
 
@@ -766,6 +772,7 @@ class TestProgressCallback:
 
 class TestCancellation:
     """Group testcancellation tests covering cancel stops launch; cancel mid loop."""
+
     def test_cancel_stops_launch(self, tmp_path, monkeypatch):
         """Verify cancel stops launch via threading.Event, monkeypatch.setenv, cancel.set.
 
@@ -842,6 +849,7 @@ class TestCancellation:
 
 class TestStartupLocations:
     """Group teststartuplocations tests covering locations list not empty; all entries have valid prefix; categories are known."""
+
     def test_locations_list_not_empty(self):
         """Verify locations list not empty via len."""
         assert len(_STARTUP_LOCATIONS) > 0
@@ -863,6 +871,7 @@ class TestStartupLocations:
 
 class TestExports:
     """Group testexports tests covering all contains expected."""
+
     def test_all_contains_expected(self):
         """Verify all contains expected via set."""
         from cortex_unified.system_tools import startup_optimizer as mod

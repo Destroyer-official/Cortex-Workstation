@@ -18,7 +18,13 @@ from cortex_unified.system_tools.network_service_scanner import (
 _TASK_NAME = r"\Cortex Cleaner\Network Security Audit"
 _TIME_RE = re.compile(r"^(?:[01]\d|2[0-3]):[0-5]\d$")
 _WEEKDAYS = {
-    "MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN",
+    "MON",
+    "TUE",
+    "WED",
+    "THU",
+    "FRI",
+    "SAT",
+    "SUN",
 }
 
 
@@ -28,6 +34,7 @@ class NetworkSchedule:
 
     Manages NetworkSchedule operations and coordinates related state changes for the component.
     """
+
     frequency: str = "daily"
     time: str = "09:00"
     weekday: str = "MON"
@@ -72,13 +79,19 @@ def _validated(spec: NetworkSchedule) -> NetworkSchedule:
     scopes = tuple(map(str, parse_allowed_networks(spec.scopes)))
     ports = ",".join(map(str, parse_custom_port_spec(spec.ports)))
     output = (
-        str(Path(spec.output).expanduser()) if spec.output else
-        str(Path.home() / ".cortex_cleaner" / "netdata" /
-            "last-scheduled-network-scan.json")
+        str(Path(spec.output).expanduser())
+        if spec.output
+        else str(Path.home() / ".cortex_cleaner" / "netdata" / "last-scheduled-network-scan.json")
     )
     return NetworkSchedule(
-        frequency, spec.time, weekday, interval, spec.profile,
-        scopes, ports, output,
+        frequency,
+        spec.time,
+        weekday,
+        interval,
+        spec.profile,
+        scopes,
+        ports,
+        output,
     )
 
 
@@ -95,9 +108,11 @@ def build_scan_command(spec: NetworkSchedule) -> list[str]:
     """
     selected = _validated(spec)
     command = [
-        sys.executable, "-m",
+        sys.executable,
+        "-m",
         "cortex_unified.system_tools.network_scan_cli",
-        "--profile", selected.profile,
+        "--profile",
+        selected.profile,
     ]
     for scope in selected.scopes:
         command.extend(["--scope", scope])
@@ -128,8 +143,13 @@ def build_windows_arguments(spec: NetworkSchedule) -> list[str]:
     else:
         trigger.extend(["/d", selected.weekday, "/st", selected.time])
     return [
-        "schtasks", "/create", "/f", "/tn", _TASK_NAME,
-        "/tr", subprocess.list2cmdline(build_scan_command(selected)),
+        "schtasks",
+        "/create",
+        "/f",
+        "/tn",
+        _TASK_NAME,
+        "/tr",
+        subprocess.list2cmdline(build_scan_command(selected)),
         *trigger,
     ]
 
@@ -160,15 +180,11 @@ class NetworkScanScheduler:
             spec (NetworkSchedule): The spec parameter.
         """
         if not self.supported():
-            raise NetworkScheduleError(
-                "recurring network scans currently require Windows Task "
-                "Scheduler")
+            raise NetworkScheduleError("recurring network scans currently require Windows Task " "Scheduler")
         result = proc.run(build_windows_arguments(spec), text=True, timeout=30)
         if result.returncode != 0:
-            detail = (
-                result.stderr or result.stdout or "unknown error").strip()
-            raise NetworkScheduleError(
-                f"Task Scheduler rejected the network scan: {detail[:512]}")
+            detail = (result.stderr or result.stdout or "unknown error").strip()
+            raise NetworkScheduleError(f"Task Scheduler rejected the network scan: {detail[:512]}")
 
     def delete(self) -> bool:
         """Delete.
@@ -180,9 +196,7 @@ class NetworkScanScheduler:
         """
         if not self.supported():
             return False
-        result = proc.run(
-            ["schtasks", "/delete", "/tn", _TASK_NAME, "/f"],
-            text=True, timeout=30)
+        result = proc.run(["schtasks", "/delete", "/tn", _TASK_NAME, "/f"], text=True, timeout=30)
         return result.returncode == 0
 
     def status(self) -> dict[str, str | bool]:
@@ -195,9 +209,7 @@ class NetworkScanScheduler:
         """
         if not self.supported():
             return {"installed": False, "detail": "unsupported platform"}
-        result = proc.run(
-            ["schtasks", "/query", "/tn", _TASK_NAME, "/fo", "LIST"],
-            text=True, timeout=30)
+        result = proc.run(["schtasks", "/query", "/tn", _TASK_NAME, "/fo", "LIST"], text=True, timeout=30)
         return {
             "installed": result.returncode == 0,
             "detail": (result.stdout or result.stderr or "").strip()[:2048],
@@ -205,6 +217,9 @@ class NetworkScanScheduler:
 
 
 __all__ = [
-    "NetworkScanScheduler", "NetworkSchedule", "NetworkScheduleError",
-    "build_scan_command", "build_windows_arguments",
+    "NetworkScanScheduler",
+    "NetworkSchedule",
+    "NetworkScheduleError",
+    "build_scan_command",
+    "build_windows_arguments",
 ]

@@ -57,12 +57,10 @@ def test_is_supported_reflects_platform():
 def test_system_folder_names_are_blocked():
     """Verify system folder names are blocked via name.lower."""
     from cortex_unified.system_tools import compact_os
-    for name in ("Windows", "Program Files", "$Recycle.Bin",
-                 "System Volume Information", "node_modules", ".git"):
+
+    for name in ("Windows", "Program Files", "$Recycle.Bin", "System Volume Information", "node_modules", ".git"):
         low = name.lower()
-        assert (low in compact_os._SYSTEM_TREES
-                or low in compact_os._BLOCKED_NAMES
-                or name in compact_os._BLOCKED_NAMES)
+        assert low in compact_os._SYSTEM_TREES or low in compact_os._BLOCKED_NAMES or name in compact_os._BLOCKED_NAMES
 
 
 def test_estimate_text_heavy_folder(tmp_path):
@@ -105,8 +103,8 @@ def test_find_compressible_folders_respects_min_size(tmp_path):
     small = tmp_path / "small"
     big.mkdir()
     small.mkdir()
-    _write_text(big, "big.log", 256)         # sizable, compressible
-    _write_text(small, "tiny.log", 8)        # below threshold
+    _write_text(big, "big.log", 256)  # sizable, compressible
+    _write_text(small, "tiny.log", 8)  # below threshold
     m = CompactOSManager()
     # 256KB text => ~170KB estimated savings; 8KB => ~5KB. Use a 0.1MB (102KB)
     # threshold so logs qualifies but tiny does not.

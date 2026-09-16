@@ -3,9 +3,9 @@
   "dataLicense": "CC0-1.0",
   "SPDXID": "SPDXRef-DOCUMENT",
   "name": "Cortex-Workstation-1.2.0-SBOM",
-  "documentNamespace": "https://github.com/Destroyer-official/Cortex-Workstation/spdx/cortex-workstation-1.2.0-1789495110",
+  "documentNamespace": "https://github.com/Destroyer-official/Cortex-Workstation/spdx/cortex-workstation-1.2.0-1789538119",
   "creationInfo": {
-    "created": "2026-09-15T17:58:30Z",
+    "created": "2026-09-16T05:55:19Z",
     "creators": [
       "Tool: CortexWorkstation-SBOMGenerator-1.0",
       "Organization: Cortex Workstation Security Team"

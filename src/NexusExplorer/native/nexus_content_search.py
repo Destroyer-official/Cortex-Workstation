@@ -27,25 +27,94 @@ log = logging.getLogger("nexus.content_search")
 
 # File extensions that are safe to search as text
 TEXT_EXTENSIONS = {
-    '.txt', '.md', '.rst', '.log', '.csv', '.tsv',
-    '.py', '.pyw', '.pyx', '.pxd',
-    '.js', '.jsx', '.ts', '.tsx', '.mjs', '.cjs',
-    '.html', '.htm', '.css', '.scss', '.less',
-    '.java', '.kt', '.scala', '.groovy',
-    '.c', '.cpp', '.cc', '.cxx', '.h', '.hpp', '.hxx',
-    '.cs', '.fs', '.vb',
-    '.go', '.rs', '.swift', '.m', '.mm',
-    '.rb', '.php', '.pl', '.pm', '.r', '.R',
-    '.sh', '.bash', '.zsh', '.fish', '.ps1', '.bat', '.cmd',
-    '.sql', '.graphql', '.gql',
-    '.json', '.jsonl', '.yaml', '.yml', '.toml', '.ini', '.cfg', '.conf',
-    '.xml', '.svg', '.xhtml',
-    '.dockerfile', '.makefile', '.cmake',
-    '.gitignore', '.gitattributes',
-    '.env', '.editorconfig',
-    '.lua', '.dart', '.ex', '.exs', '.erl', '.hrl',
-    '.hs', '.elm', '.clj', '.cljs', '.lisp', '.el',
-    '.vue', '.svelte',
+    ".txt",
+    ".md",
+    ".rst",
+    ".log",
+    ".csv",
+    ".tsv",
+    ".py",
+    ".pyw",
+    ".pyx",
+    ".pxd",
+    ".js",
+    ".jsx",
+    ".ts",
+    ".tsx",
+    ".mjs",
+    ".cjs",
+    ".html",
+    ".htm",
+    ".css",
+    ".scss",
+    ".less",
+    ".java",
+    ".kt",
+    ".scala",
+    ".groovy",
+    ".c",
+    ".cpp",
+    ".cc",
+    ".cxx",
+    ".h",
+    ".hpp",
+    ".hxx",
+    ".cs",
+    ".fs",
+    ".vb",
+    ".go",
+    ".rs",
+    ".swift",
+    ".m",
+    ".mm",
+    ".rb",
+    ".php",
+    ".pl",
+    ".pm",
+    ".r",
+    ".R",
+    ".sh",
+    ".bash",
+    ".zsh",
+    ".fish",
+    ".ps1",
+    ".bat",
+    ".cmd",
+    ".sql",
+    ".graphql",
+    ".gql",
+    ".json",
+    ".jsonl",
+    ".yaml",
+    ".yml",
+    ".toml",
+    ".ini",
+    ".cfg",
+    ".conf",
+    ".xml",
+    ".svg",
+    ".xhtml",
+    ".dockerfile",
+    ".makefile",
+    ".cmake",
+    ".gitignore",
+    ".gitattributes",
+    ".env",
+    ".editorconfig",
+    ".lua",
+    ".dart",
+    ".ex",
+    ".exs",
+    ".erl",
+    ".hrl",
+    ".hs",
+    ".elm",
+    ".clj",
+    ".cljs",
+    ".lisp",
+    ".el",
+    ".vue",
+    ".svelte",
 }
 
 # Skip files larger than this for content search (100MB)
@@ -64,6 +133,7 @@ class ContentMatch:
 
     Stores path, 1-based line number, line text, and match start/end offsets.
     """
+
     path: str
     line_number: int
     line_text: str
@@ -77,6 +147,7 @@ class ContentSearchResult:
 
     Holds path, ContentMatch list, and truncated flag when max_matches_per_file is reached.
     """
+
     path: str
     matches: list[ContentMatch]
     truncated: bool = False
@@ -98,7 +169,7 @@ def is_searchable(path: str | Path) -> bool:
         return True
     # Check files without extension (Makefile, Dockerfile, etc.)
     name = Path(path).name.lower()
-    if not ext and name in ('makefile', 'dockerfile', 'gemfile', 'rakefile', 'vagrantfile'):
+    if not ext and name in ("makefile", "dockerfile", "gemfile", "rakefile", "vagrantfile"):
         return True
     return False
 
@@ -141,18 +212,20 @@ def search_file_content(
                 escaped = re.escape(query)
                 pattern = re.compile(escaped, flags)
 
-        with open(path, 'r', encoding='utf-8', errors='replace') as f:
+        with open(path, "r", encoding="utf-8", errors="replace") as f:
             line_num = 0
             for line in f:
                 line_num += 1
                 for m in pattern.finditer(line):
-                    matches.append(ContentMatch(
-                        path=str(path),
-                        line_number=line_num,
-                        line_text=line.rstrip('\n\r'),
-                        match_start=m.start(),
-                        match_end=m.end(),
-                    ))
+                    matches.append(
+                        ContentMatch(
+                            path=str(path),
+                            line_number=line_num,
+                            line_text=line.rstrip("\n\r"),
+                            match_start=m.start(),
+                            match_end=m.end(),
+                        )
+                    )
                     if len(matches) >= max_matches_per_file:
                         truncated = True
                         break
@@ -174,7 +247,7 @@ class _ContentSearchWorker(QThread):
     """
 
     result_found = Signal(ContentSearchResult)
-    progress = Signal(int, int)    # files_searched, total_files
+    progress = Signal(int, int)  # files_searched, total_files
     finished_signal = Signal(int)  # total matches
     error = Signal(str)
 
@@ -254,7 +327,7 @@ class _ContentSearchWorker(QThread):
                         dirnames.clear()
                         continue
 
-                    dirnames[:] = [d for d in dirnames if not d.startswith('.')]
+                    dirnames[:] = [d for d in dirnames if not d.startswith(".")]
                     for fname in filenames:
                         if self._cancel.is_set():
                             break
@@ -266,8 +339,12 @@ class _ContentSearchWorker(QThread):
                             total_files += 1
                             if len(batch) >= BATCH_SIZE:
                                 total_matches = self._process_batch(
-                                    executor, batch, compiled_re,
-                                    total_matches, files_searched, total_files,
+                                    executor,
+                                    batch,
+                                    compiled_re,
+                                    total_matches,
+                                    files_searched,
+                                    total_files,
                                 )
                                 files_searched += len(batch)
                                 batch = []
@@ -279,8 +356,12 @@ class _ContentSearchWorker(QThread):
 
                 if batch and total_matches < self._max_results:
                     total_matches = self._process_batch(
-                        executor, batch, compiled_re,
-                        total_matches, files_searched, total_files,
+                        executor,
+                        batch,
+                        compiled_re,
+                        total_matches,
+                        files_searched,
+                        total_files,
                     )
 
             self.finished_signal.emit(total_matches)
@@ -305,7 +386,8 @@ class _ContentSearchWorker(QThread):
         for fpath in batch:
             future = executor.submit(
                 search_file_content,
-                fpath, compiled_re,
+                fpath,
+                compiled_re,
             )
             futures[future] = fpath
 
@@ -320,8 +402,7 @@ class _ContentSearchWorker(QThread):
                     if total_matches >= self._max_results:
                         break
             except Exception as exc:
-                log.debug("Search future failed for %s: %s",
-                          futures[future], exc)
+                log.debug("Search future failed for %s: %s", futures[future], exc)
 
         if files_searched % 100 == 0:
             self.progress.emit(files_searched, total_files)

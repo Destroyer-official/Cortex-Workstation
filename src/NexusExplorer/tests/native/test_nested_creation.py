@@ -29,7 +29,7 @@ def test_create_nested_folder():
     with tempfile.TemporaryDirectory() as tmpdir:
         base = Path(tmpdir)
         target, created = create_nested_folder(base, "components/ui/modals")
-        
+
         assert target.is_dir()
         assert target == base / "components" / "ui" / "modals"
         assert len(created) == 3
@@ -44,7 +44,7 @@ def test_create_nested_file():
         base = Path(tmpdir)
         content = "export const Button = () => null;"
         target, created = create_nested_file(base, "src/components/Button.tsx", content=content)
-        
+
         assert target.is_file()
         assert target.read_text(encoding="utf-8") == content
         assert str(base / "src") in created
@@ -110,15 +110,15 @@ def test_undo_redo_create_file():
         base = Path(tmpdir)
         target, created = create_nested_file(base, "deep/folder/structure/script.py", content="print('hello')")
         assert target.is_file()
-        
+
         entry = CreateFileEntry(str(target), content="print('hello')", created_parents=created)
-        
+
         # Undo: deletes file and cleans up empty parents
         entry.undo()
         assert not target.exists()
         assert not (base / "deep" / "folder" / "structure").exists()
         assert not (base / "deep").exists()
-        
+
         # Redo: restores file and parent directories
         entry.redo()
         assert target.is_file()
@@ -131,43 +131,46 @@ def test_undo_redo_batch_create():
         base = Path(tmpdir)
         spec = "src/a.py\nsrc/b.py"
         res = scaffold_hierarchy(base, spec)
-        
+
         entries = []
         for d in res["created_dirs"]:
             entries.append(MkdirEntry(d))
         for f, c in res["created_files"]:
             entries.append(CreateFileEntry(f, content=c))
-            
+
         batch = BatchCreateEntry(entries, "Test scaffold")
         batch.undo()
         assert not (base / "src" / "a.py").exists()
         assert not (base / "src" / "b.py").exists()
-        
+
         batch.redo()
         assert (base / "src" / "a.py").is_file()
         assert (base / "src" / "b.py").is_file()
 
 
-@pytest.mark.skipif(os.environ.get("QT_QPA_PLATFORM") != "offscreen" and not sys.platform.startswith("win"), reason="Qt offscreen")
+@pytest.mark.skipif(
+    os.environ.get("QT_QPA_PLATFORM") != "offscreen" and not sys.platform.startswith("win"), reason="Qt offscreen"
+)
 def test_dialogs_construction():
     """Verify dialogs construction via QApplication.instance, tempfile.TemporaryDirectory, dlg_folder.input_path.setText."""
     from PySide6.QtWidgets import QApplication
+
     app = QApplication.instance() or QApplication(sys.argv)
-    
+
     from nexus_explorer import NestedFolderDialog, NestedFileDialog, BatchScaffoldDialog
-    
+
     with tempfile.TemporaryDirectory() as tmpdir:
         base = Path(tmpdir)
-        
+
         dlg_folder = NestedFolderDialog(base)
         dlg_folder.input_path.setText("new/nested/folder")
         assert dlg_folder.get_target_path() == "new/nested/folder"
-        
+
         dlg_file = NestedFileDialog(base)
         dlg_file.input_path.setText("src/utils/math.py")
         path_res, content_res = dlg_file.get_result()
         assert path_res == "src/utils/math.py"
-        
+
         dlg_scaffold = BatchScaffoldDialog(base)
         dlg_scaffold.spec_edit.setPlainText("a/\n  b.txt")
         assert "b.txt" in dlg_scaffold.get_spec_text()

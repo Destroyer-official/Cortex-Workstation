@@ -41,11 +41,11 @@ _LOG = logging.getLogger("cortex.ui.premium.tray")
 
 # Resource alert policy (mirrors core.background_agent so behaviour is
 # consistent between the legacy and premium shells).
-_RAM_THRESHOLD = 90.0          # percent
-_CPU_THRESHOLD = 90.0          # percent
+_RAM_THRESHOLD = 90.0  # percent
+_CPU_THRESHOLD = 90.0  # percent
 _DISK_FREE_THRESHOLD_GB = 5.0  # GB free on the system drive
-_ALERT_COOLDOWN_S = 300.0      # 5 min between repeats of the same alert
-_SAMPLE_INTERVAL_MS = 5000     # how often the GUI-thread timer samples
+_ALERT_COOLDOWN_S = 300.0  # 5 min between repeats of the same alert
+_SAMPLE_INTERVAL_MS = 5000  # how often the GUI-thread timer samples
 
 
 def _render_tray_icon(palette: Palette, size: int = 64) -> QIcon:
@@ -263,6 +263,7 @@ class PremiumTray(QObject):
         """Start the periodic resource monitor timer for tray tooltips."""
         try:
             import psutil
+
             self._psutil = psutil
         except Exception:  # noqa: BLE001 - no psutil: run without the monitor
             _LOG.info("psutil unavailable; tray resource monitor disabled")
@@ -291,7 +292,7 @@ class PremiumTray(QObject):
             else:
                 disk_path = "/"
             disk = ps.disk_usage(disk_path)
-            free_gb = disk.free / (1024 ** 3)
+            free_gb = disk.free / (1024**3)
         except Exception as exc:  # noqa: BLE001 - a bad sample is never fatal
             _LOG.debug("resource sample failed: %s", exc)
             return
@@ -317,9 +318,7 @@ class PremiumTray(QObject):
 
     def _poll_network_outcome(self) -> None:
         """Read the pending network-audit outcome file and surface it as a notification."""
-        path = (
-            Path.home() / ".cortex_cleaner" / "netdata" /
-            "last-scheduled-network-scan.json")
+        path = Path.home() / ".cortex_cleaner" / "netdata" / "last-scheduled-network-scan.json"
         try:
             stat = path.stat()
             if stat.st_mtime_ns <= self._network_outcome_mtime:
@@ -359,8 +358,7 @@ class PremiumTray(QObject):
             return
         try:
             if QSystemTrayIcon.supportsMessages():
-                self._tray.showMessage(title, message,
-                                       QSystemTrayIcon.MessageIcon.Information, msecs)
+                self._tray.showMessage(title, message, QSystemTrayIcon.MessageIcon.Information, msecs)
         except Exception:  # noqa: BLE001
             _LOG.debug("tray message failed", exc_info=True)
 
@@ -381,21 +379,17 @@ class PremiumTray(QObject):
             ("disappeared_devices", "Network device went offline"),
             ("gateway_mac_changes", "Gateway identity changed"),
         ):
-            items = (
-                changes.get(attribute, ()) if isinstance(changes, Mapping)
-                else getattr(changes, attribute, ()))
+            items = changes.get(attribute, ()) if isinstance(changes, Mapping) else getattr(changes, attribute, ())
             for item in items:
                 if isinstance(item, Mapping):
                     severity = str(item.get("severity", "info")).lower()
                     device_id = item.get("device_id", "")
                     message = str(item.get("message", title))
                 else:
-                    severity = str(
-                        getattr(item, "severity", "info")).lower()
+                    severity = str(getattr(item, "severity", "info")).lower()
                     device_id = getattr(item, "device_id", "")
                     message = str(getattr(item, "message", title))
-                if attribute in {"new_findings", "severity_changes"} and severity not in {
-                        "critical", "high", "medium"}:
+                if attribute in {"new_findings", "severity_changes"} and severity not in {"critical", "high", "medium"}:
                     continue
                 key = f"{attribute}:{device_id}:{message}"
                 events.append((key, title, message))
@@ -409,10 +403,7 @@ class PremiumTray(QObject):
         # Keep a strict memory bound during long-running tray sessions.
         if len(self._last_network_alerts) > 512:
             cutoff = now - _ALERT_COOLDOWN_S
-            self._last_network_alerts = {
-                key: seen for key, seen in self._last_network_alerts.items()
-                if seen >= cutoff
-            }
+            self._last_network_alerts = {key: seen for key, seen in self._last_network_alerts.items() if seen >= cutoff}
 
     # -- theme + lifecycle --------------------------------------------------
 

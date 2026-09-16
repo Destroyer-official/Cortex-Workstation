@@ -70,8 +70,19 @@ except ImportError:  # pragma: no cover - only when Pillow is absent
 
 #: Raster formats Pillow can decode.
 _RASTER_SUFFIXES = {
-    ".jpg", ".jpeg", ".png", ".webp", ".gif", ".bmp", ".tif", ".tiff",
-    ".jfif", ".hdr", ".ico", ".mpo", ".pnm",
+    ".jpg",
+    ".jpeg",
+    ".png",
+    ".webp",
+    ".gif",
+    ".bmp",
+    ".tif",
+    ".tiff",
+    ".jfif",
+    ".hdr",
+    ".ico",
+    ".mpo",
+    ".pnm",
 }
 
 #: The perceptual hash kinds implemented.
@@ -80,9 +91,9 @@ _RASTER_SUFFIXES = {
 # after pHash, while staying pure-Python and dependency-free.
 HASH_KINDS = ("phash", "dhash", "ahash", "whash")
 
-_PHASH_SIZE = 32      # resize before DCT
-_DHASH_SIZE = 8       # 8x9 grid -> 64 gradient bits
-_AVG_SIZE = 64        # 64x64 -> 64 mean bits (aHash over 4096 px)
+_PHASH_SIZE = 32  # resize before DCT
+_DHASH_SIZE = 8  # 8x9 grid -> 64 gradient bits
+_AVG_SIZE = 64  # 64x64 -> 64 mean bits (aHash over 4096 px)
 
 
 def _validate_pil() -> None:
@@ -91,15 +102,13 @@ def _validate_pil() -> None:
     Manages validate pil operations and coordinates related state changes for the component.
     """
     if not HAS_PIL:
-        raise ImportError(
-            "Perceptual image duplicate detection requires Pillow "
-            "(pip install Pillow)."
-        )
+        raise ImportError("Perceptual image duplicate detection requires Pillow " "(pip install Pillow).")
 
 
 # ---------------------------------------------------------------------------
 # 2D-DCT helpers (canonical pHash)
 # ---------------------------------------------------------------------------
+
 
 def _cos_table(n: int) -> List[List[float]]:
     """``n x n`` cosine kernel ``cos((2x+1) u pi / 2n)``.
@@ -113,10 +122,7 @@ def _cos_table(n: int) -> List[List[float]]:
         List[List[float]]: List of processed items or identifiers.
     """
     pi = math.pi
-    return [
-        [math.cos((2 * x + 1) * u * pi / (2 * n)) for x in range(n)]
-        for u in range(n)
-    ]
+    return [[math.cos((2 * x + 1) * u * pi / (2 * n)) for x in range(n)] for u in range(n)]
 
 
 _COS_32 = _cos_table(32) if HAS_PIL else None
@@ -158,6 +164,7 @@ def _dct2d(rows: List[List[float]], cos: List[List[float]], size: int) -> List[L
 # Hashing primitives (each returns a 64-bit int)
 # ---------------------------------------------------------------------------
 
+
 def average_hash(path: Path) -> int:
     """aHash: 64 bits, bit k set when the k-th 8x8-block mean >= global mean.
 
@@ -188,8 +195,7 @@ def difference_hash(path: Path) -> int:
     """
     _validate_pil()
     with Image.open(path) as im:
-        gray = im.convert("L").resize(
-            (_DHASH_SIZE + 1, _DHASH_SIZE), Image.Resampling.LANCZOS)
+        gray = im.convert("L").resize((_DHASH_SIZE + 1, _DHASH_SIZE), Image.Resampling.LANCZOS)
     width = _DHASH_SIZE + 1
     pixels = list(gray.tobytes())
     bits = 0
@@ -212,11 +218,10 @@ def perceptual_hash(path: Path) -> int:
     """
     _validate_pil()
     with Image.open(path) as im:
-        gray = im.convert("L").resize((_PHASH_SIZE, _PHASH_SIZE),
-                                      Image.Resampling.LANCZOS)
+        gray = im.convert("L").resize((_PHASH_SIZE, _PHASH_SIZE), Image.Resampling.LANCZOS)
     width = _PHASH_SIZE
     data = list(gray.tobytes())
-    rows = [data[i * width:(i + 1) * width] for i in range(width)]
+    rows = [data[i * width : (i + 1) * width] for i in range(width)]
     # DCT of the 32x32 matrix.
     dct = _dct2d(rows, _COS_32, _PHASH_SIZE)
     # Low-frequency 8x8 block; drop the DC coefficient (overall brightness).
@@ -273,9 +278,7 @@ def _haar_2d_grayscale(pixels: List[int], size: int, levels: int) -> List[List[f
         List[List[float]]: List of processed items or identifiers.
     """
     # Convert to float matrix
-    mat: List[List[float]] = [
-        [float(pixels[y * size + x]) for x in range(size)] for y in range(size)
-    ]
+    mat: List[List[float]] = [[float(pixels[y * size + x]) for x in range(size)] for y in range(size)]
     cur = size
     for _ in range(levels):
         # Transform rows: first cur rows, first cur cols
@@ -366,6 +369,7 @@ def hamming_distance(a: int, b: int) -> int:
 # ---------------------------------------------------------------------------
 # Finder
 # ---------------------------------------------------------------------------
+
 
 class PerceptualDuplicateFinder:
     """Find visually-similar image groups via perceptual hashing.
@@ -607,10 +611,7 @@ class PerceptualDuplicateFinder:
         for a, b in candidate_pairs:
             if cancel_event and getattr(cancel_event, "is_set", lambda: False)():
                 break
-            verdicts = [
-                hamming_distance(hashes[a][kind], hashes[b][kind]) <= self.max_distance
-                for kind in self.kinds
-            ]
+            verdicts = [hamming_distance(hashes[a][kind], hashes[b][kind]) <= self.max_distance for kind in self.kinds]
             ok = all(verdicts) if self.require_all_kinds else any(verdicts)
             if ok:
                 _union(a, b)
@@ -623,9 +624,7 @@ class PerceptualDuplicateFinder:
         for members in groups.values():
             if len(members) > 1:
                 members.sort()
-                gid = hashlib.blake2b(
-                    str([str(m) for m in members]).encode(), digest_size=8
-                ).hexdigest()
+                gid = hashlib.blake2b(str([str(m) for m in members]).encode(), digest_size=8).hexdigest()
                 result[gid] = members
         self.duplicates = result
         return result

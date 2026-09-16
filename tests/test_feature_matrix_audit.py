@@ -99,19 +99,11 @@ def test_disk_and_storage_analyzers():
 
         # Advanced Disk Analyzer with Treemap/Sunburst structures
         ada = AdvancedDiskAnalyzer()
-        assert (
-            hasattr(ada, "scan")
-            or hasattr(ada, "build_tree")
-            or hasattr(ada, "get_visualizations")
-        )
+        assert hasattr(ada, "scan") or hasattr(ada, "build_tree") or hasattr(ada, "get_visualizations")
 
         # VHD/VHDX Manager
         vm = VhdxManager()
-        assert (
-            hasattr(vm, "list_disks")
-            or hasattr(vm, "compact")
-            or hasattr(vm, "set_sparse")
-        )
+        assert hasattr(vm, "list_disks") or hasattr(vm, "compact") or hasattr(vm, "set_sparse")
 
         # Storage Sense
         ss = StorageSense()
@@ -130,23 +122,13 @@ def test_system_maintenance_and_repair():
     from cortex_unified.system_tools.boot_performance import BootPerformanceMonitor
 
     csm = ComponentStore()
-    assert (
-        hasattr(csm, "analyze") or hasattr(csm, "get_status") or hasattr(csm, "cleanup")
-    )
+    assert hasattr(csm, "analyze") or hasattr(csm, "get_status") or hasattr(csm, "cleanup")
 
     wur = WindowsUpdateRepair()
-    assert (
-        hasattr(wur, "preflight")
-        or hasattr(wur, "quick_reset")
-        or hasattr(wur, "repair_all")
-    )
+    assert hasattr(wur, "preflight") or hasattr(wur, "quick_reset") or hasattr(wur, "repair_all")
 
     srm = SystemRepair()
-    assert (
-        hasattr(srm, "run_sfc")
-        or hasattr(srm, "run_dism")
-        or hasattr(srm, "run_chkdsk_scan")
-    )
+    assert hasattr(srm, "run_sfc") or hasattr(srm, "run_dism") or hasattr(srm, "run_chkdsk_scan")
 
     com = CompactOSManager()
     assert (
@@ -156,12 +138,7 @@ def test_system_maintenance_and_repair():
     )
 
     bpa = BootPerformanceMonitor()
-    assert (
-        hasattr(bpa, "history")
-        or hasattr(bpa, "diagnose")
-        or hasattr(bpa, "latest")
-        or hasattr(bpa, "is_supported")
-    )
+    assert hasattr(bpa, "history") or hasattr(bpa, "diagnose") or hasattr(bpa, "latest") or hasattr(bpa, "is_supported")
 
 
 # ═════════════════════════════════════════════════════════════════════════════
@@ -199,36 +176,20 @@ def test_security_and_sanitization_standards():
 
         # Adaptive Sanitizer
         asan = AdaptiveSanitizer()
-        assert (
-            hasattr(asan, "sanitize_target")
-            or hasattr(asan, "sanitize")
-            or hasattr(asan, "analyze_drive")
-        )
+        assert hasattr(asan, "sanitize_target") or hasattr(asan, "sanitize") or hasattr(asan, "analyze_drive")
 
         # Free space wiper
         fsw = FreeSpaceWiper()
-        assert (
-            hasattr(fsw, "wipe_drive_free_space")
-            or hasattr(fsw, "wipe_free_space")
-            or hasattr(fsw, "wipe")
-        )
+        assert hasattr(fsw, "wipe_drive_free_space") or hasattr(fsw, "wipe_free_space") or hasattr(fsw, "wipe")
 
         # Secrets scanner
         test_code = tmp / "api_keys.py"
-        test_code.write_text(
-            'AWS_SECRET_KEY = "AKIAIOSFODNN7EXAMPLE"', encoding="utf-8"
-        )
-        assert hasattr(secrets_scanner, "run_scan") or hasattr(
-            secrets_scanner, "scan_single_file"
-        )
+        test_code.write_text('AWS_SECRET_KEY = "AKIAIOSFODNN7EXAMPLE"', encoding="utf-8")
+        assert hasattr(secrets_scanner, "run_scan") or hasattr(secrets_scanner, "scan_single_file")
 
         # Defender manager
         def_mgr = WindowsDefender()
-        assert (
-            hasattr(def_mgr, "get_status")
-            or hasattr(def_mgr, "status")
-            or hasattr(def_mgr, "is_enabled")
-        )
+        assert hasattr(def_mgr, "get_status") or hasattr(def_mgr, "status") or hasattr(def_mgr, "is_enabled")
 
 
 # ═════════════════════════════════════════════════════════════════════════════
@@ -240,18 +201,10 @@ def test_privacy_and_telemetry():
     from cortex_unified.analyzers.privacy_cleaner import PrivacyCleaner
 
     tb = TelemetryBlocker()
-    assert (
-        hasattr(tb, "check_status")
-        or hasattr(tb, "block_telemetry")
-        or hasattr(tb, "rules")
-    )
+    assert hasattr(tb, "check_status") or hasattr(tb, "block_telemetry") or hasattr(tb, "rules")
 
     pc = PrivacyCleaner()
-    assert (
-        hasattr(pc, "scan_browsers")
-        or hasattr(pc, "clean_browser")
-        or hasattr(pc, "scan_system_traces")
-    )
+    assert hasattr(pc, "scan_browsers") or hasattr(pc, "clean_browser") or hasattr(pc, "scan_system_traces")
 
 
 # ═════════════════════════════════════════════════════════════════════════════
@@ -265,32 +218,17 @@ def test_process_and_performance_optimization():
     from cortex_unified.system_tools.performance_tuner import PerformanceTuner
 
     assert hasattr(memory_optimizer, "MemoryOptimizer")
-    assert hasattr(
-        memory_optimizer.MemoryOptimizer, "optimize_all_background_working_sets"
-    )
+    assert hasattr(memory_optimizer.MemoryOptimizer, "optimize_all_background_working_sets")
     assert hasattr(memory_optimizer.MemoryOptimizer, "get_system_ram_metrics")
 
     pa = ProcessAnalyzer()
-    assert (
-        hasattr(pa, "get_heavy_processes")
-        or hasattr(pa, "list_processes")
-        or hasattr(pa, "scan")
-    )
+    assert hasattr(pa, "get_heavy_processes") or hasattr(pa, "list_processes") or hasattr(pa, "scan")
 
     gm = GameMode()
-    assert (
-        hasattr(gm, "start")
-        or hasattr(gm, "stop")
-        or hasattr(gm, "is_supported")
-        or hasattr(gm, "preview")
-    )
+    assert hasattr(gm, "start") or hasattr(gm, "stop") or hasattr(gm, "is_supported") or hasattr(gm, "preview")
 
     pt = PerformanceTuner()
-    assert (
-        hasattr(pt, "list_plans")
-        or hasattr(pt, "active_plan")
-        or hasattr(pt, "is_supported")
-    )
+    assert hasattr(pt, "list_plans") or hasattr(pt, "active_plan") or hasattr(pt, "is_supported")
 
 
 # ═════════════════════════════════════════════════════════════════════════════
@@ -313,35 +251,21 @@ def test_network_tools_and_defense():
     assert hasattr(nm, "connections") or hasattr(nm, "summarize")
 
     nt = TrafficMonitor()
-    assert (
-        hasattr(nt, "sample")
-        or hasattr(nt, "get_traffic")
-        or hasattr(nt, "get_current_traffic")
-    )
+    assert hasattr(nt, "sample") or hasattr(nt, "get_traffic") or hasattr(nt, "get_current_traffic")
 
     ls = LanScanner()
     assert hasattr(ls, "scan") or hasattr(ls, "scan_network")
 
     nd = NetworkDiscovery()
-    assert (
-        hasattr(nd, "scan")
-        or hasattr(nd, "local_interfaces")
-        or hasattr(nd, "default_gateways")
-    )
+    assert hasattr(nd, "scan") or hasattr(nd, "local_interfaces") or hasattr(nd, "default_gateways")
 
     ss = NetworkServiceScanner()
     assert hasattr(ss, "scan") or hasattr(ss, "scan_host")
 
     fm = FirewallManager()
-    assert (
-        hasattr(fm, "get_rules")
-        or hasattr(fm, "is_enabled")
-        or hasattr(fm, "list_rules")
-    )
+    assert hasattr(fm, "get_rules") or hasattr(fm, "is_enabled") or hasattr(fm, "list_rules")
 
-    assert hasattr(wake_on_lan, "send_magic_packet") or hasattr(
-        wake_on_lan, "build_magic_packet"
-    )
+    assert hasattr(wake_on_lan, "send_magic_packet") or hasattr(wake_on_lan, "build_magic_packet")
 
     lt = LoadTester()
     assert hasattr(lt, "run_http") or hasattr(lt, "run_tcp")
@@ -362,18 +286,10 @@ def test_apps_and_extension_management():
     assert hasattr(au, "list_installed_apps") or hasattr(au, "get_installed_apps")
 
     lc = LeftoverCleaner()
-    assert (
-        hasattr(lc, "clean")
-        or hasattr(lc, "scan_leftovers")
-        or hasattr(lc, "find_leftovers")
-    )
+    assert hasattr(lc, "clean") or hasattr(lc, "scan_leftovers") or hasattr(lc, "find_leftovers")
 
     aup = AppUpdater()
-    assert (
-        hasattr(aup, "list_upgradable")
-        or hasattr(aup, "upgrade")
-        or hasattr(aup, "is_available")
-    )
+    assert hasattr(aup, "list_upgradable") or hasattr(aup, "upgrade") or hasattr(aup, "is_available")
 
     bem = BrowserExtensionAuditor()
     assert hasattr(bem, "audit") or hasattr(bem, "scan")
@@ -395,16 +311,10 @@ def test_registry_and_startup_tools():
     assert hasattr(rc, "scan") or hasattr(rc, "clean") or hasattr(rc, "scan_all")
 
     sm = StartupManager()
-    assert (
-        hasattr(sm, "list_startup_items")
-        or hasattr(sm, "get_startup_items")
-        or hasattr(sm, "get_entries")
-    )
+    assert hasattr(sm, "list_startup_items") or hasattr(sm, "get_startup_items") or hasattr(sm, "get_entries")
 
     tm = TaskManager()
-    assert (
-        hasattr(tm, "snapshot") or hasattr(tm, "end_process") or hasattr(tm, "instance")
-    )
+    assert hasattr(tm, "snapshot") or hasattr(tm, "end_process") or hasattr(tm, "instance")
 
 
 # ═════════════════════════════════════════════════════════════════════════════
@@ -439,11 +349,7 @@ def test_specialized_dedup_and_cache_analyzers():
         assert len(dups) >= 1 or hasattr(df, "find_duplicates")
 
         pdf = PerceptualDuplicateFinder(root_path=str(tmp))
-        assert (
-            hasattr(pdf, "find_perceptual_duplicates")
-            or hasattr(pdf, "scan_directory")
-            or hasattr(pdf, "scan")
-        )
+        assert hasattr(pdf, "find_perceptual_duplicates") or hasattr(pdf, "scan_directory") or hasattr(pdf, "scan")
 
         vdf = VideoDuplicateFinder(root_path=str(tmp))
         assert (
@@ -462,52 +368,30 @@ def test_specialized_dedup_and_cache_analyzers():
         )
 
         fdf = FuzzyDuplicateFinder(root_path=str(tmp))
-        assert (
-            hasattr(fdf, "find_fuzzy_duplicates")
-            or hasattr(fdf, "find_similar")
-            or hasattr(fdf, "scan")
-        )
+        assert hasattr(fdf, "find_fuzzy_duplicates") or hasattr(fdf, "find_similar") or hasattr(fdf, "scan")
 
         lff = LargeFileFinder()
         large_files = lff.find_large_files(min_size_mb=0)
         assert hasattr(lff, "find_large_files") or len(large_files) >= 0
 
         bld = BrokenLinkDetector()
-        assert (
-            hasattr(bld, "scan_all")
-            or hasattr(bld, "scan_windows_shortcuts")
-            or hasattr(bld, "scan_symlinks")
-        )
+        assert hasattr(bld, "scan_all") or hasattr(bld, "scan_windows_shortcuts") or hasattr(bld, "scan_symlinks")
 
         mcm = ModelCacheManager()
-        assert (
-            hasattr(mcm, "scan_all")
-            or hasattr(mcm, "scan_hf_hub")
-            or hasattr(mcm, "scan_ollama")
-        )
+        assert hasattr(mcm, "scan_all") or hasattr(mcm, "scan_hf_hub") or hasattr(mcm, "scan_ollama")
 
         pmc = PackageManagerCleaner()
-        assert (
-            hasattr(pmc, "scan_caches")
-            or hasattr(pmc, "clean_caches")
-            or hasattr(pmc, "scan")
-        )
+        assert hasattr(pmc, "scan_caches") or hasattr(pmc, "clean_caches") or hasattr(pmc, "scan")
 
         pcs = ProjectCacheScanner()
         assert hasattr(pcs, "scan_fixed_drives") or hasattr(pcs, "scan")
 
         wsl = WslCleaner()
-        assert (
-            hasattr(wsl, "list_distros")
-            or hasattr(wsl, "compact_vhdx")
-            or hasattr(wsl, "is_wsl_available")
-        )
+        assert hasattr(wsl, "list_distros") or hasattr(wsl, "compact_vhdx") or hasattr(wsl, "is_wsl_available")
 
         doc = DockerCleaner()
         assert (
-            hasattr(doc, "get_space_usage")
-            or hasattr(doc, "cleanup_resources")
-            or hasattr(doc, "is_docker_available")
+            hasattr(doc, "get_space_usage") or hasattr(doc, "cleanup_resources") or hasattr(doc, "is_docker_available")
         )
 
         # Caches

@@ -75,17 +75,21 @@ def test_emits_new_service_and_severity_change(tmp_path):
     inventory = NetworkInventory(tmp_path / "inventory.db")
     old_finding = InventoryFinding("tls", "Weak TLS", "low")
     inventory.record_snapshot(
-        [device(
-            services=[InventoryService("http", 80)],
-            findings=[old_finding],
-        )],
+        [
+            device(
+                services=[InventoryService("http", 80)],
+                findings=[old_finding],
+            )
+        ],
         observed_at="2025-01-01T00:00:00Z",
     )
     snapshot = inventory.record_snapshot(
-        [device(
-            services=[InventoryService("http", 80), InventoryService("ssh", 22)],
-            findings=[InventoryFinding("tls", "Weak TLS", "high")],
-        )],
+        [
+            device(
+                services=[InventoryService("http", 80), InventoryService("ssh", 22)],
+                findings=[InventoryFinding("tls", "Weak TLS", "high")],
+            )
+        ],
         observed_at="2025-01-02T00:00:00Z",
     )
     assert kinds(snapshot) == ["new_service", "severity_changed"]
@@ -123,10 +127,12 @@ def test_disappearance_is_relative_to_previous_snapshot(tmp_path):
         tmp_path: Filesystem path to the target file or directory.
     """
     inventory = NetworkInventory(tmp_path / "inventory.db")
-    inventory.record_snapshot([
-        device(),
-        device(ip="192.168.1.20", mac="00:11:22:33:44:66"),
-    ])
+    inventory.record_snapshot(
+        [
+            device(),
+            device(ip="192.168.1.20", mac="00:11:22:33:44:66"),
+        ]
+    )
     snapshot = inventory.record_snapshot([device()])
     assert kinds(snapshot) == ["device_disappeared"]
     assert snapshot.changes[0].previous["ip"] == "192.168.1.20"
@@ -139,9 +145,11 @@ def test_randomized_mac_uses_low_confidence_ip_identity(tmp_path):
         tmp_path: Filesystem path to the target file or directory.
     """
     inventory = NetworkInventory(tmp_path / "inventory.db")
-    snapshot = inventory.record_snapshot([
-        device(mac="36:fe:fa:8b:25:6b"),
-    ])
+    snapshot = inventory.record_snapshot(
+        [
+            device(mac="36:fe:fa:8b:25:6b"),
+        ]
+    )
     assert snapshot.changes[0].device_id == "ip:192.168.1.10"
     assert snapshot.changes[0].identity_confidence == "low"
 
@@ -164,10 +172,8 @@ def test_first_last_seen_and_catalogs_are_persisted(tmp_path):
     assert lifetime["first_seen"] == "2025-01-01T00:00:00Z"
     assert lifetime["last_seen"] == "2025-01-03T00:00:00Z"
     with sqlite3.connect(path) as connection:
-        service = connection.execute(
-            "SELECT first_seen, last_seen FROM services").fetchone()
-        finding = connection.execute(
-            "SELECT severity FROM findings").fetchone()
+        service = connection.execute("SELECT first_seen, last_seen FROM services").fetchone()
+        finding = connection.execute("SELECT severity FROM findings").fetchone()
     assert service == ("2025-01-01T00:00:00Z", "2025-01-03T00:00:00Z")
     assert finding == ("medium",)
 
@@ -197,22 +203,26 @@ def test_duplicate_identity_rejected_without_partial_snapshot(tmp_path):
     inventory = NetworkInventory(tmp_path / "inventory.db")
     same_mac = "00:11:22:33:44:55"
     with pytest.raises(ValueError, match="duplicate"):
-        inventory.record_snapshot([
-            device(ip="192.168.1.10", mac=same_mac),
-            device(ip="192.168.1.11", mac=same_mac),
-        ])
+        inventory.record_snapshot(
+            [
+                device(ip="192.168.1.10", mac=same_mac),
+                device(ip="192.168.1.11", mac=same_mac),
+            ]
+        )
     assert inventory.snapshot_count() == 0
 
 
 def test_normalizes_discovery_style_mapping_and_validates_ip():
     """Verify normalizes discovery style mapping and validates ip via pytest.raises, normalize_device."""
-    observed = normalize_device({
-        "ip": "192.168.1.20",
-        "mac": "00-11-22-33-44-55",
-        "services": {"_http._tcp": "Printer"},
-        "open_ports": [80],
-        "findings": [{"code": "x", "title": "Example", "severity": "critical"}],
-    })
+    observed = normalize_device(
+        {
+            "ip": "192.168.1.20",
+            "mac": "00-11-22-33-44-55",
+            "services": {"_http._tcp": "Printer"},
+            "open_ports": [80],
+            "findings": [{"code": "x", "title": "Example", "severity": "critical"}],
+        }
+    )
     assert observed.mac == "00:11:22:33:44:55"
     assert len(observed.services) == 2
     assert observed.findings[0].severity == "critical"
@@ -230,8 +240,7 @@ def test_schema_version_and_future_version_guard(tmp_path):
     NetworkInventory(path).close()
     with sqlite3.connect(path) as connection:
         assert connection.execute("PRAGMA user_version").fetchone()[0] == 2
-        tables = {row[0] for row in connection.execute(
-            "SELECT name FROM sqlite_master WHERE type='table'")}
+        tables = {row[0] for row in connection.execute("SELECT name FROM sqlite_master WHERE type='table'")}
         assert "device_metadata" in tables
         connection.execute("PRAGMA user_version = 999")
     with pytest.raises(RuntimeError, match="newer"):
@@ -277,8 +286,11 @@ def test_metadata_trends_and_csv_round_trip_are_safe(tmp_path):
     )
     inventory.record_snapshot([observed], observed_at="2026-01-01T00:00:00Z")
     metadata = inventory.set_metadata(
-        observed, custom_name="+Kitchen camera", trust_state="trusted",
-        tags="camera, iot", notes="@review",
+        observed,
+        custom_name="+Kitchen camera",
+        trust_state="trusted",
+        tags="camera, iot",
+        notes="@review",
     )
     assert metadata.tags == ("camera", "iot")
     assert inventory.get_metadata(observed) == metadata
@@ -298,8 +310,11 @@ def test_metadata_trends_and_csv_round_trip_are_safe(tmp_path):
     imported = NetworkInventory(tmp_path / "imported.db")
     preview = imported.import_inventory_csv(exported, dry_run=True)
     assert preview == {
-        "rows": 1, "created": 1, "updated": 0,
-        "conflicts": [], "dry_run": True,
+        "rows": 1,
+        "created": 1,
+        "updated": 0,
+        "conflicts": [],
+        "dry_run": True,
     }
     imported.import_inventory_csv(exported, dry_run=False)
     restored = imported.list_metadata()[0]

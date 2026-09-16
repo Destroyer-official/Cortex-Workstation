@@ -9,9 +9,18 @@ Features:
 
 from pathlib import Path
 from PySide6.QtWidgets import (
-    QVBoxLayout, QHBoxLayout, QPushButton, QLabel,
-    QGroupBox, QMessageBox, QTreeWidget, QTreeWidgetItem,
-    QProgressBar, QLineEdit, QFileDialog, QCheckBox,
+    QVBoxLayout,
+    QHBoxLayout,
+    QPushButton,
+    QLabel,
+    QGroupBox,
+    QMessageBox,
+    QTreeWidget,
+    QTreeWidgetItem,
+    QProgressBar,
+    QLineEdit,
+    QFileDialog,
+    QCheckBox,
 )
 from PySide6.QtCore import Qt, QThread, Signal, QObject
 from PySide6.QtGui import QFont
@@ -21,16 +30,17 @@ from cortex_unified.analyzers.privacy_cleaner import PrivacyCleaner
 from cortex_unified.system_tools.telemetry_blocker import TelemetryBlocker
 from cortex_unified.analyzers.czkawka_tools import ExifCleaner
 
-
 # ──────────────────────────────────────────────────────────────────────
 # Workers
 # ──────────────────────────────────────────────────────────────────────
 
+
 class BrowserScanWorker(QObject):
     """QThread worker scanning browsers and system traces via PrivacyCleaner.
 
-        Emits finished with browser data and system traces.
+    Emits finished with browser data and system traces.
     """
+
     finished = Signal(dict, dict)  # browser_data, system_traces
 
     def run(self):
@@ -48,8 +58,9 @@ class BrowserScanWorker(QObject):
 class ExifScanWorker(QThread):
     """QThread worker scanning and stripping photo EXIF metadata via ExifCleaner.
 
-        Emits scan_finished or strip_finished on success and error on failure.
+    Emits scan_finished or strip_finished on success and error on failure.
     """
+
     scan_finished = Signal(list)
     strip_finished = Signal(dict)
     error = Signal(str)
@@ -90,10 +101,11 @@ class ExifScanWorker(QThread):
 # Privacy Tab
 # ──────────────────────────────────────────────────────────────────────
 
+
 class PrivacyTab(BaseTab):
     """Privacy tab with telemetry controls, browser/system sweeper, and EXIF photo scanner/stripper.
 
-        Browser and EXIF actions run BrowserScanWorker and ExifScanWorker threads; telemetry buttons edit the registry.
+    Browser and EXIF actions run BrowserScanWorker and ExifScanWorker threads; telemetry buttons edit the registry.
     """
 
     def __init__(self, config, logger, safety_manager, parent=None):
@@ -127,7 +139,9 @@ class PrivacyTab(BaseTab):
 
         # ── Header ───────────────────────────────────────────────────
         header = QLabel("Privacy Shield")
-        hf = QFont(); hf.setPointSize(18); hf.setBold(True)
+        hf = QFont()
+        hf.setPointSize(18)
+        hf.setBold(True)
         header.setFont(hf)
         main_layout.addWidget(header)
 
@@ -141,9 +155,7 @@ class PrivacyTab(BaseTab):
 
         btn_row = QHBoxLayout()
         self.btn_block = QPushButton("Block All Telemetry")
-        self.btn_block.setStyleSheet(
-            "background-color: #2196F3; color: white; padding: 8px; font-weight: bold;"
-        )
+        self.btn_block.setStyleSheet("background-color: #2196F3; color: white; padding: 8px; font-weight: bold;")
         self.btn_block.clicked.connect(self._apply_block)
         btn_row.addWidget(self.btn_block)
 
@@ -181,14 +193,14 @@ class PrivacyTab(BaseTab):
         browser_layout.addWidget(self.browser_tree)
 
         self.chk_sweep_strip_exif = QCheckBox("Also Strip Photo EXIF metadata during sweep (Czkawka)")
-        self.chk_sweep_strip_exif.setToolTip("Strip GPS locations and camera metadata from photos in the target folder during privacy sweep")
+        self.chk_sweep_strip_exif.setToolTip(
+            "Strip GPS locations and camera metadata from photos in the target folder during privacy sweep"
+        )
         browser_layout.addWidget(self.chk_sweep_strip_exif)
 
         self.btn_sweep = QPushButton("Sweep Selected Data")
         self.btn_sweep.setMinimumHeight(38)
-        self.btn_sweep.setStyleSheet(
-            "background-color: #F44336; color: white; font-weight: bold; border-radius: 5px;"
-        )
+        self.btn_sweep.setStyleSheet("background-color: #F44336; color: white; font-weight: bold; border-radius: 5px;")
         self.btn_sweep.setEnabled(False)
         self.btn_sweep.clicked.connect(self._clean_browsers)
         browser_layout.addWidget(self.btn_sweep)
@@ -239,8 +251,7 @@ class PrivacyTab(BaseTab):
         self._refresh_telemetry()
 
     def setup_tooltips(self):
-        """Set tooltips for the telemetry block/restore buttons.
-        """
+        """Set tooltips for the telemetry block/restore buttons."""
         self.btn_block.setToolTip("Modify registry to disable Windows telemetry (Admin required)")
         self.btn_restore.setToolTip("Remove custom telemetry blocks and restore Windows defaults")
 
@@ -287,11 +298,13 @@ class PrivacyTab(BaseTab):
         refreshes the status tree afterwards.
         """
         reply = QMessageBox.question(
-            self, "Block Telemetry",
+            self,
+            "Block Telemetry",
             "This will modify Windows Registry settings to disable diagnostic "
             "tracking, advertising, Cortana web search, and more.\n\n"
             "Administrator privileges are required.\nProceed?",
-            QMessageBox.Yes | QMessageBox.No, QMessageBox.No,
+            QMessageBox.Yes | QMessageBox.No,
+            QMessageBox.No,
         )
         if reply == QMessageBox.Yes:
             ok = self.telemetry.block_telemetry()
@@ -299,9 +312,9 @@ class PrivacyTab(BaseTab):
                 QMessageBox.information(self, "Success", "All telemetry features have been blocked.")
             else:
                 QMessageBox.warning(
-                    self, "Partial Success",
-                    "Some rules could not be applied.\n"
-                    "Ensure the app is running as Administrator.",
+                    self,
+                    "Partial Success",
+                    "Some rules could not be applied.\n" "Ensure the app is running as Administrator.",
                 )
             self._refresh_telemetry()
 
@@ -311,10 +324,11 @@ class PrivacyTab(BaseTab):
         Reports full or partial restoration and refreshes the status tree.
         """
         reply = QMessageBox.question(
-            self, "Restore Defaults",
-            "This will remove all custom telemetry blocks and restore "
-            "Windows default settings.\n\nProceed?",
-            QMessageBox.Yes | QMessageBox.No, QMessageBox.No,
+            self,
+            "Restore Defaults",
+            "This will remove all custom telemetry blocks and restore " "Windows default settings.\n\nProceed?",
+            QMessageBox.Yes | QMessageBox.No,
+            QMessageBox.No,
         )
         if reply == QMessageBox.Yes:
             ok = self.telemetry.restore_defaults()
@@ -408,9 +422,7 @@ class PrivacyTab(BaseTab):
 
         if grand_total > 0:
             self.btn_sweep.setEnabled(True)
-            self.btn_sweep.setText(
-                f"Sweep Selected Data ({grand_total / (1024 * 1024):.1f} MB)"
-            )
+            self.btn_sweep.setText(f"Sweep Selected Data ({grand_total / (1024 * 1024):.1f} MB)")
         else:
             QMessageBox.information(self, "Clean", "No privacy traces found!")
 
@@ -450,11 +462,13 @@ class PrivacyTab(BaseTab):
             return
 
         reply = QMessageBox.question(
-            self, "Confirm Privacy Sweep",
+            self,
+            "Confirm Privacy Sweep",
             "Make sure your browsers are CLOSED.\n\n"
             "This will permanently delete the selected cookies, cache, "
             "history, and session data.\n\nProceed?",
-            QMessageBox.Yes | QMessageBox.No, QMessageBox.No,
+            QMessageBox.Yes | QMessageBox.No,
+            QMessageBox.No,
         )
         if reply != QMessageBox.Yes:
             return
@@ -477,9 +491,9 @@ class PrivacyTab(BaseTab):
             QMessageBox.information(self, "Success", "Selected privacy traces have been cleared.")
         else:
             QMessageBox.warning(
-                self, "Partial Success",
-                "Some files could not be deleted.\n"
-                "Make sure browsers are closed and try again.",
+                self,
+                "Partial Success",
+                "Some files could not be deleted.\n" "Make sure browsers are closed and try again.",
             )
 
         # Rescan
@@ -488,8 +502,7 @@ class PrivacyTab(BaseTab):
     # ── Photo EXIF Metadata (Czkawka) ─────────────────────────────────
 
     def _pick_exif_folder(self):
-        """Browse to select a photo folder for EXIF scanning.
-        """
+        """Browse to select a photo folder for EXIF scanning."""
         folder = QFileDialog.getExistingDirectory(self, "Select Photos Directory", self.exif_path_edit.text())
         if folder:
             self.exif_path_edit.setText(folder)
@@ -537,14 +550,15 @@ class PrivacyTab(BaseTab):
             self.btn_exif_strip.setEnabled(True)
 
     def _strip_exif(self):
-        """Strip EXIF metadata in-place from scanned photos.
-        """
+        """Strip EXIF metadata in-place from scanned photos."""
         if not self._exif_findings:
             return
         reply = QMessageBox.question(
-            self, "Confirm EXIF Strip",
+            self,
+            "Confirm EXIF Strip",
             f"This will remove EXIF metadata (including GPS location coordinates) in-place from {len(self._exif_findings)} photos.\n\nProceed?",
-            QMessageBox.Yes | QMessageBox.No, QMessageBox.No,
+            QMessageBox.Yes | QMessageBox.No,
+            QMessageBox.No,
         )
         if reply != QMessageBox.Yes:
             return
@@ -572,7 +586,9 @@ class PrivacyTab(BaseTab):
         self.exif_progress.setVisible(False)
         self.btn_exif_scan.setEnabled(True)
         success_count = sum(1 for ok in results.values() if ok)
-        self.lbl_exif_status.setText(f"Successfully stripped EXIF metadata from {success_count} / {len(results)} photos.")
+        self.lbl_exif_status.setText(
+            f"Successfully stripped EXIF metadata from {success_count} / {len(results)} photos."
+        )
         QMessageBox.information(self, "EXIF Scrubbed", f"Stripped EXIF metadata from {success_count} photos.")
         self._scan_exif()
 

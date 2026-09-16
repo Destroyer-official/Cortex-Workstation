@@ -28,13 +28,13 @@ _IS_WINDOWS = sys.platform == "win32"
 _NO_WINDOW = 0x08000000 if _IS_WINDOWS else 0
 
 _RESULTS_KEY = r"SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsUpdate\Auto Update\Results"
-_HISTORY_RESULT = {1: "In progress", 2: "Succeeded", 3: "Succeeded with errors",
-                   4: "Failed", 5: "Aborted"}
+_HISTORY_RESULT = {1: "In progress", 2: "Succeeded", 3: "Succeeded with errors", 4: "Failed", 5: "Aborted"}
 
 
 @dataclass(slots=True)
 class PendingUpdate:
     """Record holding title, kb, severity, size_bytes."""
+
     title: str
     kb: str = ""
     severity: str = ""
@@ -46,8 +46,7 @@ class PendingUpdate:
         Returns:
         dict[str, Any]: Dictionary mapping identifiers to status or values.
         """
-        return {"title": self.title, "kb": self.kb, "severity": self.severity,
-                "size_bytes": self.size_bytes}
+        return {"title": self.title, "kb": self.kb, "severity": self.severity, "size_bytes": self.size_bytes}
 
 
 class WindowsUpdate:
@@ -89,6 +88,7 @@ class WindowsUpdate:
         """
         try:
             import winreg
+
             with winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, _RESULTS_KEY + "\\" + sub) as key:
                 val, _ = winreg.QueryValueEx(key, "LastSuccessTime")
                 return str(val)
@@ -154,12 +154,14 @@ class WindowsUpdate:
             title = str(u.get("Title") or "").strip()
             if not title:
                 continue
-            updates.append(PendingUpdate(
-                title=title,
-                kb=("KB" + str(u.get("KB")) if u.get("KB") else ""),
-                severity=str(u.get("Severity") or ""),
-                size_bytes=_int(u.get("Size")),
-            ))
+            updates.append(
+                PendingUpdate(
+                    title=title,
+                    kb=("KB" + str(u.get("KB")) if u.get("KB") else ""),
+                    severity=str(u.get("Severity") or ""),
+                    size_bytes=_int(u.get("Size")),
+                )
+            )
         return updates
 
     # -- history via COM ----------------------------------------------------
@@ -214,12 +216,14 @@ class WindowsUpdate:
                 rc = int(h.get("Result"))
             except (ValueError, TypeError):
                 rc = 0
-            rows.append({
-                "title": title,
-                "date": str(h.get("Date") or "").replace("T", " "),
-                "result": _HISTORY_RESULT.get(rc, "Unknown"),
-                "succeeded": rc == 2,
-            })
+            rows.append(
+                {
+                    "title": title,
+                    "date": str(h.get("Date") or "").replace("T", " "),
+                    "result": _HISTORY_RESULT.get(rc, "Unknown"),
+                    "succeeded": rc == 2,
+                }
+            )
         return rows
 
     def _run(self, script: str, timeout: int) -> str | None:
@@ -235,7 +239,9 @@ class WindowsUpdate:
         try:
             proc = _proc.run(
                 ["powershell", "-NoProfile", "-NonInteractive", "-Command", script],
-                text=True, timeout=timeout, creationflags=_NO_WINDOW,
+                text=True,
+                timeout=timeout,
+                creationflags=_NO_WINDOW,
             )
             return proc.stdout if proc.returncode == 0 else None
         except (_proc.ProcessCancelled, OSError, subprocess.SubprocessError) as exc:

@@ -28,16 +28,18 @@ from PySide6.QtWidgets import QApplication, QWidget
 _LOG = logging.getLogger("cortex.ui.premium.focus")
 
 #: Keys that count as keyboard navigation (arriving focus should show a ring).
-_NAV_KEYS = frozenset({
-    Qt.Key.Key_Tab,
-    Qt.Key.Key_Backtab,
-    Qt.Key.Key_Up,
-    Qt.Key.Key_Down,
-    Qt.Key.Key_Left,
-    Qt.Key.Key_Right,
-    Qt.Key.Key_Home,
-    Qt.Key.Key_End,
-})
+_NAV_KEYS = frozenset(
+    {
+        Qt.Key.Key_Tab,
+        Qt.Key.Key_Backtab,
+        Qt.Key.Key_Up,
+        Qt.Key.Key_Down,
+        Qt.Key.Key_Left,
+        Qt.Key.Key_Right,
+        Qt.Key.Key_Home,
+        Qt.Key.Key_End,
+    }
+)
 
 
 class FocusVisibleFilter(QObject):
@@ -72,8 +74,7 @@ class FocusVisibleFilter(QObject):
             if et == QEvent.Type.KeyPress:
                 if event.key() in _NAV_KEYS:
                     self._keyboard = True
-            elif et in (QEvent.Type.MouseButtonPress,
-                        QEvent.Type.MouseButtonDblClick):
+            elif et in (QEvent.Type.MouseButtonPress, QEvent.Type.MouseButtonDblClick):
                 self._keyboard = False
             elif et == QEvent.Type.FocusIn:
                 self._set_visible(obj, self._keyboard)

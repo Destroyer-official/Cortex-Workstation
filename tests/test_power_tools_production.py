@@ -77,13 +77,13 @@ from cortex_unified.system_tools.delivery_optimization_cleaner import (
     DeliveryOptimizationStatus,
 )
 
-
 IS_WINDOWS = platform.system() == "Windows"
 
 
 # ===========================================================================
 # 1. HASH TOOL & CHECKSUM MANIFEST TESTS
 # ===========================================================================
+
 
 def test_hash_computation(tmp_path: Path):
     """Verify hash computation via HashTool.compute_all_hashes.
@@ -147,6 +147,7 @@ def test_checksum_manifest_creation_and_verify(tmp_path: Path):
 # 2. BATCH RENAMER TESTS
 # ===========================================================================
 
+
 def test_batch_renamer_tokens_and_case(tmp_path: Path):
     """Verify batch renamer tokens and case via BatchRenamer, renamer.preview_rename, renamer.execute_rename.
 
@@ -191,6 +192,7 @@ def test_batch_renamer_tokens_and_case(tmp_path: Path):
 # ===========================================================================
 # 3. DIRECTORY DIFFER & SYNCHRONIZER TESTS
 # ===========================================================================
+
 
 def test_directory_diff_and_sync(tmp_path: Path):
     """Verify directory diff and sync via DirectoryDiffEngine.compare_directories, DirectoryDiffEngine.execute_sync, statuses.get.
@@ -244,6 +246,7 @@ def test_directory_diff_and_sync(tmp_path: Path):
 # 4. FILE SPLITTER & JOINER TESTS
 # ===========================================================================
 
+
 def test_file_splitter_and_joiner(tmp_path: Path):
     """Verify file splitter and joiner via FileSplitterJoiner.split_file, FileSplitterJoiner.join_files, reconstructed.read_bytes.
 
@@ -284,6 +287,7 @@ def test_file_splitter_and_joiner(tmp_path: Path):
 # 5. PROCESS UNLOCKER TESTS
 # ===========================================================================
 
+
 def test_file_unlocker_inspect(tmp_path: Path):
     """Verify file unlocker inspect via FileUnlocker.get_locking_processes.
 
@@ -301,6 +305,7 @@ def test_file_unlocker_inspect(tmp_path: Path):
 # 6. ALTERNATE DATA STREAMS TESTS
 # ===========================================================================
 
+
 def test_alternate_data_streams_list(tmp_path: Path):
     """Verify alternate data streams list via AlternateDataStreamsManager.list_streams, AlternateDataStreamsManager.unblock_file.
 
@@ -308,7 +313,7 @@ def test_alternate_data_streams_list(tmp_path: Path):
         tmp_path (Path): Filesystem path to the target file or directory.
     """
     dummy_file = tmp_path / "downloaded_app.exe"
-    dummy_file.write_bytes(b"\x4D\x5A\x90\x00")  # MZ PE stub
+    dummy_file.write_bytes(b"\x4d\x5a\x90\x00")  # MZ PE stub
 
     streams = AlternateDataStreamsManager.list_streams(dummy_file)
     assert isinstance(streams, list)
@@ -321,6 +326,7 @@ def test_alternate_data_streams_list(tmp_path: Path):
 # ===========================================================================
 # 7. EVENT LOG CLEANER TESTS
 # ===========================================================================
+
 
 def test_event_log_cleaner_scan():
     """Verify event log cleaner scan via EventLogCleaner.list_all_logs."""
@@ -335,6 +341,7 @@ def test_event_log_cleaner_scan():
 # 8. SYSTEM CACHE REBUILDER TESTS
 # ===========================================================================
 
+
 def test_system_cache_rebuilder_scan():
     """Verify system cache rebuilder scan via SystemCacheRebuilder.notify_shell_refresh."""
     ok = SystemCacheRebuilder.notify_shell_refresh()
@@ -344,6 +351,7 @@ def test_system_cache_rebuilder_scan():
 # ===========================================================================
 # 9. NETWORK STACK OPTIMIZER TESTS
 # ===========================================================================
+
 
 def test_network_stack_optimizer_status():
     """Verify network stack optimizer status via NetworkStackOptimizer.get_tcp_settings, hasattr."""
@@ -357,6 +365,7 @@ def test_network_stack_optimizer_status():
 # 10. CRASH DUMP CLEANER TESTS
 # ===========================================================================
 
+
 def test_crash_dump_cleaner_scan():
     """Verify crash dump cleaner scan via CrashDumpCleaner.scan_dumps."""
     items = CrashDumpCleaner.scan_dumps()
@@ -366,6 +375,7 @@ def test_crash_dump_cleaner_scan():
 # ===========================================================================
 # 11. DELIVERY OPTIMIZATION CLEANER TESTS
 # ===========================================================================
+
 
 def test_delivery_optimization_cleaner_scan():
     """Verify delivery optimization cleaner scan via DeliveryOptimizationCleaner.get_status."""

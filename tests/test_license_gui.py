@@ -73,15 +73,13 @@ def _click_trial_buttons(monkeypatch):
     without showing anything on screen.
     """
     boxes: list = []
-    monkeypatch.setattr(
-        QMessageBox, "exec", lambda self: boxes.append(self) or 0)
-    monkeypatch.setattr(
-        QMessageBox, "clickedButton",
-        lambda self: getattr(self, "_trial_button", None))
+    monkeypatch.setattr(QMessageBox, "exec", lambda self: boxes.append(self) or 0)
+    monkeypatch.setattr(QMessageBox, "clickedButton", lambda self: getattr(self, "_trial_button", None))
     return boxes
 
 
 # -- 1. page loads; Free tier when unlicensed ---------------------------------
+
 
 def test_license_page_shows_free_when_unlicensed(window):
     """Verify license page shows free when unlicensed via page.trial_btn.isEnabled, page.deactivate_btn.isEnabled, page.table.rowCount.
@@ -97,10 +95,7 @@ def test_license_page_shows_free_when_unlicensed(window):
     assert page.trial_btn.isEnabled()
     assert page.deactivate_btn.isEnabled() is False
     # ...and only the free core reads as included in the comparison table.
-    included = {
-        page.table.item(r, 0).text(): page.table.item(r, 2).text()
-        for r in range(page.table.rowCount())
-    }
+    included = {page.table.item(r, 0).text(): page.table.item(r, 2).text() for r in range(page.table.rowCount())}
     assert included["engine.clean"] == "Yes"
     assert included["security.sentinel_pro"] == "\u2014"
     assert included["enterprise.audit_export"] == "\u2014"
@@ -114,8 +109,7 @@ def test_activate_with_empty_key_warns_and_stays_free(window, monkeypatch):
         monkeypatch: The monkeypatch parameter.
     """
     warnings = []
-    monkeypatch.setattr(QMessageBox, "warning",
-                        staticmethod(lambda *a, **k: warnings.append(a)))
+    monkeypatch.setattr(QMessageBox, "warning", staticmethod(lambda *a, **k: warnings.append(a)))
     page = window._pages["license"]
     page._activate()
     assert warnings, "expected the empty-key warning dialog"
@@ -123,6 +117,7 @@ def test_activate_with_empty_key_warns_and_stays_free(window, monkeypatch):
 
 
 # -- 2. activation flows into the UI ------------------------------------------
+
 
 def test_page_shows_pro_after_activation_and_refresh(window, isolated_license):
     """Verify page shows pro after activation and refresh via page.trial_btn.isEnabled, page.table.rowCount, isolated_license.activate.
@@ -133,8 +128,7 @@ def test_page_shows_pro_after_activation_and_refresh(window, isolated_license):
     """
     from cortex_unified.licensing import Tier
 
-    isolated_license.activate("PROK-1234-ABCD", Tier.PRO,
-                              "Tester", "tester@example.dev")
+    isolated_license.activate("PROK-1234-ABCD", Tier.PRO, "Tester", "tester@example.dev")
     page = window._pages["license"]
     page._refresh()
 
@@ -144,12 +138,8 @@ def test_page_shows_pro_after_activation_and_refresh(window, isolated_license):
     assert page.key_label.text().startswith("Key: PROK")
     assert "1234-ABCD" not in page.key_label.text()
     # PRO unlocks 16 of the matrix rows; the table agrees with the manager.
-    assert f"{len(isolated_license.validate().features)} of" \
-        in page.features_label.text()
-    included = {
-        page.table.item(r, 0).text(): page.table.item(r, 2).text()
-        for r in range(page.table.rowCount())
-    }
+    assert f"{len(isolated_license.validate().features)} of" in page.features_label.text()
+    included = {page.table.item(r, 0).text(): page.table.item(r, 2).text() for r in range(page.table.rowCount())}
     assert included["security.sentinel_pro"] == "Yes"
     assert included["enterprise.audit_export"] == "\u2014"
     # A paid license means the trial button has no reason to exist.
@@ -157,6 +147,7 @@ def test_page_shows_pro_after_activation_and_refresh(window, isolated_license):
 
 
 # -- 3. require_feature -------------------------------------------------------
+
 
 def test_require_feature_allows_licensed_feature(window, isolated_license):
     """Verify require feature allows licensed feature via isolated_license.activate, require_feature.
@@ -172,8 +163,7 @@ def test_require_feature_allows_licensed_feature(window, isolated_license):
     assert require_feature(window, Feature.SENTINEL_PRO) is True
 
 
-def test_require_feature_denied_offers_trial_then_refuses_second_time(
-        window, isolated_license, monkeypatch):
+def test_require_feature_denied_offers_trial_then_refuses_second_time(window, isolated_license, monkeypatch):
     """Denied -> dialog offers the trial; starting it unlocks PRO; afterwards
     the offer is gone, so a second gated call simply returns False."""
     from cortex_unified.licensing import Feature
@@ -192,16 +182,14 @@ def test_require_feature_denied_offers_trial_then_refuses_second_time(
     assert boxes[1]._trial_button is None
 
 
-def test_require_feature_reports_refused_trial(window, isolated_license,
-                                               monkeypatch):
+def test_require_feature_reports_refused_trial(window, isolated_license, monkeypatch):
     """If start_trial refuses anyway (raced/exhausted), the user sees an
     honest info dialog instead of a silent no-op or a crash."""
     from cortex_unified.licensing import Feature
     from cortex_unified.ui.premium.widgets import require_feature
 
     infos = []
-    monkeypatch.setattr(QMessageBox, "information",
-                        staticmethod(lambda *a, **k: infos.append(a)))
+    monkeypatch.setattr(QMessageBox, "information", staticmethod(lambda *a, **k: infos.append(a)))
 
     def refused():
         """Refused using RuntimeError."""
@@ -216,6 +204,7 @@ def test_require_feature_reports_refused_trial(window, isolated_license,
 
 
 # -- 4. registry --------------------------------------------------------------
+
 
 def test_registry_declares_the_license_page():
     """Mirrors test_page_registry.py: one declaration wires everything."""

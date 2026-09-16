@@ -198,14 +198,16 @@ class Winapp2Cleaner:
     """High-throughput declarative cleaner engine for Windows applications."""
 
     # Explicit critical directories forbidden from being targeted
-    PROTECTED_ROOTS = frozenset([
-        "C:\\Windows",
-        "C:\\Windows\\System32",
-        "C:\\Windows\\SysWOW64",
-        "C:\\Program Files",
-        "C:\\Program Files (x86)",
-        "C:\\Users",
-    ])
+    PROTECTED_ROOTS = frozenset(
+        [
+            "C:\\Windows",
+            "C:\\Windows\\System32",
+            "C:\\Windows\\SysWOW64",
+            "C:\\Program Files",
+            "C:\\Program Files (x86)",
+            "C:\\Users",
+        ]
+    )
 
     def __init__(self, custom_ini_content: Optional[str] = None) -> None:
         """Initialize Winapp2 Cleaner."""
@@ -367,7 +369,7 @@ class Winapp2Cleaner:
                 if "*" in expanded_base or "?" in expanded_base:
                     parent_part = Path(expanded_base.split("*")[0].split("?")[0])
                     if parent_part.exists() and parent_part.is_dir():
-                        glob_pat = expanded_base[len(str(parent_part)):].lstrip("\\/")
+                        glob_pat = expanded_base[len(str(parent_part)) :].lstrip("\\/")
                         try:
                             matched_dirs = list(parent_part.glob(glob_pat))
                         except Exception:

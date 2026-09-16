@@ -22,6 +22,7 @@ IS_WINDOWS = platform.system() == "Windows"
 
 class TestPermissionRisk:
     """Group testpermissionrisk tests covering broad permissions flagged; narrow permissions not flagged; to dict includes flag."""
+
     def test_broad_permissions_flagged(self):
         """Verify broad permissions flagged via BrowserExtension."""
         e = BrowserExtension("Chrome", "Spy", "1.0", "abc", ["<all_urls>", "tabs"])
@@ -75,6 +76,7 @@ def fake_home(tmp_path, monkeypatch):
 
 class TestChromiumScan:
     """Group testchromiumscan tests covering finds extension with permissions; host permissions merged; no browsers returns empty; bad manifest skipped."""
+
     def test_finds_extension_with_permissions(self, fake_home):
         """Verify finds extension with permissions via BrowserExtensionAuditor, auditor.audit, _make_chrome_ext.
 
@@ -83,7 +85,9 @@ class TestChromiumScan:
         """
         home, local = fake_home
         _make_chrome_ext(
-            local, ["Google", "Chrome", "User Data"], "aaaabbbbccccdddd",
+            local,
+            ["Google", "Chrome", "User Data"],
+            "aaaabbbbccccdddd",
             {"name": "Ad Blocker", "version": "3.2", "permissions": ["tabs", "<all_urls>"]},
         )
         auditor = BrowserExtensionAuditor(home=home)
@@ -102,7 +106,9 @@ class TestChromiumScan:
         """
         home, local = fake_home
         _make_chrome_ext(
-            local, ["Microsoft", "Edge", "User Data"], "id2",
+            local,
+            ["Microsoft", "Edge", "User Data"],
+            "id2",
             {"name": "Tool", "version": "1", "host_permissions": ["*://*/*"]},
         )
         exts = BrowserExtensionAuditor(home=home).audit()
@@ -128,8 +134,7 @@ class TestChromiumScan:
             fake_home: The fake home parameter.
         """
         home, local = fake_home
-        ext_dir = local.joinpath("Google", "Chrome", "User Data", "Default",
-                                 "Extensions", "broken", "1.0_0")
+        ext_dir = local.joinpath("Google", "Chrome", "User Data", "Default", "Extensions", "broken", "1.0_0")
         ext_dir.mkdir(parents=True)
         (ext_dir / "manifest.json").write_text("{ not valid json", encoding="utf-8")
         # Should not raise, just skip the broken one.
@@ -139,6 +144,7 @@ class TestChromiumScan:
 
 class TestAuditNeverRaises:
     """Group testauditneverraises tests covering audit returns list."""
+
     def test_audit_returns_list(self):
         """Verify audit returns list via BrowserExtensionAuditor, audit."""
         assert isinstance(BrowserExtensionAuditor().audit(), list)

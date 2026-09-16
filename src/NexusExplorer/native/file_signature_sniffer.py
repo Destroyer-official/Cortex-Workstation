@@ -14,6 +14,7 @@ class FileSignature:
 
     Stores extension, MIME type, description, magic bytes, and header offset for matching.
     """
+
     extension: str
     mime_type: str
     description: str
@@ -31,7 +32,6 @@ SIGNATURE_LIBRARY: List[FileSignature] = [
     FileSignature(".macho", "application/x-mach-binary", "macOS Mach-O Binary (64-bit)", b"\xfe\xed\xfa\xcf", 0),
     FileSignature(".class", "application/java-vm", "Java Bytecode Class", b"\xca\xfe\xba\xbe", 0),
     FileSignature(".wasm", "application/wasm", "WebAssembly Binary", b"\x00asm", 0),
-
     # Images
     FileSignature(".png", "image/png", "Portable Network Graphics", b"\x89PNG\r\n\x1a\n", 0),
     FileSignature(".jpg", "image/jpeg", "JPEG Image", b"\xff\xd8\xff", 0),
@@ -44,12 +44,10 @@ SIGNATURE_LIBRARY: List[FileSignature] = [
     FileSignature(".tiff", "image/tiff", "TIFF Image (Little Endian)", b"II*\x00", 0),
     FileSignature(".tiff", "image/tiff", "TIFF Image (Big Endian)", b"MM\x00*", 0),
     FileSignature(".psd", "image/vnd.adobe.photoshop", "Adobe Photoshop Document", b"8BPS", 0),
-
     # Documents
     FileSignature(".pdf", "application/pdf", "Adobe Portable Document Format", b"%PDF", 0),
     FileSignature(".rtf", "application/rtf", "Rich Text Format", b"{\\rtf", 0),
     FileSignature(".sqlite", "application/vnd.sqlite3", "SQLite 3 Database", b"SQLite format 3\x00", 0),
-
     # Archives & Compression
     FileSignature(".zip", "application/zip", "ZIP Archive", b"PK\x03\x04", 0),
     FileSignature(".zip", "application/zip", "Empty ZIP Archive", b"PK\x05\x06", 0),
@@ -61,7 +59,6 @@ SIGNATURE_LIBRARY: List[FileSignature] = [
     FileSignature(".xz", "application/x-xz", "XZ Compressed Archive", b"\xfd7zXZ\x00", 0),
     FileSignature(".zst", "application/zstd", "Zstandard Compressed Archive", b"(\xb5/\xfd", 0),
     FileSignature(".tar", "application/x-tar", "POSIX Tar Archive", b"ustar", 257),
-
     # Audio & Video
     FileSignature(".mp3", "audio/mpeg", "MP3 Audio (with ID3v2 tag)", b"ID3", 0),
     FileSignature(".flac", "audio/flac", "Free Lossless Audio Codec", b"fLaC", 0),
@@ -79,6 +76,7 @@ class SniffResult:
 
     Records declared extension, detected format/MIME, spoofed/unknown flags, header hex, and size.
     """
+
     file_path: str
     file_name: str
     declared_extension: str
@@ -129,7 +127,7 @@ class FileSignatureSniffer:
         for sig in SIGNATURE_LIBRARY:
             end_offset = sig.offset + len(sig.magic_bytes)
             if len(header_bytes) >= end_offset:
-                if header_bytes[sig.offset:end_offset] == sig.magic_bytes:
+                if header_bytes[sig.offset : end_offset] == sig.magic_bytes:
                     matched_sig = sig
                     break
 

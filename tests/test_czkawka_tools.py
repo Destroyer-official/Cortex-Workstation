@@ -97,9 +97,7 @@ def _make_minimal_png(path: Path) -> Path:
     ihdr = struct.pack(">IIBBBBB", 1, 1, 8, 2, 0, 0, 0)
     raw = b"\x00\xff\xff\xff"  # filter=none, one white pixel
     idat = zlib.compress(raw)
-    path.write_bytes(
-        sig + _chunk(b"IHDR", ihdr) + _chunk(b"IDAT", idat) + _chunk(b"IEND", b"")
-    )
+    path.write_bytes(sig + _chunk(b"IHDR", ihdr) + _chunk(b"IDAT", idat) + _chunk(b"IEND", b""))
     return path
 
 
@@ -153,6 +151,7 @@ def _make_minimal_zip(path: Path) -> Path:
 
 class TestEmptyFinder:
     """Group testemptyfinder tests covering finds empty files; finds empty dirs; returns empty when nothing empty; scanned count; duration is non negative; cancel stops early."""
+
     def test_finds_empty_files(self, tmp_path: Path):
         """Verify finds empty files via EmptyFinder, _touch_empty, _touch_file.
 
@@ -275,11 +274,10 @@ class TestEmptyFinder:
 # ---------------------------------------------------------------------------
 
 
-@pytest.mark.skipif(
-    IS_WINDOWS, reason="symlinks require elevated privileges on Windows"
-)
+@pytest.mark.skipif(IS_WINDOWS, reason="symlinks require elevated privileges on Windows")
 class TestInvalidSymlinkFinder:
     """Group testinvalidsymlinkfinder tests covering finds broken symlink; ignores valid symlink; empty when no symlinks; scanned count; relative symlink broken; relative symlink valid."""
+
     def test_finds_broken_symlink(self, tmp_path: Path):
         """Verify finds broken symlink via InvalidSymlinkFinder, broken.symlink_to, find.
 
@@ -390,6 +388,7 @@ class TestInvalidSymlinkFinder:
 
 class TestBrokenFileFinder:
     """Group testbrokenfilefinder tests covering finds corrupted zip; ignores valid zip; finds bad pdf; ignores valid pdf; finds corrupted png; ignores valid png."""
+
     def test_finds_corrupted_zip(self, tmp_path: Path):
         """Verify finds corrupted zip via BrokenFileFinder, _touch_file, find.
 
@@ -445,9 +444,7 @@ class TestBrokenFileFinder:
         broken = BrokenFileFinder(str(tmp_path)).find()
         assert p in broken
 
-    @pytest.mark.skipif(
-        IS_WINDOWS, reason="minimal PNG without PIL may misbehave on Windows"
-    )
+    @pytest.mark.skipif(IS_WINDOWS, reason="minimal PNG without PIL may misbehave on Windows")
     def test_ignores_valid_png(self, tmp_path: Path):
         """Verify ignores valid png via BrokenFileFinder, pytest.mark.skipif, _make_minimal_png.
 
@@ -514,6 +511,7 @@ class TestBrokenFileFinder:
 
 class TestBadExtensionFinder:
     """Group testbadextensionfinder tests covering finds png with wrong ext; finds jpg with wrong ext; ignores correct extension; ignores extensionless files; allows jpg jpeg alias; empty dir."""
+
     def test_finds_png_with_wrong_ext(self, tmp_path: Path):
         """Verify finds png with wrong ext via BadExtensionFinder, _make_minimal_png, find.
 
@@ -619,9 +617,8 @@ class TestBadExtensionFinder:
 
 class TestBadNamesFinder:
     """Group testbadnamesfinder tests covering finds control chars; finds windows reserved chars; finds leading space; finds trailing space; finds trailing dot; finds reserved windows names."""
-    @pytest.mark.skipif(
-        IS_WINDOWS, reason="null bytes in filenames unsupported on Windows"
-    )
+
+    @pytest.mark.skipif(IS_WINDOWS, reason="null bytes in filenames unsupported on Windows")
     def test_finds_control_chars(self, tmp_path: Path):
         """Verify finds control chars via BadNamesFinder, pytest.mark.skipif, _touch_file.
 
@@ -633,9 +630,7 @@ class TestBadNamesFinder:
         bad = BadNamesFinder(str(tmp_path)).find()
         assert any(b.name == "file\x00name.txt" for b in bad)
 
-    @pytest.mark.skipif(
-        IS_WINDOWS, reason="reserved chars cannot be created on Windows"
-    )
+    @pytest.mark.skipif(IS_WINDOWS, reason="reserved chars cannot be created on Windows")
     def test_finds_windows_reserved_chars(self, tmp_path: Path):
         """Verify finds windows reserved chars via BadNamesFinder, pytest.mark.skipif, find.
 
@@ -713,9 +708,7 @@ class TestBadNamesFinder:
         bad = BadNamesFinder(str(tmp_path)).find()
         assert bad == []
 
-    @pytest.mark.skipif(
-        IS_WINDOWS, reason="null bytes in filenames unsupported on Windows"
-    )
+    @pytest.mark.skipif(IS_WINDOWS, reason="null bytes in filenames unsupported on Windows")
     def test_finds_bad_dir_names(self, tmp_path: Path):
         """Verify finds bad dir names via BadNamesFinder, pytest.mark.skipif, find.
 
@@ -767,6 +760,7 @@ class TestBadNamesFinder:
 
 class TestExifCleaner:
     """Group testexifcleaner tests covering scan finds exif if pil available; scan skips non image files; scan empty dir; strip returns dict for empty list; cancel stops scan early; exclude dirs."""
+
     def test_scan_finds_exif_if_pil_available(self, tmp_path: Path):
         """Verify scan finds exif if pil available via Image.new, cleaner.scan, img.save.
 
@@ -852,6 +846,7 @@ class TestExifCleaner:
 
 class TestTempFileFinder:
     """Group testtempfilefinder tests covering finds tmp extension; finds temp extension; finds log files; finds bak files; finds old files; finds swap files."""
+
     def test_finds_tmp_extension(self, tmp_path: Path):
         """Verify finds tmp extension via TempFileFinder, _touch_file, find.
 
@@ -1042,6 +1037,7 @@ class TestTempFileFinder:
 
 class TestVideoOptimizer:
     """Group testvideooptimizer tests covering find static borders returns none on missing ffprobe; find static borders returns none on nonzero exit; find static borders parses json; optimize returns false on ffmpeg error; optimize returns false on exception."""
+
     def test_find_static_borders_returns_none_on_missing_ffprobe(self, tmp_path: Path):
         """Verify find static borders returns none on missing ffprobe via VideoOptimizer, opt.find_static_borders, _touch_file.
 
@@ -1155,6 +1151,7 @@ class TestVideoOptimizer:
 
 class TestSniffExtension:
     """Group testsniffextension tests covering sniff png; sniff jpg; sniff pdf; sniff zip; sniff unknown returns none."""
+
     def test_sniff_png(self, tmp_path: Path):
         """Verify sniff png via _make_minimal_png, _sniff_extension.
 
@@ -1209,6 +1206,7 @@ class TestSniffExtension:
 
 class TestExports:
     """Group testexports tests covering all exports present; magic headers completeness."""
+
     def test_all_exports_present(self):
         """Verify all exports present."""
         from cortex_unified.analyzers.czkawka_tools import __all__

@@ -49,6 +49,7 @@ def _row(name, size=0, is_dir=False, mtime=1000):
 
 class TestUpdateRowsIncremental:
     """Group testupdaterowsincremental tests covering diff removes adds modifies; empty then populate."""
+
     def test_diff_removes_adds_modifies(self, qapp):
         """Verify diff removes adds modifies via model.rowCount, FileTableModel, model.update_rows.
 
@@ -91,6 +92,7 @@ class TestUpdateRowsIncremental:
 
 class TestSessionRoundTrip:
     """Group testsessionroundtrip tests covering tabs and view mode persist."""
+
     def test_tabs_and_view_mode_persist(self, qapp, tmp_path):
         """Verify tabs and view mode persist via qapp.processEvents, w1.stack.currentIndex, w2.stack.currentIndex.
 
@@ -133,8 +135,7 @@ class TestSessionRoundTrip:
             qapp.processEvents()
         current = w1._tab()["path"].lower()
         restored = w2._tab()["path"].lower()
-        assert Path(restored).name == Path(current).name, (
-            f"restored {restored!r} != saved {current!r}")
+        assert Path(restored).name == Path(current).name, f"restored {restored!r} != saved {current!r}"
         # Apply pending view mode if _on_rows hasn't fired yet
         if getattr(w2, "_pending_view_mode", None) == "icons" and w2.stack.currentIndex() == 0:
             w2._toggle_view()

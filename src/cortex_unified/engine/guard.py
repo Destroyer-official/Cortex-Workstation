@@ -26,8 +26,8 @@ from pathlib import Path
 class GuardVerdict:
     """Guard Verdict.
 
- Frozen verdict holding safe flag and human-readable reason.
- """
+    Frozen verdict holding safe flag and human-readable reason.
+    """
 
     safe: bool
     reason: str = ""
@@ -35,22 +35,22 @@ class GuardVerdict:
     def __bool__(self) -> bool:  # allow ``if guard.check(p):``
         """Boolean safety test.
 
- Returns the safe flag so verdicts work directly in if statements.
+        Returns the safe flag so verdicts work directly in if statements.
 
- Returns:
- bool: True if the operation succeeded, False otherwise.
- """
+        Returns:
+        bool: True if the operation succeeded, False otherwise.
+        """
         return self.safe
 
 
 def _windows_protected() -> set[Path]:
     """Windows protected.
 
- Builds the Windows protected set from SystemDrive, SystemRoot, and well-known locations.
+    Builds the Windows protected set from SystemDrive, SystemRoot, and well-known locations.
 
- Returns:
- set[Path]: Result of the operation.
- """
+    Returns:
+    set[Path]: Result of the operation.
+    """
     system_drive = os.environ.get("SystemDrive", "C:") + "\\"
     roots = {
         Path(system_drive) / "Windows",
@@ -72,14 +72,26 @@ def _windows_protected() -> set[Path]:
 def _posix_protected() -> set[Path]:
     """Posix protected.
 
- Builds the POSIX protected set, adding macOS locations on Darwin.
+    Builds the POSIX protected set, adding macOS locations on Darwin.
 
- Returns:
- set[Path]: Result of the operation.
- """
+    Returns:
+    set[Path]: Result of the operation.
+    """
     base = {
-        "/", "/bin", "/sbin", "/usr", "/lib", "/lib64", "/etc", "/boot",
-        "/dev", "/proc", "/sys", "/run", "/var", "/root",
+        "/",
+        "/bin",
+        "/sbin",
+        "/usr",
+        "/lib",
+        "/lib64",
+        "/etc",
+        "/boot",
+        "/dev",
+        "/proc",
+        "/sys",
+        "/run",
+        "/var",
+        "/root",
     }
     if platform.system() == "Darwin":
         base |= {"/System", "/Library", "/Applications", "/private", "/cores"}
@@ -92,8 +104,7 @@ class PathGuard:
     Uses real path-relative checks instead of prefix matching so siblings like /usrdata never mismatch /usr; confines operations to the sandbox base when configured and refuses filesystem/drive roots and the home root.
     """
 
-    def __init__(self, sandbox: os.PathLike[str] | str | None = None,
-                 allow_system: bool = False) -> None:
+    def __init__(self, sandbox: os.PathLike[str] | str | None = None, allow_system: bool = False) -> None:
         """Initialize the instance.
 
         Initializes the instance and configures internal state.
@@ -103,9 +114,7 @@ class PathGuard:
             allow_system (bool): The allow system parameter.
         """
         self._system = platform.system()
-        self._protected = (
-            _windows_protected() if self._system == "Windows" else _posix_protected()
-        )
+        self._protected = _windows_protected() if self._system == "Windows" else _posix_protected()
         self._allow_system = allow_system
         self._sandbox = Path(sandbox).resolve(strict=False) if sandbox else None
         # The user's home directory root itself must never be deleted wholesale,
@@ -156,14 +165,14 @@ class PathGuard:
     def is_writable(self, path: os.PathLike[str] | str) -> bool:
         """True if *path* (or its parent, for not-yet-existing paths) is writable.
 
- Checks os.access(W_OK) on the path or its parent, failing closed on errors.
+        Checks os.access(W_OK) on the path or its parent, failing closed on errors.
 
- Args:
- path (os.PathLike[str] | str): Filesystem path to the target file or directory.
+        Args:
+        path (os.PathLike[str] | str): Filesystem path to the target file or directory.
 
- Returns:
- bool: True if the operation succeeded, False otherwise.
- """
+        Returns:
+        bool: True if the operation succeeded, False otherwise.
+        """
         p = Path(path)
         try:
             if p.exists():

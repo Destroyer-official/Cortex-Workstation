@@ -1,4 +1,5 @@
 """File transfer queue and progress monitoring module."""
+
 from __future__ import annotations
 
 import sys

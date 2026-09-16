@@ -21,6 +21,7 @@ from typing import Any, Dict, List, Optional, Tuple
 @dataclass
 class SystemRamMetrics:
     """Physical RAM snapshot: total/available/used, percent, cache and commit figures."""
+
     total_bytes: int
     available_bytes: int
     used_bytes: int
@@ -33,6 +34,7 @@ class SystemRamMetrics:
 @dataclass
 class ProcessMemoryItem:
     """One process with working-set/private bytes and whether it is safe to trim."""
+
     pid: int
     name: str
     working_set_bytes: int
@@ -43,6 +45,7 @@ class ProcessMemoryItem:
 @dataclass
 class MemoryOptimizeResult:
     """Count of trimmed processes plus freed-bytes estimate; errors make ok False."""
+
     processes_trimmed: int
     bytes_freed_estimate: int
     errors: List[str] = None
@@ -98,9 +101,16 @@ class MemoryOptimizer:
     """
 
     PROTECTED_SYSTEM_PROCESSES = {
-        "system", "system idle process", "smss.exe", "csrss.exe",
-        "wininit.exe", "services.exe", "lsass.exe", "svchost.exe",
-        "winlogon.exe", "dwm.exe",
+        "system",
+        "system idle process",
+        "smss.exe",
+        "csrss.exe",
+        "wininit.exe",
+        "services.exe",
+        "lsass.exe",
+        "svchost.exe",
+        "winlogon.exe",
+        "dwm.exe",
     }
 
     @classmethod
@@ -157,13 +167,15 @@ class MemoryOptimizer:
 
                 is_opt = name.lower() not in cls.PROTECTED_SYSTEM_PROCESSES and pid > 4
 
-                items.append(ProcessMemoryItem(
-                    pid=pid,
-                    name=name,
-                    working_set_bytes=ws,
-                    private_bytes=pv,
-                    is_optimizable=is_opt,
-                ))
+                items.append(
+                    ProcessMemoryItem(
+                        pid=pid,
+                        name=name,
+                        working_set_bytes=ws,
+                        private_bytes=pv,
+                        is_optimizable=is_opt,
+                    )
+                )
             except (psutil.NoSuchProcess, psutil.AccessDenied):
                 pass
 
@@ -235,7 +247,9 @@ class MemoryOptimizer:
         if target_pids is None:
             # Discover top non-critical processes
             procs = cls.scan_process_memory(limit=50)
-            target_pids = [p.pid for p in procs if p.is_optimizable and p.working_set_bytes > (20 * 1024 * 1024)]  # > 20MB
+            target_pids = [
+                p.pid for p in procs if p.is_optimizable and p.working_set_bytes > (20 * 1024 * 1024)
+            ]  # > 20MB
 
         for pid in target_pids:
             try:
@@ -263,10 +277,7 @@ def memory_stats() -> Dict[str, Any]:
         metrics = MemoryOptimizer.get_system_ram_metrics()
         swap = psutil.swap_memory()
         procs = MemoryOptimizer.scan_process_memory(limit=10)
-        top = [
-            {"pid": p.pid, "name": p.name, "rss_bytes": p.working_set_bytes}
-            for p in procs
-        ]
+        top = [{"pid": p.pid, "name": p.name, "rss_bytes": p.working_set_bytes} for p in procs]
         return {
             "supported": True,
             "total_bytes": metrics.total_bytes,

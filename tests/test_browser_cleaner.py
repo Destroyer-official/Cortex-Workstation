@@ -27,9 +27,7 @@ from cortex_unified.system_tools.browser_cleaner import (
 # ---------------------------------------------------------------------------
 
 
-def _make_sqlite(
-    path: Path, table: str = "cookies", rows: list | None = None, populate: bool = True
-) -> Path:
+def _make_sqlite(path: Path, table: str = "cookies", rows: list | None = None, populate: bool = True) -> Path:
     """Create a tiny SQLite DB at *path* and return the path.
 
     Args:
@@ -45,20 +43,14 @@ def _make_sqlite(
     con = sqlite3.connect(str(path))
     cur = con.cursor()
     if table == "cookies":
-        cur.execute(
-            "CREATE TABLE IF NOT EXISTS cookies ("
-            "host_key TEXT, name TEXT, value TEXT)"
-        )
+        cur.execute("CREATE TABLE IF NOT EXISTS cookies (" "host_key TEXT, name TEXT, value TEXT)")
         if populate and rows:
             cur.executemany(
                 "INSERT INTO cookies (host_key, name, value) VALUES (?, ?, ?)",
                 rows,
             )
     elif table == "history":
-        cur.execute(
-            "CREATE TABLE IF NOT EXISTS urls ("
-            "id INTEGER PRIMARY KEY, url TEXT, title TEXT)"
-        )
+        cur.execute("CREATE TABLE IF NOT EXISTS urls (" "id INTEGER PRIMARY KEY, url TEXT, title TEXT)")
         if populate and rows:
             cur.executemany("INSERT INTO urls (url, title) VALUES (?, ?)", rows)
     con.commit()
@@ -66,9 +58,7 @@ def _make_sqlite(
     return path
 
 
-def _make_cache_dir(
-    base: Path, category: str, *, count: int = 3, file_size: int = 100
-) -> Path:
+def _make_cache_dir(base: Path, category: str, *, count: int = 3, file_size: int = 100) -> Path:
     """Populate a cache sub-directory with dummy files.
 
     Args:
@@ -233,6 +223,7 @@ def fake_multi_browser(tmp_path, monkeypatch):
 
 class TestDeepBrowserCleanerInit:
     """Group testdeepbrowsercleanerinit tests covering default init; keep cookies compiled; progress callback stored; custom cancel event; expert mode default off."""
+
     def test_default_init(self):
         """Verify default init via DeepBrowserCleaner, cleaner.cancel.is_set, callable."""
         cleaner = DeepBrowserCleaner()
@@ -277,6 +268,7 @@ class TestDeepBrowserCleanerInit:
 
 class TestProfileDiscovery:
     """Group testprofilediscovery tests covering chromium discovers default profile; chromium skips nonexistent root; firefox discovers profile; firefox profiles ini parsing; firefox absolute profile in ini."""
+
     def test_chromium_discovers_default_profile(self, fake_chromium_home):
         """Verify chromium discovers default profile via _discover_chromium_profiles.
 
@@ -317,13 +309,7 @@ class TestProfileDiscovery:
         _, profiles_dir = fake_firefox_home
         parent = profiles_dir.parent
         ini = parent / "profiles.ini"
-        ini.write_text(
-            "[Profile0]\n"
-            "Name=custom\n"
-            "Path=custom-profile\n"
-            "IsRelative=1\n"
-            "Default=1\n"
-        )
+        ini.write_text("[Profile0]\n" "Name=custom\n" "Path=custom-profile\n" "IsRelative=1\n" "Default=1\n")
         custom = parent / "custom-profile"
         custom.mkdir()
         profiles = _discover_firefox_profiles()
@@ -353,6 +339,7 @@ class TestProfileDiscovery:
 
 class TestCookieCleaning:
     """Group testcookiecleaning tests covering delete non matching cookies; keep all matching cookies; missing db returns zero; keep list regex case insensitive; empty keep list deletes all."""
+
     def test_delete_non_matching_cookies(self, fake_chromium_home):
         """Verify delete non matching cookies via DeepBrowserCleaner, cleaner.clean_cookies_keep_list, sqlite3.connect.
 
@@ -442,6 +429,7 @@ class TestCookieCleaning:
 
 class TestClean:
     """Group testclean tests covering clean removes file; clean removes directory; clean multiple paths; clean missing path handled gracefully; clean shred overwrites; clean respects cancel."""
+
     def test_clean_removes_file(self, tmp_path):
         """Verify clean removes file via DeepBrowserCleaner, cleaner.clean.
 
@@ -566,6 +554,7 @@ class TestClean:
 
 class TestVacuum:
     """Group testvacuum tests covering vacuum runs without error; vacuum missing db no crash; vacuum progress callback; vacuum multiple dbs."""
+
     def test_vacuum_runs_without_error(self, tmp_path):
         """Verify vacuum runs without error via DeepBrowserCleaner, cleaner.vacuum_databases, _make_sqlite.
 
@@ -629,6 +618,7 @@ class TestVacuum:
 
 class TestBrowserDetection:
     """Group testbrowserdetection tests covering scan chromium profile; scan firefox profile; all browsers detected; firefox browser label; vivaldi not in scope."""
+
     def test_scan_chromium_profile(self, fake_chromium_home):
         """Verify scan chromium profile via cleaner._scan_chromium_profile, DeepBrowserCleaner.
 
@@ -707,6 +697,7 @@ class TestProgressCallback:
 
     Updates progress bar widgets, percentage counters, and status indicators with streaming status updates from the running worker.
     """
+
     def test_progress_called_during_clean(self, tmp_path):
         """test_progress_called_during_clean.
 
@@ -744,6 +735,7 @@ class TestProgressCallback:
 
 class TestCancellation:
     """Group testcancellation tests covering cancel stops scan; cancel stops clean; default cancel not set; cancel event prevents scan iteration."""
+
     def test_cancel_stops_scan(self, fake_chromium_home):
         """Verify cancel stops scan via threading.Event, cleaner.scan, DeepBrowserCleaner.
 
@@ -804,6 +796,7 @@ class TestCancellation:
 
 class TestExpertMode:
     """Group testexpertmode tests covering passwords excluded by default; passwords included with expert mode; forms always included; passwords risk is high."""
+
     def test_passwords_excluded_by_default(self, fake_chromium_home):
         """Verify passwords excluded by default via cleaner.scan, DeepBrowserCleaner, _make_sqlite.
 
@@ -872,6 +865,7 @@ class TestExpertMode:
 
 class TestSizeCalculation:
     """Group testsizecalculation tests covering file size reported; directory size summed; scan returns sizes; nonexistent profile returns empty; cleanable dataclass fields; zero size item."""
+
     def test_file_size_reported(self, tmp_path):
         """Verify file size reported via Cleanable, f.stat.
 
@@ -946,6 +940,7 @@ class TestSizeCalculation:
 
 class TestScanIntegration:
     """Group testscanintegration tests covering scan returns list; all items are cleanable; no duplicate paths in scan; cookie risk medium; cache risk low; vacuumable items flagged."""
+
     def test_scan_returns_list(self, fake_chromium_home):
         """Verify scan returns list via cleaner.scan, DeepBrowserCleaner.
 
@@ -998,11 +993,7 @@ class TestScanIntegration:
         """
         cleaner = DeepBrowserCleaner()
         items = cleaner.scan()
-        cache_items = [
-            i
-            for i in items
-            if i.category in ("cache", "codecache", "gpucache", "shadercache")
-        ]
+        cache_items = [i for i in items if i.category in ("cache", "codecache", "gpucache", "shadercache")]
         assert all(i.risk == "low" for i in cache_items)
 
     def test_vacuumable_items_flagged(self, fake_chromium_home):

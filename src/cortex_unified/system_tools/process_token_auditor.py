@@ -37,6 +37,7 @@ SECURITY_MANDATORY_SYSTEM_RID = 0x4000
 @dataclass
 class ProcessTokenInfo:
     """Process Token Info data container."""
+
     pid: int
     name: str
     username: str
@@ -50,6 +51,7 @@ class ProcessTokenInfo:
 @dataclass
 class ProcessTokenAuditReport:
     """Process Token Audit Report data container."""
+
     processes: list[ProcessTokenInfo] = field(default_factory=list)
     system_count: int = 0
     high_count: int = 0
@@ -247,8 +249,10 @@ class ProcessTokenAuditor:
             # Lookup privilege name
             name_buf = ctypes.create_unicode_buffer(128)
             name_len = wintypes.DWORD(128)
+
             class LUID(ctypes.Structure):
                 """L U I D."""
+
                 _fields_ = [("LowPart", wintypes.DWORD), ("HighPart", wintypes.LONG)]
 
             l = LUID(luid_low, luid_high)

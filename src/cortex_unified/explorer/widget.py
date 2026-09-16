@@ -1,4 +1,5 @@
 """Fluent Qt6 File Explorer Widget module."""
+
 from __future__ import annotations
 
 import sys

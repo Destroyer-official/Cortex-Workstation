@@ -40,23 +40,53 @@ _LOG = logging.getLogger("cortex.system_tools.game_mode")
 _IS_WINDOWS = sys.platform == "win32"
 
 #: Processes never eligible for suspension, ever. Lower-case names.
-_PROTECTED: frozenset[str] = frozenset({
-    "system", "registry", "memory compression", "idle",
-    "smss.exe", "csrss.exe", "wininit.exe", "winlogon.exe", "services.exe",
-    "lsass.exe", "svchost.exe", "dwm.exe", "winmgmt.exe", "audiodg.exe",
-    "explorer.exe", "fontdrvhost.exe", "conhost.exe", "sihost.exe",
-    # Ourselves (any interpreter name) so boosting can't suspend Cortex.
-    "python.exe", "pythonw.exe", "python3.exe", "cortex.exe",
-})
+_PROTECTED: frozenset[str] = frozenset(
+    {
+        "system",
+        "registry",
+        "memory compression",
+        "idle",
+        "smss.exe",
+        "csrss.exe",
+        "wininit.exe",
+        "winlogon.exe",
+        "services.exe",
+        "lsass.exe",
+        "svchost.exe",
+        "dwm.exe",
+        "winmgmt.exe",
+        "audiodg.exe",
+        "explorer.exe",
+        "fontdrvhost.exe",
+        "conhost.exe",
+        "sihost.exe",
+        # Ourselves (any interpreter name) so boosting can't suspend Cortex.
+        "python.exe",
+        "pythonw.exe",
+        "python3.exe",
+        "cortex.exe",
+    }
+)
 
 #: Conservative default suspend candidates: sync/updater noise whose pause
 #: cannot cost user data (they resume cleanly). Users may extend this list.
 _DEFAULT_SUSPEND_CANDIDATES: tuple[str, ...] = (
-    "onedrive.exe", "dropbox.exe", "googledrivefs.exe", "googledrivesync.exe",
-    "icloudservices.exe", "itunes_helper.exe", "spotify.exe",
-    "adobearmhelper.exe", "acrotray.exe", "teams.exe", "slack.exe",
-    "discorduptileservice.exe", "steamwebhelper_quiet.exe",
-    "epicgameslauncher.exe", "originwebhelperservice.exe", "updater.exe",
+    "onedrive.exe",
+    "dropbox.exe",
+    "googledrivefs.exe",
+    "googledrivesync.exe",
+    "icloudservices.exe",
+    "itunes_helper.exe",
+    "spotify.exe",
+    "adobearmhelper.exe",
+    "acrotray.exe",
+    "teams.exe",
+    "slack.exe",
+    "discorduptileservice.exe",
+    "steamwebhelper_quiet.exe",
+    "epicgameslauncher.exe",
+    "originwebhelperservice.exe",
+    "updater.exe",
 )
 
 
@@ -69,7 +99,7 @@ class BoostReport:
     """
 
     ok: bool
-    phase: str                       # "start" | "stop"
+    phase: str  # "start" | "stop"
     power_from: str | None = None
     power_to: str | None = None
     suspended: list[str] = field(default_factory=list)
@@ -121,7 +151,7 @@ class GameMode:
         self._extra = tuple(n.strip().lower() for n in extra_suspend if n.strip())
         self._dry_run = bool(dry_run)
         self._tuner = PerformanceTuner()
-        self._original_plan: str | None = None   # GUID of plan before boost
+        self._original_plan: str | None = None  # GUID of plan before boost
         self._boosted_plan_guid: str | None = None
         self._suspended_pids: dict[int, str] = {}  # pid -> name
         self.active = False
@@ -168,9 +198,11 @@ class GameMode:
         best = self._pick_boost_plan(plans)
         return {
             "supported": self.is_supported(),
-            "power_now": (self._tuner.active_plan() or {}).get("name")
-            if isinstance(self._tuner.active_plan(), dict)
-            else getattr(self._tuner.active_plan(), "name", None),
+            "power_now": (
+                (self._tuner.active_plan() or {}).get("name")
+                if isinstance(self._tuner.active_plan(), dict)
+                else getattr(self._tuner.active_plan(), "name", None)
+            ),
             "power_would_switch_to": getattr(best, "name", None),
             "would_suspend": [name for _pid, name in self._candidates()],
             "dry_run": self._dry_run,
@@ -187,8 +219,7 @@ class GameMode:
             BoostReport: Formatted string or path.
         """
         if not self.is_supported():
-            return BoostReport(False, "start",
-                               message="Gaming mode requires Windows and psutil.")
+            return BoostReport(False, "start", message="Gaming mode requires Windows and psutil.")
         report = BoostReport(ok=True, phase="start")
 
         # 1) Power plan ------------------------------------------------------
@@ -225,8 +256,9 @@ class GameMode:
             parts.append(f"power plan -> {report.power_to}")
         if report.suspended:
             parts.append(f"{len(report.suspended)} background app(s) paused")
-        report.message = ("; ".join(parts) + (" (dry run)" if self._dry_run else "")) \
-            or "already optimal; nothing changed"
+        report.message = (
+            "; ".join(parts) + (" (dry run)" if self._dry_run else "")
+        ) or "already optimal; nothing changed"
         _LOG.info("game mode start: %s", report.message)
         return report
 
@@ -256,8 +288,7 @@ class GameMode:
                     report.errors.append(f"resume {name}: {exc}")
         self._suspended_pids.clear()
         self.active = False
-        report.message = f"restored ({len(report.resumed)} resumed)" \
-            if report.resumed else "restored"
+        report.message = f"restored ({len(report.resumed)} resumed)" if report.resumed else "restored"
         _LOG.info("game mode stop: %s", report.message)
         return report
 

@@ -44,6 +44,7 @@ SUPPORTED_API_VERSIONS = {"2.0"}
 @dataclass(frozen=True)
 class PluginManifest:
     """Validated plugin manifest parsed from plugin.json."""
+
     id: str
     name: str
     version: str
@@ -68,10 +69,7 @@ class PluginManifest:
 
         api_ver = data["api_version"]
         if api_ver not in SUPPORTED_API_VERSIONS:
-            raise ValueError(
-                f"Unsupported api_version '{api_ver}'. "
-                f"Supported: {SUPPORTED_API_VERSIONS}"
-            )
+            raise ValueError(f"Unsupported api_version '{api_ver}'. " f"Supported: {SUPPORTED_API_VERSIONS}")
 
         main_path = Path(plugin_dir) / data["main"]
         if not main_path.exists():
@@ -95,8 +93,10 @@ class PluginManifest:
 # Plugin lifecycle FSM
 # ---------------------------------------------------------------------------
 
+
 class PluginState(Enum):
     """Lifecycle states a plugin moves through."""
+
     DISCOVERED = auto()
     LOADING = auto()
     ACTIVE = auto()
@@ -108,10 +108,10 @@ class PluginState(Enum):
 
 _VALID_TRANSITIONS: dict[PluginState, list[PluginState]] = {
     PluginState.DISCOVERED: [PluginState.LOADING, PluginState.DISABLED],
-    PluginState.LOADING:    [PluginState.ACTIVE, PluginState.ERROR],
-    PluginState.ACTIVE:     [PluginState.UNLOADING, PluginState.ERROR],
-    PluginState.ERROR:      [PluginState.LOADING, PluginState.DISABLED],
-    PluginState.UNLOADING:  [PluginState.DISCOVERED],
+    PluginState.LOADING: [PluginState.ACTIVE, PluginState.ERROR],
+    PluginState.ACTIVE: [PluginState.UNLOADING, PluginState.ERROR],
+    PluginState.ERROR: [PluginState.LOADING, PluginState.DISABLED],
+    PluginState.UNLOADING: [PluginState.DISCOVERED],
 }
 
 
@@ -135,10 +135,7 @@ class PluginLifecycle:
         success)."""
         valid = _VALID_TRANSITIONS.get(self.state, [])
         if new_state not in valid:
-            raise ValueError(
-                f"Invalid transition for {self.plugin_id}: "
-                f"{self.state.name} → {new_state.name}"
-            )
+            raise ValueError(f"Invalid transition for {self.plugin_id}: " f"{self.state.name} → {new_state.name}")
         self.state = new_state
         self.error_message = error
 
@@ -155,6 +152,7 @@ class PluginLifecycle:
 # ---------------------------------------------------------------------------
 # Scoped context – no host internals leak
 # ---------------------------------------------------------------------------
+
 
 class ScopedConfig:
     """Per-plugin config namespace isolated to plugin's config directory."""
@@ -309,6 +307,7 @@ class PluginContext:
 # Plugin base class
 # ---------------------------------------------------------------------------
 
+
 class NexusPlugin(ABC):
     """Base class that all NexusExplorer plugins must subclass."""
 
@@ -324,9 +323,7 @@ class NexusPlugin(ABC):
     def on_unload(self) -> None:
         """Called before the plugin is torn down. Release resources here."""
 
-    def get_context_menu_actions(
-        self, paths: list[str]
-    ) -> list[tuple[str, Callable[[], None]]]:
+    def get_context_menu_actions(self, paths: list[str]) -> list[tuple[str, Callable[[], None]]]:
         """Return (label, callback) pairs for the context menu."""
         return []
 
@@ -350,6 +347,7 @@ class NexusPlugin(ABC):
 # ---------------------------------------------------------------------------
 # API version adapter
 # ---------------------------------------------------------------------------
+
 
 class APIAdapter:
     """Wrap a plugin instance whose api_version may differ from the host's.
@@ -385,11 +383,12 @@ class APIAdapter:
 # File-system hot-reload watcher
 # ---------------------------------------------------------------------------
 
+
 class HotReloadWatcher(QFileSystemWatcher):
     """Watches plugin directories for changes and triggers reload callbacks."""
 
-    file_changed = Signal(str)   # plugin_id
-    file_added = Signal(str)     # plugin_id
+    file_changed = Signal(str)  # plugin_id
+    file_added = Signal(str)  # plugin_id
 
     def __init__(self, parent: QObject | None = None):
         """Create the watcher and connect directoryChanged to the plugin
@@ -436,9 +435,7 @@ class _SafeLoader:
         """Scan raw module code for blocked imports before execution."""
         for name in _BLOCKED_IMPORTS:
             if f"import {name}" in module_code or f"from {name}" in module_code:
-                raise ImportError(
-                    f"Blocked import '{name}' is not allowed in plugins"
-                )
+                raise ImportError(f"Blocked import '{name}' is not allowed in plugins")
 
     @staticmethod
     def load_module(
@@ -452,9 +449,7 @@ class _SafeLoader:
                 return None, ImportError(f"Cannot create spec for {file_path}")
             module = importlib.util.module_from_spec(spec)
             if module_name in sys.modules:
-                return None, ImportError(
-                    f"Module name collision: '{module_name}' already in sys.modules"
-                )
+                return None, ImportError(f"Module name collision: '{module_name}' already in sys.modules")
             sys.modules[module_name] = module
             try:
                 spec.loader.exec_module(module)
@@ -485,6 +480,7 @@ class _SafeLoader:
 # ---------------------------------------------------------------------------
 # Plugin host – orchestrates discovery, loading, lifecycle
 # ---------------------------------------------------------------------------
+
 
 class PluginHost(QObject):
     """Discovers, loads, manages, and tears down plugins.
@@ -635,9 +631,7 @@ class PluginHost(QObject):
 
         return discovered
 
-    def discover_from_entry_points(
-        self, group: str = "nexus_explorer.plugins"
-    ) -> dict[str, type[NexusPlugin]]:
+    def discover_from_entry_points(self, group: str = "nexus_explorer.plugins") -> dict[str, type[NexusPlugin]]:
         """Discover plugins registered via package entry points."""
         try:
             from importlib.metadata import entry_points
@@ -665,9 +659,7 @@ class PluginHost(QObject):
         discovery is the primary path for user-installed plugins.
         """
         from_directory = self.discover_from_directory()
-        log.info(
-            "Discovered %d plugin(s) from directory", len(from_directory)
-        )
+        log.info("Discovered %d plugin(s) from directory", len(from_directory))
         return from_directory
 
     # -- loading ----------------------------------------------------------------
@@ -871,16 +863,15 @@ class PluginHost(QObject):
                     result = fn(*args, **kwargs)
                     results.append(result)
             except Exception as exc:
-                log.warning(
-                    "Plugin %s hook '%s' failed: %s", plugin_id, hook, exc
-                )
+                log.warning("Plugin %s hook '%s' failed: %s", plugin_id, hook, exc)
                 if lifecycle:
                     try:
                         lifecycle.transition_to(PluginState.ERROR, str(exc))
                     except ValueError as fsm_exc:
                         log.debug(
                             "Plugin %s FSM transition to ERROR failed: %s",
-                            plugin_id, fsm_exc,
+                            plugin_id,
+                            fsm_exc,
                         )
                 self.plugin_error.emit(plugin_id, str(exc))
         return results
@@ -982,7 +973,6 @@ class PluginHost(QObject):
                 "state": lc.state.name,
                 "error": lc.error_message,
                 "load_time_ms": round(lc.load_time * 1000, 2),
-                "version": self._manifests[pid].version
-                    if pid in self._manifests else "unknown",
+                "version": self._manifests[pid].version if pid in self._manifests else "unknown",
             }
         return report

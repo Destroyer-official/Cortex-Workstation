@@ -30,9 +30,10 @@ _DEDUCT = {"good": 0, "info": 0, "warning": 12, "critical": 30}
 @dataclass(slots=True)
 class HealthCheck:
     """Single read-only health finding with severity and fix-page pointer."""
+
     id: str
     title: str
-    severity: str          # good / warning / critical / info
+    severity: str  # good / warning / critical / info
     detail: str
     action_page: str = ""  # page id to jump to, if any
 
@@ -42,13 +43,19 @@ class HealthCheck:
         Returns:
             dict[str, Any]: Dictionary mapping identifiers to status or values.
         """
-        return {"id": self.id, "title": self.title, "severity": self.severity,
-                "detail": self.detail, "action_page": self.action_page}
+        return {
+            "id": self.id,
+            "title": self.title,
+            "severity": self.severity,
+            "detail": self.detail,
+            "action_page": self.action_page,
+        }
 
 
 @dataclass(slots=True)
 class HealthReport:
     """Aggregated health report with checks plus weighted score/grade."""
+
     checks: list[HealthCheck] = field(default_factory=list)
     score: int = 100
     grade: str = "A"
@@ -59,8 +66,7 @@ class HealthReport:
         Returns:
             dict[str, Any]: Dictionary mapping identifiers to status or values.
         """
-        return {"checks": [c.to_dict() for c in self.checks],
-                "score": self.score, "grade": self.grade}
+        return {"checks": [c.to_dict() for c in self.checks], "score": self.score, "grade": self.grade}
 
 
 ProgressCB = Callable[[str], None]
@@ -139,16 +145,17 @@ class HealthChecker:
             HealthCheck: Result of the operation.
         """
         import shutil
+
         root = str(Path.home().anchor or (os.environ.get("SystemDrive", "C:") + "\\")) if _IS_WINDOWS else "/"
         total, used, free = shutil.disk_usage(root)
         pct_free = (free / total * 100) if total else 0
-        free_gb = free / 1024 ** 3
+        free_gb = free / 1024**3
         if pct_free < 10:
-            sev, detail = "critical", (f"Only {pct_free:.0f}% free ({free_gb:.0f} GB). "
-                                       "Low space slows Windows and blocks updates.")
+            sev, detail = "critical", (
+                f"Only {pct_free:.0f}% free ({free_gb:.0f} GB). " "Low space slows Windows and blocks updates."
+            )
         elif pct_free < 20:
-            sev, detail = "warning", (f"{pct_free:.0f}% free ({free_gb:.0f} GB). "
-                                      "Consider freeing some space.")
+            sev, detail = "warning", (f"{pct_free:.0f}% free ({free_gb:.0f} GB). " "Consider freeing some space.")
         else:
             sev, detail = "good", f"{pct_free:.0f}% free ({free_gb:.0f} GB). Plenty of room."
         return HealthCheck("disk_space", "Free disk space", sev, detail, "dashboard")
@@ -166,8 +173,9 @@ class HealthChecker:
             return HealthCheck("memory", "Memory", "info", "psutil unavailable.")
         vm = psutil.virtual_memory()
         if vm.percent >= 90:
-            sev, detail = "warning", (f"Memory is {vm.percent:.0f}% used right now. "
-                                      "Close heavy apps or check the Task Manager.")
+            sev, detail = "warning", (
+                f"Memory is {vm.percent:.0f}% used right now. " "Close heavy apps or check the Task Manager."
+            )
         else:
             sev, detail = "good", f"Memory is {vm.percent:.0f}% used - comfortable."
         return HealthCheck("memory", "Memory usage", sev, detail, "processes")
@@ -182,19 +190,29 @@ class HealthChecker:
         if not _IS_WINDOWS:
             return None
         from cortex_unified.system_tools.disk_health import DiskHealthMonitor
+
         disks = DiskHealthMonitor().get_health()
         if not disks:
-            return HealthCheck("disk_health", "Drive health", "info",
-                               "Could not read S.M.A.R.T. status (may need Administrator).",
-                               "diskhealth")
+            return HealthCheck(
+                "disk_health",
+                "Drive health",
+                "info",
+                "Could not read S.M.A.R.T. status (may need Administrator).",
+                "diskhealth",
+            )
         unhealthy = [d for d in disks if not d.is_healthy]
         if unhealthy:
             names = ", ".join(d.name for d in unhealthy)
-            return HealthCheck("disk_health", "Drive health", "critical",
-                               f"{len(unhealthy)} drive(s) not healthy: {names}. Back up now.",
-                               "diskhealth")
-        return HealthCheck("disk_health", "Drive health", "good",
-                           f"All {len(disks)} drive(s) report healthy.", "diskhealth")
+            return HealthCheck(
+                "disk_health",
+                "Drive health",
+                "critical",
+                f"{len(unhealthy)} drive(s) not healthy: {names}. Back up now.",
+                "diskhealth",
+            )
+        return HealthCheck(
+            "disk_health", "Drive health", "good", f"All {len(disks)} drive(s) report healthy.", "diskhealth"
+        )
 
     @staticmethod
     def _check_boot() -> HealthCheck | None:
@@ -206,19 +224,19 @@ class HealthChecker:
         if not _IS_WINDOWS:
             return None
         from cortex_unified.system_tools.boot_performance import BootPerformanceMonitor
+
         data = BootPerformanceMonitor().analyze(max_boots=5, max_issues=10)
         latest = data.get("latest_seconds", 0.0)
         if not latest:
-            return HealthCheck("boot", "Boot performance", "info",
-                               "No boot diagnostics available yet.", "bootperf")
+            return HealthCheck("boot", "Boot performance", "info", "No boot diagnostics available yet.", "bootperf")
         issues = data.get("issues", [])
         top = issues[0]["name"] if issues else ""
         if latest > 150:
-            sev, detail = "critical", (f"Boot takes {latest:.0f}s"
-                                       + (f"; worst offender: {top}." if top else "."))
+            sev, detail = "critical", (f"Boot takes {latest:.0f}s" + (f"; worst offender: {top}." if top else "."))
         elif latest > 75:
-            sev, detail = "warning", (f"Boot takes {latest:.0f}s"
-                                      + (f"; consider disabling {top} at startup." if top else "."))
+            sev, detail = "warning", (
+                f"Boot takes {latest:.0f}s" + (f"; consider disabling {top} at startup." if top else ".")
+            )
         else:
             sev, detail = "good", f"Boot takes {latest:.0f}s - fast."
         return HealthCheck("boot", "Boot performance", sev, detail, "bootperf")
@@ -233,20 +251,27 @@ class HealthChecker:
         if not _IS_WINDOWS:
             return None
         from cortex_unified.system_tools.defender import WindowsDefender
+
         s = WindowsDefender().status()
         if not s.available:
-            return HealthCheck("security", "Security", "info",
-                               "Windows Defender status unavailable (may be managed by "
-                               "another product).", "security")
+            return HealthCheck(
+                "security",
+                "Security",
+                "info",
+                "Windows Defender status unavailable (may be managed by " "another product).",
+                "security",
+            )
         if not s.realtime_protection:
-            return HealthCheck("security", "Security", "warning",
-                               "Real-time protection is OFF.", "security")
+            return HealthCheck("security", "Security", "warning", "Real-time protection is OFF.", "security")
         if s.signature_age_days is not None and s.signature_age_days > 7:
-            return HealthCheck("security", "Security", "warning",
-                               f"Antivirus signatures are {s.signature_age_days} days old.",
-                               "security")
-        return HealthCheck("security", "Security", "good",
-                           "Defender is on with current signatures.", "security")
+            return HealthCheck(
+                "security",
+                "Security",
+                "warning",
+                f"Antivirus signatures are {s.signature_age_days} days old.",
+                "security",
+            )
+        return HealthCheck("security", "Security", "good", "Defender is on with current signatures.", "security")
 
     @staticmethod
     def _check_updates() -> HealthCheck | None:
@@ -258,18 +283,18 @@ class HealthChecker:
         if not _IS_WINDOWS:
             return None
         from cortex_unified.system_tools.windows_update import WindowsUpdate
+
         last_install = WindowsUpdate().last_activity().get("last_install", "")
         if not last_install:
-            return HealthCheck("updates", "Windows Update", "info",
-                               "Could not read last update date.", "winupdate")
+            return HealthCheck("updates", "Windows Update", "info", "Could not read last update date.", "winupdate")
         # Parse the registry timestamp ("YYYY-MM-DD HH:MM:SS") and age it.
         try:
             import datetime
+
             dt = datetime.datetime.strptime(last_install[:19], "%Y-%m-%d %H:%M:%S")
             age_days = (datetime.datetime.now() - dt).days
         except (ValueError, TypeError):
-            return HealthCheck("updates", "Windows Update", "info",
-                               f"Last install: {last_install}.", "winupdate")
+            return HealthCheck("updates", "Windows Update", "info", f"Last install: {last_install}.", "winupdate")
         if age_days > 45:
             sev = "warning"
             detail = f"Last update installed {age_days} days ago - check for updates."

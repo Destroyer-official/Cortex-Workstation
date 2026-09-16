@@ -67,8 +67,7 @@ def _windows_only(page: _Page, feature: str) -> bool:
     """
     if IS_WINDOWS:
         return False
-    note = status_note(
-        page.p, "info", f"{feature} is only available on Windows.")
+    note = status_note(page.p, "info", f"{feature} is only available on Windows.")
     page.v.addWidget(note)
     page.v.addStretch(1)
     return True
@@ -107,8 +106,10 @@ def _selected_records(table: QTableWidget) -> list[dict]:
 #  Workers
 # =====================================================================
 
+
 class UpdaterListWorker(QObject):
     """Background worker listing upgradable apps via AppUpdater.list_upgradable; emits finished(list) / failed(str)."""
+
     finished = Signal(list)
     failed = Signal(str)
 
@@ -119,6 +120,7 @@ class UpdaterListWorker(QObject):
         """
         try:
             from cortex_unified.system_tools.app_updater import AppUpdater
+
             self.finished.emit([a.to_dict() for a in AppUpdater().list_upgradable()])
         except Exception as exc:  # noqa: BLE001
             self.failed.emit(str(exc))
@@ -126,7 +128,8 @@ class UpdaterListWorker(QObject):
 
 class UpgradeWorker(QObject):
     """Background worker upgrading package IDs via AppUpdater.upgrade; emits finished(succeeded, total) / failed(str)."""
-    finished = Signal(int, int)   # (succeeded, total)
+
+    finished = Signal(int, int)  # (succeeded, total)
     failed = Signal(str)
 
     def __init__(self, package_ids: list[str]):
@@ -147,6 +150,7 @@ class UpgradeWorker(QObject):
         """
         try:
             from cortex_unified.system_tools.app_updater import AppUpdater
+
             up = AppUpdater()
             ok = 0
             for pid in self._ids:
@@ -159,6 +163,7 @@ class UpgradeWorker(QObject):
 
 class DriveListWorker(QObject):
     """Background worker listing fixed drives via DriveOptimizer.list_drives; emits finished(list) / failed(str)."""
+
     finished = Signal(list)
     failed = Signal(str)
 
@@ -169,6 +174,7 @@ class DriveListWorker(QObject):
         """
         try:
             from cortex_unified.system_tools.drive_optimizer import DriveOptimizer
+
             self.finished.emit([d.to_dict() for d in DriveOptimizer().list_drives()])
         except Exception as exc:  # noqa: BLE001
             self.failed.emit(str(exc))
@@ -176,6 +182,7 @@ class DriveListWorker(QObject):
 
 class DriveOptimizeWorker(QObject):
     """Background worker optimizing one drive via DriveOptimizer.optimize; emits finished(bool, str) / failed(str)."""
+
     finished = Signal(bool, str)
     failed = Signal(str)
 
@@ -197,6 +204,7 @@ class DriveOptimizeWorker(QObject):
         """
         try:
             from cortex_unified.system_tools.drive_optimizer import DriveOptimizer
+
             res = DriveOptimizer().optimize(self._letter)
             self.finished.emit(res.success, res.message)
         except Exception as exc:  # noqa: BLE001
@@ -205,6 +213,7 @@ class DriveOptimizeWorker(QObject):
 
 class SystemInfoWorker(QObject):
     """Background worker collecting a snapshot via SystemInfo.snapshot; emits finished(dict) / failed(str)."""
+
     finished = Signal(dict)
     failed = Signal(str)
 
@@ -215,6 +224,7 @@ class SystemInfoWorker(QObject):
         """
         try:
             from cortex_unified.system_tools.system_info import SystemInfo
+
             self.finished.emit(SystemInfo().snapshot())
         except Exception as exc:  # noqa: BLE001
             self.failed.emit(str(exc))
@@ -223,6 +233,7 @@ class SystemInfoWorker(QObject):
 # =====================================================================
 #  Software Updater
 # =====================================================================
+
 
 class SoftwareUpdaterPage(_Page):
     """Software Updater page with Check/Update Selected/Update All buttons, progress bar, 4-column app table and state panel; lists via UpdaterListWorker and upgrades via UpgradeWorker."""
@@ -234,18 +245,23 @@ class SoftwareUpdaterPage(_Page):
             win: Parent window instance.
         """
         super().__init__(win)
-        self.v.addWidget(title_block(
-            "Software Updater",
-            "Keep installed applications current via official Windows Package Manager (winget) repositories. Works cleanly without bundled extras.",
-        ))
+        self.v.addWidget(
+            title_block(
+                "Software Updater",
+                "Keep installed applications current via official Windows Package Manager (winget) repositories. Works cleanly without bundled extras.",
+            )
+        )
         if _windows_only(self, "The Software Updater"):
             return
         from cortex_unified.system_tools.app_updater import AppUpdater
+
         if not AppUpdater.is_available():
             note = status_note(
-                self.p, "warning",
+                self.p,
+                "warning",
                 "winget (Windows Package Manager) was not found. Install "
-                "'App Installer' from the Microsoft Store to enable updates.")
+                "'App Installer' from the Microsoft Store to enable updates.",
+            )
             self.v.addWidget(note)
             self.v.addStretch(1)
             return
@@ -325,7 +341,8 @@ class SoftwareUpdaterPage(_Page):
         self.update_sel_btn.setEnabled(has)
         self.update_all_btn.setEnabled(has)
         self.win.statusBar().showMessage(
-            "All apps are up to date." if not has else f"{len(apps)} update(s) available", 5000)
+            "All apps are up to date." if not has else f"{len(apps)} update(s) available", 5000
+        )
 
     def _selected_ids(self) -> list[str]:
         """Return the package IDs of selected rows in the table.
@@ -357,7 +374,8 @@ class SoftwareUpdaterPage(_Page):
             prompt: Confirmation dialog text.
         """
         confirm = QMessageBox.question(
-            self, "Confirm updates",
+            self,
+            "Confirm updates",
             prompt + "\n\nApps may close and restart during the update.",
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
             QMessageBox.StandardButton.No,
@@ -400,6 +418,7 @@ class SoftwareUpdaterPage(_Page):
 #  Drive Optimizer
 # =====================================================================
 
+
 class DriveOptimizerPage(_Page):
     """Drive Optimizer page with Detect/Optimize Selected buttons, progress bar, drive/medium/action table and state panel; lists via DriveListWorker and optimizes via DriveOptimizeWorker."""
 
@@ -410,11 +429,13 @@ class DriveOptimizerPage(_Page):
             win: Parent window instance.
         """
         super().__init__(win)
-        self.v.addWidget(title_block(
-            "Drive Optimizer",
-            "Runs the correct maintenance per medium: TRIM for SSD/NVMe, defrag for HDD. "
-            "It will never defragment a solid-state drive.",
-        ))
+        self.v.addWidget(
+            title_block(
+                "Drive Optimizer",
+                "Runs the correct maintenance per medium: TRIM for SSD/NVMe, defrag for HDD. "
+                "It will never defragment a solid-state drive.",
+            )
+        )
         if _windows_only(self, "Drive optimization"):
             return
 
@@ -445,8 +466,7 @@ class DriveOptimizerPage(_Page):
         self.tbl.setSelectionMode(QTableWidget.SelectionMode.SingleSelection)
         self.tbl.verticalHeader().setVisible(False)
         self.tbl.setAlternatingRowColors(True)
-        self.tbl.itemSelectionChanged.connect(
-            lambda: self.opt_btn.setEnabled(bool(self.tbl.selectedIndexes())))
+        self.tbl.itemSelectionChanged.connect(lambda: self.opt_btn.setEnabled(bool(self.tbl.selectedIndexes())))
         self.v.addWidget(self.tbl, 1)
 
         self.state = StatePanel(self.p)
@@ -501,7 +521,8 @@ class DriveOptimizerPage(_Page):
         letter = self.tbl.item(r, 0).data(Qt.ItemDataRole.UserRole)
         medium = self.tbl.item(r, 1).text()
         confirm = QMessageBox.question(
-            self, "Optimize drive",
+            self,
+            "Optimize drive",
             f"Optimize drive {letter}: ({medium})?\n\n"
             "Requires Administrator. TRIM is quick; defragmenting an HDD may take a while.",
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
@@ -542,6 +563,7 @@ class DriveOptimizerPage(_Page):
 # =====================================================================
 #  System Info
 # =====================================================================
+
 
 class SystemInfoPage(_Page):
     """System Info page with Refresh button, info Card label, disk table and state panel; loads via SystemInfoWorker."""
@@ -617,8 +639,10 @@ class SystemInfoPage(_Page):
         ]
         bat = snap.get("battery")
         if bat:
-            lines.append(f"<b>Battery:</b> {bat.get('percent', '?')}% "
-                         f"({'charging' if bat.get('plugged_in') else 'on battery'})")
+            lines.append(
+                f"<b>Battery:</b> {bat.get('percent', '?')}% "
+                f"({'charging' if bat.get('plugged_in') else 'on battery'})"
+            )
         self.info_label.setText("<br>".join(lines))
 
         disks = snap.get("disks", [])
@@ -643,8 +667,10 @@ class SystemInfoPage(_Page):
 #  Workers for existing analyzer backends
 # =====================================================================
 
+
 class BrokenLinksWorker(QObject):
     """Background worker scanning a root via BrokenLinkDetector.scan_all with progress and cancel; emits finished(list) / progress(str) / failed(str)."""
+
     finished = Signal(list)
     progress = Signal(str)
     failed = Signal(str)
@@ -660,6 +686,7 @@ class BrokenLinksWorker(QObject):
         super().__init__()
         self._root = root
         import threading
+
         self._cancel = threading.Event()
 
     def cancel(self):
@@ -676,11 +703,16 @@ class BrokenLinksWorker(QObject):
         """
         try:
             from cortex_unified.analyzers.broken_link_detector import BrokenLinkDetector
-            links = BrokenLinkDetector().scan_all(
-                self._root, progress=self.progress.emit, cancel_event=self._cancel)
-            out = [{"path": str(getattr(l, "path", "")),
+
+            links = BrokenLinkDetector().scan_all(self._root, progress=self.progress.emit, cancel_event=self._cancel)
+            out = [
+                {
+                    "path": str(getattr(l, "path", "")),
                     "target": str(getattr(l, "target", "")),
-                    "type": str(getattr(l, "link_type", ""))} for l in links]
+                    "type": str(getattr(l, "link_type", "")),
+                }
+                for l in links
+            ]
             self.finished.emit(out)
         except Exception as exc:  # noqa: BLE001
             self.failed.emit(str(exc))
@@ -688,6 +720,7 @@ class BrokenLinksWorker(QObject):
 
 class DuplicateFoldersWorker(QObject):
     """Background worker finding identical folders via DuplicateFolderFinder.find_duplicate_folders with progress and cancel; emits finished(dict) / progress(str) / failed(str)."""
+
     finished = Signal(dict)
     progress = Signal(str)
     failed = Signal(str)
@@ -703,6 +736,7 @@ class DuplicateFoldersWorker(QObject):
         super().__init__()
         self._root = root
         import threading
+
         self._cancel = threading.Event()
 
     def cancel(self):
@@ -719,8 +753,10 @@ class DuplicateFoldersWorker(QObject):
         """
         try:
             from cortex_unified.analyzers.duplicate_folder_finder import DuplicateFolderFinder
+
             groups = DuplicateFolderFinder(root_path=self._root).find_duplicate_folders(
-                progress=self.progress.emit, cancel_event=self._cancel)
+                progress=self.progress.emit, cancel_event=self._cancel
+            )
             out = {k: [str(p) for p in v] for k, v in groups.items()}
             self.finished.emit(out)
         except Exception as exc:  # noqa: BLE001
@@ -729,6 +765,7 @@ class DuplicateFoldersWorker(QObject):
 
 class PackageCacheWorker(QObject):
     """Background worker detecting managers and stats via PackageManagerCleaner.detect_package_managers/get_stats; emits finished(list) / failed(str)."""
+
     finished = Signal(list)
     failed = Signal(str)
 
@@ -739,17 +776,20 @@ class PackageCacheWorker(QObject):
         """
         try:
             from cortex_unified.analyzers.package_manager_cleaner import PackageManagerCleaner
+
             pmc = PackageManagerCleaner()
             pmc.detect_package_managers()
             stats = pmc.get_stats()
             rows = []
             for name, info in stats.get("managers", {}).items():
-                rows.append({
-                    "name": name,
-                    "version": info.get("version", ""),
-                    "cache_size": info.get("cache_size", 0),
-                    "cache_size_human": info.get("cache_size_human", "0 B"),
-                })
+                rows.append(
+                    {
+                        "name": name,
+                        "version": info.get("version", ""),
+                        "cache_size": info.get("cache_size", 0),
+                        "cache_size_human": info.get("cache_size_human", "0 B"),
+                    }
+                )
             self.finished.emit(rows)
         except Exception as exc:  # noqa: BLE001
             self.failed.emit(str(exc))
@@ -757,7 +797,8 @@ class PackageCacheWorker(QObject):
 
 class PackageCleanWorker(QObject):
     """Background worker cleaning one manager cache via PackageManagerCleaner.clean_pip_cache/clean_npm_cache/clean_system_packages; emits finished(manager, freed) / failed(str)."""
-    finished = Signal(str, int)   # (manager, space_freed)
+
+    finished = Signal(str, int)  # (manager, space_freed)
     failed = Signal(str)
 
     def __init__(self, manager: str):
@@ -778,6 +819,7 @@ class PackageCleanWorker(QObject):
         """
         try:
             from cortex_unified.analyzers.package_manager_cleaner import PackageManagerCleaner
+
             pmc = PackageManagerCleaner()
             pmc.detect_package_managers()
             if self._manager == "pip":
@@ -795,6 +837,7 @@ class PackageCleanWorker(QObject):
 # =====================================================================
 #  Broken Links page
 # =====================================================================
+
 
 class _SimpleFolderPage(_Page):
     """Minimal folder-pick + scan page (no fake Cancel affordance).
@@ -867,15 +910,12 @@ class _SimpleFolderPage(_Page):
             self.results_table.setShowGrid(False)
             self.results_table.setAlternatingRowColors(True)
             self.results_table.verticalHeader().setVisible(False)
-            self.results_table.setSelectionBehavior(
-                QTableWidget.SelectionBehavior.SelectRows)
-            self.results_table.setEditTriggers(
-                QTableWidget.EditTrigger.NoEditTriggers)
+            self.results_table.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectRows)
+            self.results_table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
             self.results_table.setSortingEnabled(True)
             header = self.results_table.horizontalHeader()
             header.setStretchLastSection(True)
-            header.setDefaultAlignment(
-                Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
+            header.setDefaultAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
 
         tc_lay.addWidget(self.results_table)
         self.add_scrolling_list(table_card, stretch=1)
@@ -904,8 +944,8 @@ class _SimpleFolderPage(_Page):
     def _build_results(self) -> QTableWidget:
         """Subclasses construct and return their specific QTableWidget.
 
-            Returns:
-            QTableWidget: Result of the operation.
+        Returns:
+        QTableWidget: Result of the operation.
         """
         table = QTableWidget(0, 3)
         table.setHorizontalHeaderLabels(["Path", "Size", "Details"])
@@ -917,8 +957,8 @@ class _SimpleFolderPage(_Page):
         Launches a native file dialog and populates the selected path into the corresponding target input widget.
         """
         from pathlib import Path
-        folder = QFileDialog.getExistingDirectory(
-            self, "Select a folder", str(Path.home()))
+
+        folder = QFileDialog.getExistingDirectory(self, "Select a folder", str(Path.home()))
         if folder:
             self._folder = folder
             self.path_label.setText(folder)
@@ -942,9 +982,9 @@ class _SimpleFolderPage(_Page):
     def _start(self, worker, on_done):
         """Start a folder-scan worker; shows loading/progress, switches Run to Cancel and forwards progress when available.
 
-            Args:
-            worker: The worker parameter.
-            on_done: The on done parameter.
+        Args:
+        worker: The worker parameter.
+        on_done: The on done parameter.
         """
         self._worker = worker
         self._running = True
@@ -992,12 +1032,11 @@ class _SimpleFolderPage(_Page):
     def _selected_paths(self) -> list[str]:
         """Compute and return the value for selected paths used by the page.
 
-            Returns:
-            list[str]: List of processed items or identifiers.
+        Returns:
+        list[str]: List of processed items or identifiers.
         """
         rows = {idx.row() for idx in self.results_table.selectedIndexes()}
-        return [self.results_table.item(r, 0).text() for r in sorted(rows)
-                if self.results_table.item(r, 0)]
+        return [self.results_table.item(r, 0).text() for r in sorted(rows) if self.results_table.item(r, 0)]
 
     def _delete_selected(self):
         """Handle delete selected for the page widgets and worker state."""
@@ -1006,7 +1045,8 @@ class _SimpleFolderPage(_Page):
             QMessageBox.information(self, "No selection", "Select rows first.")
             return
         confirm = QMessageBox.question(
-            self, "Move to Recycle Bin",
+            self,
+            "Move to Recycle Bin",
             f"Move {len(paths)} selected item(s) to the Recycle Bin?",
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
             QMessageBox.StandardButton.No,
@@ -1014,21 +1054,20 @@ class _SimpleFolderPage(_Page):
         if confirm != QMessageBox.StandardButton.Yes:
             return
         from .workers import DeleteSelectedWorker
+
         self._busy(True)
         self.win.run_worker(DeleteSelectedWorker(paths, "recycle"), self._on_deleted, self._fail)
 
     def _on_deleted(self, freed: int, ok: int, blocked: int):
         """Handle worker results: update widgets and clear the busy state.
 
-            Args:
-            freed (int): The freed parameter.
-            ok (int): The ok parameter.
-            blocked (int): The blocked parameter.
+        Args:
+        freed (int): The freed parameter.
+        ok (int): The ok parameter.
+        blocked (int): The blocked parameter.
         """
         self._busy(False)
-        QMessageBox.information(self, "Done",
-                               f"Recycled {ok} item(s)."
-                               + (f" {blocked} blocked." if blocked else ""))
+        QMessageBox.information(self, "Done", f"Recycled {ok} item(s)." + (f" {blocked} blocked." if blocked else ""))
         self._run()
 
     def _run(self):
@@ -1056,6 +1095,7 @@ class _SimpleFolderPage(_Page):
 
 class BrokenLinksPage(_SimpleFolderPage):
     """Broken Links page scanning a chosen folder for dead shortcuts/symlinks; Path/Target/Type table started via BrokenLinksWorker."""
+
     title = "Broken Links"
     subtitle = "Find dead shortcuts and symlinks whose targets no longer exist."
     action_label = "Scan for Broken Links"
@@ -1063,8 +1103,8 @@ class BrokenLinksPage(_SimpleFolderPage):
     def _build_results(self) -> QTableWidget:
         """Compute and return the value for build results used by the page.
 
-            Returns:
-            QTableWidget: Result of the operation.
+        Returns:
+        QTableWidget: Result of the operation.
         """
         t = QTableWidget(0, 3)
         t.setHorizontalHeaderLabels(["Path", "Target (missing)", "Type"])
@@ -1102,6 +1142,7 @@ class BrokenLinksPage(_SimpleFolderPage):
 
 class DuplicateFoldersPage(_SimpleFolderPage):
     """Duplicate Folders page scanning a chosen folder for byte-identical folders; Folder/Group table started via DuplicateFoldersWorker."""
+
     title = "Duplicate Folders"
     subtitle = "Find folders whose entire contents are byte-for-byte identical."
     action_label = "Find Duplicate Folders"
@@ -1109,8 +1150,8 @@ class DuplicateFoldersPage(_SimpleFolderPage):
     def _build_results(self) -> QTableWidget:
         """Compute and return the value for build results used by the page.
 
-            Returns:
-            QTableWidget: Result of the operation.
+        Returns:
+        QTableWidget: Result of the operation.
         """
         t = QTableWidget(0, 2)
         t.setHorizontalHeaderLabels(["Folder", "Group"])
@@ -1150,6 +1191,7 @@ class DuplicateFoldersPage(_SimpleFolderPage):
 #  Package Caches page
 # =====================================================================
 
+
 class PackageCachePage(_Page):
     """Detect system package managers (pip/npm/conda/...) and clear their caches.
 
@@ -1165,11 +1207,12 @@ class PackageCachePage(_Page):
             win: Parent window or shell controller instance.
         """
         super().__init__(win)
-        self.v.addWidget(title_block(
-            "System Package Manager Caches",
-            "Reclaim space from developer package-manager caches "
-            "(pip, npm, conda, yarn, ...).",
-        ))
+        self.v.addWidget(
+            title_block(
+                "System Package Manager Caches",
+                "Reclaim space from developer package-manager caches " "(pip, npm, conda, yarn, ...).",
+            )
+        )
 
         # ── package manager selection card ─────────────────────────────
         sel_card = Card(self.p, "Card")
@@ -1190,9 +1233,13 @@ class PackageCachePage(_Page):
         self.pm_yarn_checkbox = QCheckBox("yarn")
         self.pm_conda_checkbox = QCheckBox("conda")
         self.pm_system_checkbox = QCheckBox("System")
-        for cb in (self.pm_pip_checkbox, self.pm_npm_checkbox,
-                   self.pm_yarn_checkbox, self.pm_conda_checkbox,
-                   self.pm_system_checkbox):
+        for cb in (
+            self.pm_pip_checkbox,
+            self.pm_npm_checkbox,
+            self.pm_yarn_checkbox,
+            self.pm_conda_checkbox,
+            self.pm_system_checkbox,
+        ):
             cb.setCursor(Qt.CursorShape.PointingHandCursor)
             checkbox_row.addWidget(cb)
         checkbox_row.addStretch(1)
@@ -1256,15 +1303,12 @@ class PackageCachePage(_Page):
         self.pm_keep_recent_spinbox.setRange(0, 365)
         self.pm_keep_recent_spinbox.setValue(7)
         self.pm_keep_recent_spinbox.setSuffix(" days")
-        self.pm_keep_recent_spinbox.setCursor(
-            Qt.CursorShape.PointingHandCursor)
+        self.pm_keep_recent_spinbox.setCursor(Qt.CursorShape.PointingHandCursor)
         oc_lay.addRow("Keep caches newer than:", self.pm_keep_recent_spinbox)
 
-        self.pm_dry_run_checkbox = QCheckBox(
-            "Dry run (preview only \u2014 recommended)")
+        self.pm_dry_run_checkbox = QCheckBox("Dry run (preview only \u2014 recommended)")
         self.pm_dry_run_checkbox.setChecked(True)
-        self.pm_dry_run_checkbox.setCursor(
-            Qt.CursorShape.PointingHandCursor)
+        self.pm_dry_run_checkbox.setCursor(Qt.CursorShape.PointingHandCursor)
         oc_lay.addRow(self.pm_dry_run_checkbox)
 
         self.v.addWidget(opt_card)
@@ -1287,7 +1331,9 @@ class PackageCachePage(_Page):
         self.autodiscover_btn = QPushButton("Auto-Discover Fixed Drives")
         self.autodiscover_btn.setObjectName("Ghost")
         self.autodiscover_btn.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.autodiscover_btn.setToolTip("Scan all fixed drives and known code roots for project caches (target, node_modules, .venv, etc.)")
+        self.autodiscover_btn.setToolTip(
+            "Scan all fixed drives and known code roots for project caches (target, node_modules, .venv, etc.)"
+        )
         self.autodiscover_btn.clicked.connect(self.start_autodiscover_scan)
         btn_row.addWidget(self.autodiscover_btn)
 
@@ -1314,18 +1360,15 @@ class PackageCachePage(_Page):
         metrics_row.setSpacing(12)
         self.card_caches = StatCard(self.p, "Caches Found", "\u2014")
         self.card_caches.setObjectName("BentoTile")
-        self.card_caches.setSizePolicy(
-            QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+        self.card_caches.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
         self.card_caches.setMinimumHeight(64)
         self.card_files = StatCard(self.p, "Total Files", "\u2014")
         self.card_files.setObjectName("BentoTile")
-        self.card_files.setSizePolicy(
-            QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+        self.card_files.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
         self.card_files.setMinimumHeight(64)
         self.card_size = StatCard(self.p, "Reclaimable", "\u2014")
         self.card_size.setObjectName("BentoTile")
-        self.card_size.setSizePolicy(
-            QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+        self.card_size.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
         self.card_size.setMinimumHeight(64)
         metrics_row.addWidget(self.card_caches)
         metrics_row.addWidget(self.card_files)
@@ -1339,20 +1382,15 @@ class PackageCachePage(_Page):
         tc_lay.setSpacing(0)
 
         self.pm_table = QTableWidget(0, 5)
-        self.pm_table.setHorizontalHeaderLabels(
-            ["Name", "Type", "Path", "Size", "Files"])
+        self.pm_table.setHorizontalHeaderLabels(["Name", "Type", "Path", "Size", "Files"])
         self.pm_table.setShowGrid(False)
         self.pm_table.setAlternatingRowColors(True)
         self.pm_table.verticalHeader().setVisible(False)
-        self.pm_table.setSelectionBehavior(
-            QTableWidget.SelectionBehavior.SelectRows)
-        self.pm_table.setEditTriggers(
-            QTableWidget.EditTrigger.NoEditTriggers)
+        self.pm_table.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectRows)
+        self.pm_table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
         self.pm_table.horizontalHeader().setStretchLastSection(True)
-        self.pm_table.horizontalHeader().setSectionResizeMode(
-            0, QHeaderView.ResizeMode.Stretch)
-        self.pm_table.horizontalHeader().setDefaultAlignment(
-            Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
+        self.pm_table.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
+        self.pm_table.horizontalHeader().setDefaultAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
 
         tc_lay.addWidget(self.pm_table)
         self.v.addWidget(table_card, 1)
@@ -1364,6 +1402,7 @@ class PackageCachePage(_Page):
     def _browse_pm_directory(self):
         """Handle browse pm directory for the page widgets and worker state."""
         from pathlib import Path
+
         initial = self.pm_path_input.text().strip() or str(Path.home())
         folder = QFileDialog.getExistingDirectory(self, "Select Package Cache Directory", initial)
         if folder:
@@ -1373,6 +1412,7 @@ class PackageCachePage(_Page):
     def _browse_pm_file(self):
         """Handle browse pm file for the page widgets and worker state."""
         from pathlib import Path
+
         initial = self.pm_path_input.text().strip() or str(Path.home())
         file_path, _ = QFileDialog.getOpenFileName(self, "Select Package File / Cache Location", initial)
         if file_path:
@@ -1403,21 +1443,16 @@ class PackageCachePage(_Page):
 
             manager_names = []
             if isinstance(managers, list):
-                manager_names = [getattr(m, 'name', str(m))
-                                 for m in managers if m]
+                manager_names = [getattr(m, "name", str(m)) for m in managers if m]
 
             if manager_names:
-                self.pm_detect_status.setText(
-                    f"Detected: {', '.join(m.upper() for m in manager_names)}")
+                self.pm_detect_status.setText(f"Detected: {', '.join(m.upper() for m in manager_names)}")
                 self.pm_detect_status.setObjectName("")
-                self.pm_detect_status.setStyleSheet(
-                    "color: #107c10; font-weight: bold;")
+                self.pm_detect_status.setStyleSheet("color: #107c10; font-weight: bold;")
             else:
-                self.pm_detect_status.setText(
-                    "No compatible package managers found.")
+                self.pm_detect_status.setText("No compatible package managers found.")
                 self.pm_detect_status.setObjectName("")
-                self.pm_detect_status.setStyleSheet(
-                    "color: #d13438;")
+                self.pm_detect_status.setStyleSheet("color: #d13438;")
         except Exception as e:
             self.pm_detect_status.setText(f"Detection failed: {e}")
             self.pm_detect_status.setObjectName("")
@@ -1444,7 +1479,9 @@ class PackageCachePage(_Page):
                 target_list.append(curr_text)
 
             keep_recent = self.pm_keep_recent_spinbox.value()
-            resources = cleaner.scan_caches(target_folders=target_list if target_list else None, keep_recent_days=keep_recent)
+            resources = cleaner.scan_caches(
+                target_folders=target_list if target_list else None, keep_recent_days=keep_recent
+            )
 
             self.pm_resources = resources or []
             self._display_scan_results(resources)
@@ -1472,6 +1509,7 @@ class PackageCachePage(_Page):
                 list: Discovered project cache resources.
             """
             from cortex_unified.analyzers.project_cache_scanner import ProjectCacheScanner
+
             scanner = ProjectCacheScanner(keep_recent_days=self.pm_keep_recent_spinbox.value())
             return scanner.scan_fixed_drives()
 
@@ -1514,8 +1552,8 @@ class PackageCachePage(_Page):
     def _display_scan_results(self, resources):
         """Handle display scan results for the page widgets and worker state.
 
-            Args:
-            resources: Collection or dictionary holding operation results.
+        Args:
+        resources: Collection or dictionary holding operation results.
         """
         self.progress.setVisible(False)
 
@@ -1534,11 +1572,11 @@ class PackageCachePage(_Page):
             if not isinstance(resource, dict):
                 continue
 
-            name = resource.get('name', '')
-            res_type = resource.get('type', '').replace('_', ' ').title()
-            path = resource.get('path', '')
-            size = resource.get('size', 0)
-            file_count = resource.get('file_count', 0)
+            name = resource.get("name", "")
+            res_type = resource.get("type", "").replace("_", " ").title()
+            path = resource.get("path", "")
+            size = resource.get("size", 0)
+            file_count = resource.get("file_count", 0)
 
             total_size += size
             total_files += file_count
@@ -1546,14 +1584,12 @@ class PackageCachePage(_Page):
             self.pm_table.setItem(row, 0, QTableWidgetItem(name))
             self.pm_table.setItem(row, 1, QTableWidgetItem(res_type))
             self.pm_table.setItem(row, 2, QTableWidgetItem(path))
-            self.pm_table.setItem(row, 3, QTableWidgetItem(
-                self._fmt_bytes(size)))
+            self.pm_table.setItem(row, 3, QTableWidgetItem(self._fmt_bytes(size)))
             self.pm_table.setItem(row, 4, QTableWidgetItem(str(file_count)))
 
         self.card_caches.set_value(str(len(resources)), animate=True)
         self.card_files.set_value(f"{total_files:,}", animate=True)
-        self.card_size.set_value(
-            self._fmt_bytes(total_size), animate=True)
+        self.card_size.set_value(self._fmt_bytes(total_size), animate=True)
         self.clean_btn.setEnabled(True)
 
     def start_pm_cleanup(self):
@@ -1572,7 +1608,8 @@ class PackageCachePage(_Page):
         mode = "Preview" if dry_run else "Clean"
 
         confirm = QMessageBox.question(
-            self, f"Confirm {mode}",
+            self,
+            f"Confirm {mode}",
             f"About to {mode.lower()} {len(selected)} cache(s).",
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
             QMessageBox.StandardButton.No,
@@ -1603,15 +1640,17 @@ class PackageCachePage(_Page):
     def _handle_cleanup_results(self, results, dry_run=True):
         """Handle worker results: refresh tables/trees, re-enable buttons and clear the busy state.
 
-            Args:
-            results: Collection or dictionary holding operation results.
-            dry_run: The dry run parameter.
+        Args:
+        results: Collection or dictionary holding operation results.
+        dry_run: The dry run parameter.
         """
         if isinstance(results, dict):
-            freed = results.get('freed', 0)
-            removed = results.get('removed', 0)
+            freed = results.get("freed", 0)
+            removed = results.get("removed", 0)
             mode = "Preview" if dry_run else "Cleaned"
-            QMessageBox.information(self, f"{mode} Complete", f"{mode} {removed} item(s)\nSpace freed: {self._fmt_bytes(freed)}")
+            QMessageBox.information(
+                self, f"{mode} Complete", f"{mode} {removed} item(s)\nSpace freed: {self._fmt_bytes(freed)}"
+            )
         else:
             QMessageBox.information(self, "Complete", "Operation completed.")
 
@@ -1644,7 +1683,7 @@ class PackageCachePage(_Page):
         if not isinstance(size_bytes, (int, float)):
             return "0 B"
         size_bytes = float(size_bytes)
-        for unit in ['B', 'KB', 'MB', 'GB']:
+        for unit in ["B", "KB", "MB", "GB"]:
             if size_bytes < 1024:
                 return f"{size_bytes:.1f} {unit}"
             size_bytes /= 1024
@@ -1655,16 +1694,18 @@ class PackageCachePage(_Page):
 #  SortableTreeWidgetItem (numeric sort support for project cache tree)
 # =====================================================================
 
+
 class SortableTreeWidgetItem(QTreeWidgetItem):
     """QTreeWidgetItem with numeric-aware sorting; size column compares UserRole values, others compare case-insensitive text."""
+
     def __lt__(self, other: QTreeWidgetItem) -> bool:
         """Compare tree rows; numeric UserRole sort on the size column, else case-insensitive text.
 
-            Args:
-            other (QTreeWidgetItem): The other parameter.
+        Args:
+        other (QTreeWidgetItem): The other parameter.
 
-            Returns:
-            bool: True if the operation succeeded, False otherwise.
+        Returns:
+        bool: True if the operation succeeded, False otherwise.
         """
         tree = self.treeWidget()
         col = tree.sortColumn() if tree else 0
@@ -1679,6 +1720,7 @@ class SortableTreeWidgetItem(QTreeWidgetItem):
 # =====================================================================
 #  Project Caches page
 # =====================================================================
+
 
 class ProjectCachesPage(_Page):
     """Project Folder Caches page with StatCard metrics, target-folder list, ecosystem checkboxes, results tree/table and Scan/Clean/Export actions."""
@@ -1696,28 +1738,27 @@ class ProjectCachesPage(_Page):
         self.v.setSpacing(Spacing.MD)
 
         # ===== HEADER =====
-        self.v.addWidget(title_block(
-            "Project Folder Caches",
-            "Multi-stack cleaner for Python, Node, Rust, Go, Java, C/C++, & .NET",
-        ))
+        self.v.addWidget(
+            title_block(
+                "Project Folder Caches",
+                "Multi-stack cleaner for Python, Node, Rust, Go, Java, C/C++, & .NET",
+            )
+        )
 
         # ===== METRICS STRIP (StatCard) =====
         metrics_row = QHBoxLayout()
         metrics_row.setSpacing(Spacing.SM)
         self.card_projects = StatCard(p, "Projects", "0")
         self.card_projects.setObjectName("BentoTile")
-        self.card_projects.setSizePolicy(
-            QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+        self.card_projects.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
         self.card_projects.setMinimumHeight(64)
         self.card_caches = StatCard(p, "Cache Folders", "0")
         self.card_caches.setObjectName("BentoTile")
-        self.card_caches.setSizePolicy(
-            QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+        self.card_caches.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
         self.card_caches.setMinimumHeight(64)
         self.card_size = StatCard(p, "Reclaimable", "0 B")
         self.card_size.setObjectName("BentoTile")
-        self.card_size.setSizePolicy(
-            QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+        self.card_size.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
         self.card_size.setMinimumHeight(64)
         metrics_row.addWidget(self.card_projects)
         metrics_row.addWidget(self.card_caches)
@@ -1726,12 +1767,10 @@ class ProjectCachesPage(_Page):
 
         self.btn_toggle_settings = QPushButton("Scan Settings")
         self.btn_toggle_settings.setObjectName("Ghost")
-        self.btn_toggle_settings.setCursor(
-            Qt.CursorShape.PointingHandCursor)
+        self.btn_toggle_settings.setCursor(Qt.CursorShape.PointingHandCursor)
         self.btn_toggle_settings.setCheckable(True)
         self.btn_toggle_settings.setChecked(False)
-        self.btn_toggle_settings.clicked.connect(
-            self._toggle_settings_panel)
+        self.btn_toggle_settings.clicked.connect(self._toggle_settings_panel)
         metrics_row.addWidget(self.btn_toggle_settings)
 
         self.v.addLayout(metrics_row)
@@ -1759,6 +1798,7 @@ class ProjectCachesPage(_Page):
         self.proj_path_input = QLineEdit()
         self.proj_path_input.setPlaceholderText("Enter or select project root directory / file location...")
         import os
+
         default_dir = os.getcwd()
         self.proj_path_input.setText(default_dir)
         target_input_row.addWidget(self.proj_path_input, stretch=1)
@@ -1904,31 +1944,29 @@ class ProjectCachesPage(_Page):
 
         self.proj_scan_button = QPushButton("Scan for Caches")
         self.proj_scan_button.setObjectName("Primary")
-        self.proj_scan_button.setCursor(
-            Qt.CursorShape.PointingHandCursor)
+        self.proj_scan_button.setCursor(Qt.CursorShape.PointingHandCursor)
         self.proj_scan_button.clicked.connect(self.start_project_scan)
         action_bar.addWidget(self.proj_scan_button)
 
         self.proj_autoscan_button = QPushButton("Scan Fixed Drives (auto)")
         self.proj_autoscan_button.setObjectName("Ghost")
-        self.proj_autoscan_button.setToolTip("Walk all fixed drives (D:\\, C:\\code) for PROJECT_CACHE_CATEGORIES without picking folders — finds 21.9GB targets missed before.")
+        self.proj_autoscan_button.setToolTip(
+            "Walk all fixed drives (D:\\, C:\\code) for PROJECT_CACHE_CATEGORIES without picking folders — finds 21.9GB targets missed before."
+        )
         self.proj_autoscan_button.setCursor(Qt.CursorShape.PointingHandCursor)
         self.proj_autoscan_button.clicked.connect(self.start_auto_scan)
         action_bar.addWidget(self.proj_autoscan_button)
 
         self.proj_cancel_button = QPushButton("Cancel")
         self.proj_cancel_button.setObjectName("Ghost")
-        self.proj_cancel_button.setCursor(
-            Qt.CursorShape.PointingHandCursor)
+        self.proj_cancel_button.setCursor(Qt.CursorShape.PointingHandCursor)
         self.proj_cancel_button.setEnabled(False)
-        self.proj_cancel_button.clicked.connect(
-            self.cancel_project_operation)
+        self.proj_cancel_button.clicked.connect(self.cancel_project_operation)
         action_bar.addWidget(self.proj_cancel_button)
 
         self.proj_clean_btn = QPushButton("Clean Selected")
         self.proj_clean_btn.setObjectName("Danger")
-        self.proj_clean_btn.setCursor(
-            Qt.CursorShape.PointingHandCursor)
+        self.proj_clean_btn.setCursor(Qt.CursorShape.PointingHandCursor)
         self.proj_clean_btn.setEnabled(False)
         self.proj_clean_btn.clicked.connect(self.start_project_cleanup)
         action_bar.addWidget(self.proj_clean_btn)
@@ -1944,22 +1982,19 @@ class ProjectCachesPage(_Page):
         btn_collapse_all = QPushButton("Collapse All")
         btn_collapse_all.setObjectName("Ghost")
         btn_collapse_all.setCursor(Qt.CursorShape.PointingHandCursor)
-        btn_collapse_all.clicked.connect(
-            lambda: self.proj_tree.collapseAll())
+        btn_collapse_all.clicked.connect(lambda: self.proj_tree.collapseAll())
         action_bar.addWidget(btn_collapse_all)
 
         btn_select_all = QPushButton("Select All")
         btn_select_all.setObjectName("Ghost")
         btn_select_all.setCursor(Qt.CursorShape.PointingHandCursor)
-        btn_select_all.clicked.connect(
-            lambda: self.toggle_all_table_items(True))
+        btn_select_all.clicked.connect(lambda: self.toggle_all_table_items(True))
         action_bar.addWidget(btn_select_all)
 
         btn_deselect_all = QPushButton("Deselect All")
         btn_deselect_all.setObjectName("Ghost")
         btn_deselect_all.setCursor(Qt.CursorShape.PointingHandCursor)
-        btn_deselect_all.clicked.connect(
-            lambda: self.toggle_all_table_items(False))
+        btn_deselect_all.clicked.connect(lambda: self.toggle_all_table_items(False))
         action_bar.addWidget(btn_deselect_all)
 
         btn_export = QPushButton("Export")
@@ -1991,14 +2026,16 @@ class ProjectCachesPage(_Page):
         search_bar.addWidget(self.proj_search_input, stretch=2)
 
         self.proj_sort_combo = QComboBox()
-        self.proj_sort_combo.addItems([
-            "Size (Largest)",
-            "Size (Smallest)",
-            "Project (A-Z)",
-            "Project (Z-A)",
-            "Ecosystem",
-            "Cache Folder",
-        ])
+        self.proj_sort_combo.addItems(
+            [
+                "Size (Largest)",
+                "Size (Smallest)",
+                "Project (A-Z)",
+                "Project (Z-A)",
+                "Ecosystem",
+                "Cache Folder",
+            ]
+        )
         self.proj_sort_combo.currentIndexChanged.connect(self.on_sort_combo_changed)
         search_bar.addWidget(self.proj_sort_combo, stretch=1)
 
@@ -2032,25 +2069,24 @@ class ProjectCachesPage(_Page):
 
         self.proj_tree = QTreeWidget()
         self.proj_tree.setColumnCount(6)
-        self.proj_tree.setHeaderLabels([
-            "Select", "Project / File Name", "Ecosystem",
-            "Cache Folder", "Full Location", "Size on Disk",
-        ])
-        self.proj_tree.header().setSectionResizeMode(
-            0, QHeaderView.ResizeMode.ResizeToContents)
-        self.proj_tree.header().setSectionResizeMode(
-            1, QHeaderView.ResizeMode.ResizeToContents)
-        self.proj_tree.header().setSectionResizeMode(
-            2, QHeaderView.ResizeMode.ResizeToContents)
-        self.proj_tree.header().setSectionResizeMode(
-            3, QHeaderView.ResizeMode.ResizeToContents)
-        self.proj_tree.header().setSectionResizeMode(
-            4, QHeaderView.ResizeMode.Stretch)
-        self.proj_tree.header().setSectionResizeMode(
-            5, QHeaderView.ResizeMode.ResizeToContents)
+        self.proj_tree.setHeaderLabels(
+            [
+                "Select",
+                "Project / File Name",
+                "Ecosystem",
+                "Cache Folder",
+                "Full Location",
+                "Size on Disk",
+            ]
+        )
+        self.proj_tree.header().setSectionResizeMode(0, QHeaderView.ResizeMode.ResizeToContents)
+        self.proj_tree.header().setSectionResizeMode(1, QHeaderView.ResizeMode.ResizeToContents)
+        self.proj_tree.header().setSectionResizeMode(2, QHeaderView.ResizeMode.ResizeToContents)
+        self.proj_tree.header().setSectionResizeMode(3, QHeaderView.ResizeMode.ResizeToContents)
+        self.proj_tree.header().setSectionResizeMode(4, QHeaderView.ResizeMode.Stretch)
+        self.proj_tree.header().setSectionResizeMode(5, QHeaderView.ResizeMode.ResizeToContents)
         self.proj_tree.itemChanged.connect(self._on_tree_item_changed)
-        self.proj_tree.itemDoubleClicked.connect(
-            self._on_tree_item_double_clicked)
+        self.proj_tree.itemDoubleClicked.connect(self._on_tree_item_double_clicked)
         self.proj_tree.itemExpanded.connect(self._on_tree_item_expanded)
         self.proj_tree.setSortingEnabled(True)
 
@@ -2099,8 +2135,11 @@ class ProjectCachesPage(_Page):
     def select_file_location_to_scan(self):
         """Select file location to scan via the file dialog; results return through worker signals."""
         from pathlib import Path
+
         initial = self.proj_path_input.text().strip() or str(Path.home())
-        file_path, _ = QFileDialog.getOpenFileName(self, "Select Project File Location (e.g. package.json, Cargo.toml)", initial)
+        file_path, _ = QFileDialog.getOpenFileName(
+            self, "Select Project File Location (e.g. package.json, Cargo.toml)", initial
+        )
         if file_path:
             parent_dir = str(Path(file_path).parent)
             self.proj_path_input.setText(parent_dir)
@@ -2112,8 +2151,10 @@ class ProjectCachesPage(_Page):
     def auto_detect_code_folders(self):
         """Auto detect code folders via the confirmation dialog; results return through worker signals."""
         from pathlib import Path
+
         try:
             from cortex_unified.analyzers.project_cache_scanner import _known_code_roots
+
             candidates = _known_code_roots()
         except Exception:
             candidates = [
@@ -2133,13 +2174,20 @@ class ProjectCachesPage(_Page):
                     added += 1
         self._update_target_count_badge()
         if added > 0:
-            QMessageBox.information(self, "Code Folders Detected", f"Added {added} code directory candidate(s) to scan list.")
+            QMessageBox.information(
+                self, "Code Folders Detected", f"Added {added} code directory candidate(s) to scan list."
+            )
         else:
-            QMessageBox.information(self, "Auto-Detect Complete", "No new standard code directories found. You can manually click 'Select Directory'.")
+            QMessageBox.information(
+                self,
+                "Auto-Detect Complete",
+                "No new standard code directories found. You can manually click 'Select Directory'.",
+            )
 
     def add_current_workspace(self):
         """Add current workspace via the confirmation dialog; results return through worker signals."""
         import os
+
         cwd = os.getcwd()
         self.proj_path_input.setText(cwd)
         if cwd not in self.proj_folders:
@@ -2152,8 +2200,9 @@ class ProjectCachesPage(_Page):
     def add_folder_to_scan(self):
         """Add folder to scan via the file dialog; results return through worker signals."""
         from pathlib import Path
+
         initial = self.proj_path_input.text().strip() or str(Path.home())
-        folder = QFileDialog.getExistingDirectory(self, 'Select Project Directory to Scan', initial)
+        folder = QFileDialog.getExistingDirectory(self, "Select Project Directory to Scan", initial)
         if folder:
             self.proj_path_input.setText(folder)
             if folder not in self.proj_folders:
@@ -2176,7 +2225,8 @@ class ProjectCachesPage(_Page):
         """Clear all folders via the confirmation dialog; results return through worker signals."""
         if self.proj_folders:
             confirm = QMessageBox.question(
-                self, "Clear All Folders",
+                self,
+                "Clear All Folders",
                 "Remove all folders from the scan list?",
                 QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
                 QMessageBox.StandardButton.No,
@@ -2207,22 +2257,22 @@ class ProjectCachesPage(_Page):
     def _get_enabled_categories(self) -> list[str]:
         """Handle get enabled categories for the page widgets and worker state.
 
-            Returns:
-            list[str]: List of processed items or identifiers.
+        Returns:
+        list[str]: List of processed items or identifiers.
         """
         cats = []
         if self.cat_cb_python.isChecked():
-            cats.append('python')
+            cats.append("python")
         if self.cat_cb_node.isChecked():
-            cats.append('node')
+            cats.append("node")
         if self.cat_cb_rust_go.isChecked():
-            cats.append('rust_go')
+            cats.append("rust_go")
         if self.cat_cb_java_dotnet.isChecked():
-            cats.append('java_dotnet')
+            cats.append("java_dotnet")
         if self.cat_cb_cpp_cmake.isChecked():
-            cats.append('cpp_cmake')
+            cats.append("cpp_cmake")
         if self.cat_cb_mobile_other.isChecked():
-            cats.append('mobile_other')
+            cats.append("mobile_other")
         return cats
 
     def start_project_scan(self):
@@ -2234,7 +2284,9 @@ class ProjectCachesPage(_Page):
             self._update_target_count_badge()
 
         if not self.proj_folders:
-            QMessageBox.information(self, "No Folders Selected", "Please select or enter at least one project folder to scan.")
+            QMessageBox.information(
+                self, "No Folders Selected", "Please select or enter at least one project folder to scan."
+            )
             return
 
         enabled_cats = self._get_enabled_categories()
@@ -2285,12 +2337,12 @@ class ProjectCachesPage(_Page):
     def _on_proj_scan_finished(self, resources: list):
         """Handle worker results: refresh tables/trees and clear the busy state.
 
-            Args:
-            resources (list): Collection or dictionary holding operation results.
+        Args:
+        resources (list): Collection or dictionary holding operation results.
         """
         self._cleanup_scan_thread()
         self.proj_resources = resources or []
-        self.proj_resources.sort(key=lambda r: r.get('size', 0) if isinstance(r, dict) else 0, reverse=True)
+        self.proj_resources.sort(key=lambda r: r.get("size", 0) if isinstance(r, dict) else 0, reverse=True)
         self._display_project_scan_results(self.proj_resources)
 
     def start_auto_scan(self):
@@ -2300,7 +2352,7 @@ class ProjectCachesPage(_Page):
             QMessageBox.warning(self, "No Categories Selected", "Please check at least one ecosystem.")
             return
         self.proj_scan_button.setEnabled(False)
-        if hasattr(self, 'proj_autoscan_button'):
+        if hasattr(self, "proj_autoscan_button"):
             self.proj_autoscan_button.setEnabled(False)
         self.proj_cancel_button.setEnabled(True)
         self.proj_clean_btn.setEnabled(False)
@@ -2309,6 +2361,7 @@ class ProjectCachesPage(_Page):
         self.proj_status_label.setText("Auto-scanning all fixed drives… (this may take a minute)")
         self.proj_tree.clear()
         from cortex_unified.ui.premium.workers import AutoProjectCacheWorker
+
         keep_recent = 0 if self.radio_clean_all.isChecked() else self.proj_keep_recent_spinbox.value()
         self._scan_worker = AutoProjectCacheWorker(
             enabled_categories=enabled_cats,
@@ -2345,7 +2398,7 @@ class ProjectCachesPage(_Page):
         self._scan_worker = None
 
         self.proj_scan_button.setEnabled(True)
-        if hasattr(self, 'proj_autoscan_button'):
+        if hasattr(self, "proj_autoscan_button"):
             self.proj_autoscan_button.setEnabled(True)
         self.proj_cancel_button.setEnabled(False)
         self.proj_progress.setVisible(False)
@@ -2353,18 +2406,18 @@ class ProjectCachesPage(_Page):
 
     def cancel_project_operation(self):
         """Cancel project operation via the worker/widgets; results return through worker signals."""
-        if self._scan_worker and hasattr(self._scan_worker, 'cancel'):
+        if self._scan_worker and hasattr(self._scan_worker, "cancel"):
             self._scan_worker.cancel()
             self.proj_status_label.setText("Cancelling scan operation...")
-        if self._clean_worker and hasattr(self._clean_worker, 'cancel'):
+        if self._clean_worker and hasattr(self._clean_worker, "cancel"):
             self._clean_worker.cancel()
             self.proj_status_label.setText("Cancelling cleanup operation...")
 
     def _display_project_scan_results(self, resources: list):
         """Handle display project scan results for the page widgets and worker state.
 
-            Args:
-            resources (list): Collection or dictionary holding operation results.
+        Args:
+        resources (list): Collection or dictionary holding operation results.
         """
         self.proj_tree.blockSignals(True)
         self.proj_tree.setSortingEnabled(False)
@@ -2393,15 +2446,15 @@ class ProjectCachesPage(_Page):
             if not isinstance(resource, dict):
                 continue
 
-            path = resource.get('path', '')
-            project = resource.get('name', 'Unknown')
+            path = resource.get("path", "")
+            project = resource.get("name", "Unknown")
             projects_set.add(project)
 
-            cat_id = resource.get('category', 'python')
-            ecosystem_label = eco_badge_map.get(cat_id, resource.get('manager_name', cat_id.title()))
-            cache_dir = resource.get('cache_name', resource.get('description', 'Cache'))
-            size = resource.get('size', 0)
-            file_cnt = resource.get('file_count', 0)
+            cat_id = resource.get("category", "python")
+            ecosystem_label = eco_badge_map.get(cat_id, resource.get("manager_name", cat_id.title()))
+            cache_dir = resource.get("cache_name", resource.get("description", "Cache"))
+            size = resource.get("size", 0)
+            file_cnt = resource.get("file_count", 0)
             total_size += size
 
             parent_item = SortableTreeWidgetItem(self.proj_tree)
@@ -2424,12 +2477,9 @@ class ProjectCachesPage(_Page):
         self.proj_tree.sortByColumn(5, Qt.SortOrder.DescendingOrder)
         self.proj_tree.blockSignals(False)
 
-        self.card_projects.set_value(
-            f"{len(projects_set):,}", animate=True)
-        self.card_caches.set_value(
-            f"{len(resources):,}", animate=True)
-        self.card_size.set_value(
-            self._fmt_bytes(total_size), animate=True)
+        self.card_projects.set_value(f"{len(projects_set):,}", animate=True)
+        self.card_caches.set_value(f"{len(resources):,}", animate=True)
+        self.card_size.set_value(self._fmt_bytes(total_size), animate=True)
 
         self.proj_clean_btn.setEnabled(True)
 
@@ -2439,8 +2489,8 @@ class ProjectCachesPage(_Page):
     def _on_tree_item_expanded(self, item: QTreeWidgetItem):
         """Handle worker results: refresh tables/trees, update cards/labels, re-enable buttons and clear the busy state.
 
-            Args:
-            item (QTreeWidgetItem): The item parameter.
+        Args:
+        item (QTreeWidgetItem): The item parameter.
         """
         if item.childCount() == 1 and "Expand" in item.child(0).text(1):
             self.proj_tree.blockSignals(True)
@@ -2451,6 +2501,7 @@ class ProjectCachesPage(_Page):
             cache_dir = item.text(3)
 
             from pathlib import Path
+
             dir_path = Path(path_str)
             if dir_path.exists() and dir_path.is_dir():
                 try:
@@ -2488,8 +2539,8 @@ class ProjectCachesPage(_Page):
     def on_sort_combo_changed(self, index: int):
         """Handle on sort combo changed for the page widgets and worker state.
 
-            Args:
-            index (int): The index parameter.
+        Args:
+        index (int): The index parameter.
         """
         self.proj_tree.blockSignals(True)
         if index == 0:
@@ -2509,8 +2560,8 @@ class ProjectCachesPage(_Page):
     def filter_by_chip(self, cat_key: str):
         """Filter by chip via the results view; results return through worker signals.
 
-            Args:
-            cat_key (str): The cat key parameter.
+        Args:
+        cat_key (str): The cat key parameter.
         """
         self.active_chip_filter = cat_key
         for k, btn in self.chip_buttons.items():
@@ -2520,11 +2571,12 @@ class ProjectCachesPage(_Page):
     def _on_tree_item_double_clicked(self, item: QTreeWidgetItem, column: int):
         """Handle worker results: refresh tables/trees and clear the busy state.
 
-            Args:
-            item (QTreeWidgetItem): The item parameter.
-            column (int): The column parameter.
+        Args:
+        item (QTreeWidgetItem): The item parameter.
+        column (int): The column parameter.
         """
         import os
+
         path_str = item.text(4)
         if path_str and os.path.exists(path_str):
             try:
@@ -2532,14 +2584,15 @@ class ProjectCachesPage(_Page):
             except Exception:
                 from PySide6.QtGui import QDesktopServices
                 from PySide6.QtCore import QUrl
+
                 QDesktopServices.openUrl(QUrl.fromLocalFile(path_str))
 
     def _on_tree_item_changed(self, item: QTreeWidgetItem, column: int):
         """Handle worker results: refresh tables/trees and clear the busy state.
 
-            Args:
-            item (QTreeWidgetItem): The item parameter.
-            column (int): The column parameter.
+        Args:
+        item (QTreeWidgetItem): The item parameter.
+        column (int): The column parameter.
         """
         if column == 0:
             self.proj_tree.blockSignals(True)
@@ -2548,15 +2601,17 @@ class ProjectCachesPage(_Page):
                 item.child(i).setCheckState(0, state)
             parent = item.parent()
             if parent:
-                all_checked = all(parent.child(i).checkState(0) == Qt.CheckState.Checked for i in range(parent.childCount()))
+                all_checked = all(
+                    parent.child(i).checkState(0) == Qt.CheckState.Checked for i in range(parent.childCount())
+                )
                 parent.setCheckState(0, Qt.CheckState.Checked if all_checked else Qt.CheckState.Unchecked)
             self.proj_tree.blockSignals(False)
 
     def filter_results_table(self, query: str):
         """Filter results table via the results view; results return through worker signals.
 
-            Args:
-            query (str): The query parameter.
+        Args:
+        query (str): The query parameter.
         """
         q = query.strip().lower()
         chip = self.active_chip_filter
@@ -2580,18 +2635,15 @@ class ProjectCachesPage(_Page):
             if show:
                 visible_cnt += 1
                 if isinstance(res, dict):
-                    visible_bytes += res.get('size', 0)
+                    visible_bytes += res.get("size", 0)
 
         if visible_cnt < self.proj_tree.topLevelItemCount():
             self.proj_status_label.setText(
-                f"Showing {visible_cnt:,} of "
-                f"{self.proj_tree.topLevelItemCount():,} cache(s)")
+                f"Showing {visible_cnt:,} of " f"{self.proj_tree.topLevelItemCount():,} cache(s)"
+            )
         elif self.proj_resources:
-            total = sum(
-                r.get('size', 0) for r in self.proj_resources)
-            self.proj_status_label.setText(
-                f"{len(self.proj_resources):,} cache(s) \u2014 "
-                f"{self._fmt_bytes(total)}")
+            total = sum(r.get("size", 0) for r in self.proj_resources)
+            self.proj_status_label.setText(f"{len(self.proj_resources):,} cache(s) \u2014 " f"{self._fmt_bytes(total)}")
 
     def toggle_all_table_items(self, checked: bool):
         """Toggle all table items via the results view; results return through worker signals.
@@ -2617,35 +2669,46 @@ class ProjectCachesPage(_Page):
             return
 
         file_path, selected_filter = QFileDialog.getSaveFileName(
-            self,
-            "Export Scan Report",
-            "cortex_cache_report.csv",
-            "CSV Files (*.csv);;JSON Files (*.json)"
+            self, "Export Scan Report", "cortex_cache_report.csv", "CSV Files (*.csv);;JSON Files (*.json)"
         )
         if not file_path:
             return
 
         try:
-            if file_path.endswith('.json'):
+            if file_path.endswith(".json"):
                 import json
-                with open(file_path, 'w', encoding='utf-8') as f:
+
+                with open(file_path, "w", encoding="utf-8") as f:
                     json.dump(self.proj_resources, f, indent=2)
             else:
                 import csv
-                with open(file_path, 'w', newline='', encoding='utf-8') as f:
+
+                with open(file_path, "w", newline="", encoding="utf-8") as f:
                     writer = csv.writer(f)
-                    writer.writerow(['Project', 'Ecosystem', 'Cache Directory', 'Full Path', 'Size Bytes', 'Size Human', 'File Count'])
+                    writer.writerow(
+                        [
+                            "Project",
+                            "Ecosystem",
+                            "Cache Directory",
+                            "Full Path",
+                            "Size Bytes",
+                            "Size Human",
+                            "File Count",
+                        ]
+                    )
                     for r in self.proj_resources:
                         if isinstance(r, dict):
-                            writer.writerow([
-                                r.get('name', ''),
-                                r.get('manager_name', r.get('category', '')),
-                                r.get('cache_name', ''),
-                                r.get('path', ''),
-                                r.get('size', 0),
-                                self._fmt_bytes(r.get('size', 0)),
-                                r.get('file_count', 0)
-                            ])
+                            writer.writerow(
+                                [
+                                    r.get("name", ""),
+                                    r.get("manager_name", r.get("category", "")),
+                                    r.get("cache_name", ""),
+                                    r.get("path", ""),
+                                    r.get("size", 0),
+                                    self._fmt_bytes(r.get("size", 0)),
+                                    r.get("file_count", 0),
+                                ]
+                            )
             QMessageBox.information(self, "Report Exported", f"Successfully saved scan report to:\n{file_path}")
         except Exception as e:
             QMessageBox.warning(self, "Export Failed", f"Could not export report: {e}")
@@ -2653,8 +2716,8 @@ class ProjectCachesPage(_Page):
     def _get_selected_resources(self) -> list[dict]:
         """Compute and return the value for get selected resources used by the page.
 
-            Returns:
-            list[dict]: List of processed items or identifiers.
+        Returns:
+        list[dict]: List of processed items or identifiers.
         """
         selected = []
         for i in range(self.proj_tree.topLevelItemCount()):
@@ -2676,7 +2739,8 @@ class ProjectCachesPage(_Page):
         mode = "Preview" if dry_run else "Clean"
 
         confirm = QMessageBox.question(
-            self, f"Confirm {mode}",
+            self,
+            f"Confirm {mode}",
             f"About to {mode.lower()} {len(selected_resources):,} selected project cache(s).\nDry Run Mode: {dry_run}",
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
             QMessageBox.StandardButton.No,
@@ -2714,26 +2778,25 @@ class ProjectCachesPage(_Page):
             total_count (int): The total count parameter.
             freed_bytes (int): The freed bytes parameter.
         """
-        self.proj_status_label.setText(
-            f"Cleaning {done_count:,} of {total_count:,}\u2026")
+        self.proj_status_label.setText(f"Cleaning {done_count:,} of {total_count:,}\u2026")
 
     def _on_proj_clean_finished(self, results: dict, dry_run: bool):
         """Handle worker results: refresh tables/trees, update cards/labels and clear the busy state.
 
-            Args:
-            results (dict): Collection or dictionary holding operation results.
-            dry_run (bool): The dry run parameter.
+        Args:
+        results (dict): Collection or dictionary holding operation results.
+        dry_run (bool): The dry run parameter.
         """
         self._cleanup_clean_thread()
 
-        freed_size = results.get('freed', 0)
-        removed_count = results.get('removed', 0)
-        errors = results.get('errors', [])
+        freed_size = results.get("freed", 0)
+        removed_count = results.get("removed", 0)
+        errors = results.get("errors", [])
 
         mode = "Preview" if dry_run else "Cleaned"
 
         if errors:
-            error_msg = '\n'.join(errors[:3])
+            error_msg = "\n".join(errors[:3])
             if len(errors) > 3:
                 error_msg += f"\n... and {len(errors)-3} more errors"
             self._fail(f"Cleanup completed with errors:\n{error_msg}")
@@ -2750,9 +2813,9 @@ class ProjectCachesPage(_Page):
     def _handle_project_cleanup_results(self, results: dict, dry_run: bool = True):
         """Handle worker results: update widgets and clear the busy state.
 
-            Args:
-            results (dict): Collection or dictionary holding operation results.
-            dry_run (bool): The dry run parameter.
+        Args:
+        results (dict): Collection or dictionary holding operation results.
+        dry_run (bool): The dry run parameter.
         """
         self._on_proj_clean_finished(results, dry_run)
 
@@ -2809,7 +2872,7 @@ class ProjectCachesPage(_Page):
         if not isinstance(size_bytes, (int, float)):
             return "0 B"
         size_bytes = float(size_bytes)
-        for unit in ['B', 'KB', 'MB', 'GB']:
+        for unit in ["B", "KB", "MB", "GB"]:
             if size_bytes < 1024:
                 return f"{size_bytes:.1f} {unit}"
             size_bytes /= 1024
@@ -2820,8 +2883,10 @@ class ProjectCachesPage(_Page):
 #  Secrets Scanner (offline security audit)
 # =====================================================================
 
+
 class SecretsScanWorker(QObject):
     """Background worker scanning a directory via secrets_scanner.run_scan; emits finished(rows, risk_score) / failed(str)."""
+
     finished = Signal(list, int)
     failed = Signal(str)
 
@@ -2843,16 +2908,19 @@ class SecretsScanWorker(QObject):
         """
         try:
             from cortex_unified.system_tools.secrets_scanner import run_scan
+
             stats = run_scan(self._directory, quiet=True)
             rows = []
             for f in stats.findings:
-                rows.append({
-                    "severity": getattr(f, "severity", ""),
-                    "rule": getattr(f, "pattern_name", ""),
-                    "file": getattr(f, "file_path", ""),
-                    "line": getattr(f, "line_number", ""),
-                    "preview": getattr(f, "match_preview", ""),
-                })
+                rows.append(
+                    {
+                        "severity": getattr(f, "severity", ""),
+                        "rule": getattr(f, "pattern_name", ""),
+                        "file": getattr(f, "file_path", ""),
+                        "line": getattr(f, "line_number", ""),
+                        "preview": getattr(f, "match_preview", ""),
+                    }
+                )
             self.finished.emit(rows, int(getattr(stats, "risk_score", 0)))
         except Exception as exc:
             self.failed.emit(str(exc))
@@ -2870,11 +2938,11 @@ _SEVERITY_RANK = {
 def _severity_rank(finding: dict) -> int:
     """Rank finding severities so critical/high sort before low/info.
 
-        Args:
-        finding (dict): The finding parameter.
+    Args:
+    finding (dict): The finding parameter.
 
-        Returns:
-        int: Result of the operation.
+    Returns:
+    int: Result of the operation.
     """
     return _SEVERITY_RANK.get(str(finding.get("severity", "")).strip().upper(), 0)
 
@@ -2882,11 +2950,11 @@ def _severity_rank(finding: dict) -> int:
 def _line_sort_key(finding: dict) -> int:
     """Build a sort key for secret-match lines in the results table.
 
-        Args:
-        finding (dict): The finding parameter.
+    Args:
+    finding (dict): The finding parameter.
 
-        Returns:
-        int: Result of the operation.
+    Returns:
+    int: Result of the operation.
     """
     raw = finding.get("line", "")
     try:
@@ -2907,11 +2975,13 @@ class SecretsScannerPage(_Page):
             win: Parent window or shell controller instance.
         """
         super().__init__(win)
-        self.v.addWidget(title_block(
-            "Secrets Scanner",
-            "Find exposed API keys, tokens, passwords and private keys in a folder. "
-            "Runs entirely offline - nothing is sent anywhere.",
-        ))
+        self.v.addWidget(
+            title_block(
+                "Secrets Scanner",
+                "Find exposed API keys, tokens, passwords and private keys in a folder. "
+                "Runs entirely offline - nothing is sent anywhere.",
+            )
+        )
 
         picker = QHBoxLayout()
         pick_btn = QPushButton("Choose Folder\u2026")
@@ -2956,6 +3026,7 @@ class SecretsScannerPage(_Page):
         Launches a native file dialog and populates the selected path into the corresponding target input widget.
         """
         from pathlib import Path
+
         folder = QFileDialog.getExistingDirectory(self, "Select a folder", str(Path.home()))
         if folder:
             self._folder = folder
@@ -3013,6 +3084,7 @@ class SecretsScannerPage(_Page):
 #  Virtual Disks (WSL / Docker / Hyper-V VHDX reclaim)
 # =====================================================================
 
+
 class VirtualDisksPage(_Page):
     """Reclaim space from WSL / Docker / Hyper-V virtual disks.
 
@@ -3031,12 +3103,14 @@ class VirtualDisksPage(_Page):
             win: Parent window or shell controller instance.
         """
         super().__init__(win)
-        self.v.addWidget(title_block(
-            "Virtual Disks",
-            "WSL, Docker and Hyper-V keep their filesystems in virtual disks that "
-            "grow but never shrink on their own. Deleting files inside them frees "
-            "nothing on Windows until the disk is compacted.",
-        ))
+        self.v.addWidget(
+            title_block(
+                "Virtual Disks",
+                "WSL, Docker and Hyper-V keep their filesystems in virtual disks that "
+                "grow but never shrink on their own. Deleting files inside them frees "
+                "nothing on Windows until the disk is compacted.",
+            )
+        )
         if _windows_only(self, "Virtual disk compaction"):
             return
 
@@ -3128,8 +3202,8 @@ class VirtualDisksPage(_Page):
     def _selected_disks(self) -> list:
         """Compute and return the value for selected disks used by the page.
 
-            Returns:
-            list: List of processed items or identifiers.
+        Returns:
+        list: List of processed items or identifiers.
         """
         rows = sorted({i.row() for i in self.tbl.selectedIndexes()})
         return [self._disks[r] for r in rows if 0 <= r < len(self._disks)]
@@ -3138,8 +3212,7 @@ class VirtualDisksPage(_Page):
         """Handle worker results: re-enable buttons and clear the busy state."""
         chosen = self._selected_disks()
         self.compact_btn.setEnabled(bool(chosen) and all(d.can_compact for d in chosen))
-        self.sparse_btn.setEnabled(
-            len(chosen) == 1 and getattr(chosen[0].kind, "value", "") == "wsl")
+        self.sparse_btn.setEnabled(len(chosen) == 1 and getattr(chosen[0].kind, "value", "") == "wsl")
 
     # -- load ----------------------------------------------------------------
 
@@ -3149,6 +3222,7 @@ class VirtualDisksPage(_Page):
         Queries the underlying system service or storage cache and refreshes view tables with up-to-date state.
         """
         from .workers import VhdxListWorker
+
         self.refresh_btn.setEnabled(False)
         self.compact_btn.setEnabled(False)
         self.state.show_loading("Looking for virtual disks\u2026")
@@ -3157,8 +3231,8 @@ class VirtualDisksPage(_Page):
     def _on_listed(self, disks: list):
         """Handle worker results: refresh tables/trees, update cards/labels, update the state panel and clear the busy state.
 
-            Args:
-            disks (list): The disks parameter.
+        Args:
+        disks (list): The disks parameter.
         """
         self.refresh_btn.setEnabled(True)
         self._disks = disks
@@ -3178,8 +3252,7 @@ class VirtualDisksPage(_Page):
         self._on_select()
 
         if not disks:
-            self.state.show_empty(
-                "No WSL, Docker or Hyper-V virtual disks found on this PC.")
+            self.state.show_empty("No WSL, Docker or Hyper-V virtual disks found on this PC.")
             self.status.setText("")
             return
         self.state.clear()
@@ -3187,8 +3260,10 @@ class VirtualDisksPage(_Page):
         blocked = [d for d in disks if d.running]
         msg = f"{len(disks)} virtual disk(s) using {fmt_bytes(total)} on this PC."
         if blocked:
-            msg += (f" {len(blocked)} cannot be compacted yet - stop the runtime "
-                    f"first (use Stop WSL, or quit Docker Desktop).")
+            msg += (
+                f" {len(blocked)} cannot be compacted yet - stop the runtime "
+                f"first (use Stop WSL, or quit Docker Desktop)."
+            )
         self.status.setText(msg)
         self.win.statusBar().showMessage(msg, 6000)
 
@@ -3197,8 +3272,10 @@ class VirtualDisksPage(_Page):
     def _shutdown(self):
         """Confirm then stop all WSL distributions via WslShutdownWorker; disables Stop and shows progress."""
         from .workers import WslShutdownWorker
+
         confirm = QMessageBox.question(
-            self, "Stop WSL",
+            self,
+            "Stop WSL",
             "Stop every WSL distribution now?\n\n"
             "This also stops Docker Desktop's WSL backend. Unsaved work inside a "
             "distribution will be lost, exactly as with a hard stop.",
@@ -3214,9 +3291,9 @@ class VirtualDisksPage(_Page):
     def _on_shutdown(self, ok: bool, message: str):
         """Handle worker results: note status, re-enable buttons and clear the busy state.
 
-            Args:
-            ok (bool): The ok parameter.
-            message (str): Informational or progress status message.
+        Args:
+        ok (bool): The ok parameter.
+        message (str): Informational or progress status message.
         """
         self.progress.setVisible(False)
         self.stop_btn.setEnabled(True)
@@ -3229,13 +3306,14 @@ class VirtualDisksPage(_Page):
     def _compact(self):
         """Confirm then compact selected virtual disks via VhdxCompactWorker; disables buttons and shows loading."""
         from .workers import VhdxCompactWorker
+
         disks = [d for d in self._selected_disks() if d.can_compact]
         if not disks:
             return
-        names = "\n".join(f"  \u2022 {d.label}  ({fmt_bytes(d.on_disk_bytes)})"
-                          for d in disks)
+        names = "\n".join(f"  \u2022 {d.label}  ({fmt_bytes(d.on_disk_bytes)})" for d in disks)
         confirm = QMessageBox.question(
-            self, "Compact virtual disks",
+            self,
+            "Compact virtual disks",
             f"Compact {len(disks)} virtual disk(s)?\n\n{names}\n\n"
             "Nothing inside the disks is deleted - only unused blocks are returned "
             "to Windows. Needs Administrator, and can take several minutes each.",
@@ -3253,8 +3331,8 @@ class VirtualDisksPage(_Page):
     def _on_compacted(self, results: list):
         """Handle worker results: update cards/labels, note status, re-enable buttons and clear the busy state.
 
-            Args:
-            results (list): Collection or dictionary holding operation results.
+        Args:
+        results (list): Collection or dictionary holding operation results.
         """
         self.progress.setVisible(False)
         self.refresh_btn.setEnabled(True)
@@ -3268,8 +3346,7 @@ class VirtualDisksPage(_Page):
             f"{fmt_bytes(r.freed_bytes)} returned \u2014 {r.message}"
             for r in results
         ]
-        summary = (f"Reclaimed {fmt_bytes(freed)} in total."
-                   if freed else "No space could be returned.")
+        summary = f"Reclaimed {fmt_bytes(freed)} in total." if freed else "No space could be returned."
         self.win.statusBar().showMessage(summary, 8000)
 
         box = QMessageBox(self)
@@ -3278,20 +3355,21 @@ class VirtualDisksPage(_Page):
         box.setInformativeText("\n".join(lines))
         if failed and failed[0].detail:
             box.setDetailedText(failed[0].detail)
-        box.setIcon(QMessageBox.Icon.Information if not failed
-                    else QMessageBox.Icon.Warning)
+        box.setIcon(QMessageBox.Icon.Information if not failed else QMessageBox.Icon.Warning)
         box.exec()
         self._load()
 
     def _set_sparse(self):
         """Handle set sparse for the page widgets and worker state."""
         from .workers import VhdxSparseWorker
+
         chosen = self._selected_disks()
         if len(chosen) != 1:
             return
         disk = chosen[0]
         confirm = QMessageBox.question(
-            self, "Keep this disk sparse",
+            self,
+            "Keep this disk sparse",
             f"Turn on sparse mode for {disk.label}?\n\n"
             "A sparse virtual disk hands free blocks back to Windows as they are "
             "released, so the bloat does not build up again. Requires a recent "
@@ -3308,9 +3386,9 @@ class VirtualDisksPage(_Page):
     def _on_sparse(self, ok: bool, message: str):
         """Handle worker results: note status, re-enable buttons and clear the busy state.
 
-            Args:
-            ok (bool): The ok parameter.
-            message (str): Informational or progress status message.
+        Args:
+        ok (bool): The ok parameter.
+        message (str): Informational or progress status message.
         """
         self.progress.setVisible(False)
         self.sparse_btn.setEnabled(True)

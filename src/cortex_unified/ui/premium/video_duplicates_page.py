@@ -24,6 +24,7 @@ from cortex_unified.analyzers.video_duplicate_finder import VideoDuplicateFinder
 
 class _VideoWorker(QObject):
     """Background worker (_VideoWorker) performing VideoWorker. Signals finished, progress, failed report status. Configured with root, threshold. Its run() step calls VideoDuplicateFinder, finder.find_video_duplicates, emit, str."""
+
     finished = Signal(dict)
     progress = Signal(str)
     failed = Signal(str)
@@ -81,14 +82,19 @@ class VideoDuplicatesPage(_Page):
             win: Parent window or shell controller instance.
         """
         super().__init__(win)
-        self.v.addWidget(title_block(
-            "Video Near-Duplicates",
-            "Keyframe pHash + temporal consistence re-ranking (TCSVT 2024) – "
-            "matches a trimmed or re-encoded clip against its full source by "
-            "longest diagonally-consistent frame run.",
-        ))
+        self.v.addWidget(
+            title_block(
+                "Video Near-Duplicates",
+                "Keyframe pHash + temporal consistence re-ranking (TCSVT 2024) – "
+                "matches a trimmed or re-encoded clip against its full source by "
+                "longest diagonally-consistent frame run.",
+            )
+        )
         from PySide6.QtWidgets import (
-            QFileDialog, QProgressBar, QPushButton, QDoubleSpinBox,
+            QFileDialog,
+            QProgressBar,
+            QPushButton,
+            QDoubleSpinBox,
         )
 
         picker = QHBoxLayout()
@@ -191,14 +197,14 @@ class VideoDuplicatesPage(_Page):
         if not groups:
             self.state.show_empty(
                 "No video near-duplicates found. Lower the threshold or scan a "
-                "folder with re-encoded / trimmed copies of the same source.")
+                "folder with re-encoded / trimmed copies of the same source."
+            )
             self.status.setText("No video duplicates found.")
             self.win.statusBar().showMessage("No video duplicates", 5000)
             return
         self.state.clear()
         rows = [
-            (str(p), gid, f"temporal ≥ {self.thr_spin.value():.2f}")
-            for gid, paths in groups.items() for p in paths
+            (str(p), gid, f"temporal ≥ {self.thr_spin.value():.2f}") for gid, paths in groups.items() for p in paths
         ]
         self.tbl.setRowCount(len(rows))
         for r, (path, gid, hint) in enumerate(rows):
@@ -211,9 +217,7 @@ class VideoDuplicatesPage(_Page):
                 total += Path(path).stat().st_size
             except OSError:
                 pass
-        self.status.setText(
-            f"{len(groups)} video groups, {len(rows)} files, "
-            f"{fmt_bytes(total)} if all removed.")
+        self.status.setText(f"{len(groups)} video groups, {len(rows)} files, " f"{fmt_bytes(total)} if all removed.")
         self.win.statusBar().showMessage(f"{len(groups)} video-duplicate groups", 5000)
 
     def _fail(self, msg):
@@ -240,7 +244,10 @@ class VideoDuplicatesPage(_Page):
 
         if not target_path or not Path(target_path).exists():
             from PySide6.QtWidgets import QFileDialog
-            f, _ = QFileDialog.getOpenFileName(self, "Select Video to Optimize", self._folder, "Video Files (*.mp4 *.mkv *.avi *.mov)")
+
+            f, _ = QFileDialog.getOpenFileName(
+                self, "Select Video to Optimize", self._folder, "Video Files (*.mp4 *.mkv *.avi *.mov)"
+            )
             if f:
                 target_path = f
 
@@ -248,6 +255,7 @@ class VideoDuplicatesPage(_Page):
             return
 
         from PySide6.QtWidgets import QMessageBox
+
         self.status.setText(f"Optimizing video with VideoOptimizer: {Path(target_path).name}…")
         self.progress.setVisible(True)
 
@@ -257,6 +265,7 @@ class VideoDuplicatesPage(_Page):
             Performs the intensive analysis, scanning, or file operations in a worker thread to keep the interface responsive.
             """
             from cortex_unified.analyzers.czkawka_tools import VideoOptimizer
+
             opt = VideoOptimizer()
             p = Path(target_path)
             ok = opt.optimize(p)
@@ -278,7 +287,11 @@ class VideoDuplicatesPage(_Page):
                 QMessageBox.information(self, "Optimization Complete", msg)
             else:
                 self.status.setText("Video optimization failed or ffmpeg not available.")
-                QMessageBox.warning(self, "Optimization Note", "Could not optimize video. Ensure ffmpeg is installed and video is valid.")
+                QMessageBox.warning(
+                    self,
+                    "Optimization Note",
+                    "Could not optimize video. Ensure ffmpeg is installed and video is valid.",
+                )
 
         def error(msg):
             """Handle an operation failure and notify the user.

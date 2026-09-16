@@ -88,6 +88,7 @@ class BenchmarkTimer:
 # Directory listing benchmarks
 # ---------------------------------------------------------------------------
 
+
 class TestDirectoryListing:
     """Group testdirectorylisting tests covering list small dir; list medium dir; scandir small."""
 
@@ -137,6 +138,7 @@ class TestDirectoryListing:
 # ---------------------------------------------------------------------------
 # Copy/move/delete benchmarks
 # ---------------------------------------------------------------------------
+
 
 class TestFileOperations:
     """Group testfileoperations tests covering copy files; move files; delete files."""
@@ -199,6 +201,7 @@ class TestFileOperations:
 # Search benchmarks
 # ---------------------------------------------------------------------------
 
+
 class TestSearch:
     """Group testsearch tests covering glob search; name contains search."""
 
@@ -234,6 +237,7 @@ class TestSearch:
 # Hashing benchmarks
 # ---------------------------------------------------------------------------
 
+
 class TestHashing:
     """Group testhashing tests covering xxh3 hash; sha256 hash."""
 
@@ -253,6 +257,7 @@ class TestHashing:
         """Benchmark xxh3 hashing of 1MB file."""
         try:
             from xxhash import xxh3_64
+
             with BenchmarkTimer("xxh3_1MB") as t:
                 h = xxh3_64()
                 with open(self.test_file, "rb") as f:
@@ -267,6 +272,7 @@ class TestHashing:
     def test_sha256_hash(self):
         """Benchmark SHA-256 hashing of 1MB file."""
         import hashlib
+
         with BenchmarkTimer("sha256_1MB") as t:
             h = hashlib.sha256()
             with open(self.test_file, "rb") as f:
@@ -338,6 +344,7 @@ if __name__ == "__main__":
 
         try:
             from xxhash import xxh3_64
+
             t0 = time.perf_counter()
             h = xxh3_64()
             with open(test_file, "rb") as f:
@@ -349,6 +356,7 @@ if __name__ == "__main__":
             print("  xxhash not installed, skipping")
 
         import hashlib
+
         t0 = time.perf_counter()
         h = hashlib.sha256()
         with open(test_file, "rb") as f:

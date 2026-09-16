@@ -26,6 +26,7 @@ else:
 
 class MEMORYSTATUSEX(ctypes.Structure):
     """M E M O R Y S T A T U S E X."""
+
     _fields_ = [
         ("dwLength", wintypes.DWORD),
         ("dwMemoryLoad", wintypes.DWORD),
@@ -42,6 +43,7 @@ class MEMORYSTATUSEX(ctypes.Structure):
 @dataclass
 class PagefileConfig:
     """Pagefile Config data container."""
+
     raw_setting: List[str]
     is_automatic: bool
     drive_letter: str
@@ -52,6 +54,7 @@ class PagefileConfig:
 @dataclass
 class VirtualMemoryStatus:
     """Virtual Memory Status data container."""
+
     total_physical_bytes: int
     available_physical_bytes: int
     total_pagefile_bytes: int
@@ -166,7 +169,9 @@ class PagefileOptimizer:
         elif ram_gb >= 8:
             rec_min = 4096
             rec_max = 12288
-            reason = "Moderate RAM (8GB): 4GB initial with up to 12GB maximum handles peak application commitments safely."
+            reason = (
+                "Moderate RAM (8GB): 4GB initial with up to 12GB maximum handles peak application commitments safely."
+            )
         else:
             # Low RAM: 1.5x - 3x RAM
             rec_min = max(2048, int(ram_gb * 1024 * 1.5))
@@ -200,7 +205,10 @@ class PagefileOptimizer:
         try:
             with winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, cls.MEM_MGMT_KEY, 0, winreg.KEY_SET_VALUE) as key:
                 winreg.SetValueEx(key, "PagingFiles", 0, winreg.REG_MULTI_SZ, [entry_val])
-                return True, f"Paging file configured to {initial_mb}MB - {maximum_mb}MB on {clean_drive}. (Restart recommended)"
+                return (
+                    True,
+                    f"Paging file configured to {initial_mb}MB - {maximum_mb}MB on {clean_drive}. (Restart recommended)",
+                )
         except PermissionError:
             return False, "Administrator privileges required to modify virtual memory configuration."
         except Exception as exc:

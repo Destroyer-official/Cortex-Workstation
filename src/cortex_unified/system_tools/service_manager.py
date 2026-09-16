@@ -20,6 +20,7 @@ from typing import Dict, List, Optional, Tuple
 @dataclass
 class ServiceInfo:
     """Service Info data container."""
+
     name: str
     display_name: str
     status: str  # "Running", "Stopped", "Paused", "Unknown"
@@ -57,20 +58,44 @@ _SAFE_DISABLE_MAP: Dict[str, str] = {
     "WSearch": "Search",
 }
 
-_CRITICAL_SERVICES = frozenset({
-    "RpcSs", "RpcEptMapper", "DcomLaunch", "LSM", "PlugPlay",
-    "Power", "ProfSvc", "Schedule", "SENS", "SystemEventsBroker",
-    "Winmgmt", "wuauserv", "EventLog", "BrokerInfrastructure",
-    "CoreMessagingRegistrar", "CryptSvc", "Dhcp", "Dnscache",
-    "LanmanServer", "LanmanWorkstation", "mpssvc", "nsi",
-    "SecurityHealthService", "Themes", "UserManager", "Wcmsvc",
-    "WinDefend", "wscsvc",
-})
+_CRITICAL_SERVICES = frozenset(
+    {
+        "RpcSs",
+        "RpcEptMapper",
+        "DcomLaunch",
+        "LSM",
+        "PlugPlay",
+        "Power",
+        "ProfSvc",
+        "Schedule",
+        "SENS",
+        "SystemEventsBroker",
+        "Winmgmt",
+        "wuauserv",
+        "EventLog",
+        "BrokerInfrastructure",
+        "CoreMessagingRegistrar",
+        "CryptSvc",
+        "Dhcp",
+        "Dnscache",
+        "LanmanServer",
+        "LanmanWorkstation",
+        "mpssvc",
+        "nsi",
+        "SecurityHealthService",
+        "Themes",
+        "UserManager",
+        "Wcmsvc",
+        "WinDefend",
+        "wscsvc",
+    }
+)
 
 
 @dataclass
 class ServiceProfileResult:
     """Service Profile Result data container."""
+
     profile_name: str
     services_changed: int
     services_stopped: int
@@ -90,9 +115,15 @@ class WindowsServiceManager:
         services: List[ServiceInfo] = []
         try:
             res = subprocess.run(
-                ["powershell", "-NoProfile", "-Command",
-                 "Get-Service | Select-Object Name, DisplayName, Status, StartType | ConvertTo-Csv -NoTypeInformation"],
-                capture_output=True, text=True, timeout=15,
+                [
+                    "powershell",
+                    "-NoProfile",
+                    "-Command",
+                    "Get-Service | Select-Object Name, DisplayName, Status, StartType | ConvertTo-Csv -NoTypeInformation",
+                ],
+                capture_output=True,
+                text=True,
+                timeout=15,
             )
             if res.returncode != 0:
                 return []
@@ -110,25 +141,38 @@ class WindowsServiceManager:
                 status_raw = parts[2].strip('"')
                 start_raw = parts[3].strip('"')
 
-                status_map = {"Running": "Running", "Stopped": "Stopped",
-                              "Paused": "Paused", "4": "Running", "1": "Stopped"}
+                status_map = {
+                    "Running": "Running",
+                    "Stopped": "Stopped",
+                    "Paused": "Paused",
+                    "4": "Running",
+                    "1": "Stopped",
+                }
                 status = status_map.get(status_raw, status_raw)
 
-                start_map = {"Automatic": "Auto", "Manual": "Manual",
-                             "Disabled": "Disabled", "2": "Auto", "3": "Manual", "4": "Disabled"}
+                start_map = {
+                    "Automatic": "Auto",
+                    "Manual": "Manual",
+                    "Disabled": "Disabled",
+                    "2": "Auto",
+                    "3": "Manual",
+                    "4": "Disabled",
+                }
                 startup = start_map.get(start_raw, start_raw)
 
                 category = _SAFE_DISABLE_MAP.get(name, "")
                 safe = name in _SAFE_DISABLE_MAP and name not in _CRITICAL_SERVICES
 
-                services.append(ServiceInfo(
-                    name=name,
-                    display_name=display,
-                    status=status,
-                    startup_type=startup,
-                    category=category,
-                    safe_to_disable=safe,
-                ))
+                services.append(
+                    ServiceInfo(
+                        name=name,
+                        display_name=display,
+                        status=status,
+                        startup_type=startup,
+                        category=category,
+                        safe_to_disable=safe,
+                    )
+                )
         except Exception:
             pass
 
@@ -143,8 +187,7 @@ class WindowsServiceManager:
             return False, f"'{service_name}' is a critical OS service and cannot be stopped."
 
         try:
-            res = subprocess.run(["net", "stop", service_name, "/y"],
-                                 capture_output=True, text=True, timeout=15)
+            res = subprocess.run(["net", "stop", service_name, "/y"], capture_output=True, text=True, timeout=15)
             if res.returncode == 0 or "successfully stopped" in res.stdout.lower():
                 return True, f"Service '{service_name}' stopped."
             return False, res.stderr.strip() or res.stdout.strip() or "Failed (Admin required)"
@@ -163,8 +206,9 @@ class WindowsServiceManager:
         sc_type = type_map.get(startup_type.lower(), "demand")
 
         try:
-            res = subprocess.run(["sc.exe", "config", service_name, f"start={sc_type}"],
-                                 capture_output=True, text=True, timeout=10)
+            res = subprocess.run(
+                ["sc.exe", "config", service_name, f"start={sc_type}"], capture_output=True, text=True, timeout=10
+            )
             if res.returncode == 0 or "SUCCESS" in res.stdout.upper():
                 return True, f"Service '{service_name}' startup set to '{startup_type}'."
             return False, res.stderr.strip() or res.stdout.strip() or "Failed"
@@ -175,20 +219,45 @@ class WindowsServiceManager:
     def apply_profile(cls, profile: str = "Gaming") -> ServiceProfileResult:
         """Apply a named service optimization profile."""
         profiles: Dict[str, List[str]] = {
-            "Gaming": ["DiagTrack", "dmwappushservice", "MapsBroker", "lfsvc",
-                        "Fax", "PrintNotify", "WMPNetworkSvc", "WbioSrvc",
-                        "XblAuthManager", "XblGameSave", "XboxGipSvc", "XboxNetApiSvc",
-                        "WpcMonSvc", "wisvc", "PhoneSvc", "RemoteRegistry",
-                        "TrkWks", "RetailDemo", "icssvc", "TabletInputService"],
+            "Gaming": [
+                "DiagTrack",
+                "dmwappushservice",
+                "MapsBroker",
+                "lfsvc",
+                "Fax",
+                "PrintNotify",
+                "WMPNetworkSvc",
+                "WbioSrvc",
+                "XblAuthManager",
+                "XblGameSave",
+                "XboxGipSvc",
+                "XboxNetApiSvc",
+                "WpcMonSvc",
+                "wisvc",
+                "PhoneSvc",
+                "RemoteRegistry",
+                "TrkWks",
+                "RetailDemo",
+                "icssvc",
+                "TabletInputService",
+            ],
             "Minimal": list(_SAFE_DISABLE_MAP.keys()),
-            "Developer": ["DiagTrack", "dmwappushservice", "MapsBroker",
-                           "Fax", "PrintNotify", "XblAuthManager", "XblGameSave",
-                           "WpcMonSvc", "RetailDemo", "icssvc"],
+            "Developer": [
+                "DiagTrack",
+                "dmwappushservice",
+                "MapsBroker",
+                "Fax",
+                "PrintNotify",
+                "XblAuthManager",
+                "XblGameSave",
+                "WpcMonSvc",
+                "RetailDemo",
+                "icssvc",
+            ],
         }
 
         target_services = profiles.get(profile, [])
-        result = ServiceProfileResult(profile_name=profile, services_changed=0,
-                                       services_stopped=0, services_disabled=0)
+        result = ServiceProfileResult(profile_name=profile, services_changed=0, services_stopped=0, services_disabled=0)
 
         for svc_name in target_services:
             if svc_name in _CRITICAL_SERVICES:

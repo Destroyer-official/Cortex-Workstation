@@ -16,9 +16,10 @@ import threading
 from cortex_unified.core.utils import normalize_path
 from cortex_unified.core.config import Config
 
+
 class DuplicateFolderFinder:
     """Content-identical folder detector using order-independent content fingerprints."""
-    
+
     def __init__(self, config: Config = None, root_path: str = "."):
         """
         Args:
@@ -30,15 +31,15 @@ class DuplicateFolderFinder:
         self.exclude_patterns = set(self.config.exclude_patterns)
         self.exclude_dirs = set(self.config.exclude_dirs)
         self.follow_symlinks = self.config.follow_symlinks
-        
+
         # Folder hashing runs on a thread pool; counters must survive
         # concurrent updates.
         self._lock = threading.Lock()
-        
+
         self.duplicate_folders: Dict[str, List[Path]] = {}
         self.folder_count = 0
         self.error_count = 0
-    
+
     def _should_exclude_path(self, path: Path) -> bool:
         """True when *path* hits an excluded directory name or pattern.
 
@@ -50,14 +51,14 @@ class DuplicateFolderFinder:
         """
         if path.name in self.exclude_dirs:
             return True
-        
+
         path_str = str(path)
         for pattern in self.exclude_patterns:
             if pattern in path_str or pattern in path.name:
                 return True
-        
+
         return False
-    
+
     def _get_folder_hash(self, folderpath: Path) -> str:
         """Order-independent content fingerprint of *folderpath*.
 
@@ -69,49 +70,48 @@ class DuplicateFolderFinder:
         """
         try:
             file_hashes = []
-            
+
             for root, dirs, files in os.walk(folderpath):
                 dirs[:] = [d for d in dirs if d not in self.exclude_dirs]
-                
+
                 root_path = Path(root)
                 if self._should_exclude_path(root_path):
                     dirs[:] = []
                     continue
-                
+
                 files.sort()
-                
+
                 for file in files:
                     filepath = root_path / file
                     if self._should_exclude_path(filepath):
                         continue
-                    
+
                     try:
                         hash_obj = hashlib.md5()
-                        with open(filepath, 'rb') as f:
+                        with open(filepath, "rb") as f:
                             for chunk in iter(lambda: f.read(8192), b""):
                                 hash_obj.update(chunk)
-                        
+
                         rel_path = filepath.relative_to(folderpath)
                         file_hashes.append((str(rel_path), hash_obj.hexdigest()))
                     except Exception:
                         continue
-            
+
             file_hashes.sort()
-            
+
             folder_hash = hashlib.md5()
             for rel_path, file_hash in file_hashes:
-                folder_hash.update(rel_path.encode('utf-8'))
-                folder_hash.update(file_hash.encode('utf-8'))
-            
+                folder_hash.update(rel_path.encode("utf-8"))
+                folder_hash.update(file_hash.encode("utf-8"))
+
             return folder_hash.hexdigest()
         except Exception:
             # An unreadable folder cannot participate; None filters it out.
             return None
-    
-    def find_duplicate_folders(self, threads: int = 0, progress=None,
-                               cancel_event=None) -> Dict[str, List[Path]]:
+
+    def find_duplicate_folders(self, threads: int = 0, progress=None, cancel_event=None) -> Dict[str, List[Path]]:
         """Find folders with identical content.
-        
+
         Args:
             threads: Number of threads to use (0 = auto)
             progress: Optional callable(str) invoked with live status text.
@@ -147,14 +147,14 @@ class DuplicateFolderFinder:
                 if _cancelled():
                     break
                 dirs[:] = [d for d in dirs if d not in self.exclude_dirs]
-                
+
                 root_path = Path(root)
                 if self._should_exclude_path(root_path):
                     dirs[:] = []
                     continue
-                
+
                 folders.append(root_path)
-                
+
                 with self._lock:
                     self.folder_count += 1
                 if self.folder_count % 200 == 0:
@@ -175,11 +175,11 @@ class DuplicateFolderFinder:
 
         with ThreadPoolExecutor(max_workers=threads) as executor:
             future_to_folder = {}
-            
+
             for folderpath in folders:
                 future = executor.submit(self._get_folder_hash, folderpath)
                 future_to_folder[future] = folderpath
-            
+
             for future in as_completed(future_to_folder):
                 folderpath = future_to_folder[future]
                 done += 1
@@ -197,10 +197,10 @@ class DuplicateFolderFinder:
                 except Exception:
                     with self._lock:
                         self.error_count += 1
-        
+
         self.duplicate_folders = {hash_val: paths for hash_val, paths in hash_map.items() if len(paths) > 1}
         return self.duplicate_folders
-    
+
     def get_stats(self) -> dict:
         """Summarize scanned folders, duplicate groups, and errors.
 
@@ -209,14 +209,14 @@ class DuplicateFolderFinder:
         """
         duplicate_count = sum(len(paths) for paths in self.duplicate_folders.values())
         unique_folders = len(self.duplicate_folders)
-        
+
         return {
             "total_folders_scanned": self.folder_count,
             "duplicate_groups": unique_folders,
             "total_duplicates": duplicate_count,
-            "errors": self.error_count
+            "errors": self.error_count,
         }
-    
+
     def auto_select_folders(self, strategy: str = "keep_first") -> List[Path]:
         """Pick the redundant folder from each duplicate group.
 
@@ -226,11 +226,11 @@ class DuplicateFolderFinder:
                 members are returned for deletion.
         """
         folders_to_delete = []
-        
+
         for hash_val, paths in self.duplicate_folders.items():
             if len(paths) <= 1:
                 continue
-            
+
             if strategy == "keep_first":
                 folders_to_delete.extend(paths[1:])
             elif strategy == "keep_last":
@@ -244,5 +244,5 @@ class DuplicateFolderFinder:
             else:
                 # Unknown strategy: keep the first entry as-is.
                 folders_to_delete.extend(paths[1:])
-        
+
         return folders_to_delete

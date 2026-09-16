@@ -14,6 +14,7 @@ _VALID_SEVERITIES = frozenset(_SEVERITY_ORDER)
 @dataclass(slots=True)
 class SecurityFinding:
     """Record holding code, severity, title, detail, remediation, device_ip, evidence, cve_ids."""
+
     code: str
     severity: str
     title: str
@@ -162,84 +163,166 @@ def _observation_findings(observation: ServiceObservation) -> list[SecurityFindi
     name = observation.name.casefold()
     metadata = observation.metadata
     if name == "telnet" and observation.banner:
-        findings.append(_finding(
-            observation, "reachable-telnet", "high", "Reachable Telnet service",
-            "A Telnet greeting was observed. Telnet does not encrypt credentials or sessions.",
-            "Disable Telnet and use a protected management protocol such as SSH.", 0.9))
+        findings.append(
+            _finding(
+                observation,
+                "reachable-telnet",
+                "high",
+                "Reachable Telnet service",
+                "A Telnet greeting was observed. Telnet does not encrypt credentials or sessions.",
+                "Disable Telnet and use a protected management protocol such as SSH.",
+                0.9,
+            )
+        )
     if name == "ftp" and observation.banner.startswith("220"):
-        findings.append(_finding(
-            observation, "reachable-ftp", "medium", "Reachable cleartext FTP service",
-            "An FTP greeting was observed; standard FTP does not protect credentials or content.",
-            "Disable FTP or replace it with SFTP or correctly configured FTPS.", 0.9))
+        findings.append(
+            _finding(
+                observation,
+                "reachable-ftp",
+                "medium",
+                "Reachable cleartext FTP service",
+                "An FTP greeting was observed; standard FTP does not protect credentials or content.",
+                "Disable FTP or replace it with SFTP or correctly configured FTPS.",
+                0.9,
+            )
+        )
 
     http = metadata.get("http")
     if name == "http" and isinstance(http, Mapping):
         headers = http.get("headers", {})
         title = str(http.get("title", ""))
         server = str(headers.get("server", "")) if isinstance(headers, Mapping) else ""
-        indicators = sorted({
-            word for word in ("admin", "management", "configuration", "router", "gateway")
-            if word in f"{title} {server}".casefold()
-        })
+        indicators = sorted(
+            {
+                word
+                for word in ("admin", "management", "configuration", "router", "gateway")
+                if word in f"{title} {server}".casefold()
+            }
+        )
         if indicators:
-            findings.append(_finding(
-                observation, "unencrypted-web-admin", "medium",
-                "Unencrypted web administration interface",
-                "Observed HTTP metadata identifies an administrative interface without TLS.",
-                "Enable HTTPS-only management and restrict access to trusted hosts.", 0.85,
-                f"Administrative indicators: {', '.join(indicators)}"))
+            findings.append(
+                _finding(
+                    observation,
+                    "unencrypted-web-admin",
+                    "medium",
+                    "Unencrypted web administration interface",
+                    "Observed HTTP metadata identifies an administrative interface without TLS.",
+                    "Enable HTTPS-only management and restrict access to trusted hosts.",
+                    0.85,
+                    f"Administrative indicators: {', '.join(indicators)}",
+                )
+            )
 
     if name == "rdp":
-        findings.append(_finding(
-            observation, "reachable-rdp", "medium", "RDP port reachable on the LAN",
-            "A TCP connection was accepted on the conventional RDP endpoint; "
-            "this records exposure, not a vulnerability.",
-            "Restrict RDP to trusted management hosts and require strong authentication.", 0.6))
+        findings.append(
+            _finding(
+                observation,
+                "reachable-rdp",
+                "medium",
+                "RDP port reachable on the LAN",
+                "A TCP connection was accepted on the conventional RDP endpoint; "
+                "this records exposure, not a vulnerability.",
+                "Restrict RDP to trusted management hosts and require strong authentication.",
+                0.6,
+            )
+        )
     if name == "smb":
-        findings.append(_finding(
-            observation, "reachable-smb", "medium", "SMB port reachable on the LAN",
-            "A TCP connection was accepted on the conventional SMB endpoint; no SMB weakness was inferred.",
-            "Restrict SMB to trusted segments and disable obsolete dialects.", 0.6))
+        findings.append(
+            _finding(
+                observation,
+                "reachable-smb",
+                "medium",
+                "SMB port reachable on the LAN",
+                "A TCP connection was accepted on the conventional SMB endpoint; no SMB weakness was inferred.",
+                "Restrict SMB to trusted segments and disable obsolete dialects.",
+                0.6,
+            )
+        )
 
     advertised = metadata.get("services", ())
     adb_advertised = isinstance(advertised, (list, tuple, set)) and any(
-        "_adb-tls-connect" in str(item).casefold() for item in advertised)
+        "_adb-tls-connect" in str(item).casefold() for item in advertised
+    )
     if metadata.get("adb_cnxn_response") is True or adb_advertised:
-        findings.append(_finding(
-            observation, "wireless-adb", "high", "Wireless ADB advertised or reachable",
-            "The device explicitly responded as ADB or advertised _adb-tls-connect over mDNS.",
-            "Disable wireless debugging when not in use and revoke unneeded paired hosts.", 0.95,
-            "mDNS _adb-tls-connect advertisement" if adb_advertised else "ADB CNXN response"))
+        findings.append(
+            _finding(
+                observation,
+                "wireless-adb",
+                "high",
+                "Wireless ADB advertised or reachable",
+                "The device explicitly responded as ADB or advertised _adb-tls-connect over mDNS.",
+                "Disable wireless debugging when not in use and revoke unneeded paired hosts.",
+                0.95,
+                "mDNS _adb-tls-connect advertisement" if adb_advertised else "ADB CNXN response",
+            )
+        )
 
-    if (metadata.get("mqtt_connack") is True
-            and metadata.get("mqtt_anonymous_accepted") is True
-            and metadata.get("mqtt_return_code") == 0):
-        findings.append(_finding(
-            observation, "anonymous-mqtt", "high", "MQTT accepted an anonymous connection",
-            "A credential-free MQTT CONNECT received a successful CONNACK; no publish or subscribe was attempted.",
-            "Require authenticated clients, least-privilege ACLs, and TLS.", 0.99,
-            "MQTT CONNACK return code 0 for credential-free CONNECT"))
+    if (
+        metadata.get("mqtt_connack") is True
+        and metadata.get("mqtt_anonymous_accepted") is True
+        and metadata.get("mqtt_return_code") == 0
+    ):
+        findings.append(
+            _finding(
+                observation,
+                "anonymous-mqtt",
+                "high",
+                "MQTT accepted an anonymous connection",
+                "A credential-free MQTT CONNECT received a successful CONNACK; no publish or subscribe was attempted.",
+                "Require authenticated clients, least-privilege ACLs, and TLS.",
+                0.99,
+                "MQTT CONNACK return code 0 for credential-free CONNECT",
+            )
+        )
     elif name == "mqtt" and observation.transport == "tcp" and observation.port == 1883:
-        findings.append(_finding(
-            observation, "cleartext-mqtt", "medium", "Cleartext MQTT endpoint reachable",
-            "An MQTT protocol response was observed without transport encryption.",
-            "Use MQTT over TLS and require client authentication.", 0.85))
+        findings.append(
+            _finding(
+                observation,
+                "cleartext-mqtt",
+                "medium",
+                "Cleartext MQTT endpoint reachable",
+                "An MQTT protocol response was observed without transport encryption.",
+                "Use MQTT over TLS and require client authentication.",
+                0.85,
+            )
+        )
 
     if metadata.get("redis_unauthenticated") is True:
-        findings.append(_finding(
-            observation, "unauthenticated-redis", "critical", "Redis accepted PING without authentication",
-            "Redis returned PONG to a credential-free PING.",
-            "Require authentication, bind to trusted interfaces, and enforce network access controls.", 0.99))
+        findings.append(
+            _finding(
+                observation,
+                "unauthenticated-redis",
+                "critical",
+                "Redis accepted PING without authentication",
+                "Redis returned PONG to a credential-free PING.",
+                "Require authentication, bind to trusted interfaces, and enforce network access controls.",
+                0.99,
+            )
+        )
     if metadata.get("docker_api_unauthenticated") is True:
-        findings.append(_finding(
-            observation, "exposed-docker-api", "critical", "Docker API responded without authentication",
-            "The Docker HTTP API returned a non-authentication response to a read-only version request.",
-            "Disable unauthenticated TCP access and use mutually authenticated TLS or a local socket.", 0.98))
+        findings.append(
+            _finding(
+                observation,
+                "exposed-docker-api",
+                "critical",
+                "Docker API responded without authentication",
+                "The Docker HTTP API returned a non-authentication response to a read-only version request.",
+                "Disable unauthenticated TCP access and use mutually authenticated TLS or a local socket.",
+                0.98,
+            )
+        )
     if metadata.get("snmp_public_response") is True:
-        findings.append(_finding(
-            observation, "snmp-public-response", "high", "SNMP public community responded",
-            "The endpoint answered a read-only SNMP GET using the public community string.",
-            "Change the community, restrict source addresses, or migrate to authenticated SNMPv3.", 0.99))
+        findings.append(
+            _finding(
+                observation,
+                "snmp-public-response",
+                "high",
+                "SNMP public community responded",
+                "The endpoint answered a read-only SNMP GET using the public community string.",
+                "Change the community, restrict source addresses, or migrate to authenticated SNMPv3.",
+                0.99,
+            )
+        )
 
     tls = metadata.get("tls")
     if isinstance(tls, Mapping):
@@ -251,11 +334,18 @@ def _observation_findings(observation: ServiceObservation) -> list[SecurityFindi
         if any(marker in cipher for marker in ("RC4", "3DES", "DES-", "NULL", "EXPORT", "MD5")):
             weak_reasons.append(f"weak cipher {cipher}")
         if weak_reasons:
-            findings.append(_finding(
-                observation, "weak-tls", "high", "Weak TLS negotiation observed",
-                "A completed TLS handshake negotiated a legacy protocol or weak cipher.",
-                "Disable legacy TLS versions and weak ciphers.", 0.98,
-                "; ".join(weak_reasons)))
+            findings.append(
+                _finding(
+                    observation,
+                    "weak-tls",
+                    "high",
+                    "Weak TLS negotiation observed",
+                    "A completed TLS handshake negotiated a legacy protocol or weak cipher.",
+                    "Disable legacy TLS versions and weak ciphers.",
+                    0.98,
+                    "; ".join(weak_reasons),
+                )
+            )
     return findings
 
 
@@ -280,10 +370,12 @@ def analyze_services(
     if catalog is not None and fingerprint.product and fingerprint.version:
         matches = catalog.match(fingerprint.product, fingerprint.version)
         for advisory in matches:
-            findings.append(advisory.to_finding(
-                observations[0].ip if observations else "",
-                [f"Observed product/version: {fingerprint.product} {fingerprint.version}"],
-            ))
+            findings.append(
+                advisory.to_finding(
+                    observations[0].ip if observations else "",
+                    [f"Observed product/version: {fingerprint.product} {fingerprint.version}"],
+                )
+            )
     return fingerprint, _deduplicate(findings)
 
 
@@ -335,12 +427,14 @@ def _deduplicate(findings: Iterable[SecurityFinding]) -> list[SecurityFinding]:
         current = unique.get(key)
         if current is None or finding.confidence > current.confidence:
             unique[key] = finding
-    return sorted(unique.values(), key=lambda item: (
-        _SEVERITY_ORDER[item.severity], item.device_ip, item.code, item.port or 0))
+    return sorted(
+        unique.values(), key=lambda item: (_SEVERITY_ORDER[item.severity], item.device_ip, item.code, item.port or 0)
+    )
 
 
 def audit_devices(
-    devices: Iterable[Any], vulnerability_catalog: Any | None = None,
+    devices: Iterable[Any],
+    vulnerability_catalog: Any | None = None,
 ) -> list[SecurityFinding]:
     """Analyze supplied evidence only; this function performs no network I/O.
 
@@ -356,67 +450,71 @@ def audit_devices(
         observations = _device_observations(device)
         device_ip = str(_get(device, "ip", ""))
         services = _get(device, "services", {})
-        if isinstance(services, Mapping) and any(
-            "_adb-tls-connect" in str(name).casefold() for name in services
-        ):
-            observations.append(ServiceObservation(
-                ip=device_ip,
-                port=5353,
-                transport="udp",
-                name="mdns",
-                source="device_discovery",
-                metadata={
-                    "services": [name for name in services if "_adb-tls-connect" in str(name).casefold()],
-                    "evidence": ["mDNS service advertisement recorded by discovery"],
-                },
-                confidence=0.95,
-            ))
+        if isinstance(services, Mapping) and any("_adb-tls-connect" in str(name).casefold() for name in services):
+            observations.append(
+                ServiceObservation(
+                    ip=device_ip,
+                    port=5353,
+                    transport="udp",
+                    name="mdns",
+                    source="device_discovery",
+                    metadata={
+                        "services": [name for name in services if "_adb-tls-connect" in str(name).casefold()],
+                        "evidence": ["mDNS service advertisement recorded by discovery"],
+                    },
+                    confidence=0.95,
+                )
+            )
         device_kind = str(_get(device, "kind", "")).casefold()
         has_web_admin = any(
-            item.name in {"http", "https"}
-            and isinstance(item.metadata.get("http"), Mapping)
-            for item in observations)
-        credential_review_types = (
-            "router", "gateway", "camera", "printer", "iot",
-            "smart home", "network equipment",
+            item.name in {"http", "https"} and isinstance(item.metadata.get("http"), Mapping) for item in observations
         )
-        if has_web_admin and any(
-                label in device_kind for label in credential_review_types):
-            findings.append(SecurityFinding(
-                code="default-credential-review",
-                severity="info",
-                title="Review factory/default administrative credentials",
-                detail=(
-                    "A management-capable interface was observed on a device "
-                    "type commonly shipped with initial credentials. No login "
-                    "or credential attempt was made."),
-                remediation=(
-                    "Confirm the device uses a unique strong administrator "
-                    "credential and disable unused remote administration."),
-                device_ip=device_ip,
-                evidence=[
-                    f"Evidence-based device classification: {device_kind}",
-                    "Observed HTTP(S) response from the device",
-                    "No authentication attempt was performed",
-                ],
-                confidence=0.65,
-            ))
+        credential_review_types = (
+            "router",
+            "gateway",
+            "camera",
+            "printer",
+            "iot",
+            "smart home",
+            "network equipment",
+        )
+        if has_web_admin and any(label in device_kind for label in credential_review_types):
+            findings.append(
+                SecurityFinding(
+                    code="default-credential-review",
+                    severity="info",
+                    title="Review factory/default administrative credentials",
+                    detail=(
+                        "A management-capable interface was observed on a device "
+                        "type commonly shipped with initial credentials. No login "
+                        "or credential attempt was made."
+                    ),
+                    remediation=(
+                        "Confirm the device uses a unique strong administrator "
+                        "credential and disable unused remote administration."
+                    ),
+                    device_ip=device_ip,
+                    evidence=[
+                        f"Evidence-based device classification: {device_kind}",
+                        "Observed HTTP(S) response from the device",
+                        "No authentication attempt was performed",
+                    ],
+                    confidence=0.65,
+                )
+            )
         if vulnerability_catalog is not None:
             for observation in observations:
                 if not observation.product or not observation.version:
                     continue
                 evidence = list(observation.evidence) + [
-                    "Exact observed product/version string: "
-                    f"{observation.product} {observation.version}",
+                    "Exact observed product/version string: " f"{observation.product} {observation.version}",
                     "Potential advisory match; exploitability was not tested",
                 ]
-                matches = vulnerability_catalog.correlate(
-                    observation.product, observation.version, evidence)
+                matches = vulnerability_catalog.correlate(observation.product, observation.version, evidence)
                 for match in matches:
                     match.device_ip = device_ip
                 findings.extend(matches)
-        findings.extend(
-            item for observation in observations for item in _observation_findings(observation))
+        findings.extend(item for observation in observations for item in _observation_findings(observation))
     return _deduplicate(findings)
 
 
@@ -431,26 +529,28 @@ def audit_wan(wan_status: Any) -> list[SecurityFinding]:
     """
     findings: list[SecurityFinding] = []
     gateway = str(_get(wan_status, "gateway", ""))
-    for mapping in (_get(wan_status, "port_mappings", ()) or ()):
+    for mapping in _get(wan_status, "port_mappings", ()) or ():
         enabled = bool(_get(mapping, "enabled", False))
         if not enabled:
             continue
         external = _get(mapping, "external_port", 0)
         protocol = str(_get(mapping, "protocol", "unknown"))
-        findings.append(SecurityFinding(
-            code="enabled-wan-port-mapping",
-            severity="info",
-            title="Enabled WAN port mapping reported by gateway",
-            detail=(
-                f"The local IGD reports an enabled {protocol} mapping on external port "
-                f"{external}. Connectivity from the Internet was not tested."
-            ),
-            remediation="Confirm the mapping is expected and remove it through the router if unnecessary.",
-            device_ip=gateway,
-            evidence=["Read-only UPnP GetGenericPortMappingEntry response"],
-            confidence=0.9,
-            port=int(external) if str(external).isdigit() else None,
-        ))
+        findings.append(
+            SecurityFinding(
+                code="enabled-wan-port-mapping",
+                severity="info",
+                title="Enabled WAN port mapping reported by gateway",
+                detail=(
+                    f"The local IGD reports an enabled {protocol} mapping on external port "
+                    f"{external}. Connectivity from the Internet was not tested."
+                ),
+                remediation="Confirm the mapping is expected and remove it through the router if unnecessary.",
+                device_ip=gateway,
+                evidence=["Read-only UPnP GetGenericPortMappingEntry response"],
+                confidence=0.9,
+                port=int(external) if str(external).isdigit() else None,
+            )
+        )
     return _deduplicate(findings)
 
 

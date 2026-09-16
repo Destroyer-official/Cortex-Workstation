@@ -83,6 +83,7 @@ from typing import Any, Callable, Dict, List, Optional, Tuple, BinaryIO
 # Optional: psutil for drive detection
 try:
     import psutil
+
     HAS_PSUTIL = True
 except ImportError:
     HAS_PSUTIL = False
@@ -98,19 +99,48 @@ except ImportError:
 #: lowest-density and easiest to recover from), 32-35 random. Multi-byte
 #: patterns repeat every three bytes on the medium, per the paper.
 _GUTMANN_TABLE = (
-    "random", "random", "random", "random",
-    b"\x55", b"\xAA", b"\x92\x49\x24", b"\x49\x24\x92", b"\x24\x92\x49",
-    b"\x00", b"\x11", b"\x22", b"\x33", b"\x44", b"\x55", b"\x66", b"\x77",
-    b"\x88", b"\x99", b"\xAA", b"\xBB", b"\xCC", b"\xDD", b"\xEE", b"\xFF",
-    b"\x92\x49\x24", b"\x49\x24\x92", b"\x24\x92\x49",
-    b"\x6D\xB6\xDB", b"\xB6\xDB\x6D", b"\xDB\x6D\xB6",
-    "random", "random", "random", "random",
+    "random",
+    "random",
+    "random",
+    "random",
+    b"\x55",
+    b"\xaa",
+    b"\x92\x49\x24",
+    b"\x49\x24\x92",
+    b"\x24\x92\x49",
+    b"\x00",
+    b"\x11",
+    b"\x22",
+    b"\x33",
+    b"\x44",
+    b"\x55",
+    b"\x66",
+    b"\x77",
+    b"\x88",
+    b"\x99",
+    b"\xaa",
+    b"\xbb",
+    b"\xcc",
+    b"\xdd",
+    b"\xee",
+    b"\xff",
+    b"\x92\x49\x24",
+    b"\x49\x24\x92",
+    b"\x24\x92\x49",
+    b"\x6d\xb6\xdb",
+    b"\xb6\xdb\x6d",
+    b"\xdb\x6d\xb6",
+    "random",
+    "random",
+    "random",
+    "random",
 )
 assert len(_GUTMANN_TABLE) == 35, "Gutmann's paper prescribes exactly 35 passes"
 
 
 class StorageType(Enum):
     """Physical media kind selecting safe shred behavior (SSD vs HDD vs flash)."""
+
     HDD = "hdd"
     SSD_NVME = "ssd_nvme"
     SSD_SATA = "ssd_sata"
@@ -127,32 +157,33 @@ class ShredStandard(Enum):
     Purge via firmware is covered by the two PURGE members, which invoke
     ATA/NVMe sanitize commands rather than pattern writes.
     """
+
     # NIST 800-88 Rev.1
-    NIST_CLEAR = "nist_clear"          # 1 pass random + verify
+    NIST_CLEAR = "nist_clear"  # 1 pass random + verify
     NIST_PURGE_CRYPTO = "nist_purge_crypto"  # Cryptographic erase (SSD)
-    NIST_PURGE_BLOCK = "nist_purge_block"    # Block erase (SSD)
+    NIST_PURGE_BLOCK = "nist_purge_block"  # Block erase (SSD)
 
     # DoD 5220.22-M
-    DOD_5220_22_M = "dod_5220_22_m"           # 3-pass: 0x00, 0xFF, random + verify
-    DOD_5220_22_M_ECE = "dod_5220_22_m_ece"   # 7-pass extended with verification
+    DOD_5220_22_M = "dod_5220_22_m"  # 3-pass: 0x00, 0xFF, random + verify
+    DOD_5220_22_M_ECE = "dod_5220_22_m_ece"  # 7-pass extended with verification
 
     # Gutmann
-    GUTMANN = "gutmann"                # 35-pass
+    GUTMANN = "gutmann"  # 35-pass
 
     # International standards
-    HMG_IS5_BASELINE = "hmg_is5_baseline"     # 1 pass zeros
-    HMG_IS5_ENHANCED = "hmg_is5_enhanced"     # 3-pass: 0x00, 0xFF, random
-    VSITR = "vsitr"                    # German BSI: 7-pass alternating + 0xAA
-    GOST_R_50739 = "gost_r_50739"      # Russian: 2-pass zeros + random
-    RCMP_TSSIT_OPS_II = "rcmp_tssit_ops_ii"   # Canadian: 7-pass alternating
-    SCHNEIER = "schneier"              # Bruce Schneier 7-pass
-    NSA_EPL = "nsa_epl"                # NSA Evaluated Products List
+    HMG_IS5_BASELINE = "hmg_is5_baseline"  # 1 pass zeros
+    HMG_IS5_ENHANCED = "hmg_is5_enhanced"  # 3-pass: 0x00, 0xFF, random
+    VSITR = "vsitr"  # German BSI: 7-pass alternating + 0xAA
+    GOST_R_50739 = "gost_r_50739"  # Russian: 2-pass zeros + random
+    RCMP_TSSIT_OPS_II = "rcmp_tssit_ops_ii"  # Canadian: 7-pass alternating
+    SCHNEIER = "schneier"  # Bruce Schneier 7-pass
+    NSA_EPL = "nsa_epl"  # NSA Evaluated Products List
 
     # Quick
-    ZERO_FILL = "zero_fill"            # 1 pass zeros
-    ONE_FILL = "one_fill"              # 1 pass 0xFF
-    RANDOM_1PASS = "random_1pass"      # 1 pass random
-    RANDOM_3PASS = "random_3pass"      # 3 pass random
+    ZERO_FILL = "zero_fill"  # 1 pass zeros
+    ONE_FILL = "one_fill"  # 1 pass 0xFF
+    RANDOM_1PASS = "random_1pass"  # 1 pass random
+    RANDOM_3PASS = "random_3pass"  # 3 pass random
 
     @property
     def passes(self) -> List[Dict]:
@@ -167,15 +198,15 @@ class ShredStandard(Enum):
             self.NIST_PURGE_BLOCK: [{"pattern": "block_erase", "verify": True}],
             self.DOD_5220_22_M: [
                 {"pattern": b"\x00", "verify": False},
-                {"pattern": b"\xFF", "verify": False},
+                {"pattern": b"\xff", "verify": False},
                 {"pattern": "random", "verify": True},
             ],
             self.DOD_5220_22_M_ECE: [
                 {"pattern": b"\x00", "verify": False},
-                {"pattern": b"\xFF", "verify": False},
+                {"pattern": b"\xff", "verify": False},
                 {"pattern": "random", "verify": False},
                 {"pattern": b"\x00", "verify": False},
-                {"pattern": b"\xFF", "verify": False},
+                {"pattern": b"\xff", "verify": False},
                 {"pattern": "random", "verify": False},
                 {"pattern": "random", "verify": True},
             ],
@@ -189,17 +220,17 @@ class ShredStandard(Enum):
             self.HMG_IS5_BASELINE: [{"pattern": b"\x00", "verify": True}],
             self.HMG_IS5_ENHANCED: [
                 {"pattern": b"\x00", "verify": False},
-                {"pattern": b"\xFF", "verify": False},
+                {"pattern": b"\xff", "verify": False},
                 {"pattern": "random", "verify": True},
             ],
             self.VSITR: [
                 {"pattern": b"\x00", "verify": False},
-                {"pattern": b"\xFF", "verify": False},
+                {"pattern": b"\xff", "verify": False},
                 {"pattern": b"\x00", "verify": False},
-                {"pattern": b"\xFF", "verify": False},
+                {"pattern": b"\xff", "verify": False},
                 {"pattern": b"\x00", "verify": False},
-                {"pattern": b"\xFF", "verify": False},
-                {"pattern": b"\xAA", "verify": True},
+                {"pattern": b"\xff", "verify": False},
+                {"pattern": b"\xaa", "verify": True},
             ],
             self.GOST_R_50739: [
                 {"pattern": b"\x00", "verify": False},
@@ -207,29 +238,29 @@ class ShredStandard(Enum):
             ],
             self.RCMP_TSSIT_OPS_II: [
                 {"pattern": b"\x00", "verify": False},
-                {"pattern": b"\xFF", "verify": False},
+                {"pattern": b"\xff", "verify": False},
                 {"pattern": b"\x00", "verify": False},
-                {"pattern": b"\xFF", "verify": False},
+                {"pattern": b"\xff", "verify": False},
                 {"pattern": b"\x00", "verify": False},
-                {"pattern": b"\xFF", "verify": False},
+                {"pattern": b"\xff", "verify": False},
                 {"pattern": "random", "verify": True},
             ],
             self.SCHNEIER: [
                 {"pattern": b"\x00", "verify": False},
-                {"pattern": b"\xFF", "verify": False},
+                {"pattern": b"\xff", "verify": False},
                 {"pattern": "random", "verify": False},
                 {"pattern": b"\x00", "verify": False},
-                {"pattern": b"\xFF", "verify": False},
+                {"pattern": b"\xff", "verify": False},
                 {"pattern": "random", "verify": False},
                 {"pattern": "random", "verify": True},
             ],
             self.NSA_EPL: [
                 {"pattern": b"\x00", "verify": False},
-                {"pattern": b"\xFF", "verify": False},
+                {"pattern": b"\xff", "verify": False},
                 {"pattern": "random", "verify": True},
             ],
             self.ZERO_FILL: [{"pattern": b"\x00", "verify": True}],
-            self.ONE_FILL: [{"pattern": b"\xFF", "verify": True}],
+            self.ONE_FILL: [{"pattern": b"\xff", "verify": True}],
             self.RANDOM_1PASS: [{"pattern": "random", "verify": True}],
             self.RANDOM_3PASS: [
                 {"pattern": "random", "verify": False},
@@ -267,17 +298,21 @@ class ShredStandard(Enum):
         bool: True if the operation succeeded, False otherwise.
         """
         if storage in (StorageType.SSD_NVME, StorageType.SSD_SATA):
-            return self in (ShredStandard.NIST_CLEAR, ShredStandard.NIST_PURGE_CRYPTO,
-                            ShredStandard.NIST_PURGE_BLOCK, ShredStandard.RANDOM_1PASS)
+            return self in (
+                ShredStandard.NIST_CLEAR,
+                ShredStandard.NIST_PURGE_CRYPTO,
+                ShredStandard.NIST_PURGE_BLOCK,
+                ShredStandard.RANDOM_1PASS,
+            )
         if storage == StorageType.HDD:
-            return self in (ShredStandard.DOD_5220_22_M, ShredStandard.NIST_CLEAR,
-                            ShredStandard.HMG_IS5_ENHANCED)
+            return self in (ShredStandard.DOD_5220_22_M, ShredStandard.NIST_CLEAR, ShredStandard.HMG_IS5_ENHANCED)
         return True
 
 
 @dataclass(frozen=True, slots=True)
 class ShredResult:
     """Record holding success, file_path, standard, passes_completed, bytes_shredded, duration_seconds, verification_passed, error."""
+
     success: bool
     file_path: str
     standard: ShredStandard
@@ -294,6 +329,7 @@ class ShredResult:
         dict: Dictionary mapping identifiers to status or values.
         """
         import dataclasses
+
         d = dataclasses.asdict(self)
         d["standard"] = self.standard.value
         return d
@@ -302,6 +338,7 @@ class ShredResult:
 # ---------------------------------------------------------------------------
 # Pattern generators
 # ---------------------------------------------------------------------------
+
 
 def _pattern_bytes(pattern: Any, size: int) -> bytes:
     """Generate bytes for a pass pattern.
@@ -373,7 +410,7 @@ def _verify_pattern(file_path: str, pattern: Any, size: int, sample_pct: float =
                 freq = {}
                 for b in chunk:
                     freq[b] = freq.get(b, 0) + 1
-                ent = -sum((c/len(chunk)) * (c/len(chunk)).bit_length() for c in freq.values())
+                ent = -sum((c / len(chunk)) * (c / len(chunk)).bit_length() for c in freq.values())
                 total_entropy += ent
                 samples += 1
             return (total_entropy / max(1, samples)) > 7.5  # High entropy
@@ -384,6 +421,7 @@ def _verify_pattern(file_path: str, pattern: Any, size: int, sample_pct: float =
 # ---------------------------------------------------------------------------
 # Storage detection
 # ---------------------------------------------------------------------------
+
 
 def detect_storage_type(path: str) -> StorageType:
     """Detect storage type for a given path.
@@ -399,9 +437,12 @@ def detect_storage_type(path: str) -> StorageType:
         if sys.platform == "win32":
             # Use wmic to get media type
             import subprocess
+
             rc, out, _ = subprocess.run(
                 ["wmic", "diskdrive", "get", "Model,MediaType,InterfaceType"],
-                capture_output=True, text=True, timeout=10
+                capture_output=True,
+                text=True,
+                timeout=10,
             )
             out_lower = out.lower()
             if "nvme" in out_lower or "nvme" in drive.lower():
@@ -413,8 +454,9 @@ def detect_storage_type(path: str) -> StorageType:
             return StorageType.HDD
         else:
             # Linux: lsblk -d -o name,rota,tran
-            rc, out, _ = subprocess.run(["lsblk", "-d", "-o", "name,rota,tran"],
-                                        capture_output=True, text=True, timeout=5)
+            rc, out, _ = subprocess.run(
+                ["lsblk", "-d", "-o", "name,rota,tran"], capture_output=True, text=True, timeout=5
+            )
             for line in out.splitlines():
                 if line.strip() and not line.startswith("NAME"):
                     parts = line.split()
@@ -436,6 +478,7 @@ def detect_storage_type(path: str) -> StorageType:
 # ---------------------------------------------------------------------------
 # Core shredder
 # ---------------------------------------------------------------------------
+
 
 class SecureShredder:
     """Groups related helpers: init, write pass, shred file, shred ssd firmware, shred files, wipe free space, get smart default."""
@@ -508,8 +551,7 @@ class SecureShredder:
         """
         path = Path(file_path)
         if not path.exists():
-            return ShredResult(False, file_path, standard or ShredStandard.NIST_CLEAR,
-                               0, 0, 0, False, "File not found")
+            return ShredResult(False, file_path, standard or ShredStandard.NIST_CLEAR, 0, 0, 0, False, "File not found")
 
         # Get file size and storage type
         size = path.stat().st_size
@@ -517,8 +559,7 @@ class SecureShredder:
             # Zero-byte file: just remove
             if not self.dry_run:
                 path.unlink()
-            return ShredResult(True, file_path, standard or ShredStandard.NIST_CLEAR,
-                               0, 0, 0, True)
+            return ShredResult(True, file_path, standard or ShredStandard.NIST_CLEAR, 0, 0, 0, True)
 
         storage = detect_storage_type(file_path)
         if standard is None and auto_detect:
@@ -549,7 +590,7 @@ class SecureShredder:
                     pattern = pass_def["pattern"]
                     verify = pass_def["verify"] and self.verify_passes
 
-                    self.progress(f"Pass {i+1}/{len(standard.passes)}: {standard.name}", i+1, len(standard.passes))
+                    self.progress(f"Pass {i+1}/{len(standard.passes)}: {standard.name}", i + 1, len(standard.passes))
                     self._write_pass(f, 0, size, pattern)
                     passes_done += 1
 
@@ -563,18 +604,17 @@ class SecureShredder:
             if not self.dry_run:
                 # Rename to random name first (defeats some recovery)
                 import string
-                rand_name = ''.join(self._rng.choices(string.ascii_letters + string.digits, k=16))
+
+                rand_name = "".join(self._rng.choices(string.ascii_letters + string.digits, k=16))
                 tmp_path = path.with_name(rand_name)
                 path.rename(tmp_path)
                 tmp_path.unlink()
 
             duration = time.time() - t0
-            return ShredResult(True, file_path, standard, passes_done, size,
-                               duration, verified)
+            return ShredResult(True, file_path, standard, passes_done, size, duration, verified)
 
         except Exception as exc:
-            return ShredResult(False, file_path, standard, passes_done, size,
-                               time.time() - t0, verified, str(exc))
+            return ShredResult(False, file_path, standard, passes_done, size, time.time() - t0, verified, str(exc))
 
     def _shred_ssd_firmware(self, path: Path, standard: ShredStandard) -> ShredResult:
         """Use firmware Secure Erase for SSD (requires admin).
@@ -593,27 +633,22 @@ class SecureShredder:
             drive = path.anchor
             try:
                 subprocess.run(["cipher", "/w", drive], check=True, timeout=3600)
-                return ShredResult(True, str(path), standard, 1, path.stat().st_size,
-                                   time.time() - t0, True)
+                return ShredResult(True, str(path), standard, 1, path.stat().st_size, time.time() - t0, True)
             except Exception as exc:
-                return ShredResult(False, str(path), standard, 0, 0,
-                                   time.time() - t0, False, str(exc))
+                return ShredResult(False, str(path), standard, 0, 0, time.time() - t0, False, str(exc))
         else:
             # Linux: nvme format /dev/nvmeXnY -s 1 (crypto erase) or hdparm --security-erase
             # Determine device
             try:
-                rc, out, _ = subprocess.run(["lsblk", "-no", "PKNAME", str(path)],
-                                            capture_output=True, text=True)
+                rc, out, _ = subprocess.run(["lsblk", "-no", "PKNAME", str(path)], capture_output=True, text=True)
                 device = "/dev/" + out.strip()
                 if standard == ShredStandard.NIST_PURGE_CRYPTO:
                     subprocess.run(["nvme", "format", device, "-s", "1"], check=True, timeout=300)
                 else:
                     subprocess.run(["hdparm", "--security-erase", "NULL", device], check=True, timeout=300)
-                return ShredResult(True, str(path), standard, 1, path.stat().st_size,
-                                   time.time() - t0, True)
+                return ShredResult(True, str(path), standard, 1, path.stat().st_size, time.time() - t0, True)
             except Exception as exc:
-                return ShredResult(False, str(path), standard, 0, 0,
-                                   time.time() - t0, False, str(exc))
+                return ShredResult(False, str(path), standard, 0, 0, time.time() - t0, False, str(exc))
 
     def shred_files(
         self,
@@ -656,27 +691,27 @@ class SecureShredder:
         drive_path = Path(drive).anchor or drive
         if standard is None:
             storage = detect_storage_type(drive_path)
-            standard = ShredStandard.NIST_CLEAR if storage in (StorageType.SSD_NVME, StorageType.SSD_SATA) else ShredStandard.DOD_5220_22_M
+            standard = (
+                ShredStandard.NIST_CLEAR
+                if storage in (StorageType.SSD_NVME, StorageType.SSD_SATA)
+                else ShredStandard.DOD_5220_22_M
+            )
 
         if sys.platform == "win32":
             # Use cipher /w (built-in, handles all passes)
             try:
                 self.progress(f"Wiping free space on {drive_path} with {standard.name}...")
                 subprocess.run(["cipher", "/w", drive_path], check=True, timeout=7200)
-                return ShredResult(True, drive_path, standard, standard.pass_count,
-                                   0, time.time() - t0, True)
+                return ShredResult(True, drive_path, standard, standard.pass_count, 0, time.time() - t0, True)
             except Exception as exc:
-                return ShredResult(False, drive_path, standard, 0, 0,
-                                   time.time() - t0, False, str(exc))
+                return ShredResult(False, drive_path, standard, 0, 0, time.time() - t0, False, str(exc))
         else:
             # Linux: fstrim for SSD, or create temp files and shred
             try:
                 subprocess.run(["fstrim", "-v", drive_path], check=True, timeout=3600)
-                return ShredResult(True, drive_path, standard, 1, 0,
-                                   time.time() - t0, True)
+                return ShredResult(True, drive_path, standard, 1, 0, time.time() - t0, True)
             except Exception as exc:
-                return ShredResult(False, drive_path, standard, 0, 0,
-                                   time.time() - t0, False, str(exc))
+                return ShredResult(False, drive_path, standard, 0, 0, time.time() - t0, False, str(exc))
 
     def get_smart_default(self, path: str) -> ShredStandard:
         """Get recommended standard for a path.

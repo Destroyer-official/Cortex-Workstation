@@ -48,10 +48,11 @@ def _payload(n: int, byte: bytes = b"A") -> bytes:
 
 class TestBasicTransfers:
     """Group basic FFI copy, move, and delete transfer tests."""
+
     def test_copy_multi_unicode(self, ffi, dirs):
         """Verify FFI copy of multiple files including unicode and spaced names."""
         src, dst = dirs
-        names = ["one.txt", "emoji_\U0001F4C1.dat", "sub space.md"]
+        names = ["one.txt", "emoji_\U0001f4c1.dat", "sub space.md"]
         for i, n in enumerate(names):
             (src / n).write_bytes(_payload(1024 * (i + 1)))
         r = ffi.copy([str(src / n) for n in names], str(dst))
@@ -123,6 +124,7 @@ def _run_with_policy(ffi, src_file, dst_dir, policy: int) -> dict:
 
 class TestConflictPolicies:
     """Group FFI conflict-policy tests for overwrite, skip, and keep-both."""
+
     def test_overwrite_replaces_content(self, ffi, dirs):
         """Verify overwrite policy replaces destination content on conflict."""
         src, dst = dirs
@@ -156,6 +158,7 @@ class TestConflictPolicies:
 
 class TestPauseResumeCancel:
     """Group pause/resume and cancel tests over a large FFI copy."""
+
     @pytest.fixture(scope="class")
     def big_src(self, tmp_path_factory):
         """Provide a 192 MB file built from repeated 1 MB chunks."""

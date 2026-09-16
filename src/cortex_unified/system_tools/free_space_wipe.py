@@ -31,6 +31,7 @@ _NO_WINDOW = 0x08000000 if _IS_WINDOWS else 0
 @dataclass(slots=True)
 class WipeResult:
     """Wipe Result data container."""
+
     success: bool
     message: str
     medium: str = ""
@@ -53,8 +54,7 @@ class FreeSpaceWiper:
         except Exception:  # noqa: BLE001
             return "unknown", False
 
-    def wipe(self, drive_letter: str,
-            cancel_event: "threading.Event | None" = None) -> WipeResult:
+    def wipe(self, drive_letter: str, cancel_event: "threading.Event | None" = None) -> WipeResult:
         """Wipe free space on *drive_letter* (e.g. 'C'). Blocking; can be slow."""
         if not _IS_WINDOWS:
             return WipeResult(False, "Free-space wipe is only available on Windows.")
@@ -68,7 +68,9 @@ class FreeSpaceWiper:
             # whole process tree on either - never the calling thread.
             proc = _proc.run(
                 ["cipher", f"/w:{letter}:\\"],
-                text=True, timeout=60 * 60, cancel_event=cancel_event,
+                text=True,
+                timeout=60 * 60,
+                cancel_event=cancel_event,
                 creationflags=_NO_WINDOW,
             )
         except _proc.ProcessCancelled:
@@ -81,9 +83,9 @@ class FreeSpaceWiper:
         if proc.returncode == 0:
             msg = f"Free space on {letter}: wiped."
             if not effective:
-                msg += (f" Note: this drive is {medium}; some previously-deleted data may "
-                        "physically remain due to wear-levelling.")
+                msg += (
+                    f" Note: this drive is {medium}; some previously-deleted data may "
+                    "physically remain due to wear-levelling."
+                )
             return WipeResult(True, msg, medium, effective)
-        return WipeResult(False,
-                          "cipher reported an error (Administrator may be required).",
-                          medium, effective)
+        return WipeResult(False, "cipher reported an error (Administrator may be required).", medium, effective)

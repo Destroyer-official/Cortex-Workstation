@@ -34,6 +34,7 @@ _LOG = logging.getLogger("cortex.system_tools.shader_cache")
 @dataclass
 class ShaderLocationInfo:
     """Metadata and size analysis for a specific shader cache target location."""
+
     name: str
     vendor: str
     path: str
@@ -60,6 +61,7 @@ class ShaderLocationInfo:
 @dataclass
 class ShaderCacheReport:
     """Consolidated inventory of GPU shader caches across all hardware vendors."""
+
     locations: List[ShaderLocationInfo] = field(default_factory=list)
     total_files: int = 0
     total_bytes: int = 0
@@ -82,6 +84,7 @@ class ShaderCacheReport:
 @dataclass
 class ShaderCleanResult:
     """Outcome of a shader cache purge operation."""
+
     cleaned_files: int = 0
     freed_bytes: int = 0
     skipped_locked_files: int = 0

@@ -59,8 +59,11 @@ _SEVERITY_RANK = {
     "info": 4,
 }
 _BADGE_KIND = {
-    "critical": "high", "high": "high", "medium": "medium",
-    "low": "low", "info": "info",
+    "critical": "high",
+    "high": "high",
+    "medium": "medium",
+    "low": "low",
+    "info": "info",
 }
 _DASH = "\u2014"
 
@@ -68,13 +71,13 @@ _DASH = "\u2014"
 def _severity_badge_kind(severity: str) -> str:
     """Map a finding severity string to its badge kind.
 
-        Operates on this page widgets as implemented in the method body below.
+    Operates on this page widgets as implemented in the method body below.
 
-            Args:
-                severity (str): The severity parameter.
+        Args:
+            severity (str): The severity parameter.
 
-            Returns:
-                str: Formatted string or path.
+        Returns:
+            str: Formatted string or path.
 
     """
     return _BADGE_KIND.get(str(severity).lower(), "info")
@@ -83,7 +86,7 @@ def _severity_badge_kind(severity: str) -> str:
 class DeviceDeepScanWorker(QObject):
     """Background worker that deep-scans one device for services, fingerprint, and findings.
 
-        Runs NetworkServiceScanner, NmapAdapter, NetworkTools, NetworkInventory off the main thread and reports via finished/progress/failed signals.
+    Runs NetworkServiceScanner, NmapAdapter, NetworkTools, NetworkInventory off the main thread and reports via finished/progress/failed signals.
     """
 
     finished = Signal(object)
@@ -138,10 +141,10 @@ class DeviceDeepScanWorker(QObject):
     def _say(self, message: str) -> None:
         """Emit a progress message through the progress signal.
 
-            Updates self.progress; emits progress signals.
+        Updates self.progress; emits progress signals.
 
-                    Args:
-                        message (str): Informational or progress status message.
+                Args:
+                    message (str): Informational or progress status message.
 
         """
         self.progress.emit(message)
@@ -170,7 +173,8 @@ class DeviceDeepScanWorker(QObject):
             if not is_authorized_target(self._ip, self._networks):
                 raise ValueError(
                     f"{self._ip} is not inside the authorized private "
-                    "scope of the last scan; run a new network scan first.")
+                    "scope of the last scan; run a new network scan first."
+                )
 
             notes: list[str] = []
             profile = ScanProfile(self._profile)
@@ -203,10 +207,8 @@ class DeviceDeepScanWorker(QObject):
                 vendor=self._vendor,
                 sources=observed_sources,
                 services=dict(self._advertised),
-                open_ports=[
-                    item.port for item in observations
-                    if item.transport == "tcp" and item.state == "open"
-                ] or list(self._known_ports),
+                open_ports=[item.port for item in observations if item.transport == "tcp" and item.state == "open"]
+                or list(self._known_ports),
                 service_observations=list(observations),
                 is_gateway=self._is_gateway,
                 is_self=self._is_self,
@@ -218,13 +220,16 @@ class DeviceDeepScanWorker(QObject):
                 from cortex_unified.system_tools.vulnerability_catalog import (
                     VulnerabilityCatalog,
                 )
+
                 catalog = VulnerabilityCatalog.load(self._catalog_path)
             findings = audit_devices([device], vulnerability_catalog=catalog)
-            findings.sort(key=lambda item: (
-                _SEVERITY_RANK.get(item.severity, 5),
-                item.port or 0,
-                item.code,
-            ))
+            findings.sort(
+                key=lambda item: (
+                    _SEVERITY_RANK.get(item.severity, 5),
+                    item.port or 0,
+                    item.code,
+                )
+            )
 
             ping = self._ping()
             reverse_dns = self._reverse_dns()
@@ -234,9 +239,7 @@ class DeviceDeepScanWorker(QObject):
                 "device": device.to_dict(),
                 "services": [item.to_dict() for item in observations],
                 "findings": [item.to_dict() for item in findings],
-                "fingerprint": (
-                    device.fingerprint.to_dict()
-                    if device.fingerprint is not None else None),
+                "fingerprint": (device.fingerprint.to_dict() if device.fingerprint is not None else None),
                 "ping": ping,
                 "reverse_dns": reverse_dns,
                 "profile": self._profile,
@@ -256,14 +259,14 @@ class DeviceDeepScanWorker(QObject):
     def _run_nmap(self, observations, notes) -> dict:
         """Optionally verify observed TCP ports with local Nmap; merge new observations.
 
-            Uses NmapAdapter; updates self._custom_ports, self._say, self._ip.
+        Uses NmapAdapter; updates self._custom_ports, self._say, self._ip.
 
-                    Args:
-                        observations: The observations parameter.
-                        notes: The notes parameter.
+                Args:
+                    observations: The observations parameter.
+                    notes: The notes parameter.
 
-                    Returns:
-                        dict: Dictionary mapping identifiers to status or values.
+                Returns:
+                    dict: Dictionary mapping identifiers to status or values.
 
         """
         from cortex_unified.core import proc
@@ -277,15 +280,17 @@ class DeviceDeepScanWorker(QObject):
         if not status.available:
             notes.append(
                 "Optional Nmap was requested, but its executable was not "
-                "found, so only Cortex's own bounded scanner ran.")
+                "found, so only Cortex's own bounded scanner ran."
+            )
             return {"used": False, "reason": status.reason}
         ports = self._custom_ports or tuple(
-            item.port for item in observations
-            if item.transport == "tcp" and item.state == "open")
+            item.port for item in observations if item.transport == "tcp" and item.state == "open"
+        )
         if not ports:
             notes.append(
                 "Optional Nmap was skipped: no open TCP port was observed to "
-                "verify, and Cortex never asks Nmap to scan every port here.")
+                "verify, and Cortex never asks Nmap to scan every port here."
+            )
             return {"used": False, "reason": "no observed TCP port to verify"}
         self._say(f"Running explicit optional Nmap on {self._ip}\u2026")
         try:
@@ -302,10 +307,7 @@ class DeviceDeepScanWorker(QObject):
         except (NmapError, OSError, ValueError) as exc:
             notes.append(f"Optional Nmap did not complete: {exc}")
             return {"used": False, "reason": str(exc)}
-        known = {
-            (item.ip, item.port, item.transport, item.name, item.source)
-            for item in observations
-        }
+        known = {(item.ip, item.port, item.transport, item.name, item.source) for item in observations}
         for item in extra:
             key = (item.ip, item.port, item.transport, item.name, item.source)
             if key not in known:
@@ -321,10 +323,10 @@ class DeviceDeepScanWorker(QObject):
     def _ping(self) -> dict:
         """Ping the device via NetworkTools and return the reachability dict.
 
-            Uses NetworkTools; updates self._cancel, self._say, self._ip.
+        Uses NetworkTools; updates self._cancel, self._say, self._ip.
 
-                    Returns:
-                        dict: Dictionary mapping identifiers to status or values.
+                Returns:
+                    dict: Dictionary mapping identifiers to status or values.
 
         """
         if self._cancel.is_set():
@@ -332,20 +334,24 @@ class DeviceDeepScanWorker(QObject):
         from cortex_unified.system_tools.network_tools import NetworkTools
 
         self._say(f"Checking reachability of {self._ip}\u2026")
-        return NetworkTools().ping(
-            self._ip,
-            count=2,
-            timeout_s=2,
-            cancel_event=self._cancel,
-        ).to_dict()
+        return (
+            NetworkTools()
+            .ping(
+                self._ip,
+                count=2,
+                timeout_s=2,
+                cancel_event=self._cancel,
+            )
+            .to_dict()
+        )
 
     def _reverse_dns(self) -> str:
         """Resolve the device IP to a hostname.
 
-            Uses NetworkTools; updates self._cancel, self._ip.
+        Uses NetworkTools; updates self._cancel, self._ip.
 
-                    Returns:
-                        str: Formatted string or path.
+                Returns:
+                    str: Formatted string or path.
 
         """
         if self._cancel.is_set():
@@ -357,13 +363,13 @@ class DeviceDeepScanWorker(QObject):
     def _history(self, device) -> dict:
         """Load inventory metadata, lifetimes, and trends for the device.
 
-            Uses NetworkInventory.
+        Uses NetworkInventory.
 
-                    Args:
-                        device: The device parameter.
+                Args:
+                    device: The device parameter.
 
-                    Returns:
-                        dict: Dictionary mapping identifiers to status or values.
+                Returns:
+                    dict: Dictionary mapping identifiers to status or values.
 
         """
         try:
@@ -371,13 +377,11 @@ class DeviceDeepScanWorker(QObject):
                 NetworkInventory,
                 identity_key_for,
             )
+
             identity_key = identity_key_for(device)
             with NetworkInventory() as inventory:
                 metadata = inventory.get_metadata(identity_key)
-                lifetimes = {
-                    row["identity_key"]: row
-                    for row in inventory.device_lifetimes()
-                }
+                lifetimes = {row["identity_key"]: row for row in inventory.device_lifetimes()}
                 trends = inventory.exposure_trends(30)
         except (OSError, ValueError, RuntimeError) as exc:
             return {
@@ -399,7 +403,7 @@ class DeviceDeepScanWorker(QObject):
 class DevicePingWorker(QObject):
     """Background worker that pings one authorized device for reachability.
 
-        Runs NetworkTools, DevicePingWorker off the main thread and reports via finished/progress/failed signals.
+    Runs NetworkTools, DevicePingWorker off the main thread and reports via finished/progress/failed signals.
     """
 
     finished = Signal(object)
@@ -444,20 +448,26 @@ class DevicePingWorker(QObject):
                     "of the last scan; run a new network scan first."
                 )
             if self._cancel.is_set():
-                self.finished.emit({
-                    "host": self._ip,
-                    "reachable": False,
-                    "error": "cancelled",
-                    "cancelled": True,
-                })
+                self.finished.emit(
+                    {
+                        "host": self._ip,
+                        "reachable": False,
+                        "error": "cancelled",
+                        "cancelled": True,
+                    }
+                )
                 return
             self.progress.emit(f"Pinging {self._ip}\u2026")
-            result = NetworkTools().ping(
-                self._ip,
-                count=2,
-                timeout_s=2,
-                cancel_event=self._cancel,
-            ).to_dict()
+            result = (
+                NetworkTools()
+                .ping(
+                    self._ip,
+                    count=2,
+                    timeout_s=2,
+                    cancel_event=self._cancel,
+                )
+                .to_dict()
+            )
             result["cancelled"] = self._cancel.is_set()
             self.finished.emit(result)
         except Exception as exc:  # noqa: BLE001 - reported to the UI
@@ -467,7 +477,7 @@ class DevicePingWorker(QObject):
 class DeviceDetailWindow(QDialog):
     """Non-modal dialog showing one device services, findings, and evidence tabs.
 
-        Backed by NetworkInventory, DeviceDeepScanWorker, DevicePingWorker; builds tables, buttons, and dialogs for the actions below.
+    Backed by NetworkInventory, DeviceDeepScanWorker, DevicePingWorker; builds tables, buttons, and dialogs for the actions below.
     """
 
     closed = Signal(object)
@@ -532,10 +542,10 @@ class DeviceDetailWindow(QDialog):
     def _build_header(self) -> QWidget:
         """Create the device header card with name, identity line, and badges.
 
-            Updates self._device, self.p, self._header_badges.
+        Updates self._device, self.p, self._header_badges.
 
-                    Returns:
-                        QWidget: Result of the operation.
+                Returns:
+                    QWidget: Result of the operation.
 
         """
         device = self._device
@@ -557,7 +567,8 @@ class DeviceDetailWindow(QDialog):
         subtitle = QLabel(
             f"{device.ip}   \u2022   "
             f"{device.mac or 'MAC not observed'}   \u2022   "
-            f"{device.vendor or 'vendor unknown'}")
+            f"{device.vendor or 'vendor unknown'}"
+        )
         subtitle.setObjectName("Muted")
         subtitle.setWordWrap(True)
         lay.addWidget(subtitle)
@@ -566,10 +577,10 @@ class DeviceDetailWindow(QDialog):
     def _header_badges(self) -> list[tuple[str, str]]:
         """Derive header badges for router/self/randomized-MAC/kind flags.
 
-            Updates self._device.
+        Updates self._device.
 
-                    Returns:
-                        list[tuple[str, str]]: List of processed items or identifiers.
+                Returns:
+                    list[tuple[str, str]]: List of processed items or identifiers.
 
         """
         device = self._device
@@ -588,10 +599,10 @@ class DeviceDetailWindow(QDialog):
     def _build_actions(self) -> QWidget:
         """Create the primary action row and the collapsible More Actions panel.
 
-            Updates self.scan_btn, self.start_scan, self.allports_btn.
+        Updates self.scan_btn, self.start_scan, self.allports_btn.
 
-                    Returns:
-                        QWidget: Result of the operation.
+                Returns:
+                    QWidget: Result of the operation.
 
         """
         holder = QWidget()
@@ -604,27 +615,32 @@ class DeviceDetailWindow(QDialog):
         self.scan_btn.setObjectName("Primary")
         self.scan_btn.setToolTip(
             "Audit common TCP/UDP services on this one device, with banners, "
-            "TLS metadata and evidence-based findings.")
+            "TLS metadata and evidence-based findings."
+        )
         self.scan_btn.clicked.connect(lambda: self.start_scan("advanced"))
 
         self.allports_btn = QPushButton("All TCP Ports")
         self.allports_btn.setToolTip(
             "Check TCP ports 1-65535 on this device only. Read-only and "
-            "cancellable, but it takes longer and creates more traffic.")
+            "cancellable, but it takes longer and creates more traffic."
+        )
         self.allports_btn.clicked.connect(self._confirm_all_ports)
 
         self.nmap_check = QComboBox()
-        self.nmap_check.addItems([
-            "Nmap: off",
-            "Nmap: connect + version",
-            "Nmap: SYN + version (admin)",
-            "Nmap: ACK firewall map (admin)",
-            "Nmap: SYN + version + OS (admin)",
-        ])
+        self.nmap_check.addItems(
+            [
+                "Nmap: off",
+                "Nmap: connect + version",
+                "Nmap: SYN + version (admin)",
+                "Nmap: ACK firewall map (admin)",
+                "Nmap: SYN + version + OS (admin)",
+            ]
+        )
         self.nmap_check.setMinimumWidth(190)
         self.nmap_check.setToolTip(
             "Optional verification with local Nmap. Only observed open ports "
-            "are re-checked; scripts and exploits are never used.")
+            "are re-checked; scripts and exploits are never used."
+        )
 
         self.cancel_btn = QPushButton("Cancel")
         self.cancel_btn.setEnabled(False)
@@ -643,7 +659,7 @@ class DeviceDetailWindow(QDialog):
         self.export_btn.setEnabled(False)
         self.export_btn.clicked.connect(self._export)
 
-        self.more_actions_btn = QPushButton("More Actions  \u203A")
+        self.more_actions_btn = QPushButton("More Actions  \u203a")
         self.more_actions_btn.setObjectName("CommandDisclosure")
         self.more_actions_btn.setCheckable(True)
         self.more_actions_btn.toggled.connect(self._toggle_more_actions)
@@ -689,7 +705,7 @@ class DeviceDetailWindow(QDialog):
             visible (bool): The visible parameter.
         """
         self.action_panel.setVisible(visible)
-        marker = "\u2304" if visible else "\u203A"
+        marker = "\u2304" if visible else "\u203a"
         self.more_actions_btn.setText(f"More Actions  {marker}")
         self.more_actions_btn.setProperty("expanded", visible)
         style = self.more_actions_btn.style()
@@ -699,10 +715,10 @@ class DeviceDetailWindow(QDialog):
     def _build_cards(self) -> QWidget:
         """Create the five stat cards (services, findings, risk, latency, identity).
 
-            Updates self.card_ports, self.p, self.card_findings.
+        Updates self.card_ports, self.p, self.card_findings.
 
-                    Returns:
-                        QWidget: Result of the operation.
+                Returns:
+                    QWidget: Result of the operation.
 
         """
         holder = QWidget()
@@ -727,10 +743,10 @@ class DeviceDetailWindow(QDialog):
     def _build_tabs(self) -> QWidget:
         """Create the tab widget with overview, services, findings, identity, discovery, history, labels, and raw evidence.
 
-            Updates self.tabs, self.overview, self.overview_grid.
+        Updates self.tabs, self.overview, self.overview_grid.
 
-                    Returns:
-                        QWidget: Result of the operation.
+                Returns:
+                    QWidget: Result of the operation.
 
         """
         self.tabs = QTabWidget()
@@ -742,21 +758,48 @@ class DeviceDetailWindow(QDialog):
         self.overview_grid.setVerticalSpacing(8)
         self.tabs.addTab(self.overview, "Overview")
 
-        self.services_tbl = self._table([
-            "Port", "Proto", "Service", "State", "Product", "Version",
-            "Latency", "Confidence", "Source", "Evidence",
-        ], stretch=(9,))
+        self.services_tbl = self._table(
+            [
+                "Port",
+                "Proto",
+                "Service",
+                "State",
+                "Product",
+                "Version",
+                "Latency",
+                "Confidence",
+                "Source",
+                "Evidence",
+            ],
+            stretch=(9,),
+        )
         self.tabs.addTab(self.services_tbl, "Ports & Services")
 
-        self.findings_tbl = self._table([
-            "Severity", "Finding", "Port", "Detail", "Remediation",
-            "CVE / advisory", "Confidence", "Evidence",
-        ], stretch=(3, 4, 7))
+        self.findings_tbl = self._table(
+            [
+                "Severity",
+                "Finding",
+                "Port",
+                "Detail",
+                "Remediation",
+                "CVE / advisory",
+                "Confidence",
+                "Evidence",
+            ],
+            stretch=(3, 4, 7),
+        )
         self.tabs.addTab(self.findings_tbl, "Security")
 
-        self.identity_tbl = self._table([
-            "Source", "Observation", "Strength", "Weight", "Why it matters",
-        ], stretch=(1, 4))
+        self.identity_tbl = self._table(
+            [
+                "Source",
+                "Observation",
+                "Strength",
+                "Weight",
+                "Why it matters",
+            ],
+            stretch=(1, 4),
+        )
         self.tabs.addTab(self.identity_tbl, "Identity Evidence")
 
         self.discovery_view = QTextEdit()
@@ -773,7 +816,8 @@ class DeviceDetailWindow(QDialog):
         notes_hint = QLabel(
             "Your own labels for this device. They are stored locally in the "
             "Cortex inventory and are keyed to the device identity, so they "
-            "survive DHCP address changes.")
+            "survive DHCP address changes."
+        )
         notes_hint.setObjectName("Muted")
         notes_hint.setWordWrap(True)
         notes_layout.addWidget(notes_hint)
@@ -815,14 +859,14 @@ class DeviceDetailWindow(QDialog):
     ) -> QTableWidget:
         """Build a read-only results table with the given headers.
 
-            Operates on this page widgets as implemented in the method body below.
+        Operates on this page widgets as implemented in the method body below.
 
-                    Args:
-                        headers (list[str]): The headers parameter.
-                        stretch (tuple[int, ...]): The stretch parameter.
+                Args:
+                    headers (list[str]): The headers parameter.
+                    stretch (tuple[int, ...]): The stretch parameter.
 
-                    Returns:
-                        QTableWidget: Result of the operation.
+                Returns:
+                    QTableWidget: Result of the operation.
 
         """
         table = QTableWidget(0, len(headers))
@@ -835,8 +879,7 @@ class DeviceDetailWindow(QDialog):
         header = table.horizontalHeader()
         for column in stretch:
             if column < len(headers):
-                header.setSectionResizeMode(
-                    column, QHeaderView.ResizeMode.Stretch)
+                header.setSectionResizeMode(column, QHeaderView.ResizeMode.Stretch)
         return table
 
     # -- scanning ----------------------------------------------------------
@@ -844,16 +887,19 @@ class DeviceDetailWindow(QDialog):
     def start_scan(self, profile: str = "advanced") -> None:
         """Launch a DeviceDeepScanWorker with the chosen Nmap mode and profile.
 
-            Uses DeviceDeepScanWorker; updates self._worker, self.nmap_check, self._device.
+        Uses DeviceDeepScanWorker; updates self._worker, self.nmap_check, self._device.
 
-                    Args:
-                        profile (str): The profile parameter.
+                Args:
+                    profile (str): The profile parameter.
 
         """
         if self._worker is not None:
             return
         modes = (
-            None, ("connect", "version"), ("syn", "version"), ("ack",),
+            None,
+            ("connect", "version"),
+            ("syn", "version"),
+            ("ack",),
             ("syn", "version", "os"),
         )[self.nmap_check.currentIndex()]
         self._worker = DeviceDeepScanWorker(
@@ -864,8 +910,7 @@ class DeviceDetailWindow(QDialog):
             catalog_path=self._catalog_path,
         )
         self._busy(True)
-        self.status.setText(
-            f"Starting {profile} audit of {self._device.ip}\u2026")
+        self.status.setText(f"Starting {profile} audit of {self._device.ip}\u2026")
         self.win.run_worker(
             self._worker,
             self._on_scanned,
@@ -876,23 +921,25 @@ class DeviceDetailWindow(QDialog):
     def _confirm_all_ports(self) -> None:
         """Confirm a deep 1-65535 TCP scan before starting it.
 
-            Uses QMessageBox; updates self._device, self.start_scan.
+        Uses QMessageBox; updates self._device, self.start_scan.
         """
         answer = QMessageBox.question(
-            self, "Scan all TCP ports on this device?",
+            self,
+            "Scan all TCP ports on this device?",
             f"This checks TCP ports 1-65535 on {self._device.ip} only.\n\n"
             "It is read-only and cancellable, but it creates noticeably "
             "more traffic and can take several minutes. Run it only on a "
             "device you own or are authorized to assess.",
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
-            QMessageBox.StandardButton.No)
+            QMessageBox.StandardButton.No,
+        )
         if answer == QMessageBox.StandardButton.Yes:
             self.start_scan("deep")
 
     def _cancel(self) -> None:
         """Request cancellation of the active device worker.
 
-            Updates self._worker, self.status.
+        Updates self._worker, self.status.
         """
         if self._worker is not None:
             self._worker.cancel()
@@ -912,7 +959,7 @@ class DeviceDetailWindow(QDialog):
     def _refresh_action_states(self) -> None:
         """Derive every action from worker, evidence, and device capability.
 
-            Updates self._is_busy, self.scan_btn, self.allports_btn.
+        Updates self._is_busy, self.scan_btn, self.allports_btn.
         """
         busy = self._is_busy
         for button in (
@@ -932,17 +979,9 @@ class DeviceDetailWindow(QDialog):
         actionable = {"http", "https", "ssh", "rdp"}
         self.open_btn.setEnabled(
             not busy
-            and any(
-                item.get("name") in actionable
-                and item.get("state", "open") == "open"
-                for item in services
-            )
+            and any(item.get("name") in actionable and item.get("state", "open") == "open" for item in services)
         )
-        self.export_btn.setEnabled(
-            not busy
-            and self._has_completed_scan
-            and self._payload is not None
-        )
+        self.export_btn.setEnabled(not busy and self._has_completed_scan and self._payload is not None)
 
         try:
             from cortex_unified.system_tools.wake_on_lan import validate_mac
@@ -978,7 +1017,7 @@ class DeviceDetailWindow(QDialog):
     def _ping_only(self) -> None:
         """Launch a DevicePingWorker for a quick reachability check.
 
-            Uses DevicePingWorker; updates self._worker, self._device, self._networks.
+        Uses DevicePingWorker; updates self._worker, self._device, self._networks.
         """
         if self._worker is not None:
             return
@@ -995,10 +1034,10 @@ class DeviceDetailWindow(QDialog):
     def _on_pinged(self, ping: dict) -> None:
         """Fold the ping result into the payload and describe the outcome.
 
-            Updates self._worker, self._busy, self._close_pending.
+        Updates self._worker, self._busy, self._close_pending.
 
-                    Args:
-                        ping (dict): The ping parameter.
+                Args:
+                    ping (dict): The ping parameter.
 
         """
         self._worker = None
@@ -1025,7 +1064,7 @@ class DeviceDetailWindow(QDialog):
     def _finish_pending_close(self) -> None:
         """Close the window now that the worker has finished.
 
-            Updates self._close_pending, self.close.
+        Updates self._close_pending, self.close.
         """
         self._close_pending = False
         self.close()
@@ -1035,7 +1074,7 @@ class DeviceDetailWindow(QDialog):
     def _render_known(self) -> None:
         """Show what discovery already observed, before any focused scan.
 
-            Updates self._device, self._networks, self._payload.
+        Updates self._device, self._networks, self._payload.
         """
         device = self._device
         fingerprint = getattr(device, "fingerprint", None)
@@ -1047,8 +1086,8 @@ class DeviceDetailWindow(QDialog):
             ],
             "findings": [],
             "fingerprint": (
-                fingerprint.to_dict() if fingerprint is not None
-                and hasattr(fingerprint, "to_dict") else None),
+                fingerprint.to_dict() if fingerprint is not None and hasattr(fingerprint, "to_dict") else None
+            ),
             "ping": {},
             "reverse_dns": "",
             "profile": "discovery",
@@ -1071,10 +1110,10 @@ class DeviceDetailWindow(QDialog):
     def _on_scanned(self, payload) -> None:
         """Store the scan payload, render it, and summarize the results.
 
-            Updates self._worker, self._has_completed_scan, self._busy.
+        Updates self._worker, self._has_completed_scan, self._busy.
 
-                    Args:
-                        payload: The payload parameter.
+                Args:
+                    payload: The payload parameter.
 
         """
         self._worker = None
@@ -1088,7 +1127,8 @@ class DeviceDetailWindow(QDialog):
         summary = (
             f"{len(payload['services'])} service(s) and "
             f"{len(payload['findings'])} evidence-backed finding(s) on "
-            f"{self._device.ip}")
+            f"{self._device.ip}"
+        )
         if payload.get("cancelled"):
             summary += " (cancelled early - results may be incomplete)"
         self.status.setText(summary)
@@ -1096,11 +1136,11 @@ class DeviceDetailWindow(QDialog):
     def _render(self, payload: dict, scanned: bool) -> None:
         """Render cards, overview, tables, and raw JSON from a scan payload.
 
-            Updates self._render_cards, self._render_overview, self._render_services.
+        Updates self._render_cards, self._render_overview, self._render_services.
 
-                    Args:
-                        payload (dict): The payload parameter.
-                        scanned (bool): The scanned parameter.
+                Args:
+                    payload (dict): The payload parameter.
+                    scanned (bool): The scanned parameter.
 
         """
         services = payload.get("services") or []
@@ -1112,24 +1152,22 @@ class DeviceDetailWindow(QDialog):
         self._render_identity(payload.get("fingerprint"))
         self._render_discovery(payload)
         self._render_history(payload)
-        self.raw_view.setPlainText(
-            json.dumps(payload, indent=2, ensure_ascii=False))
+        self.raw_view.setPlainText(json.dumps(payload, indent=2, ensure_ascii=False))
         self._refresh_action_states()
 
     def _render_cards(self, payload, services, findings, scanned) -> None:
         """Update the stat cards for services, findings, severity, latency, and identity.
 
-            Updates self.card_ports, self.card_findings, self.card_risk.
+        Updates self.card_ports, self.card_findings, self.card_risk.
 
-                    Args:
-                        payload: The payload parameter.
-                        services: The services parameter.
-                        findings: The findings parameter.
-                        scanned: The scanned parameter.
+                Args:
+                    payload: The payload parameter.
+                    services: The services parameter.
+                    findings: The findings parameter.
+                    scanned: The scanned parameter.
 
         """
-        open_services = [
-            item for item in services if item.get("state", "open") == "open"]
+        open_services = [item for item in services if item.get("state", "open") == "open"]
         self.card_ports.set_value(str(len(open_services)))
         self.card_findings.set_value(str(len(findings)) if scanned else _DASH)
         if findings:
@@ -1140,25 +1178,26 @@ class DeviceDetailWindow(QDialog):
         if ping:
             average = ping.get("avg_ms")
             self.card_latency.set_value(
-                f"{average:.0f} ms" if ping.get("reachable") and average
-                else ("Replied" if ping.get("reachable") else "No ICMP reply"))
+                f"{average:.0f} ms"
+                if ping.get("reachable") and average
+                else ("Replied" if ping.get("reachable") else "No ICMP reply")
+            )
         else:
             self.card_latency.set_value(_DASH)
         fingerprint = payload.get("fingerprint") or {}
         confidence = fingerprint.get("confidence")
-        self.card_identity.set_value(
-            f"{float(confidence) * 100:.0f}%" if confidence else _DASH)
+        self.card_identity.set_value(f"{float(confidence) * 100:.0f}%" if confidence else _DASH)
 
     def _render_overview(self, payload, services, findings, scanned) -> None:
         """Rebuild the overview grid rows and the evidence caveat.
 
-            Updates self.overview_grid.
+        Updates self.overview_grid.
 
-                    Args:
-                        payload: The payload parameter.
-                        services: The services parameter.
-                        findings: The findings parameter.
-                        scanned: The scanned parameter.
+                Args:
+                    payload: The payload parameter.
+                    services: The services parameter.
+                    findings: The findings parameter.
+                    scanned: The scanned parameter.
 
         """
         while self.overview_grid.count():
@@ -1171,9 +1210,7 @@ class DeviceDetailWindow(QDialog):
         ping = payload.get("ping") or {}
         metadata = payload.get("metadata") or {}
         nmap = payload.get("nmap") or {}
-        open_ports = ", ".join(
-            str(port) for port in device.get("open_ports", ())
-        )
+        open_ports = ", ".join(str(port) for port in device.get("open_ports", ()))
         rows = [
             ("Name", device.get("label", "")),
             ("Custom name", metadata.get("custom_name") or _DASH),
@@ -1185,31 +1222,37 @@ class DeviceDetailWindow(QDialog):
             ("Reverse DNS", payload.get("reverse_dns") or _DASH),
             ("Device type", device.get("kind", "")),
             ("OS family", fingerprint.get("os_family", "unknown")),
-            ("Product / version", " ".join(filter(None, (
-                fingerprint.get("product", ""),
-                fingerprint.get("version", "")))) or _DASH),
+            (
+                "Product / version",
+                " ".join(filter(None, (fingerprint.get("product", ""), fingerprint.get("version", "")))) or _DASH,
+            ),
             ("Open TCP ports", open_ports or "none observed"),
             ("Discovered by", device.get("evidence", "")),
-            ("Reachability", (
-                "replied to ping" if ping.get("reachable")
-                else "no ICMP reply (a firewall can block ping)"
-                if ping else _DASH)),
+            (
+                "Reachability",
+                (
+                    "replied to ping"
+                    if ping.get("reachable")
+                    else "no ICMP reply (a firewall can block ping)" if ping else _DASH
+                ),
+            ),
             ("Audit profile", payload.get("profile", "")),
-            ("Authorized scope", ", ".join(
-                payload.get("scanned_networks", ()))),
-            ("Optional Nmap", (
-                f"used ({', '.join(nmap.get('modes', ()))})"
-                if nmap.get("used")
-                else f"not used - {nmap.get('reason', '')}"
-            )),
+            ("Authorized scope", ", ".join(payload.get("scanned_networks", ()))),
+            (
+                "Optional Nmap",
+                (
+                    f"used ({', '.join(nmap.get('modes', ()))})"
+                    if nmap.get("used")
+                    else f"not used - {nmap.get('reason', '')}"
+                ),
+            ),
         ]
         for row, (label, value) in enumerate(rows):
             key = QLabel(label)
             key.setObjectName("Muted")
             val = QLabel(str(value) or _DASH)
             val.setWordWrap(True)
-            val.setTextInteractionFlags(
-                Qt.TextInteractionFlag.TextSelectableByMouse)
+            val.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
             self.overview_grid.addWidget(
                 key,
                 row,
@@ -1223,9 +1266,10 @@ class DeviceDetailWindow(QDialog):
             "No finding does not prove the device is free of vulnerabilities, "
             "and a version match is a potential advisory match, not a "
             "confirmed exploitable flaw."
-            if scanned else
-            "This is what discovery already saw. Press Deep Scan Device for "
-            "a full per-device service and security audit.")
+            if scanned
+            else "This is what discovery already saw. Press Deep Scan Device for "
+            "a full per-device service and security audit."
+        )
         caveat.setObjectName("Muted")
         caveat.setWordWrap(True)
         self.overview_grid.addWidget(caveat, len(rows), 0, 1, 2)
@@ -1233,16 +1277,16 @@ class DeviceDetailWindow(QDialog):
     def _render_services(self, services) -> None:
         """Fill the ports/services table sorted by port and transport.
 
-            Updates self.services_tbl.
+        Updates self.services_tbl.
 
-                    Args:
-                        services: The services parameter.
+                Args:
+                    services: The services parameter.
 
         """
         self.services_tbl.setRowCount(len(services))
-        for row, item in enumerate(sorted(
-                services, key=lambda entry: (
-                    entry.get("port", 0), entry.get("transport", "")))):
+        for row, item in enumerate(
+            sorted(services, key=lambda entry: (entry.get("port", 0), entry.get("transport", "")))
+        ):
             evidence = ", ".join(
                 str(text)
                 for text in (item.get("metadata") or {}).get(
@@ -1258,28 +1302,23 @@ class DeviceDetailWindow(QDialog):
                 item.get("state", ""),
                 item.get("product") or _DASH,
                 item.get("version") or _DASH,
-                (
-                    f"{latency:.1f} ms"
-                    if isinstance(latency, (int, float))
-                    else _DASH
-                ),
+                (f"{latency:.1f} ms" if isinstance(latency, (int, float)) else _DASH),
                 f"{float(item.get('confidence', 0)) * 100:.0f}%",
                 item.get("source", ""),
                 evidence or item.get("banner", "")[:160] or _DASH,
             )
             for column, value in enumerate(values):
-                self.services_tbl.setItem(
-                    row, column, QTableWidgetItem(str(value)))
+                self.services_tbl.setItem(row, column, QTableWidgetItem(str(value)))
         self.services_tbl.resizeColumnsToContents()
 
     def _render_findings(self, findings, scanned) -> None:
         """Fill the security findings table with severity badges and remediation.
 
-            Updates self.findings_tbl, self.p.
+        Updates self.findings_tbl, self.p.
 
-                    Args:
-                        findings: The findings parameter.
-                        scanned: The scanned parameter.
+                Args:
+                    findings: The findings parameter.
+                    scanned: The scanned parameter.
 
         """
         self.findings_tbl.setRowCount(len(findings))
@@ -1301,24 +1340,24 @@ class DeviceDetailWindow(QDialog):
                 "; ".join(str(text) for text in item.get("evidence", ())),
             )
             for offset, value in enumerate(values, start=1):
-                self.findings_tbl.setItem(
-                    row, offset, QTableWidgetItem(str(value)))
+                self.findings_tbl.setItem(row, offset, QTableWidgetItem(str(value)))
         if not findings:
             self.findings_tbl.setRowCount(1)
             message = (
                 "No evidence-backed finding was produced for this device."
-                if scanned else
-                "Run Deep Scan Device to audit this host's services.")
+                if scanned
+                else "Run Deep Scan Device to audit this host's services."
+            )
             self.findings_tbl.setItem(0, 1, QTableWidgetItem(message))
         self.findings_tbl.resizeColumnsToContents()
 
     def _render_identity(self, fingerprint) -> None:
         """Fill the identity evidence table from the fingerprint.
 
-            Updates self.identity_tbl.
+        Updates self.identity_tbl.
 
-                    Args:
-                        fingerprint: The fingerprint parameter.
+                Args:
+                    fingerprint: The fingerprint parameter.
 
         """
         evidence = (fingerprint or {}).get("evidence", [])
@@ -1332,17 +1371,16 @@ class DeviceDetailWindow(QDialog):
                 item.get("detail", ""),
             )
             for column, value in enumerate(values):
-                self.identity_tbl.setItem(
-                    row, column, QTableWidgetItem(str(value)))
+                self.identity_tbl.setItem(row, column, QTableWidgetItem(str(value)))
         self.identity_tbl.resizeColumnsToContents()
 
     def _render_discovery(self, payload) -> None:
         """Write discovery methods and self-advertised services to the Discovery tab.
 
-            Updates self.discovery_view.
+        Updates self.discovery_view.
 
-                    Args:
-                        payload: The payload parameter.
+                Args:
+                    payload: The payload parameter.
 
         """
         lines = [
@@ -1351,22 +1389,13 @@ class DeviceDetailWindow(QDialog):
             "",
             "DISCOVERY METHODS THAT SAW IT",
         ]
-        lines.extend(
-            f"  \u2022 {source}"
-            for source in payload.get("discovery_sources", ())
-        )
+        lines.extend(f"  \u2022 {source}" for source in payload.get("discovery_sources", ()))
         advertised = payload.get("advertised_services") or {}
         lines.extend(["", "WHAT THE DEVICE ADVERTISED ABOUT ITSELF"])
         if advertised:
-            lines.extend(
-                f"  \u2022 {key}: {value}"
-                for key, value in sorted(advertised.items())
-            )
+            lines.extend(f"  \u2022 {key}: {value}" for key, value in sorted(advertised.items()))
         else:
-            lines.append(
-                "  (nothing self-advertised over "
-                "mDNS/SSDP/WS-Discovery)"
-            )
+            lines.append("  (nothing self-advertised over " "mDNS/SSDP/WS-Discovery)")
         notes = payload.get("notes") or []
         if notes:
             lines.extend(["", "NOTES"])
@@ -1376,10 +1405,10 @@ class DeviceDetailWindow(QDialog):
     def _render_history(self, payload) -> None:
         """Write lifetime, history, and exposure-trend lines to the History tab.
 
-            Updates self.history_view.
+        Updates self.history_view.
 
-                    Args:
-                        payload: The payload parameter.
+                Args:
+                    payload: The payload parameter.
 
         """
         lifetime = payload.get("lifetime") or {}
@@ -1387,37 +1416,38 @@ class DeviceDetailWindow(QDialog):
         if payload.get("identity_key"):
             lines.append(f"  Identity key: {payload['identity_key']}")
         if lifetime:
-            lines.extend([
-                f"  First seen: {lifetime.get('first_seen', '')}",
-                f"  Last seen:  {lifetime.get('last_seen', '')}",
-                (
-                    "  Identity confidence: "
-                    f"{lifetime.get('identity_confidence', '')}"
-                ),
-            ])
+            lines.extend(
+                [
+                    f"  First seen: {lifetime.get('first_seen', '')}",
+                    f"  Last seen:  {lifetime.get('last_seen', '')}",
+                    ("  Identity confidence: " f"{lifetime.get('identity_confidence', '')}"),
+                ]
+            )
         else:
-            lines.append(
-                "  No retained history yet. History is written when a full "
-                "network scan runs.")
+            lines.append("  No retained history yet. History is written when a full " "network scan runs.")
         if payload.get("history_error"):
             lines.append(f"  History unavailable: {payload['history_error']}")
         trends = payload.get("trends") or []
         if trends:
-            lines.extend([
-                "",
-                "NETWORK-WIDE EXPOSURE TREND (most recent last)",
-                "  observed_at | devices | services | findings | risk",
-            ])
+            lines.extend(
+                [
+                    "",
+                    "NETWORK-WIDE EXPOSURE TREND (most recent last)",
+                    "  observed_at | devices | services | findings | risk",
+                ]
+            )
             lines.extend(
                 f"  {row['observed_at']} | {row['device_count']} | "
                 f"{row['service_count']} | {row['finding_count']} | "
                 f"{row['risk_score']}"
-                for row in trends)
-        lines.extend([
-            "",
-            "Identity is best-effort: DHCP can move addresses and privacy "
-            "features randomize MAC addresses.",
-        ])
+                for row in trends
+            )
+        lines.extend(
+            [
+                "",
+                "Identity is best-effort: DHCP can move addresses and privacy " "features randomize MAC addresses.",
+            ]
+        )
         self.history_view.setPlainText("\n".join(lines))
 
     # -- per-device actions ------------------------------------------------
@@ -1425,12 +1455,13 @@ class DeviceDetailWindow(QDialog):
     def _load_metadata(self) -> None:
         """Load saved labels and notes for the device into the form and overview.
 
-            Uses NetworkInventory; updates self._device, self.name_input, self.trust_combo.
+        Uses NetworkInventory; updates self._device, self.name_input, self.trust_combo.
         """
         try:
             from cortex_unified.system_tools.network_inventory import (
                 NetworkInventory,
             )
+
             with NetworkInventory() as inventory:
                 metadata = inventory.get_metadata(self._device)
         except (OSError, ValueError, RuntimeError):
@@ -1444,40 +1475,41 @@ class DeviceDetailWindow(QDialog):
         if self._payload is not None:
             self._payload["metadata"] = metadata.to_dict()
             self._render_overview(
-                self._payload, self._payload.get("services") or [],
-                self._payload.get("findings") or [], False)
+                self._payload, self._payload.get("services") or [], self._payload.get("findings") or [], False
+            )
 
     def _save_metadata(self) -> None:
         """Save the edited name, trust, tags, and notes to the inventory.
 
-            Uses NetworkInventory, QMessageBox; updates self._device, self.name_input, self.trust_combo.
+        Uses NetworkInventory, QMessageBox; updates self._device, self.name_input, self.trust_combo.
         """
         try:
             from cortex_unified.system_tools.network_inventory import (
                 NetworkInventory,
             )
+
             with NetworkInventory() as inventory:
                 metadata = inventory.set_metadata(
                     self._device,
                     custom_name=self.name_input.text(),
                     trust_state=self.trust_combo.currentText(),
                     tags=self.tags_input.text(),
-                    notes=self.notes_input.text())
+                    notes=self.notes_input.text(),
+                )
         except (OSError, ValueError, RuntimeError) as exc:
             QMessageBox.warning(self, "Details not saved", str(exc))
             return
-        self.status.setText(
-            f"Saved device details for {metadata.identity_key}")
+        self.status.setText(f"Saved device details for {metadata.identity_key}")
         if self._payload is not None:
             self._payload["metadata"] = metadata.to_dict()
             self._render_overview(
-                self._payload, self._payload.get("services") or [],
-                self._payload.get("findings") or [], False)
+                self._payload, self._payload.get("services") or [], self._payload.get("findings") or [], False
+            )
 
     def _wake(self) -> None:
         """Send a Wake-on-LAN magic packet to the device broadcast address.
 
-            Uses QMessageBox; updates self._device, self._networks, self.status.
+        Uses QMessageBox; updates self._device, self._networks, self.status.
         """
         import ipaddress
 
@@ -1490,7 +1522,8 @@ class DeviceDetailWindow(QDialog):
             network = next(
                 ipaddress.IPv4Network(value, strict=False)
                 for value in self._networks
-                if address in ipaddress.IPv4Network(value, strict=False))
+                if address in ipaddress.IPv4Network(value, strict=False)
+            )
             send_magic_packet(
                 self._device.mac,
                 str(network.broadcast_address),
@@ -1501,20 +1534,17 @@ class DeviceDetailWindow(QDialog):
             return
         self.status.setText(
             "Wake-on-LAN magic packet sent. The device only wakes if it has "
-            "Wake-on-LAN enabled in firmware and the OS.")
+            "Wake-on-LAN enabled in firmware and the OS."
+        )
 
     def _open_service(self) -> None:
         """Open the best http/https/ssh/rdp service in the system handler.
 
-            Updates self._payload, self._device, self.status.
+        Updates self._payload, self._device, self.status.
         """
         services = (self._payload or {}).get("services") or []
         priority = {"https": 0, "http": 1, "ssh": 2, "rdp": 3}
-        candidates = [
-            item for item in services
-            if item.get("name") in priority
-            and item.get("state", "open") == "open"
-        ]
+        candidates = [item for item in services if item.get("name") in priority and item.get("state", "open") == "open"]
         if not candidates:
             return
         service = min(candidates, key=lambda item: priority[item["name"]])
@@ -1531,28 +1561,29 @@ class DeviceDetailWindow(QDialog):
     def _copy_identity(self) -> None:
         """Copy the device IP and MAC to the clipboard.
 
-            Updates self._device, self.status.
+        Updates self._device, self.status.
         """
         clipboard = QGuiApplication.clipboard()
         if clipboard is None:
             return
-        clipboard.setText(
-            f"{self._device.ip}\t{self._device.mac or 'no MAC observed'}")
+        clipboard.setText(f"{self._device.ip}\t{self._device.mac or 'no MAC observed'}")
         self.status.setText("Copied the IP and MAC address to the clipboard.")
 
     def _export(self) -> None:
         """Export the current payload to JSON, HTML, or PDF via a save dialog.
 
-            Uses QMessageBox, QFileDialog; updates self._payload, self._device, self._html_report.
+        Uses QMessageBox, QFileDialog; updates self._payload, self._device, self._html_report.
         """
         payload = self._payload
         if payload is None:
             return
         safe_ip = self._device.ip.replace(".", "-")
         path, selected = QFileDialog.getSaveFileName(
-            self, "Export device report", f"device-{safe_ip}.json",
-            "JSON report (*.json);;Printable HTML report (*.html);;"
-            "PDF report (*.pdf)")
+            self,
+            "Export device report",
+            f"device-{safe_ip}.json",
+            "JSON report (*.json);;Printable HTML report (*.html);;" "PDF report (*.pdf)",
+        )
         if not path:
             return
         from pathlib import Path
@@ -1560,15 +1591,11 @@ class DeviceDetailWindow(QDialog):
         target = Path(path)
         suffix = target.suffix.lower()
         if suffix not in {".json", ".html", ".pdf"}:
-            suffix = (
-                ".pdf" if "PDF" in selected
-                else ".html" if "HTML" in selected else ".json")
+            suffix = ".pdf" if "PDF" in selected else ".html" if "HTML" in selected else ".json"
             target = target.with_suffix(suffix)
         try:
             if suffix == ".json":
-                target.write_text(
-                    json.dumps(payload, indent=2, ensure_ascii=False),
-                    encoding="utf-8")
+                target.write_text(json.dumps(payload, indent=2, ensure_ascii=False), encoding="utf-8")
             else:
                 document = self._html_report(payload)
                 if suffix == ".pdf":
@@ -1587,13 +1614,13 @@ class DeviceDetailWindow(QDialog):
     def _html_report(self, payload: dict) -> str:
         """Build the printable HTML report for the payload.
 
-            Operates on this page widgets as implemented in the method body below.
+        Operates on this page widgets as implemented in the method body below.
 
-                    Args:
-                        payload (dict): The payload parameter.
+                Args:
+                    payload (dict): The payload parameter.
 
-                    Returns:
-                        str: Formatted string or path.
+                Returns:
+                    str: Formatted string or path.
 
         """
         device = payload.get("device") or {}

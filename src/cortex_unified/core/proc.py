@@ -53,15 +53,39 @@ _POLL_INTERVAL_S = 0.2
 _REAP_TIMEOUT_S = 5.0
 
 #: Processes never eligible for termination or suspension under any circumstances.
-PROTECTED_SYSTEM_PROCESSES: frozenset[str] = frozenset({
-    "system", "system idle process", "registry", "memory compression", "idle",
-    "smss.exe", "csrss.exe", "wininit.exe", "winlogon.exe", "services.exe",
-    "lsass.exe", "svchost.exe", "dwm.exe", "winmgmt.exe", "audiodg.exe",
-    "explorer.exe", "sihost.exe", "taskhostw.exe", "runtimebroker.exe",
-    "fontdrvhost.exe", "conhost.exe", "ctfmon.exe", "shellexperiencehost.exe",
-    "searchapp.exe", "startmenuexperiencehost.exe",
-    "python.exe", "pythonw.exe", "python3.exe", "cortex.exe",
-})
+PROTECTED_SYSTEM_PROCESSES: frozenset[str] = frozenset(
+    {
+        "system",
+        "system idle process",
+        "registry",
+        "memory compression",
+        "idle",
+        "smss.exe",
+        "csrss.exe",
+        "wininit.exe",
+        "winlogon.exe",
+        "services.exe",
+        "lsass.exe",
+        "svchost.exe",
+        "dwm.exe",
+        "winmgmt.exe",
+        "audiodg.exe",
+        "explorer.exe",
+        "sihost.exe",
+        "taskhostw.exe",
+        "runtimebroker.exe",
+        "fontdrvhost.exe",
+        "conhost.exe",
+        "ctfmon.exe",
+        "shellexperiencehost.exe",
+        "searchapp.exe",
+        "startmenuexperiencehost.exe",
+        "python.exe",
+        "pythonw.exe",
+        "python3.exe",
+        "cortex.exe",
+    }
+)
 
 
 def is_protected_process(name_or_pid: str | int) -> bool:
@@ -81,6 +105,7 @@ def is_protected_process(name_or_pid: str | int) -> bool:
             return True
         try:
             import psutil
+
             p = psutil.Process(name_or_pid)
             n = (p.name() or "").lower()
             return n in PROTECTED_SYSTEM_PROCESSES or n.rstrip(".exe") in PROTECTED_SYSTEM_PROCESSES
@@ -202,8 +227,10 @@ def _kill_tree(proc: subprocess.Popen) -> None:
         try:
             subprocess.run(
                 ["taskkill", "/T", "/F", "/PID", str(proc.pid)],
-                stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
-                timeout=10, creationflags=NO_WINDOW,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+                timeout=10,
+                creationflags=NO_WINDOW,
             )
         except (OSError, subprocess.SubprocessError) as exc:
             _LOG.debug("taskkill failed for pid %s: %s", proc.pid, exc)
@@ -215,6 +242,7 @@ def _kill_tree(proc: subprocess.Popen) -> None:
             pass
     else:
         import signal
+
         try:
             os.killpg(os.getpgid(proc.pid), signal.SIGKILL)
         except (OSError, ProcessLookupError) as exc:
@@ -259,8 +287,10 @@ def kill_process_tree(pid: int) -> bool:
         try:
             res = subprocess.run(
                 ["taskkill", "/T", "/F", "/PID", str(pid)],
-                stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
-                timeout=10, creationflags=NO_WINDOW,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+                timeout=10,
+                creationflags=NO_WINDOW,
             )
             return res.returncode == 0
         except (OSError, subprocess.SubprocessError) as exc:
@@ -268,6 +298,7 @@ def kill_process_tree(pid: int) -> bool:
             return False
     else:
         import signal
+
         try:
             os.killpg(os.getpgid(pid), signal.SIGKILL)
             return True

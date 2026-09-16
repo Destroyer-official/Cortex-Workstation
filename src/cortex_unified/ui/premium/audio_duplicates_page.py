@@ -25,6 +25,7 @@ from cortex_unified.analyzers.audio_duplicate_finder import AudioDuplicateFinder
 
 class _AudioWorker(QObject):
     """Background worker (_AudioWorker) performing AudioWorker. Signals finished, progress, failed report status. Configured with root, threshold. Its run() step calls AudioDuplicateFinder, finder.find_audio_duplicates, emit, str."""
+
     finished = Signal(dict)
     progress = Signal(str)
     failed = Signal(str)
@@ -82,14 +83,19 @@ class AudioDuplicatesPage(_Page):
             win: Parent window or shell controller instance.
         """
         super().__init__(win)
-        self.v.addWidget(title_block(
-            "Audio Duplicates (Acoustic)",
-            "Chromaprint-inspired spectral fingerprinting (Ke CVPR 2005) – "
-            "groups music that *sounds* identical even when stored as FLAC vs "
-            "MP3 vs M4A. Cross-format, encoding-robust.",
-        ))
+        self.v.addWidget(
+            title_block(
+                "Audio Duplicates (Acoustic)",
+                "Chromaprint-inspired spectral fingerprinting (Ke CVPR 2005) – "
+                "groups music that *sounds* identical even when stored as FLAC vs "
+                "MP3 vs M4A. Cross-format, encoding-robust.",
+            )
+        )
         from PySide6.QtWidgets import (
-            QFileDialog, QProgressBar, QPushButton, QDoubleSpinBox,
+            QFileDialog,
+            QProgressBar,
+            QPushButton,
+            QDoubleSpinBox,
         )
 
         picker = QHBoxLayout()
@@ -183,14 +189,14 @@ class AudioDuplicatesPage(_Page):
         if not groups:
             self.state.show_empty(
                 "No acoustically-duplicate audio found. Lower the threshold or "
-                "scan a music library with FLAC+MP3 copies of the same tracks.")
+                "scan a music library with FLAC+MP3 copies of the same tracks."
+            )
             self.status.setText("No audio duplicates found.")
             self.win.statusBar().showMessage("No audio duplicates", 5000)
             return
         self.state.clear()
         rows = [
-            (str(p), gid, f"acoustic ≥ {self.thr_spin.value():.2f}")
-            for gid, paths in groups.items() for p in paths
+            (str(p), gid, f"acoustic ≥ {self.thr_spin.value():.2f}") for gid, paths in groups.items() for p in paths
         ]
         self.tbl.setRowCount(len(rows))
         for r, (path, gid, hint) in enumerate(rows):
@@ -203,9 +209,7 @@ class AudioDuplicatesPage(_Page):
                 total += Path(path).stat().st_size
             except OSError:
                 pass
-        self.status.setText(
-            f"{len(groups)} audio groups, {len(rows)} files, "
-            f"{fmt_bytes(total)} if all removed.")
+        self.status.setText(f"{len(groups)} audio groups, {len(rows)} files, " f"{fmt_bytes(total)} if all removed.")
         self.win.statusBar().showMessage(f"{len(groups)} audio-duplicate groups", 5000)
 
     def _fail(self, msg):

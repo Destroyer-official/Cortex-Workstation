@@ -78,6 +78,7 @@ import subprocess
 import sys
 import threading
 import time
+
 try:
     import winreg
 except ImportError:
@@ -92,16 +93,15 @@ from typing import Callable, Dict, List, Optional, Set, Tuple
 from cortex_unified.system_tools.restore_point import RestorePointManager
 from cortex_unified.system_tools.component_store_cleaner import ComponentStoreCleaner
 
-
 # ---------------------------------------------------------------------------
 # Data structures
 # ---------------------------------------------------------------------------
 
+
 @dataclass(frozen=True, slots=True)
 class PhaseResult:
-    """Outcome of one repair phase with changes and rollback info.
+    """Outcome of one repair phase with changes and rollback info."""
 
-    """
     phase: str
     success: bool
     changes: List[str] = field(default_factory=list)
@@ -112,9 +112,8 @@ class PhaseResult:
 
 @dataclass(frozen=True, slots=True)
 class DiagnosticReport:
-    """Whole-run diagnostics with per-section breakdown and readiness flag.
+    """Whole-run diagnostics with per-section breakdown and readiness flag."""
 
-    """
     timestamp: str
     os_version: str
     services: Dict[str, str]  # name -> status
@@ -133,14 +132,14 @@ class DiagnosticReport:
             str: Formatted string or path.
         """
         import dataclasses
+
         return json.dumps(dataclasses.asdict(self), indent=2)
 
 
 @dataclass(frozen=True, slots=True)
 class RepairResult:
-    """Aggregated repair outcome across the selected phases.
+    """Aggregated repair outcome across the selected phases."""
 
-    """
     timestamp: str
     phases: List[PhaseResult]
     preflight: DiagnosticReport
@@ -164,50 +163,93 @@ class RepairResult:
 # ---------------------------------------------------------------------------
 
 WU_SERVICES = [
-    "wuauserv",      # Windows Update
-    "bits",          # Background Intelligent Transfer Service
-    "cryptsvc",      # Cryptographic Services
-    "appidsvc",      # App Identity
+    "wuauserv",  # Windows Update
+    "bits",  # Background Intelligent Transfer Service
+    "cryptsvc",  # Cryptographic Services
+    "appidsvc",  # App Identity
     "WaaSMedicSvc",  # Windows Update Medic (24H2)
 ]
 
 WU_DLLS = [
-    "atl.dll", "urlmon.dll", "mshtml.dll", "shdocvw.dll", "browseui.dll",
-    "jscript.dll", "vbscript.dll", "scrrun.dll", "msxml.dll", "msxml3.dll",
-    "msxml6.dll", "actxprxy.dll", "softpub.dll", "wintrust.dll", "dssenh.dll",
-    "rsaenh.dll", "gpkcsp.dll", "sccbase.dll", "slbcsp.dll", "cryptdlg.dll",
-    "oleaut32.dll", "ole32.dll", "shell32.dll", "initpki.dll", "wuapi.dll",
-    "wuaueng.dll", "wuaueng1.dll", "wucltui.dll", "wups.dll", "wups2.dll",
-    "wuweb.dll", "qmgr.dll", "qmgrprxy.dll", "wucltux.dll", "muweb.dll",
-    "wuwebv.dll", "wudriver.dll",
+    "atl.dll",
+    "urlmon.dll",
+    "mshtml.dll",
+    "shdocvw.dll",
+    "browseui.dll",
+    "jscript.dll",
+    "vbscript.dll",
+    "scrrun.dll",
+    "msxml.dll",
+    "msxml3.dll",
+    "msxml6.dll",
+    "actxprxy.dll",
+    "softpub.dll",
+    "wintrust.dll",
+    "dssenh.dll",
+    "rsaenh.dll",
+    "gpkcsp.dll",
+    "sccbase.dll",
+    "slbcsp.dll",
+    "cryptdlg.dll",
+    "oleaut32.dll",
+    "ole32.dll",
+    "shell32.dll",
+    "initpki.dll",
+    "wuapi.dll",
+    "wuaueng.dll",
+    "wuaueng1.dll",
+    "wucltui.dll",
+    "wups.dll",
+    "wups2.dll",
+    "wuweb.dll",
+    "qmgr.dll",
+    "qmgrprxy.dll",
+    "wucltux.dll",
+    "muweb.dll",
+    "wuwebv.dll",
+    "wudriver.dll",
 ]
 
 MICROSOFT_TELEMETRY_DOMAINS = [
-    "vortex.data.microsoft.com", "vortex-win.data.microsoft.com",
-    "telemetry.microsoft.com", "telemetry.urs.microsoft.com",
-    "watson.telemetry.microsoft.com", "watson.live.com",
-    "settings-win.data.microsoft.com", "events.data.microsoft.com",
-    "df.telemetry.microsoft.com", "reports.wes.df.telemetry.microsoft.com",
-    "cs.wpc.v0cdn.net", "vortex-sandbox.data.microsoft.com",
-    "feedback.microsoft-hohm.com", "feedback.search.microsoft.com",
-    "feedback.windows.com", "watson.microsoft.com",
-    "ceus-win.data.microsoft.com", "pre.footprintpredict.com",
-    "spynet2.microsoft.com", "spynetalt.microsoft.com",
-    "sqm.telemetry.microsoft.com", "sqm.df.telemetry.microsoft.com",
-    "telecommand.telemetry.microsoft.com", "oca.telemetry.microsoft.com",
-    "redir.metaservices.microsoft.com", "choice.microsoft.com",
-    "choice.microsoft.com.nsatc.net", "compatexchange.cloudapp.net",
-    "v10.events.data.microsoft.com", "v20.events.data.microsoft.com",
+    "vortex.data.microsoft.com",
+    "vortex-win.data.microsoft.com",
+    "telemetry.microsoft.com",
+    "telemetry.urs.microsoft.com",
+    "watson.telemetry.microsoft.com",
+    "watson.live.com",
+    "settings-win.data.microsoft.com",
+    "events.data.microsoft.com",
+    "df.telemetry.microsoft.com",
+    "reports.wes.df.telemetry.microsoft.com",
+    "cs.wpc.v0cdn.net",
+    "vortex-sandbox.data.microsoft.com",
+    "feedback.microsoft-hohm.com",
+    "feedback.search.microsoft.com",
+    "feedback.windows.com",
+    "watson.microsoft.com",
+    "ceus-win.data.microsoft.com",
+    "pre.footprintpredict.com",
+    "spynet2.microsoft.com",
+    "spynetalt.microsoft.com",
+    "sqm.telemetry.microsoft.com",
+    "sqm.df.telemetry.microsoft.com",
+    "telecommand.telemetry.microsoft.com",
+    "oca.telemetry.microsoft.com",
+    "redir.metaservices.microsoft.com",
+    "choice.microsoft.com",
+    "choice.microsoft.com.nsatc.net",
+    "compatexchange.cloudapp.net",
+    "v10.events.data.microsoft.com",
+    "v20.events.data.microsoft.com",
 ]
 
 # ---------------------------------------------------------------------------
 # Core repair class
 # ---------------------------------------------------------------------------
 
-class WindowsUpdateRepair:
-    """Phase-based Windows Update repair orchestrator with rollback backups.
 
-    """
+class WindowsUpdateRepair:
+    """Phase-based Windows Update repair orchestrator with rollback backups."""
 
     def __init__(
         self,
@@ -260,8 +302,13 @@ class WindowsUpdateRepair:
             return 0, "", ""
         try:
             proc = subprocess.run(
-                cmd, capture_output=True, text=True, timeout=timeout,
-                encoding=sys.getdefaultencoding(), errors="replace", shell=shell
+                cmd,
+                capture_output=True,
+                text=True,
+                timeout=timeout,
+                encoding=sys.getdefaultencoding(),
+                errors="replace",
+                shell=shell,
             )
             return proc.returncode, proc.stdout, proc.stderr
         except subprocess.TimeoutExpired:
@@ -358,6 +405,7 @@ class WindowsUpdateRepair:
 
         # OS version
         import platform
+
         os_version = f"{platform.system()} {platform.release()} {platform.version()}"
 
         # Services
@@ -369,6 +417,7 @@ class WindowsUpdateRepair:
         # Disk
         try:
             import shutil as sh
+
             total, used, free = sh.disk_usage(os.environ.get("SYSTEMDRIVE", "C:\\"))
             disk_free_gb = free / (1024**3)
             if disk_free_gb < 5:
@@ -380,6 +429,7 @@ class WindowsUpdateRepair:
         connectivity = False
         try:
             import urllib.request
+
             urllib.request.urlopen("http://www.msftconnecttest.com/connecttest.txt", timeout=5)
             connectivity = True
         except Exception:
@@ -405,7 +455,7 @@ class WindowsUpdateRepair:
         rc, out, _ = self._run_ps(
             "Get-WinEvent -LogName 'System' -ProviderName 'Microsoft-Windows-WindowsUpdateClient' "
             "-MaxEvents 20 | Where-Object {$_.Level -le 3} | Select-Object TimeCreated,Id,Message | ConvertTo-Json",
-            timeout=30
+            timeout=30,
         )
         if rc == 0 and out.strip():
             try:
@@ -443,10 +493,14 @@ class WindowsUpdateRepair:
                 if self._stop_service(svc):
                     changes.append(f"Stopped {svc}")
                 else:
-                    return PhaseResult("stop_services", False, changes,
-                                       error=f"Failed to stop {svc}",
-                                       duration_seconds=time.time()-t0)
-        return PhaseResult("stop_services", True, changes, duration_seconds=time.time()-t0)
+                    return PhaseResult(
+                        "stop_services",
+                        False,
+                        changes,
+                        error=f"Failed to stop {svc}",
+                        duration_seconds=time.time() - t0,
+                    )
+        return PhaseResult("stop_services", True, changes, duration_seconds=time.time() - t0)
 
     def _phase_clear_caches(self) -> PhaseResult:
         """Timestamp-rename SoftwareDistribution, catroot2, and BITS queues for rollback.
@@ -489,7 +543,7 @@ class WindowsUpdateRepair:
             if not self.dry_run:
                 shutil.move(str(do), str(bak))
             changes.append(f"Renamed DeliveryOptimization -> {bak.name}")
-        return PhaseResult("clear_caches", True, changes, rollback, duration_seconds=time.time()-t0)
+        return PhaseResult("clear_caches", True, changes, rollback, duration_seconds=time.time() - t0)
 
     def _phase_reset_registry_policies(self) -> PhaseResult:
         """Export then clear WindowsUpdate policy keys.
@@ -533,7 +587,9 @@ class WindowsUpdateRepair:
                 changes.append(f"[DRY-RUN] Reset policies at {path}")
         success = len(errors) == 0
         err_msg = "; ".join(errors) if errors else None
-        return PhaseResult("reset_registry_policies", success, changes, rollback, error=err_msg, duration_seconds=time.time()-t0)
+        return PhaseResult(
+            "reset_registry_policies", success, changes, rollback, error=err_msg, duration_seconds=time.time() - t0
+        )
 
     def _phase_reset_security_descriptors(self) -> PhaseResult:
         """Reset BITS and wuauserv descriptors with `sc sdset`.
@@ -551,7 +607,7 @@ class WindowsUpdateRepair:
             self._run(["sc.exe", "sdset", "wuauserv", sd_wu])
         changes.append("Reset BITS security descriptor")
         changes.append("Reset wuauserv security descriptor")
-        return PhaseResult("reset_security_descriptors", True, changes, duration_seconds=time.time()-t0)
+        return PhaseResult("reset_security_descriptors", True, changes, duration_seconds=time.time() - t0)
 
     def _phase_reregister_dlls(self) -> PhaseResult:
         """Re-register update DLLs with regsvr32.
@@ -569,7 +625,7 @@ class WindowsUpdateRepair:
                 if not self.dry_run:
                     self._run(["regsvr32.exe", "/s", str(dll_path)])
                 changes.append(f"Re-registered {dll}")
-        return PhaseResult("reregister_dlls", True, changes, duration_seconds=time.time()-t0)
+        return PhaseResult("reregister_dlls", True, changes, duration_seconds=time.time() - t0)
 
     def _phase_reset_network(self) -> PhaseResult:
         """Reset Winsock and proxy, flush DNS, and strip telemetry blocks from hosts.
@@ -598,7 +654,7 @@ class WindowsUpdateRepair:
                     shutil.copy2(hosts, bak)
                     hosts.write_text("\n".join(filtered), encoding="utf-8")
                     changes.append(f"Cleaned {len(lines)-len(filtered)} telemetry entries from hosts file")
-        return PhaseResult("reset_network", True, changes, duration_seconds=time.time()-t0)
+        return PhaseResult("reset_network", True, changes, duration_seconds=time.time() - t0)
 
     def _phase_dism_repair(self) -> PhaseResult:
         """Run DISM ScanHealth, then RestoreHealth when degraded.
@@ -616,7 +672,7 @@ class WindowsUpdateRepair:
             # RestoreHealth
             rc, out, _ = self._run(["Dism.exe", "/Online", "/Cleanup-Image", "/RestoreHealth"], timeout=1800)
             changes.append(f"DISM RestoreHealth: {'OK' if rc==0 else 'Failed'}")
-        return PhaseResult("dism_repair", rc==0, changes, duration_seconds=time.time()-t0)
+        return PhaseResult("dism_repair", rc == 0, changes, duration_seconds=time.time() - t0)
 
     def _phase_sfc(self) -> PhaseResult:
         """Run `sfc /scannow` with an extended timeout.
@@ -628,7 +684,7 @@ class WindowsUpdateRepair:
         t0 = time.time()
         rc, out, _ = self._run(["sfc.exe", "/scannow"], timeout=1800)
         changes = [out.strip()[:200]] if out else ["SFC completed"]
-        return PhaseResult("sfc", rc==0, changes, duration_seconds=time.time()-t0)
+        return PhaseResult("sfc", rc == 0, changes, duration_seconds=time.time() - t0)
 
     def _phase_component_store(self) -> PhaseResult:
         """Analyze and optionally cleanup component store.
@@ -644,7 +700,7 @@ class WindowsUpdateRepair:
         if info.cleanup_recommended:
             result = self._component_cleaner.cleanup()
             changes.append(f"Cleanup: reclaimed {result.reclaimed_bytes/1024**2:.1f} MB")
-        return PhaseResult("component_store", True, changes, duration_seconds=time.time()-t0)
+        return PhaseResult("component_store", True, changes, duration_seconds=time.time() - t0)
 
     def _phase_start_services(self) -> PhaseResult:
         """Restart update services and set auto start.
@@ -663,7 +719,7 @@ class WindowsUpdateRepair:
         # Ensure auto startup
         for svc in ["wuauserv", "bits", "DcomLaunch"]:
             self._run(["sc.exe", "config", svc, "start=", "auto"])
-        return PhaseResult("start_services", True, changes, duration_seconds=time.time()-t0)
+        return PhaseResult("start_services", True, changes, duration_seconds=time.time() - t0)
 
     def _phase_verify(self) -> PhaseResult:
         """Verify Microsoft reachability and trigger update detection.
@@ -677,6 +733,7 @@ class WindowsUpdateRepair:
         # Quick connectivity test
         try:
             import urllib.request
+
             urllib.request.urlopen("https://www.microsoft.com", timeout=10)
             changes.append("Microsoft.com reachable")
         except Exception as exc:
@@ -684,7 +741,7 @@ class WindowsUpdateRepair:
         # Trigger WU check
         self._run(["wuauclt.exe", "/detectnow"])
         changes.append("Triggered Windows Update detection")
-        return PhaseResult("verify", True, changes, duration_seconds=time.time()-t0)
+        return PhaseResult("verify", True, changes, duration_seconds=time.time() - t0)
 
     # -- orchestration
 
@@ -757,10 +814,9 @@ class WindowsUpdateRepair:
         Returns:
             RepairResult: Result of the operation.
         """
-        return self.repair_all([
-            "stop_services", "clear_caches", "reregister_dlls",
-            "reset_network", "start_services", "verify"
-        ])
+        return self.repair_all(
+            ["stop_services", "clear_caches", "reregister_dlls", "reset_network", "start_services", "verify"]
+        )
 
 
 __all__ = [

@@ -21,6 +21,7 @@ IS_WINDOWS = platform.system() == "Windows"
 
 class TestRecommendation:
     """Group testrecommendation tests covering hdd recommends defrag; ssd recommends trim; nvme recommends trim; unknown recommends none."""
+
     def test_hdd_recommends_defrag(self):
         """Verify hdd recommends defrag via DriveOptimizer._recommend."""
         op, note = DriveOptimizer._recommend(StorageKind.HDD)
@@ -43,6 +44,7 @@ class TestRecommendation:
 
 class TestSafety:
     """Group testsafety tests covering is supported matches platform; list drives returns list; refuses defrag on ssd; non windows returns unsupported."""
+
     def test_is_supported_matches_platform(self):
         """Verify is supported matches platform via DriveOptimizer.is_supported."""
         assert DriveOptimizer.is_supported() == IS_WINDOWS
@@ -59,14 +61,14 @@ class TestSafety:
         """
         if not IS_WINDOWS:
             import pytest
+
             pytest.skip("Windows-only path")
 
         from cortex_unified.system_tools import drive_optimizer as mod
         from cortex_unified.engine.storage import StorageInfo
 
         # Force the probe to report SSD regardless of the real machine.
-        monkeypatch.setattr(mod, "detect_storage",
-                            lambda p: StorageInfo(StorageKind.SSD))
+        monkeypatch.setattr(mod, "detect_storage", lambda p: StorageInfo(StorageKind.SSD))
         result = DriveOptimizer().optimize("C", OptimizeOp.DEFRAG)
         assert isinstance(result, OptimizeResult)
         assert result.success is False
@@ -77,6 +79,7 @@ class TestSafety:
         """Verify non windows returns unsupported via pytest.skip, DriveOptimizer, optimize."""
         if IS_WINDOWS:
             import pytest
+
             pytest.skip("covered elsewhere on Windows")
         r = DriveOptimizer().optimize("C")
         assert r.success is False

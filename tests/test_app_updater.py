@@ -23,6 +23,7 @@ SAMPLE = (
 
 class TestParser:
     """Group testparser tests covering parses all rows; fields extracted; handles unknown version; skips spinner and footer; empty or garbage returns empty; to dict."""
+
     def test_parses_all_rows(self):
         """Verify parses all rows via AppUpdater.parse_upgrade_output."""
         apps = AppUpdater.parse_upgrade_output(SAMPLE)
@@ -64,6 +65,7 @@ class TestParser:
 
 class TestCapability:
     """Group testcapability tests covering is available returns bool; upgrade requires id."""
+
     def test_is_available_returns_bool(self):
         """Verify is available returns bool via AppUpdater.is_available."""
         assert isinstance(AppUpdater.is_available(), bool)

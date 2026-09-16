@@ -33,6 +33,7 @@ IS_WINDOWS = sys.platform == "win32"
 
 class _ProcessScanWorker(QObject):
     """Background worker (_ProcessScanWorker) performing ProcessScanWorker. Signals finished, failed report status. Its run() step calls ProcessAnalyzer, analyzer.list_processes, emit, str."""
+
     finished = Signal(list)
     failed = Signal(str)
 
@@ -43,6 +44,7 @@ class _ProcessScanWorker(QObject):
         """
         try:
             from cortex_unified.system_tools.process_analyzer import ProcessAnalyzer
+
             analyzer = ProcessAnalyzer()
             procs = analyzer.list_processes()
             self.finished.emit(procs)
@@ -62,12 +64,14 @@ class ProcessStudioPage(_Page):
             win: Parent window or shell controller instance.
         """
         super().__init__(win)
-        self.v.addWidget(title_block(
-            "Advanced Process & Threat Studio",
-            "Real-time Windows process inspection. Details memory allocation, CPU time, "
-            "security session ownership, and associated top-level windows. "
-            "Allows safe process termination with protected system process guarding.",
-        ))
+        self.v.addWidget(
+            title_block(
+                "Advanced Process & Threat Studio",
+                "Real-time Windows process inspection. Details memory allocation, CPU time, "
+                "security session ownership, and associated top-level windows. "
+                "Allows safe process termination with protected system process guarding.",
+            )
+        )
 
         self._all_procs = []
 
@@ -100,9 +104,9 @@ class ProcessStudioPage(_Page):
 
         # Process Table
         self.tbl = QTableWidget(0, 6)
-        self.tbl.setHorizontalHeaderLabels([
-            "PID", "Image Name", "Memory Usage", "User Account", "CPU Time", "Window Title"
-        ])
+        self.tbl.setHorizontalHeaderLabels(
+            ["PID", "Image Name", "Memory Usage", "User Account", "CPU Time", "Window Title"]
+        )
         self.tbl.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.ResizeToContents)
         self.tbl.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeMode.ResizeToContents)
         self.tbl.horizontalHeader().setSectionResizeMode(2, QHeaderView.ResizeMode.ResizeToContents)
@@ -156,7 +160,8 @@ class ProcessStudioPage(_Page):
             filtered = self._all_procs
         else:
             filtered = [
-                p for p in self._all_procs
+                p
+                for p in self._all_procs
                 if query in str(p.get("pid", "")).lower()
                 or query in str(p.get("name", "")).lower()
                 or query in str(p.get("username", "")).lower()
@@ -193,17 +198,28 @@ class ProcessStudioPage(_Page):
         name_str = self.tbl.item(sel[0].row(), 1).text()
 
         # OS protection check
-        protected = {"system", "registry", "smss.exe", "csrss.exe", "wininit.exe", "services.exe", "lsass.exe", "explorer.exe"}
+        protected = {
+            "system",
+            "registry",
+            "smss.exe",
+            "csrss.exe",
+            "wininit.exe",
+            "services.exe",
+            "lsass.exe",
+            "explorer.exe",
+        }
         if name_str.lower() in protected:
             QMessageBox.critical(
-                self, "Action Denied",
+                self,
+                "Action Denied",
                 f"Cannot terminate protected Windows OS component '{name_str}'. "
-                "Terminating this process would cause an immediate Blue Screen of Death (BSOD)."
+                "Terminating this process would cause an immediate Blue Screen of Death (BSOD).",
             )
             return
 
         ans = QMessageBox.question(
-            self, "End Task",
+            self,
+            "End Task",
             f"Are you sure you want to terminate '{name_str}' (PID: {pid_str})?",
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
             QMessageBox.StandardButton.No,
@@ -212,6 +228,7 @@ class ProcessStudioPage(_Page):
             return
 
         from cortex_unified.core.proc import kill_process_tree
+
         try:
             kill_process_tree(int(pid_str))
             self.win.statusBar().showMessage(f"Terminated process {name_str} (PID: {pid_str})", 5000)

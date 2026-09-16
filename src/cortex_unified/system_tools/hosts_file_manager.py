@@ -21,6 +21,7 @@ from typing import Dict, List, Optional, Tuple
 @dataclass
 class HostEntry:
     """Host Entry data container."""
+
     ip: str
     hostname: str
     is_enabled: bool
@@ -50,6 +51,7 @@ ANTI_TELEMETRY_BLOCKLIST: List[str] = [
 @dataclass
 class HostsOperationResult:
     """Hosts Operation Result data container."""
+
     success: bool
     message: str
     backup_path: Optional[str] = None
@@ -96,13 +98,15 @@ class HostsFileManager:
                     if len(tokens) >= 2:
                         ip = tokens[0]
                         for host in tokens[1:]:
-                            entries.append(HostEntry(
-                                ip=ip,
-                                hostname=host,
-                                is_enabled=is_enabled,
-                                comment=comment,
-                                raw_line=line.rstrip("\r\n"),
-                            ))
+                            entries.append(
+                                HostEntry(
+                                    ip=ip,
+                                    hostname=host,
+                                    is_enabled=is_enabled,
+                                    comment=comment,
+                                    raw_line=line.rstrip("\r\n"),
+                                )
+                            )
         except Exception:
             pass
 
@@ -165,12 +169,14 @@ class HostsFileManager:
         added = 0
         for block_domain in ANTI_TELEMETRY_BLOCKLIST:
             if block_domain.lower() not in existing_hosts:
-                current_entries.append(HostEntry(
-                    ip="0.0.0.0",
-                    hostname=block_domain,
-                    is_enabled=True,
-                    comment="Cortex Anti-Telemetry Shield",
-                ))
+                current_entries.append(
+                    HostEntry(
+                        ip="0.0.0.0",
+                        hostname=block_domain,
+                        is_enabled=True,
+                        comment="Cortex Anti-Telemetry Shield",
+                    )
+                )
                 added += 1
 
         if added == 0:

@@ -93,26 +93,26 @@ _NBNS_PORT = 137
 #: hardware people actually want identified.
 _MDNS_SERVICES = (
     "_services._dns-sd._udp.local",
-    "_googlecast._tcp.local",      # Chromecast / Google TV / Nest Hub
+    "_googlecast._tcp.local",  # Chromecast / Google TV / Nest Hub
     "_androidtvremote2._tcp.local",  # Android TV / Google TV
-    "_adb-tls-connect._tcp.local",   # Android wireless debugging endpoint
-    "_adb-tls-pairing._tcp.local",   # Android wireless-debug pairing
-    "_airplay._tcp.local",         # Apple TV, AirPlay speakers, some TVs
-    "_raop._tcp.local",            # AirPlay audio
+    "_adb-tls-connect._tcp.local",  # Android wireless debugging endpoint
+    "_adb-tls-pairing._tcp.local",  # Android wireless-debug pairing
+    "_airplay._tcp.local",  # Apple TV, AirPlay speakers, some TVs
+    "_raop._tcp.local",  # AirPlay audio
     "_spotify-connect._tcp.local",
-    "_esphomelib._tcp.local",      # ESPHome (very common on ESP32)
-    "_arduino._tcp.local",         # Arduino/ESP OTA
-    "_http._tcp.local",            # generic web UI (most IoT boards)
+    "_esphomelib._tcp.local",  # ESPHome (very common on ESP32)
+    "_arduino._tcp.local",  # Arduino/ESP OTA
+    "_http._tcp.local",  # generic web UI (most IoT boards)
     "_printer._tcp.local",
     "_ipp._tcp.local",
     "_ipps._tcp.local",
     "_smb._tcp.local",
-    "_workstation._tcp.local",     # Linux/avahi hosts
+    "_workstation._tcp.local",  # Linux/avahi hosts
     "_device-info._tcp.local",
     "_homekit._tcp.local",
-    "_hap._tcp.local",             # HomeKit accessories
-    "_miio._udp.local",            # Xiaomi devices
-    "_amzn-wplay._tcp.local",      # Fire TV
+    "_hap._tcp.local",  # HomeKit accessories
+    "_miio._udp.local",  # Xiaomi devices
+    "_amzn-wplay._tcp.local",  # Fire TV
     "_sonos._tcp.local",
 )
 
@@ -148,36 +148,82 @@ _VENDOR_KIND_HINTS: tuple[tuple[tuple[str, ...], str], ...] = (
     (("espressif", "esp32", "esp8266"), "IoT board (ESP/Arduino)"),
     (("raspberry",), "Raspberry Pi"),
     (("hikvision", "dahua", "reolink", "wyze", "axis communications"), "Camera"),
-    (("tuya", "shelly", "sonoff", "itead", "tp-link smart", "broadlink"),
-     "Smart home device"),
+    (("tuya", "shelly", "sonoff", "itead", "tp-link smart", "broadlink"), "Smart home device"),
     (("sonos", "bose", "denon", "yamaha", "harman", "marshall"), "Speaker / audio"),
-    (("hewlett", "canon", "epson", "brother", "lexmark", "kyocera", "xerox"),
-     "Printer"),
+    (("hewlett", "canon", "epson", "brother", "lexmark", "kyocera", "xerox"), "Printer"),
     (("apple",), "Apple device"),
     (("chromecast", "google"), "TV / streaming device"),
-    (("roku", "amazon", "nvidia shield", "skyworth", "tcl", "hisense",
-      "vestel", "philips tv"), "TV / streaming device"),
-    (("samsung", "xiaomi", "redmi", "oneplus", "vivo mobile", "oppo",
-      "realme", "huawei", "honor", "motorola", "nothing technology"),
-     "Phone / tablet"),
-    (("intel corporate", "micro-star", "asustek", "gigabyte", "dell",
-      "lenovo", "hewlett packard", "wistron", "compal", "quanta", "clevo",
-      "lcfc", "pegatron"), "Computer"),
-    (("routerboard", "mikrotik", "ubiquiti", "netgear", "d-link", "zyxel",
-      "trendnet", "aruba", "cisco", "juniper", "actiontec", "servercom",
-      "arris", "technicolor", "sagemcom", "zte", "fiberhome"),
-     "Network equipment"),
-    (("vmware", "virtualbox", "pcs systemtechnik", "qemu", "parallels",
-      "docker", "microsoft corporation"), "Virtual machine / host"),
+    (
+        ("roku", "amazon", "nvidia shield", "skyworth", "tcl", "hisense", "vestel", "philips tv"),
+        "TV / streaming device",
+    ),
+    (
+        (
+            "samsung",
+            "xiaomi",
+            "redmi",
+            "oneplus",
+            "vivo mobile",
+            "oppo",
+            "realme",
+            "huawei",
+            "honor",
+            "motorola",
+            "nothing technology",
+        ),
+        "Phone / tablet",
+    ),
+    (
+        (
+            "intel corporate",
+            "micro-star",
+            "asustek",
+            "gigabyte",
+            "dell",
+            "lenovo",
+            "hewlett packard",
+            "wistron",
+            "compal",
+            "quanta",
+            "clevo",
+            "lcfc",
+            "pegatron",
+        ),
+        "Computer",
+    ),
+    (
+        (
+            "routerboard",
+            "mikrotik",
+            "ubiquiti",
+            "netgear",
+            "d-link",
+            "zyxel",
+            "trendnet",
+            "aruba",
+            "cisco",
+            "juniper",
+            "actiontec",
+            "servercom",
+            "arris",
+            "technicolor",
+            "sagemcom",
+            "zte",
+            "fiberhome",
+        ),
+        "Network equipment",
+    ),
+    (
+        ("vmware", "virtualbox", "pcs systemtechnik", "qemu", "parallels", "docker", "microsoft corporation"),
+        "Virtual machine / host",
+    ),
     (("sony", "nintendo", "valve"), "Console / media device"),
 )
 
 
 @dataclass
 class Device:
-    """Merged LAN device record with evidence of which methods saw it.
-
-    """
+    """Merged LAN device record with evidence of which methods saw it."""
 
     ip: str
     mac: str = ""
@@ -247,8 +293,7 @@ class Device:
             bool: True if the operation succeeded, False otherwise.
         """
         stripped = text.replace("-", "")
-        return len(stripped) >= 24 and all(
-            c in "0123456789abcdefABCDEF" for c in stripped)
+        return len(stripped) >= 24 and all(c in "0123456789abcdefABCDEF" for c in stripped)
 
     @property
     def kind(self) -> str:
@@ -267,11 +312,18 @@ class Device:
 
         svc = " ".join(self.services)
         # Vendor + self-reported model text, searched together as one haystack.
-        text = " ".join(filter(None, (
-            self.vendor, self.hostname,
-            self.services.get("model", ""), self.services.get("friendly", ""),
-            self.services.get("upnp", ""),
-        ))).lower()
+        text = " ".join(
+            filter(
+                None,
+                (
+                    self.vendor,
+                    self.hostname,
+                    self.services.get("model", ""),
+                    self.services.get("friendly", ""),
+                    self.services.get("upnp", ""),
+                ),
+            )
+        ).lower()
 
         if "_googlecast" in svc or "_androidtvremote2" in svc or 8009 in self.open_ports:
             return "TV / streaming device"
@@ -342,13 +394,21 @@ class Device:
             if port not in self.open_ports:
                 self.open_ports.append(port)
         observed = {
-            (getattr(item, "ip", ""), getattr(item, "port", 0),
-             getattr(item, "transport", ""), getattr(item, "name", ""))
+            (
+                getattr(item, "ip", ""),
+                getattr(item, "port", 0),
+                getattr(item, "transport", ""),
+                getattr(item, "name", ""),
+            )
             for item in self.service_observations
         }
         for item in other.service_observations:
-            key = (getattr(item, "ip", ""), getattr(item, "port", 0),
-                   getattr(item, "transport", ""), getattr(item, "name", ""))
+            key = (
+                getattr(item, "ip", ""),
+                getattr(item, "port", 0),
+                getattr(item, "transport", ""),
+                getattr(item, "name", ""),
+            )
             if key not in observed:
                 self.service_observations.append(item)
                 observed.add(key)
@@ -380,9 +440,11 @@ class Device:
                 item.to_dict() if hasattr(item, "to_dict") else str(item)
                 for item in sorted(
                     self.service_observations,
-                    key=lambda item: (getattr(item, "port", 0),
-                                      getattr(item, "transport", ""),
-                                      getattr(item, "name", "")),
+                    key=lambda item: (
+                        getattr(item, "port", 0),
+                        getattr(item, "transport", ""),
+                        getattr(item, "name", ""),
+                    ),
                 )
             ],
             "fingerprint": (
@@ -400,9 +462,7 @@ class Device:
 
 @dataclass(slots=True)
 class Interface:
-    """Local interface address with network computation.
-
-    """
+    """Local interface address with network computation."""
 
     name: str
     ip: str
@@ -424,9 +484,7 @@ class Interface:
 
 @dataclass
 class DiscoveryResult:
-    """Aggregated LAN discovery outcome with devices, notes, and audit findings.
-
-    """
+    """Aggregated LAN discovery outcome with devices, notes, and audit findings."""
 
     devices: list[Device] = field(default_factory=list)
     networks: list[str] = field(default_factory=list)
@@ -454,10 +512,7 @@ class DiscoveryResult:
             "cancelled": self.cancelled,
             "device_count": len(self.devices),
             "audit_profile": self.audit_profile,
-            "findings": [
-                item.to_dict() if hasattr(item, "to_dict") else str(item)
-                for item in self.findings
-            ],
+            "findings": [item.to_dict() if hasattr(item, "to_dict") else str(item) for item in self.findings],
             "wan_status": (
                 self.wan_status.to_dict()
                 if self.wan_status is not None and hasattr(self.wan_status, "to_dict")
@@ -465,17 +520,14 @@ class DiscoveryResult:
             ),
             "inventory_changes": (
                 self.inventory_changes.to_dict()
-                if self.inventory_changes is not None
-                and hasattr(self.inventory_changes, "to_dict")
+                if self.inventory_changes is not None and hasattr(self.inventory_changes, "to_dict")
                 else None
             ),
         }
 
 
 class NetworkDiscovery:
-    """Active private-LAN discovery and defensive audit orchestrator.
-
-    """
+    """Active private-LAN discovery and defensive audit orchestrator."""
 
     def __init__(self, timeout_s: float = 4.0, workers: int = 128) -> None:
         """Initialize Network Discovery.
@@ -525,8 +577,8 @@ class NetworkDiscovery:
             from cortex_unified.system_tools.vulnerability_catalog import (
                 VulnerabilityCatalog,
             )
-            vulnerability_catalog = VulnerabilityCatalog.load(
-                advisory_catalog_path)
+
+            vulnerability_catalog = VulnerabilityCatalog.load(advisory_catalog_path)
 
         # Use the cached IEEE registry if it has ever been downloaded, so
         # vendor names are authoritative without the user doing anything.
@@ -553,9 +605,7 @@ class NetworkDiscovery:
 
         interfaces = self.local_interfaces()
         if not interfaces:
-            result.notes.append(
-                "No active private network interface was found, so there is "
-                "nothing to scan.")
+            result.notes.append("No active private network interface was found, so there is " "nothing to scan.")
             result.duration_seconds = time.perf_counter() - started
             return result
 
@@ -564,20 +614,15 @@ class NetworkDiscovery:
             parse_allowed_networks,
         )
 
-        interface_networks = tuple(
-            net for net in (iface.network for iface in interfaces)
-            if net is not None)
+        interface_networks = tuple(net for net in (iface.network for iface in interfaces) if net is not None)
         requested = parse_allowed_networks(requested_networks or ())
         extra_ports = normalize_custom_ports(custom_ports)
         if requested:
-            outside = [
-                net for net in requested
-                if not any(net.subnet_of(local) for local in interface_networks)
-            ]
+            outside = [net for net in requested if not any(net.subnet_of(local) for local in interface_networks)]
             if outside:
                 raise ValueError(
-                    "custom scope must be contained by an active local "
-                    f"interface: {', '.join(map(str, outside))}")
+                    "custom scope must be contained by an active local " f"interface: {', '.join(map(str, outside))}"
+                )
             selected_networks = requested
         else:
             selected_networks = interface_networks
@@ -585,15 +630,13 @@ class NetworkDiscovery:
         targets: list[ipaddress.IPv4Network] = []
         selected_host_count = 0
         for net in selected_networks:
-            host_count = (
-                net.num_addresses if net.prefixlen >= 31
-                else net.num_addresses - 2)
-            if (host_count > MAX_SWEEP_HOSTS
-                    or selected_host_count + host_count > MAX_SWEEP_HOSTS):
+            host_count = net.num_addresses if net.prefixlen >= 31 else net.num_addresses - 2
+            if host_count > MAX_SWEEP_HOSTS or selected_host_count + host_count > MAX_SWEEP_HOSTS:
                 result.notes.append(
                     f"{net} covers {net.num_addresses:,} addresses - too "
                     "large for the bounded host sweep, so only passive and "
-                    "multicast discovery ran for it.")
+                    "multicast discovery ran for it."
+                )
                 continue
             targets.append(net)
             selected_host_count += host_count
@@ -624,8 +667,10 @@ class NetworkDiscovery:
             for round_no in range(1, total_rounds + 1):
                 if _cancelled():
                     break
-                _say(f"Probing {len(hosts):,} addresses to force ARP replies "
-                     f"(pass {round_no} of {total_rounds})\u2026")
+                _say(
+                    f"Probing {len(hosts):,} addresses to force ARP replies "
+                    f"(pass {round_no} of {total_rounds})\u2026"
+                )
                 self._arp_sweep(hosts, cancel_event)
                 if not _cancelled():
                     self._merge(devices, self._read_neighbors())
@@ -651,8 +696,7 @@ class NetworkDiscovery:
         # multicast announcements from adjacent local subnets must not leak in.
         if requested:
             devices = {
-                ip: device for ip, device in devices.items()
-                if any(ipaddress.IPv4Address(ip) in net for net in targets)
+                ip: device for ip, device in devices.items() if any(ipaddress.IPv4Address(ip) in net for net in targets)
             }
 
         # 4. Fill in names and classification for what we found.
@@ -681,8 +725,7 @@ class NetworkDiscovery:
             device.is_self = ip in self_ips
             device.fingerprint = fingerprint_device(device)
 
-        result.devices = sorted(
-            devices.values(), key=lambda d: self._ip_sort_key(d.ip))
+        result.devices = sorted(devices.values(), key=lambda d: self._ip_sort_key(d.ip))
         result.cancelled = _cancelled()
 
         if not result.cancelled:
@@ -693,22 +736,21 @@ class NetworkDiscovery:
                 progress=progress,
                 cancel_event=cancel_event,
             )
-            result.findings = audit_devices(
-                result.devices, vulnerability_catalog=vulnerability_catalog)
+            result.findings = audit_devices(result.devices, vulnerability_catalog=vulnerability_catalog)
             result.findings.extend(audit_wan(result.wan_status))
             result.findings.sort(
                 key=lambda item: (
-                    {"critical": 0, "high": 1, "medium": 2,
-                     "low": 3, "info": 4}.get(item.severity, 5),
-                    item.device_ip, item.code,
+                    {"critical": 0, "high": 1, "medium": 2, "low": 3, "info": 4}.get(item.severity, 5),
+                    item.device_ip,
+                    item.code,
                 )
             )
 
         if record_history and not result.cancelled:
             try:
                 from cortex_unified.system_tools.network_inventory import NetworkInventory
-                result.inventory_changes = NetworkInventory().update(
-                    result.devices, result.findings)
+
+                result.inventory_changes = NetworkInventory().update(result.devices, result.findings)
             except (OSError, ValueError, RuntimeError) as exc:
                 result.notes.append(f"Network history could not be updated: {exc}")
 
@@ -747,8 +789,7 @@ class NetworkDiscovery:
                     # Only private LANs: never probe public address space.
                     if ip.is_loopback or ip.is_link_local or not ip.is_private:
                         continue
-                    out.append(Interface(name, addr.address,
-                                         addr.netmask or "255.255.255.0"))
+                    out.append(Interface(name, addr.address, addr.netmask or "255.255.255.0"))
         except Exception as exc:  # noqa: BLE001 - enumeration must never crash a scan
             _LOG.debug("interface enumeration failed: %s", exc)
         return out
@@ -773,6 +814,7 @@ class NetworkDiscovery:
         macs: dict[str, str] = {}
         try:
             import psutil
+
             for name, addrs in psutil.net_if_addrs().items():
                 for addr in addrs:
                     # AF_LINK is the MAC family; its value differs per platform.
@@ -806,15 +848,15 @@ class NetworkDiscovery:
         if _IS_WINDOWS:
             out = self._run_ps(
                 "Get-NetRoute -DestinationPrefix '0.0.0.0/0' -ErrorAction "
-                "SilentlyContinue | Select-Object -ExpandProperty NextHop")
+                "SilentlyContinue | Select-Object -ExpandProperty NextHop"
+            )
             for line in (out or "").splitlines():
                 candidate = line.strip()
                 if self._is_ipv4(candidate) and candidate != "0.0.0.0":
                     gateways.add(candidate)
         else:
             try:
-                res = _proc.run(["ip", "route", "show", "default"],
-                                text=True, timeout=10)
+                res = _proc.run(["ip", "route", "show", "default"], text=True, timeout=10)
                 for line in (res.stdout or "").splitlines():
                     parts = line.split()
                     if "via" in parts:
@@ -857,7 +899,8 @@ class NetworkDiscovery:
             "$_.LinkLayerAddress -ne '00-00-00-00-00-00' -and "
             "$_.State -in 'Reachable','Stale','Permanent','Delay','Probe' } "
             "| ForEach-Object { $_.IPAddress + '|' + $_.LinkLayerAddress + "
-            "'|' + $_.State }")
+            "'|' + $_.State }"
+        )
         devices: list[Device] = []
         for line in (out or "").splitlines():
             parts = line.strip().split("|")
@@ -866,8 +909,7 @@ class NetworkDiscovery:
             ip, mac, state = parts[0].strip(), oui.normalize(parts[1]), parts[2].strip()
             if not self._usable_host(ip, mac):
                 continue
-            devices.append(Device(ip=ip, mac=mac, state=state.lower(),
-                                  sources={"neighbor"}))
+            devices.append(Device(ip=ip, mac=mac, state=state.lower(), sources={"neighbor"}))
         return devices
 
     def _read_arp_command(self) -> list[Device]:
@@ -878,17 +920,14 @@ class NetworkDiscovery:
             list[Device]: List of processed items or identifiers.
         """
         try:
-            res = _proc.run(["arp", "-a"], text=True, timeout=20,
-                            creationflags=_NO_WINDOW)
+            res = _proc.run(["arp", "-a"], text=True, timeout=20, creationflags=_NO_WINDOW)
             text = res.stdout or ""
         except Exception as exc:  # noqa: BLE001
             _LOG.debug("arp -a failed: %s", exc)
             return []
 
         devices: list[Device] = []
-        pattern = re.compile(
-            r"(\d{1,3}(?:\.\d{1,3}){3}).*?"
-            r"([0-9a-fA-F]{2}(?:[-:][0-9a-fA-F]{2}){5})")
+        pattern = re.compile(r"(\d{1,3}(?:\.\d{1,3}){3}).*?" r"([0-9a-fA-F]{2}(?:[-:][0-9a-fA-F]{2}){5})")
         for line in text.splitlines():
             match = pattern.search(line)
             if not match:
@@ -897,8 +936,7 @@ class NetworkDiscovery:
             if not self._usable_host(ip, mac):
                 continue
             state = "static" if "static" in line.lower() else "dynamic"
-            devices.append(Device(ip=ip, mac=mac, state=state,
-                                  sources={"neighbor"}))
+            devices.append(Device(ip=ip, mac=mac, state=state, sources={"neighbor"}))
         return devices
 
     @staticmethod
@@ -918,9 +956,7 @@ class NetworkDiscovery:
             except OSError:
                 continue
 
-    def _arp_sweep(self, hosts: Iterable[str],
-                   cancel_event: threading.Event | None,
-                   settle_s: float = 2.0) -> None:
+    def _arp_sweep(self, hosts: Iterable[str], cancel_event: threading.Event | None, settle_s: float = 2.0) -> None:
         """Send one cheap UDP datagram per host to force ARP resolution.
 
         We deliberately ignore whether anything answers on the port: the point
@@ -1049,7 +1085,9 @@ class NetworkDiscovery:
         try:
             res = _proc.run(
                 ["powershell", "-NoProfile", "-NonInteractive", "-Command", script],
-                text=True, timeout=timeout, creationflags=_NO_WINDOW,
+                text=True,
+                timeout=timeout,
+                creationflags=_NO_WINDOW,
             )
             return res.stdout
         except (_proc.ProcessCancelled, OSError, subprocess.SubprocessError) as exc:
@@ -1082,8 +1120,7 @@ class NetworkDiscovery:
                 # essential on a PC with Wi-Fi + Ethernet + virtual adapters.
                 sock.bind((iface.ip, 0))
                 sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, 2)
-                sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_IF,
-                                socket.inet_aton(iface.ip))
+                sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_IF, socket.inet_aton(iface.ip))
                 sock.settimeout(0.4)
 
                 for query in queries:
@@ -1141,8 +1178,7 @@ class NetworkDiscovery:
                     target.hostname = name[: -len(".local")]
                 found[value] = target
             elif rtype in (12, 33):  # PTR / SRV -> service instance names
-                service, instance = self._split_service_instance(
-                    value if isinstance(value, str) else name)
+                service, instance = self._split_service_instance(value if isinstance(value, str) else name)
                 if service:
                     device.services.setdefault(service, instance)
             elif rtype == 16 and isinstance(value, str) and value:
@@ -1201,10 +1237,7 @@ class NetworkDiscovery:
             bytes: Result of the operation.
         """
         header = struct.pack(">HHHHHH", 0, 0, 1, 0, 0, 0)
-        parts = b"".join(
-            bytes([len(label)]) + label.encode("ascii", "ignore")
-            for label in name.split(".") if label
-        )
+        parts = b"".join(bytes([len(label)]) + label.encode("ascii", "ignore") for label in name.split(".") if label)
         return header + parts + b"\x00" + struct.pack(">HH", qtype, 1)
 
     @classmethod
@@ -1229,23 +1262,21 @@ class NetworkDiscovery:
             name, offset = cls._read_name(data, offset)
             if offset + 10 > len(data):
                 break
-            rtype, _rclass, _ttl, rdlength = struct.unpack(
-                ">HHIH", data[offset:offset + 10])
+            rtype, _rclass, _ttl, rdlength = struct.unpack(">HHIH", data[offset : offset + 10])
             offset += 10
-            rdata = data[offset:offset + rdlength]
+            rdata = data[offset : offset + rdlength]
             value: Any = None
-            if rtype == 1 and rdlength == 4:                     # A
+            if rtype == 1 and rdlength == 4:  # A
                 value = socket.inet_ntoa(rdata)
-            elif rtype in (12, 5):                               # PTR / CNAME
+            elif rtype in (12, 5):  # PTR / CNAME
                 value, _ = cls._read_name(data, offset)
-            elif rtype == 33 and rdlength > 6:                   # SRV
+            elif rtype == 33 and rdlength > 6:  # SRV
                 value, _ = cls._read_name(data, offset + 6)
-            elif rtype == 16:                                    # TXT
+            elif rtype == 16:  # TXT
                 chunks, pos = [], 0
                 while pos < len(rdata):
                     length = rdata[pos]
-                    chunks.append(rdata[pos + 1:pos + 1 + length]
-                                  .decode("utf-8", "replace"))
+                    chunks.append(rdata[pos + 1 : pos + 1 + length].decode("utf-8", "replace"))
                     pos += 1 + length
                 value = ";".join(chunks)
             records.append((name, rtype, value))
@@ -1273,7 +1304,7 @@ class NetworkDiscovery:
             if length == 0:
                 offset += 1
                 break
-            if length & 0xC0 == 0xC0:                 # compression pointer
+            if length & 0xC0 == 0xC0:  # compression pointer
                 if offset + 1 >= len(data):
                     break
                 pointer = ((length & 0x3F) << 8) | data[offset + 1]
@@ -1282,11 +1313,11 @@ class NetworkDiscovery:
                     jumped = True
                 offset = pointer
                 hops += 1
-                if hops > 20:                          # malformed/looping packet
+                if hops > 20:  # malformed/looping packet
                     break
                 continue
             offset += 1
-            labels.append(data[offset:offset + length].decode("utf-8", "replace"))
+            labels.append(data[offset : offset + length].decode("utf-8", "replace"))
             offset += length
         return ".".join(labels), (original if jumped else offset)
 
@@ -1367,7 +1398,7 @@ class NetworkDiscovery:
         found: dict[str, Device] = {}
         probe = (
             '<?xml version="1.0" encoding="utf-8"?>'
-            '<soap:Envelope '
+            "<soap:Envelope "
             'xmlns:soap="http://www.w3.org/2003/05/soap-envelope" '
             'xmlns:wsa="http://schemas.xmlsoap.org/ws/2004/08/addressing" '
             'xmlns:wsd="http://schemas.xmlsoap.org/ws/2005/04/discovery">'
@@ -1434,6 +1465,7 @@ class NetworkDiscovery:
             str: Formatted string or path.
         """
         import uuid
+
         return str(uuid.uuid4())
 
     @staticmethod
@@ -1456,8 +1488,7 @@ class NetworkDiscovery:
 
     # -- naming ------------------------------------------------------------
 
-    def _resolve_names(self, devices: dict[str, Device],
-                       cancel_event: threading.Event | None) -> None:
+    def _resolve_names(self, devices: dict[str, Device], cancel_event: threading.Event | None) -> None:
         """Fill in hostnames via reverse DNS and NetBIOS, in parallel.
 
 
@@ -1530,7 +1561,7 @@ class NetworkDiscovery:
             for _ in range(count):
                 if pos + 18 > len(data):
                     break
-                raw = data[pos:pos + 15].decode("ascii", "ignore").strip()
+                raw = data[pos : pos + 15].decode("ascii", "ignore").strip()
                 flags = data[pos + 16]
                 pos += 18
                 # Bit 0x80 marks a group (workgroup) name; we want unique names.
@@ -1542,8 +1573,7 @@ class NetworkDiscovery:
 
     # -- classification ----------------------------------------------------
 
-    def _fingerprint(self, devices: dict[str, Device],
-                     cancel_event: threading.Event | None) -> None:
+    def _fingerprint(self, devices: dict[str, Device], cancel_event: threading.Event | None) -> None:
         """Enumerate services only on discovered, in-scope private hosts.
 
         The scanner revalidates every host against ``_audit_targets`` before a
@@ -1560,8 +1590,7 @@ class NetworkDiscovery:
         )
 
         try:
-            profile = ScanProfile(str(getattr(
-                self, "_audit_profile", "targeted")).lower())
+            profile = ScanProfile(str(getattr(self, "_audit_profile", "targeted")).lower())
         except ValueError:
             profile = ScanProfile.TARGETED
         scanner = NetworkServiceScanner(
@@ -1579,8 +1608,7 @@ class NetworkDiscovery:
             custom_ports=extra_ports,
         )
         nmap_modes = getattr(self, "_audit_nmap_modes", None)
-        if nmap_modes and extra_ports and not (
-                cancel_event is not None and cancel_event.is_set()):
+        if nmap_modes and extra_ports and not (cancel_event is not None and cancel_event.is_set()):
             from cortex_unified.system_tools.nmap_adapter import NmapAdapter
 
             progress = getattr(self, "_audit_progress", None)
@@ -1595,27 +1623,24 @@ class NetworkDiscovery:
             )
             observations.extend(nmap_observations)
 
-        unique = {
-            (item.ip, item.port, item.transport, item.name, item.source): item
-            for item in observations
-        }
+        unique = {(item.ip, item.port, item.transport, item.name, item.source): item for item in observations}
         for observation in unique.values():
             device = devices.get(observation.ip)
             if device is None:
                 continue
             device.service_observations.append(observation)
-            if (observation.transport == "tcp"
-                    and observation.state == "open"
-                    and observation.port not in device.open_ports):
+            if (
+                observation.transport == "tcp"
+                and observation.state == "open"
+                and observation.port not in device.open_ports
+            ):
                 device.open_ports.append(observation.port)
             device.sources.add("ports")
 
     # -- reporting ---------------------------------------------------------
 
     @staticmethod
-    def _build_notes(devices: list[Device],
-                     targets: list[ipaddress.IPv4Network],
-                     gateways: set[str]) -> list[str]:
+    def _build_notes(devices: list[Device], targets: list[ipaddress.IPv4Network], gateways: set[str]) -> list[str]:
         """Explain the scan's limits, so gaps read as facts not failures.
 
 
@@ -1635,8 +1660,8 @@ class NetworkDiscovery:
         # (Vendor names still populate from oui.py's built-in table.)
         if oui.has_full_registry() and oui.registry_status().get("stale"):
             notes.append(
-                "The vendor database is over 90 days old. Refreshing it helps "
-                "identify recently released devices.")
+                "The vendor database is over 90 days old. Refreshing it helps " "identify recently released devices."
+            )
 
         randomized = [d for d in devices if d.randomized_mac]
         if randomized:
@@ -1644,7 +1669,8 @@ class NetworkDiscovery:
                 f"{len(randomized)} device(s) use a randomized private MAC "
                 "address, so their manufacturer cannot be identified and the "
                 "address will change again later. That is the device "
-                "protecting its privacy - phones do this by default.")
+                "protecting its privacy - phones do this by default."
+            )
 
         real = [d for d in devices if not d.is_self]
         if targets and gateways and len(real) <= 1:
@@ -1653,12 +1679,14 @@ class NetworkDiscovery:
                 "connected, the access point is very likely using client "
                 "isolation (also called AP isolation or guest mode), which "
                 "blocks devices from seeing each other by design - no scanner "
-                "can work around that from this side.")
+                "can work around that from this side."
+            )
 
         no_mac = [d for d in devices if not d.mac and not d.is_self]
         if no_mac:
             notes.append(
                 f"{len(no_mac)} device(s) announced themselves over mDNS/UPnP "
                 "but are not in the ARP table - they are usually on another "
-                "subnet or reached through a router.")
+                "subnet or reached through a router."
+            )
         return notes

@@ -17,7 +17,6 @@ from typing import Callable
 from PySide6.QtCore import QEasingCurve, QParallelAnimationGroup, QPoint, QPropertyAnimation
 from PySide6.QtWidgets import QGraphicsOpacityEffect, QWidget
 
-
 # Reduced-motion preference (accessibility / inclusivity). When enabled, callers
 # should skip or shorten non-essential motion (page fades, smooth scrolling,
 # gauge sweeps) - premium motion must never exclude users who are sensitive to

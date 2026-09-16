@@ -79,16 +79,28 @@ from cortex_unified.core.utils import normalize_path
 # ---------------------------------------------------------------------------
 
 _AUDIO_SUFFIXES = {
-    ".wav", ".mp3", ".flac", ".m4a", ".aac", ".ogg", ".opus", ".wma",
-    ".aiff", ".aif", ".wv", ".ape", ".alac",
+    ".wav",
+    ".mp3",
+    ".flac",
+    ".m4a",
+    ".aac",
+    ".ogg",
+    ".opus",
+    ".wma",
+    ".aiff",
+    ".aif",
+    ".wv",
+    ".ape",
+    ".alac",
 }
 
 # Target sample rate as in Chromaprint / RARE
 _TARGET_SR = 11025
 _FRAME_SIZE = 4096  # ~0.371 s at 11025 Hz
-_HOP_SIZE = 2048    # 50 % overlap
-_NUM_BANDS = 33     # Chromaprint uses 33 log-spaced bands
+_HOP_SIZE = 2048  # 50 % overlap
+_NUM_BANDS = 33  # Chromaprint uses 33 log-spaced bands
 _SUBFP_BITS = 32
+
 
 # Band edges: log-spaced between 300 Hz and 3000 Hz (Chromaprint range)
 # Constructed once at import.
@@ -115,11 +127,13 @@ def _build_band_edges() -> List[Tuple[int, int]]:
         edges.append((b0, b1))
     return edges
 
+
 _BAND_EDGES = _build_band_edges()
 
 # ---------------------------------------------------------------------------
 # Pure-Python FFT (iterative Cooley-Tukey, power-of-two)
 # ---------------------------------------------------------------------------
+
 
 def _fft(mag: List[float]) -> List[complex]:
     """Fft.
@@ -161,6 +175,7 @@ def _fft(mag: List[float]) -> List[complex]:
         length <<= 1
     return a
 
+
 def _magnitude_spectrum(frame: List[float]) -> List[float]:
     """Windowed FFT magnitude (Hann window, half spectrum).
 
@@ -174,17 +189,16 @@ def _magnitude_spectrum(frame: List[float]) -> List[float]:
     """
     n = len(frame)
     # Hann window
-    windowed = [
-        frame[i] * (0.5 - 0.5 * math.cos(2 * math.pi * i / (n - 1)))
-        for i in range(n)
-    ]
+    windowed = [frame[i] * (0.5 - 0.5 * math.cos(2 * math.pi * i / (n - 1))) for i in range(n)]
     spec = _fft(windowed)
     # Only bins 0..N/2 inclusive; magnitude
     return [abs(c) for c in spec[: n // 2 + 1]]
 
+
 # ---------------------------------------------------------------------------
 # WAV decoding (stdlib only)
 # ---------------------------------------------------------------------------
+
 
 def _decode_wav(path: Path) -> Tuple[List[float], int]:
     """Decode WAV to mono float samples in [-1, 1]; returns (samples, sr).
@@ -284,7 +298,9 @@ def _resample(samples: List[float], sr_in: int, sr_out: int = _TARGET_SR) -> Lis
         out[i] = samples[lo] * (1 - frac) + samples[hi] * frac
     return out
 
+
 # Optional decoder for non-WAV via pydub/ffmpeg or librosa (soft deps)
+
 
 def _decode_generic(path: Path) -> Optional[Tuple[List[float], int]]:
     """Try optional decoders for non-WAV; returns None if unavailable.
@@ -300,6 +316,7 @@ def _decode_generic(path: Path) -> Optional[Tuple[List[float], int]]:
     # Try pydub (ffmpeg) first – it handles MP3/FLAC/OGG/M4A
     try:
         from pydub import AudioSegment  # type: ignore
+
         seg = AudioSegment.from_file(str(path))
         # to mono, 16-bit
         seg = seg.set_channels(1)
@@ -336,9 +353,11 @@ def _decode_generic(path: Path) -> Optional[Tuple[List[float], int]]:
         pass
     return None
 
+
 # ---------------------------------------------------------------------------
 # Fingerprinting primitives
 # ---------------------------------------------------------------------------
+
 
 def _band_energies(mag: List[float]) -> List[float]:
     """33 log-spaced band energies (sum of squared magnitudes).
@@ -365,9 +384,7 @@ def _band_energies(mag: List[float]) -> List[float]:
     return energies
 
 
-def _subfingerprint_for_frame(
-    energies: List[float], prev_energies: Optional[List[float]]
-) -> int:
+def _subfingerprint_for_frame(energies: List[float], prev_energies: Optional[List[float]]) -> int:
     """32-bit subfingerprint for one frame (16 intra + 16 inter as in Chromaprint).
 
     Chromaprint's 32 bits per subfingerprint comprise:
@@ -579,6 +596,7 @@ def audio_compare(fp_a: List[int], fp_b: List[int]) -> float:
 # ---------------------------------------------------------------------------
 # Finder
 # ---------------------------------------------------------------------------
+
 
 class AudioDuplicateFinder:
     """Find acoustically-similar audio groups (same recording, any encoding).
@@ -821,9 +839,7 @@ class AudioDuplicateFinder:
         for members in groups.values():
             if len(members) > 1:
                 members.sort()
-                gid = hashlib.blake2b(
-                    str([str(m) for m in members]).encode(), digest_size=8
-                ).hexdigest()
+                gid = hashlib.blake2b(str([str(m) for m in members]).encode(), digest_size=8).hexdigest()
                 result[gid] = members
         self.duplicates = result
         return result

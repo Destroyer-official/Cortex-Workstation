@@ -27,6 +27,7 @@ if platform.system() == "Windows":
 
         Packs dwProcessId plus FILETIME start time for RmGetList FFI.
         """
+
         _fields_ = [
             ("dwProcessId", wintypes.DWORD),
             ("ProcessStartTime", wintypes.FILETIME),
@@ -37,6 +38,7 @@ if platform.system() == "Windows":
 
         Satisfies RM_PROCESS_INFO.ApplicationType field in the Restart Manager signature.
         """
+
         pass
 
     class RM_PROCESS_INFO(ctypes.Structure):
@@ -44,6 +46,7 @@ if platform.system() == "Windows":
 
         Holds RM_UNIQUE_PROCESS, app/service names, type, status, session, and restartable flag.
         """
+
         _fields_ = [
             ("Process", RM_UNIQUE_PROCESS),
             ("strAppName", wintypes.WCHAR * (CCH_RM_MAX_APP_NAME + 1)),
@@ -61,6 +64,7 @@ class LockingProcessInfo:
 
     Records pid, name, exe path, system flag, service name, user, and RSS MB.
     """
+
     pid: int
     name: str
     executable_path: str
@@ -190,6 +194,7 @@ class FileUnlocker:
 
                     try:
                         import psutil
+
                         p = psutil.Process(pid)
                         exe_path = p.exe()
                         mem_mb = p.memory_info().rss / (1024 * 1024)
@@ -199,15 +204,17 @@ class FileUnlocker:
 
                     is_sys = pid in (0, 4) or "system" in (app_name.lower() or exe_path.lower())
 
-                    locking_procs.append(LockingProcessInfo(
-                        pid=pid,
-                        name=app_name or Path(exe_path).name or f"PID {pid}",
-                        executable_path=exe_path,
-                        is_system=is_sys,
-                        service_name=svc_name,
-                        user=user_str,
-                        memory_mb=round(mem_mb, 1),
-                    ))
+                    locking_procs.append(
+                        LockingProcessInfo(
+                            pid=pid,
+                            name=app_name or Path(exe_path).name or f"PID {pid}",
+                            executable_path=exe_path,
+                            is_system=is_sys,
+                            service_name=svc_name,
+                            user=user_str,
+                            memory_mb=round(mem_mb, 1),
+                        )
+                    )
 
         finally:
             rstrtmgr.RmEndSession(session_handle)
@@ -231,20 +238,23 @@ class FileUnlocker:
 
         try:
             import psutil
+
             for proc in psutil.process_iter(["pid", "name", "exe"]):
                 try:
                     open_files = proc.open_files()
                     for of in open_files:
                         if of.path and of.path.lower() == target_lower:
                             mem_mb = proc.memory_info().rss / (1024 * 1024)
-                            locking_procs.append(LockingProcessInfo(
-                                pid=proc.pid,
-                                name=proc.name(),
-                                executable_path=proc.exe() or "",
-                                is_system=(proc.pid in (0, 4)),
-                                user=proc.username() if hasattr(proc, "username") else "",
-                                memory_mb=round(mem_mb, 1),
-                            ))
+                            locking_procs.append(
+                                LockingProcessInfo(
+                                    pid=proc.pid,
+                                    name=proc.name(),
+                                    executable_path=proc.exe() or "",
+                                    is_system=(proc.pid in (0, 4)),
+                                    user=proc.username() if hasattr(proc, "username") else "",
+                                    memory_mb=round(mem_mb, 1),
+                                )
+                            )
                             break
                 except (psutil.NoSuchProcess, psutil.AccessDenied):
                     continue
@@ -272,10 +282,14 @@ class FileUnlocker:
         try:
             import psutil
             from cortex_unified.core.proc import is_protected_process
+
             proc = psutil.Process(pid)
             p_name = proc.name() or ""
             if is_protected_process(pid) or is_protected_process(p_name):
-                return False, f"Action denied: '{p_name}' is a protected Windows system process. Terminating it would crash your desktop shell or cause system instability."
+                return (
+                    False,
+                    f"Action denied: '{p_name}' is a protected Windows system process. Terminating it would crash your desktop shell or cause system instability.",
+                )
             if force:
                 proc.kill()
             else:

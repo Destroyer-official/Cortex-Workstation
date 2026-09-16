@@ -26,6 +26,7 @@ from cortex_unified.analyzers.portable_manager import (
 
 class TestPortableApp:
     """Group testportableapp tests covering basic construction; to dict slots incompatibility."""
+
     def test_basic_construction(self, tmp_path):
         """Verify basic construction via PortableApp.
 
@@ -75,6 +76,7 @@ class TestPortableApp:
 
 class TestParseAppinfo:
     """Group testparseappinfo tests covering valid appinfo; missing ini returns none; garbage ini returns none; launch exe fallback to first exe; no exe; fallback to first section."""
+
     def _write_appinfo(self, root: Path, content: str) -> Path:
         """Write appinfo using ini.write_text.
 
@@ -95,13 +97,7 @@ class TestParseAppinfo:
         Args:
             tmp_path: Filesystem path to the target file or directory.
         """
-        content = (
-            "[Details]\n"
-            "Name=MyTool\n"
-            "DisplayVersion=2.3.0\n"
-            "Category=Security\n"
-            "Publisher=TestCo\n"
-        )
+        content = "[Details]\n" "Name=MyTool\n" "DisplayVersion=2.3.0\n" "Category=Security\n" "Publisher=TestCo\n"
         self._write_appinfo(tmp_path, content)
         (tmp_path / "MyTool.exe").touch()
 
@@ -178,6 +174,7 @@ class TestParseAppinfo:
 
 class TestPortableManagerInit:
     """Group testportablemanagerinit tests covering default init; custom progress; custom cancel event."""
+
     def test_default_init(self):
         """Verify default init via PortableManager, mgr.cancel.is_set, callable."""
         mgr = PortableManager()
@@ -210,6 +207,7 @@ class TestPortableManagerInit:
 
 class TestScanPortableRoots:
     """Group testscanportableroots tests covering scan paf apps; scan empty root; scan nonexistent root; scan liberkey heuristic; scan skips files; scan cancellation."""
+
     def _build_paf_app(self, root: Path, name: str, version: str = "1.0"):
         """Build paf app using touch.
 
@@ -220,10 +218,7 @@ class TestScanPortableRoots:
         """
         app_dir = root / name
         app_dir.mkdir()
-        ini = (
-            f"[Details]\nName={name}\n"
-            f"DisplayVersion={version}\nCategory=Utilities\nPublisher=Test\n"
-        )
+        ini = f"[Details]\nName={name}\n" f"DisplayVersion={version}\nCategory=Utilities\nPublisher=Test\n"
         (app_dir / "appinfo.ini").write_text(ini, encoding="utf-8")
         (app_dir / f"{name}.exe").touch()
         return app_dir
@@ -309,9 +304,8 @@ class TestScanPortableRoots:
 
 class TestCheckUpdates:
     """Group testcheckupdates tests covering no update url skipped; update available; no update when current; network failure continues; non ini response skipped; empty version no update."""
-    def _make_app_with_ini(
-        self, root: Path, name: str, version: str, update_url: str | None = None
-    ):
+
+    def _make_app_with_ini(self, root: Path, name: str, version: str, update_url: str | None = None):
         """Make app with ini using configparser.ConfigParser, cfg.read, PortableApp.
 
         Args:
@@ -363,18 +357,14 @@ class TestCheckUpdates:
             tmp_path: Filesystem path to the target file or directory.
         """
         remote_ini = "[Details]\nDisplayVersion=2.0\n"
-        with patch(
-            "cortex_unified.analyzers.portable_manager.urllib.request.urlopen"
-        ) as mock_urlopen:
+        with patch("cortex_unified.analyzers.portable_manager.urllib.request.urlopen") as mock_urlopen:
             resp = MagicMock()
             resp.read.return_value = remote_ini.encode("utf-8")
             resp.__enter__ = MagicMock(return_value=resp)
             resp.__exit__ = MagicMock(return_value=False)
             mock_urlopen.return_value = resp
 
-            app = self._make_app_with_ini(
-                tmp_path, "Tool", "1.0", update_url="https://example.com/appinfo.ini"
-            )
+            app = self._make_app_with_ini(tmp_path, "Tool", "1.0", update_url="https://example.com/appinfo.ini")
             mgr = PortableManager()
             updated = mgr.check_updates([app])
 
@@ -389,18 +379,14 @@ class TestCheckUpdates:
             tmp_path: Filesystem path to the target file or directory.
         """
         remote_ini = "[Details]\nDisplayVersion=1.0\n"
-        with patch(
-            "cortex_unified.analyzers.portable_manager.urllib.request.urlopen"
-        ) as mock_urlopen:
+        with patch("cortex_unified.analyzers.portable_manager.urllib.request.urlopen") as mock_urlopen:
             resp = MagicMock()
             resp.read.return_value = remote_ini.encode("utf-8")
             resp.__enter__ = MagicMock(return_value=resp)
             resp.__exit__ = MagicMock(return_value=False)
             mock_urlopen.return_value = resp
 
-            app = self._make_app_with_ini(
-                tmp_path, "Tool", "1.0", update_url="https://example.com/appinfo.ini"
-            )
+            app = self._make_app_with_ini(tmp_path, "Tool", "1.0", update_url="https://example.com/appinfo.ini")
             mgr = PortableManager()
             updated = mgr.check_updates([app])
 
@@ -417,9 +403,7 @@ class TestCheckUpdates:
             "cortex_unified.analyzers.portable_manager.urllib.request.urlopen",
             side_effect=Exception("network down"),
         ):
-            app = self._make_app_with_ini(
-                tmp_path, "Tool", "1.0", update_url="https://example.com/appinfo.ini"
-            )
+            app = self._make_app_with_ini(tmp_path, "Tool", "1.0", update_url="https://example.com/appinfo.ini")
             log = []
             mgr = PortableManager(progress=log.append)
             updated = mgr.check_updates([app])
@@ -433,18 +417,14 @@ class TestCheckUpdates:
         Args:
             tmp_path: Filesystem path to the target file or directory.
         """
-        with patch(
-            "cortex_unified.analyzers.portable_manager.urllib.request.urlopen"
-        ) as mock_urlopen:
+        with patch("cortex_unified.analyzers.portable_manager.urllib.request.urlopen") as mock_urlopen:
             resp = MagicMock()
             resp.read.return_value = b"<html>404 Not Found</html>"
             resp.__enter__ = MagicMock(return_value=resp)
             resp.__exit__ = MagicMock(return_value=False)
             mock_urlopen.return_value = resp
 
-            app = self._make_app_with_ini(
-                tmp_path, "Tool", "1.0", update_url="https://example.com/appinfo.ini"
-            )
+            app = self._make_app_with_ini(tmp_path, "Tool", "1.0", update_url="https://example.com/appinfo.ini")
             mgr = PortableManager()
             updated = mgr.check_updates([app])
 
@@ -457,9 +437,7 @@ class TestCheckUpdates:
             tmp_path: Filesystem path to the target file or directory.
         """
         remote_ini = "[Details]\nDisplayVersion=2.0\n"
-        with patch(
-            "cortex_unified.analyzers.portable_manager.urllib.request.urlopen"
-        ) as mock_urlopen:
+        with patch("cortex_unified.analyzers.portable_manager.urllib.request.urlopen") as mock_urlopen:
             resp = MagicMock()
             resp.read.return_value = remote_ini.encode("utf-8")
             resp.__enter__ = MagicMock(return_value=resp)
@@ -468,10 +446,7 @@ class TestCheckUpdates:
 
             app_dir = tmp_path / "Tool"
             app_dir.mkdir()
-            ini = (
-                "[Details]\nName=Tool\nDisplayVersion=\n"
-                "UpdateURL=https://example.com/appinfo.ini\n"
-            )
+            ini = "[Details]\nName=Tool\nDisplayVersion=\n" "UpdateURL=https://example.com/appinfo.ini\n"
             (app_dir / "appinfo.ini").write_text(ini, encoding="utf-8")
             (app_dir / "Tool.exe").touch()
 
@@ -497,6 +472,7 @@ class TestCheckUpdates:
 
 class TestUpdateApp:
     """Group testupdateapp tests covering update no installer returns false; update with installer; update installer failure; update subprocess exception."""
+
     def test_update_no_installer_returns_false(self, tmp_path):
         """Verify update no installer returns false via PortableApp, PortableManager, mgr.update_app.
 
@@ -620,6 +596,7 @@ class TestUpdateApp:
 
 class TestSysinternalsDownload:
     """Group testsysinternalsdownload tests covering download success; download not pe rejected; download network error."""
+
     def test_download_success(self, tmp_path):
         """Verify download success via MagicMock, PortableManager, mgr._download_sysinternals.
 
@@ -629,9 +606,7 @@ class TestSysinternalsDownload:
         dest = tmp_path / "Autoruns.exe"
         fake_pe = b"MZ" + b"\x00" * 200
 
-        with patch(
-            "cortex_unified.analyzers.portable_manager.urllib.request.urlopen"
-        ) as mock_urlopen:
+        with patch("cortex_unified.analyzers.portable_manager.urllib.request.urlopen") as mock_urlopen:
             resp = MagicMock()
             resp.read = MagicMock(side_effect=[fake_pe, b""])
             resp.__enter__ = MagicMock(return_value=resp)
@@ -654,12 +629,11 @@ class TestSysinternalsDownload:
         dest = tmp_path / "bad.exe"
         fake_html = b"<html>Error 404</html>"
 
-        with patch(
-            "cortex_unified.analyzers.portable_manager.urllib.request.urlopen"
-        ) as mock_urlopen:
+        with patch("cortex_unified.analyzers.portable_manager.urllib.request.urlopen") as mock_urlopen:
 
             class FakeResp:
                 """Helper fakeresp."""
+
                 def __init__(self, data):
                     """__init__.
 
@@ -733,6 +707,7 @@ class TestSysinternalsDownload:
 
 class TestExportToolkit:
     """Group testexporttoolkit tests covering export copies paf apps; export skips existing; export sysinternals; export sysinternals custom tools; export skips existing sysinternals."""
+
     def _build_paf_app(self, root: Path, name: str):
         """Build paf app using touch.
 
@@ -853,9 +828,7 @@ class TestExportToolkit:
         (syn / "Autoruns.exe").write_bytes(b"MZ" + b"\x00" * 10)
 
         mgr = PortableManager()
-        mgr.export_toolkit(
-            target, include_sysinternals=True, sysinternals_tools=["Autoruns.exe"]
-        )
+        mgr.export_toolkit(target, include_sysinternals=True, sysinternals_tools=["Autoruns.exe"])
 
         mock_dl.assert_not_called()
 
@@ -870,6 +843,7 @@ class TestProgressCallback:
 
     Updates progress bar widgets, percentage counters, and status indicators with streaming status updates from the running worker.
     """
+
     def test_progress_called_on_update_failure(self, tmp_path):
         """test_progress_called_on_update_failure.
 
@@ -880,10 +854,7 @@ class TestProgressCallback:
         """
         app_dir = tmp_path / "Tool"
         app_dir.mkdir()
-        ini = (
-            "[Details]\nName=Tool\nDisplayVersion=1.0\n"
-            "UpdateURL=https://example.com/appinfo.ini\n"
-        )
+        ini = "[Details]\nName=Tool\nDisplayVersion=1.0\n" "UpdateURL=https://example.com/appinfo.ini\n"
         (app_dir / "appinfo.ini").write_text(ini, encoding="utf-8")
 
         app = PortableApp(
@@ -927,6 +898,7 @@ class TestProgressCallback:
 
 class TestCancellation:
     """Group testcancellation tests covering scan respects cancel."""
+
     def _build_paf_app(self, root: Path, name: str):
         """Build paf app using touch.
 
@@ -972,9 +944,7 @@ class TestCancellation:
                 evt.set()
                 return []
 
-            with patch.object(
-                mgr, "scan_portable_roots", wraps=mgr.scan_portable_roots
-            ) as mock_scan:
+            with patch.object(mgr, "scan_portable_roots", wraps=mgr.scan_portable_roots) as mock_scan:
                 mock_scan.side_effect = set_cancel_after_one
                 apps = mgr.scan_portable_roots([tmp_path])
                 assert apps == []
@@ -987,6 +957,7 @@ class TestCancellation:
 
 class TestPAFSilentFlag:
     """Group testpafsilentflag tests covering silent flag value; sysinternals live url."""
+
     def test_silent_flag_value(self):
         """Verify silent flag value."""
         assert PortableManager._PAF_SILENT_FLAG == "/SILENT"
@@ -1003,6 +974,7 @@ class TestPAFSilentFlag:
 
 class TestExportToolkitIntegration:
     """Group testexporttoolkitintegration tests covering export creates directory; export returns true; export failure returns false."""
+
     @patch("cortex_unified.analyzers.portable_manager._find_portable_roots")
     def test_export_creates_directory(self, mock_roots, tmp_path):
         """Verify export creates directory via PortableManager, mgr.export_toolkit, patch.

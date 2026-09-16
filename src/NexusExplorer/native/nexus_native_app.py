@@ -35,10 +35,10 @@ def main() -> int:
     app.setStyleSheet(DARK_QSS)
 
     settings = QSettings("Nexus", "NexusExplorer")
-    start = args[0] if args else str(
-        settings.value("lastPath", os.path.expanduser("~")))
+    start = args[0] if args else str(settings.value("lastPath", os.path.expanduser("~")))
 
     from nexus_explorer import ExplorerWidget
+
     win = QMainWindow()
     win.setWindowTitle("Nexus Explorer")
 

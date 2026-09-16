@@ -6,12 +6,33 @@ from pathlib import Path
 from typing import List, Dict, Any, Optional, Union
 
 from PySide6.QtWidgets import (
-    QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLabel,
-    QLineEdit, QCheckBox, QTableWidget, QTableWidgetItem,
-    QProgressBar, QGroupBox, QFormLayout, QFileDialog,
-    QMessageBox, QHeaderView, QListWidget, QRadioButton,
-    QComboBox, QSplitter, QTreeWidget, QTreeWidgetItem, QTextEdit,
-    QSpinBox, QTabWidget, QAbstractItemView, QSizePolicy, QListWidgetItem
+    QWidget,
+    QVBoxLayout,
+    QHBoxLayout,
+    QPushButton,
+    QLabel,
+    QLineEdit,
+    QCheckBox,
+    QTableWidget,
+    QTableWidgetItem,
+    QProgressBar,
+    QGroupBox,
+    QFormLayout,
+    QFileDialog,
+    QMessageBox,
+    QHeaderView,
+    QListWidget,
+    QRadioButton,
+    QComboBox,
+    QSplitter,
+    QTreeWidget,
+    QTreeWidgetItem,
+    QTextEdit,
+    QSpinBox,
+    QTabWidget,
+    QAbstractItemView,
+    QSizePolicy,
+    QListWidgetItem,
 )
 from PySide6.QtCore import QThread, Signal, Qt, QObject, QTimer
 from PySide6.QtGui import QIcon, QFont, QTextCursor
@@ -20,25 +41,29 @@ from .base_tab import BaseTab
 from cortex_unified.core.config import Config
 from cortex_unified.core.scanner import Scanner
 from cortex_unified.core.deleter import Deleter
+
 # Assuming DockerCleaner exists or will be mocked/available
 try:
     from cortex_unified.analyzers.docker_cleaner import DockerCleaner
 except ImportError:
+
     class DockerCleaner:
         """Fallback DockerCleaner stub used when the real analyzer import is unavailable.
 
-            Reports Docker as unavailable via is_docker_available().
+        Reports Docker as unavailable via is_docker_available().
         """
+
         def is_docker_available(self):
-            """Report whether Docker is available (fallback stub always returns False).
-            """
+            """Report whether Docker is available (fallback stub always returns False)."""
             return False
+
 
 class DockerScanWorker(QThread):
     """QThread worker scanning unused images, stopped containers, volumes, and networks via DockerCleaner.
 
-        Emits finished with the resources/stats payload and error on failure.
+    Emits finished with the resources/stats payload and error on failure.
     """
+
     finished = Signal(dict)
     error = Signal(str)
 
@@ -67,7 +92,7 @@ class DockerScanWorker(QThread):
         try:
             cleaner = DockerCleaner()
             if not cleaner.is_docker_available():
-                self.error.emit('Docker is not available or not running')
+                self.error.emit("Docker is not available or not running")
                 return
             all_resources = []
             if self.scan_images:
@@ -83,15 +108,17 @@ class DockerScanWorker(QThread):
                 networks = cleaner.scan_unused_networks()
                 all_resources.extend(networks)
             stats = cleaner.get_stats()
-            self.finished.emit({'resources': all_resources, 'stats': stats})
+            self.finished.emit({"resources": all_resources, "stats": stats})
         except Exception as e:
             self.error.emit(str(e))
+
 
 class DockerCleanupWorker(QThread):
     """QThread worker cleaning Docker resources via DockerCleaner.cleanup_resources().
 
-        Emits finished with the cleanup result and error on failure.
+    Emits finished with the cleanup result and error on failure.
     """
+
     finished = Signal(object)
     error = Signal(str)
 
@@ -116,17 +143,18 @@ class DockerCleanupWorker(QThread):
         try:
             cleaner = DockerCleaner()
             if not cleaner.is_docker_available():
-                self.error.emit('Docker is not available or not running')
+                self.error.emit("Docker is not available or not running")
                 return
             result = cleaner.cleanup_resources(self.resources, self.dry_run)
             self.finished.emit(result)
         except Exception as e:
             self.error.emit(str(e))
 
+
 class DockerTab(BaseTab):
     """Docker tab with resource-type checkboxes, options, status label, progress bar, and resources table.
 
-        Scan and cleanup actions run DockerScanWorker and DockerCleanupWorker threads via DockerCleaner.
+    Scan and cleanup actions run DockerScanWorker and DockerCleanupWorker threads via DockerCleaner.
     """
 
     def __init__(self, config, logger, safety_manager):
@@ -142,105 +170,102 @@ class DockerTab(BaseTab):
         super().__init__(config, logger, safety_manager)
 
     def setup_ui(self):
-        """Build the Docker status label, resource-type checkboxes, options, resources table, and scan/cleanup buttons.
-        """
+        """Build the Docker status label, resource-type checkboxes, options, resources table, and scan/cleanup buttons."""
         layout = QVBoxLayout(self)
-        self.docker_status_label = QLabel('Checking Docker availability...')
+        self.docker_status_label = QLabel("Checking Docker availability...")
         layout.addWidget(self.docker_status_label)
-        
-        resource_group = QGroupBox('Resources to Clean')
+
+        resource_group = QGroupBox("Resources to Clean")
         resource_layout = QVBoxLayout(resource_group)
-        self.docker_images_checkbox = QCheckBox('Unused Docker Images')
+        self.docker_images_checkbox = QCheckBox("Unused Docker Images")
         self.docker_images_checkbox.setChecked(True)
         resource_layout.addWidget(self.docker_images_checkbox)
-        
-        self.docker_containers_checkbox = QCheckBox('Stopped Docker Containers')
+
+        self.docker_containers_checkbox = QCheckBox("Stopped Docker Containers")
         self.docker_containers_checkbox.setChecked(True)
         resource_layout.addWidget(self.docker_containers_checkbox)
-        
-        self.docker_volumes_checkbox = QCheckBox('Unused Docker Volumes')
+
+        self.docker_volumes_checkbox = QCheckBox("Unused Docker Volumes")
         self.docker_volumes_checkbox.setChecked(True)
         resource_layout.addWidget(self.docker_volumes_checkbox)
-        
-        self.docker_networks_checkbox = QCheckBox('Unused Docker Networks')
+
+        self.docker_networks_checkbox = QCheckBox("Unused Docker Networks")
         self.docker_networks_checkbox.setChecked(True)
         resource_layout.addWidget(self.docker_networks_checkbox)
         layout.addWidget(resource_group)
-        
-        options_group = QGroupBox('Options')
+
+        options_group = QGroupBox("Options")
         options_layout = QFormLayout(options_group)
-        self.docker_dry_run_checkbox = QCheckBox('Dry Run (Preview Only)')
+        self.docker_dry_run_checkbox = QCheckBox("Dry Run (Preview Only)")
         self.docker_dry_run_checkbox.setChecked(True)
         options_layout.addRow(self.docker_dry_run_checkbox)
         layout.addWidget(options_group)
-        
+
         button_layout = QHBoxLayout()
-        self.docker_scan_button = QPushButton('Scan Docker Resources')
+        self.docker_scan_button = QPushButton("Scan Docker Resources")
         self.docker_scan_button.clicked.connect(self.start_docker_scan)
         button_layout.addWidget(self.docker_scan_button)
-        
-        self.docker_cleanup_button = QPushButton('Clean Up Resources')
+
+        self.docker_cleanup_button = QPushButton("Clean Up Resources")
         self.docker_cleanup_button.clicked.connect(self.start_docker_cleanup)
         self.docker_cleanup_button.setEnabled(False)
         button_layout.addWidget(self.docker_cleanup_button)
         layout.addLayout(button_layout)
-        
+
         self.docker_progress_bar = QProgressBar()
         self.docker_progress_bar.setVisible(False)
         layout.addWidget(self.docker_progress_bar)
-        
-        results_group = QGroupBox('Docker Resources')
+
+        results_group = QGroupBox("Docker Resources")
         results_layout = QVBoxLayout(results_group)
-        self.docker_summary_label = QLabel('No scan performed yet')
+        self.docker_summary_label = QLabel("No scan performed yet")
         results_layout.addWidget(self.docker_summary_label)
-        
+
         self.docker_table = QTableWidget()
         self.docker_table.setColumnCount(5)
-        self.docker_table.setHorizontalHeaderLabels(['Type', 'Name', 'ID', 'Size', 'Status'])
+        self.docker_table.setHorizontalHeaderLabels(["Type", "Name", "ID", "Size", "Status"])
         self.docker_table.horizontalHeader().setStretchLastSection(True)
         self.docker_table.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectRows)
         results_layout.addWidget(self.docker_table)
         layout.addWidget(results_group)
-        
+
         QTimer.singleShot(100, self.check_docker_availability)
 
     def check_docker_availability(self):
-        """Check if Docker is available.
-        """
+        """Check if Docker is available."""
         try:
             cleaner = DockerCleaner()
             if cleaner.is_docker_available():
-                self.docker_status_label.setText('✓ Docker is available and running')
-                self.docker_status_label.setStyleSheet('color: green;')
+                self.docker_status_label.setText("✓ Docker is available and running")
+                self.docker_status_label.setStyleSheet("color: green;")
                 self.docker_scan_button.setEnabled(True)
             else:
-                self.docker_status_label.setText('✗ Docker is not available or not running')
-                self.docker_status_label.setStyleSheet('color: red;')
+                self.docker_status_label.setText("✗ Docker is not available or not running")
+                self.docker_status_label.setStyleSheet("color: red;")
                 self.docker_scan_button.setEnabled(False)
         except Exception as e:
-            self.docker_status_label.setText(f'✗ Docker error: {str(e)}')
-            self.docker_status_label.setStyleSheet('color: red;')
+            self.docker_status_label.setText(f"✗ Docker error: {str(e)}")
+            self.docker_status_label.setStyleSheet("color: red;")
             self.docker_scan_button.setEnabled(False)
 
     def start_docker_scan(self):
-        """Start Docker resource scan dynamically linked to worker threads.
-        """
+        """Start Docker resource scan dynamically linked to worker threads."""
         self.docker_scan_button.setEnabled(False)
         self.docker_cleanup_button.setEnabled(False)
         self.docker_progress_bar.setVisible(True)
         self.docker_progress_bar.setRange(0, 0)
         self.docker_table.setRowCount(0)
-        self.set_status('Scanning Docker resources...')
-        self.add_activity('Scanning Docker resources...')
-        
+        self.set_status("Scanning Docker resources...")
+        self.add_activity("Scanning Docker resources...")
+
         worker = DockerScanWorker(
-            self.docker_images_checkbox.isChecked(), 
-            self.docker_containers_checkbox.isChecked(), 
-            self.docker_volumes_checkbox.isChecked(), 
-            self.docker_networks_checkbox.isChecked()
+            self.docker_images_checkbox.isChecked(),
+            self.docker_containers_checkbox.isChecked(),
+            self.docker_volumes_checkbox.isChecked(),
+            self.docker_networks_checkbox.isChecked(),
         )
         self.add_worker_thread(worker)
-        
+
         worker.finished.connect(self.docker_scan_finished)
         worker.error.connect(self.docker_scan_error)
         worker.finished.connect(lambda: self._on_worker_finished(worker))
@@ -264,39 +289,39 @@ class DockerTab(BaseTab):
         Args:
             result (dict): Collection or dictionary holding operation results.
         """
-        self.docker_resources = result['resources']
-        stats = result['stats']
+        self.docker_resources = result["resources"]
+        stats = result["stats"]
         self.docker_scan_button.setEnabled(True)
         self.docker_progress_bar.setVisible(False)
-        self.set_status(f'Found {len(self.docker_resources)} Docker resources')
-        self.add_activity(f'Found {len(self.docker_resources)} Docker resources')
-        
-        total_size = sum((getattr(resource, 'size', 0) for resource in self.docker_resources))
+        self.set_status(f"Found {len(self.docker_resources)} Docker resources")
+        self.add_activity(f"Found {len(self.docker_resources)} Docker resources")
+
+        total_size = sum((getattr(resource, "size", 0) for resource in self.docker_resources))
         size_human = self.format_bytes(total_size)
-        self.docker_summary_label.setText(f'Found {len(self.docker_resources)} resources, Total size: {size_human}')
-        
+        self.docker_summary_label.setText(f"Found {len(self.docker_resources)} resources, Total size: {size_human}")
+
         self.docker_table.setRowCount(len(self.docker_resources))
         for i, resource in enumerate(self.docker_resources):
-            resource_type = type(resource).__name__.replace('Docker', '')
-            name = getattr(resource, 'name', getattr(resource, 'repository', 'Unknown'))
-            resource_id = getattr(resource, 'id', 'Unknown')[:12]
-            size = self.format_bytes(getattr(resource, 'size', 0))
-            if hasattr(resource, 'is_dangling') and resource.is_dangling:
-                status = 'Dangling'
-            elif hasattr(resource, 'is_orphaned') and resource.is_orphaned:
-                status = 'Orphaned'
-            elif hasattr(resource, 'is_unused') and resource.is_unused:
-                status = 'Unused'
-            elif hasattr(resource, 'status'):
+            resource_type = type(resource).__name__.replace("Docker", "")
+            name = getattr(resource, "name", getattr(resource, "repository", "Unknown"))
+            resource_id = getattr(resource, "id", "Unknown")[:12]
+            size = self.format_bytes(getattr(resource, "size", 0))
+            if hasattr(resource, "is_dangling") and resource.is_dangling:
+                status = "Dangling"
+            elif hasattr(resource, "is_orphaned") and resource.is_orphaned:
+                status = "Orphaned"
+            elif hasattr(resource, "is_unused") and resource.is_unused:
+                status = "Unused"
+            elif hasattr(resource, "status"):
                 status = resource.status.title()
             else:
-                status = 'Unused'
+                status = "Unused"
             self.docker_table.setItem(i, 0, QTableWidgetItem(resource_type))
             self.docker_table.setItem(i, 1, QTableWidgetItem(name))
             self.docker_table.setItem(i, 2, QTableWidgetItem(resource_id))
             self.docker_table.setItem(i, 3, QTableWidgetItem(size))
             self.docker_table.setItem(i, 4, QTableWidgetItem(status))
-            
+
         if len(self.docker_resources) > 0:
             self.docker_cleanup_button.setEnabled(True)
         else:
@@ -309,44 +334,44 @@ class DockerTab(BaseTab):
         Args:
             error (str): Error message string or exception instance.
         """
-        self.logger.error(f'Docker scan error: {error}')
+        self.logger.error(f"Docker scan error: {error}")
         self.docker_scan_button.setEnabled(True)
         self.docker_progress_bar.setVisible(False)
-        self.set_status('Docker scan failed')
-        self.add_activity(f'Docker scan failed: {error}')
-        QMessageBox.critical(self, 'Docker Scan Error', f'An error occurred during Docker scan:\n{error}')
+        self.set_status("Docker scan failed")
+        self.add_activity(f"Docker scan failed: {error}")
+        QMessageBox.critical(self, "Docker Scan Error", f"An error occurred during Docker scan:\n{error}")
 
     def start_docker_cleanup(self):
-        """Start Docker resource cleanup.
-        """
-        if not hasattr(self, 'docker_resources') or not self.docker_resources:
-            QMessageBox.information(self, 'Info', 'No Docker resources to clean up.')
+        """Start Docker resource cleanup."""
+        if not hasattr(self, "docker_resources") or not self.docker_resources:
+            QMessageBox.information(self, "Info", "No Docker resources to clean up.")
             return
-            
+
         selected_resources = self.docker_resources
         dry_run = self.docker_dry_run_checkbox.isChecked()
-        action = 'preview cleanup of' if dry_run else 'clean up'
-        total_size = sum((getattr(resource, 'size', 0) for resource in selected_resources))
+        action = "preview cleanup of" if dry_run else "clean up"
+        total_size = sum((getattr(resource, "size", 0) for resource in selected_resources))
         size_human = self.format_bytes(total_size)
-        
+
         reply = QMessageBox.question(
-            self, 'Confirm Docker Cleanup', 
-            f"Are you sure you want to {action} {len(selected_resources)} Docker resources?\nTotal size: {size_human}\n{('This is a preview only.' if dry_run else 'This action cannot be undone.')}", 
-            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No, 
-            QMessageBox.StandardButton.No
+            self,
+            "Confirm Docker Cleanup",
+            f"Are you sure you want to {action} {len(selected_resources)} Docker resources?\nTotal size: {size_human}\n{('This is a preview only.' if dry_run else 'This action cannot be undone.')}",
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+            QMessageBox.StandardButton.No,
         )
         if reply == QMessageBox.StandardButton.No:
             return
-            
+
         self.docker_scan_button.setEnabled(False)
         self.docker_cleanup_button.setEnabled(False)
         self.docker_progress_bar.setVisible(True)
         self.docker_progress_bar.setRange(0, 0)
-        self.set_status('Cleaning Docker resources...')
-        
+        self.set_status("Cleaning Docker resources...")
+
         worker = DockerCleanupWorker(selected_resources, dry_run)
         self.add_worker_thread(worker)
-        
+
         worker.finished.connect(self.docker_cleanup_finished)
         worker.error.connect(self.docker_cleanup_error)
         worker.finished.connect(lambda: self._on_worker_finished(worker))
@@ -362,27 +387,31 @@ class DockerTab(BaseTab):
         """
         self.docker_scan_button.setEnabled(True)
         self.docker_progress_bar.setVisible(False)
-        
+
         dry_run = self.docker_dry_run_checkbox.isChecked()
-        action = 'Would clean' if dry_run else 'Cleaned'
-        self.set_status(f'{action} {result.total_removed} Docker resources, freed {self.format_bytes(result.space_freed)}')
-        self.add_activity(f'{action} {result.total_removed} Docker resources, freed {self.format_bytes(result.space_freed)}')
-        
-        details = f'Docker Cleanup Results:\nImages: {result.images_removed}\nContainers: {result.containers_removed}\nVolumes: {result.volumes_removed}\nNetworks: {result.networks_removed}\nSpace freed: {self.format_bytes(result.space_freed)}\n'
+        action = "Would clean" if dry_run else "Cleaned"
+        self.set_status(
+            f"{action} {result.total_removed} Docker resources, freed {self.format_bytes(result.space_freed)}"
+        )
+        self.add_activity(
+            f"{action} {result.total_removed} Docker resources, freed {self.format_bytes(result.space_freed)}"
+        )
+
+        details = f"Docker Cleanup Results:\nImages: {result.images_removed}\nContainers: {result.containers_removed}\nVolumes: {result.volumes_removed}\nNetworks: {result.networks_removed}\nSpace freed: {self.format_bytes(result.space_freed)}\n"
         if result.errors:
-            details += f'\nErrors ({len(result.errors)}):\n'
+            details += f"\nErrors ({len(result.errors)}):\n"
             for error in result.errors[:5]:
-                details += f'• {error}\n'
+                details += f"• {error}\n"
             if len(result.errors) > 5:
-                details += f'... and {len(result.errors) - 5} more errors'
-                
-        QMessageBox.information(self, 'Docker Cleanup Complete', details)
-        
-        if hasattr(self, 'docker_resources'):
+                details += f"... and {len(result.errors) - 5} more errors"
+
+        QMessageBox.information(self, "Docker Cleanup Complete", details)
+
+        if hasattr(self, "docker_resources"):
             self.docker_resources = []
-            
+
         self.docker_table.setRowCount(0)
-        self.docker_summary_label.setText('Cleanup complete. Run scan again to check for new resources.')
+        self.docker_summary_label.setText("Cleanup complete. Run scan again to check for new resources.")
         self.docker_cleanup_button.setEnabled(False)
 
     def docker_cleanup_error(self, error: str):
@@ -392,10 +421,10 @@ class DockerTab(BaseTab):
         Args:
             error (str): Error message string or exception instance.
         """
-        self.logger.error(f'Docker cleanup error: {error}')
+        self.logger.error(f"Docker cleanup error: {error}")
         self.docker_scan_button.setEnabled(True)
         self.docker_cleanup_button.setEnabled(True)
         self.docker_progress_bar.setVisible(False)
-        self.set_status('Docker cleanup failed')
-        self.add_activity(f'Docker cleanup failed: {error}')
-        QMessageBox.critical(self, 'Docker Cleanup Error', f'An error occurred during Docker cleanup:\n{error}')
+        self.set_status("Docker cleanup failed")
+        self.add_activity(f"Docker cleanup failed: {error}")
+        QMessageBox.critical(self, "Docker Cleanup Error", f"An error occurred during Docker cleanup:\n{error}")

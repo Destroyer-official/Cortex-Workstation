@@ -19,8 +19,7 @@ import sys
 import pytest
 
 winreg = pytest.importorskip("winreg")
-pytestmark = pytest.mark.skipif(sys.platform != "win32",
-                                reason="winreg is Windows-only")
+pytestmark = pytest.mark.skipif(sys.platform != "win32", reason="winreg is Windows-only")
 
 from cortex_unified.analyzers.registry_cleaner_ai import (  # noqa: E402
     AIRegistryCleaner,
@@ -39,10 +38,10 @@ from cortex_unified.analyzers.registry_cleaner_ai import (  # noqa: E402
     _verifiable,
 )
 
-
 # ---------------------------------------------------------------------------
 # Path resolution
 # ---------------------------------------------------------------------------
+
 
 def test_resolve_target_keeps_unquoted_path_with_spaces():
     """Verify resolve target keeps unquoted path with spaces via _resolve_target."""
@@ -83,6 +82,7 @@ def test_target_candidates_anchors_relative_paths_at_system_roots():
     # relative path must never appear, because Path.exists would resolve it
     # against the CWD.
     from pathlib import Path
+
     for c in cands:
         assert Path(c).is_absolute(), c
     joined = " | ".join(c.lower() for c in cands)
@@ -187,6 +187,7 @@ def test_font_candidates_keep_absolute_paths():
 # Registry views
 # ---------------------------------------------------------------------------
 
+
 def test_split_returns_64bit_view_for_hklm():
     """Verify split returns 64bit view for hklm via _split."""
     _hive, _sub, access = _split(r"HKLM\Software")
@@ -214,6 +215,7 @@ def test_split_rejects_unknown_hive():
 # ---------------------------------------------------------------------------
 # Detectors
 # ---------------------------------------------------------------------------
+
 
 def test_detect_missing_path_true_when_target_gone(tmp_path):
     """Verify detect missing path true when target gone via _detect_missing_path.
@@ -246,12 +248,18 @@ def test_detect_missing_path_false_when_default_value_empty():
 def test_detect_orphaned_service_skips_boot_and_system_start():
     """Verify detect orphaned service skips boot and system start via _detect_orphaned_service."""
     image = r"C:\definitely\not\here.sys"
-    assert _detect_orphaned_service(
-        "HKLM\\X\\svc", {"Start": (0, winreg.REG_DWORD),
-                         "ImagePath": (image, winreg.REG_SZ)}, 0) is False
-    assert _detect_orphaned_service(
-        "HKLM\\X\\svc", {"Start": (1, winreg.REG_DWORD),
-                         "ImagePath": (image, winreg.REG_SZ)}, 0) is False
+    assert (
+        _detect_orphaned_service(
+            "HKLM\\X\\svc", {"Start": (0, winreg.REG_DWORD), "ImagePath": (image, winreg.REG_SZ)}, 0
+        )
+        is False
+    )
+    assert (
+        _detect_orphaned_service(
+            "HKLM\\X\\svc", {"Start": (1, winreg.REG_DWORD), "ImagePath": (image, winreg.REG_SZ)}, 0
+        )
+        is False
+    )
 
 
 def test_detect_orphaned_service_true_when_verifiably_missing(tmp_path):
@@ -261,9 +269,12 @@ def test_detect_orphaned_service_true_when_verifiably_missing(tmp_path):
         tmp_path: Filesystem path to the target file or directory.
     """
     image = str(tmp_path / "gone_driver.sys")
-    assert _detect_orphaned_service(
-        "HKLM\\X\\svc", {"Start": (3, winreg.REG_DWORD),
-                         "ImagePath": (image, winreg.REG_SZ)}, 0) is True
+    assert (
+        _detect_orphaned_service(
+            "HKLM\\X\\svc", {"Start": (3, winreg.REG_DWORD), "ImagePath": (image, winreg.REG_SZ)}, 0
+        )
+        is True
+    )
 
 
 def test_detect_orphaned_service_false_when_image_missing_but_dll_alive(tmp_path):
@@ -274,9 +285,12 @@ def test_detect_orphaned_service_false_when_image_missing_but_dll_alive(tmp_path
     """
     dll = tmp_path / "svc.dll"
     dll.write_bytes(b"MZ")
-    assert _detect_orphaned_service(
-        "HKLM\\X\\svc", {"Start": (2, winreg.REG_DWORD),
-                         "ServiceDll": (str(dll), winreg.REG_EXPAND_SZ)}, 0) is False
+    assert (
+        _detect_orphaned_service(
+            "HKLM\\X\\svc", {"Start": (2, winreg.REG_DWORD), "ServiceDll": (str(dll), winreg.REG_EXPAND_SZ)}, 0
+        )
+        is False
+    )
 
 
 def test_detect_orphaned_service_true_when_dll_verifiably_missing(tmp_path):
@@ -286,9 +300,12 @@ def test_detect_orphaned_service_true_when_dll_verifiably_missing(tmp_path):
         tmp_path: Filesystem path to the target file or directory.
     """
     dll = str(tmp_path / "gone_svc.dll")
-    assert _detect_orphaned_service(
-        "HKLM\\X\\svc", {"Start": (2, winreg.REG_DWORD),
-                         "ServiceDll": (dll, winreg.REG_EXPAND_SZ)}, 0) is True
+    assert (
+        _detect_orphaned_service(
+            "HKLM\\X\\svc", {"Start": (2, winreg.REG_DWORD), "ServiceDll": (dll, winreg.REG_EXPAND_SZ)}, 0
+        )
+        is True
+    )
 
 
 def test_detect_orphaned_service_never_guesses_with_no_targets():
@@ -304,16 +321,15 @@ def test_detect_shared_dll_uses_value_names_as_paths(tmp_path):
     """
     present = tmp_path / "present.dll"
     present.write_bytes(b"MZ")
-    values = {str(present): (1, winreg.REG_DWORD),
-              str(tmp_path / "gone.dll"): (1, winreg.REG_DWORD)}
+    values = {str(present): (1, winreg.REG_DWORD), str(tmp_path / "gone.dll"): (1, winreg.REG_DWORD)}
     assert _detect_shared_dll_gone("HKLM\\X", values, 0) is True
-    assert _detect_shared_dll_gone(
-        "HKLM\\X", {str(present): (1, winreg.REG_DWORD)}, 0) is False
+    assert _detect_shared_dll_gone("HKLM\\X", {str(present): (1, winreg.REG_DWORD)}, 0) is False
 
 
 # ---------------------------------------------------------------------------
 # Cleaner-level integration (read-only paths)
 # ---------------------------------------------------------------------------
+
 
 @pytest.mark.live
 def test_scan_targets_offending_value():
@@ -371,6 +387,7 @@ def _cleaner(tmp_path):
     cleaner = AIRegistryCleaner(create_restore_point=False)
     # Redirect backups to the test directory so runs leave no residue.
     from pathlib import Path as _P
+
     cleaner._backup_dir = _P(tmp_path)
     return cleaner
 
@@ -384,13 +401,17 @@ def test_clean_deletes_value_level_orphan(throwaway_key, tmp_path):
     """
     sub = throwaway_key
     with winreg.CreateKey(winreg.HKEY_CURRENT_USER, sub + r"\Orphan") as k:
-        winreg.SetValueEx(k, "Path", 0, winreg.REG_SZ,
-                          str(tmp_path / "definitely_missing.exe"))
+        winreg.SetValueEx(k, "Path", 0, winreg.REG_SZ, str(tmp_path / "definitely_missing.exe"))
     issue = RegistryIssue(
-        key_path=f"HKCU\\{sub}\\Orphan", value_name="Path",
+        key_path=f"HKCU\\{sub}\\Orphan",
+        value_name="Path",
         value_data=str(tmp_path / "definitely_missing.exe"),
-        value_type=winreg.REG_SZ, category="orphaned_path_value",
-        risk_score=0.1, confidence=0.9, recommendation="remove")
+        value_type=winreg.REG_SZ,
+        category="orphaned_path_value",
+        risk_score=0.1,
+        confidence=0.9,
+        recommendation="remove",
+    )
     result = _cleaner(tmp_path).clean([issue], selected_ids=[0])
     assert len(result.cleaned) == 1
     # Value gone (raises), key itself still present (value-level category).
@@ -409,10 +430,15 @@ def test_clean_deletes_key_level_orphan(throwaway_key, tmp_path):
     sub = throwaway_key
     winreg.CreateKey(winreg.HKEY_CURRENT_USER, sub + r"\DeadApp")
     issue = RegistryIssue(
-        key_path=f"HKCU\\{sub}\\DeadApp", value_name="UninstallString",
+        key_path=f"HKCU\\{sub}\\DeadApp",
+        value_name="UninstallString",
         value_data=str(tmp_path / "gone" / "unins000.exe"),
-        value_type=winreg.REG_SZ, category="orphaned_uninstall",
-        risk_score=0.2, confidence=0.9, recommendation="remove")
+        value_type=winreg.REG_SZ,
+        category="orphaned_uninstall",
+        risk_score=0.2,
+        confidence=0.9,
+        recommendation="remove",
+    )
     result = _cleaner(tmp_path).clean([issue], selected_ids=[0])
     assert len(result.cleaned) == 1
     with pytest.raises(FileNotFoundError):
@@ -428,14 +454,18 @@ def test_clean_backs_up_before_deleting(throwaway_key, tmp_path):
     """
     sub = throwaway_key
     winreg.CreateKey(winreg.HKEY_CURRENT_USER, sub + r"\BackedUp")
-    with winreg.OpenKey(winreg.HKEY_CURRENT_USER, sub + r"\BackedUp",
-                        0, winreg.KEY_SET_VALUE) as k:
+    with winreg.OpenKey(winreg.HKEY_CURRENT_USER, sub + r"\BackedUp", 0, winreg.KEY_SET_VALUE) as k:
         winreg.SetValueEx(k, "Path", 0, winreg.REG_SZ, "x")
     issue = RegistryIssue(
-        key_path=f"HKCU\\{sub}\\BackedUp", value_name="Path",
-        value_data="x", value_type=winreg.REG_SZ,
+        key_path=f"HKCU\\{sub}\\BackedUp",
+        value_name="Path",
+        value_data="x",
+        value_type=winreg.REG_SZ,
         category="orphaned_path_value",
-        risk_score=0.1, confidence=0.9, recommendation="remove")
+        risk_score=0.1,
+        confidence=0.9,
+        recommendation="remove",
+    )
     cleaner = _cleaner(tmp_path)
     result = cleaner.clean([issue], selected_ids=[0])
     assert len(result.cleaned) == 1
@@ -454,10 +484,15 @@ def test_clean_refuses_delete_when_subkeys_present(throwaway_key, tmp_path):
     sub = throwaway_key
     winreg.CreateKey(winreg.HKEY_CURRENT_USER, sub + r"\Parent\\Child")
     issue = RegistryIssue(
-        key_path=f"HKCU\\{sub}\\Parent", value_name="UninstallString",
-        value_data=str(tmp_path / "gone"), value_type=winreg.REG_SZ,
+        key_path=f"HKCU\\{sub}\\Parent",
+        value_name="UninstallString",
+        value_data=str(tmp_path / "gone"),
+        value_type=winreg.REG_SZ,
         category="orphaned_uninstall",
-        risk_score=0.2, confidence=0.9, recommendation="remove")
+        risk_score=0.2,
+        confidence=0.9,
+        recommendation="remove",
+    )
     result = _cleaner(tmp_path).clean([issue], selected_ids=[0])
     assert result.cleaned == []
     assert result.failed and "subkeys present" in result.failed[0][1]
@@ -477,10 +512,15 @@ def test_clean_keep_recommendation_is_not_deleted(throwaway_key, tmp_path):
     with winreg.CreateKey(winreg.HKEY_CURRENT_USER, sub + r"\Kept") as k:
         winreg.SetValueEx(k, "Path", 0, winreg.REG_SZ, str(tmp_path / "gone.exe"))
     issue = RegistryIssue(
-        key_path=f"HKCU\\{sub}\\Kept", value_name="Path",
-        value_data=str(tmp_path / "gone.exe"), value_type=winreg.REG_SZ,
+        key_path=f"HKCU\\{sub}\\Kept",
+        value_name="Path",
+        value_data=str(tmp_path / "gone.exe"),
+        value_type=winreg.REG_SZ,
         category="orphaned_path_value",
-        risk_score=0.9, confidence=0.9, recommendation="keep")
+        risk_score=0.9,
+        confidence=0.9,
+        recommendation="keep",
+    )
     result = _cleaner(tmp_path).clean([issue], selected_ids=[0])
     assert result.cleaned == []
     with winreg.OpenKey(winreg.HKEY_CURRENT_USER, sub + r"\Kept") as k:

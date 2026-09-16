@@ -70,11 +70,11 @@ from typing import AsyncGenerator, Callable, Dict, List, Optional, Tuple, Any
 # Data structures
 # ---------------------------------------------------------------------------
 
+
 @dataclass(slots=True)
 class CloudFileEntry:
-    """Cloud object enumerated from a provider listing.
+    """Cloud object enumerated from a provider listing."""
 
-    """
     path: str
     size: int
     mtime: datetime
@@ -95,15 +95,16 @@ class CloudFileEntry:
             dict: Dictionary mapping identifiers to status or values.
         """
         import dataclasses
+
         d = dataclasses.asdict(self)
         d["mtime"] = self.mtime.isoformat()
         return d
 
+
 @dataclass
 class CloudScanStats:
-    """Aggregate counts, byte totals, live cost estimate, and errors for one cloud scan.
+    """Aggregate counts, byte totals, live cost estimate, and errors for one cloud scan."""
 
-    """
     total_objects: int = 0
     total_size_bytes: int = 0
     by_storage_class: Dict[str, int] = field(default_factory=lambda: defaultdict(int))
@@ -114,11 +115,11 @@ class CloudScanStats:
     scan_duration_seconds: float = 0.0
     errors: List[str] = field(default_factory=list)
 
+
 @dataclass
 class DuplicateGroup:
-    """Cloud (and optional local) objects sharing one content hash.
+    """Cloud (and optional local) objects sharing one content hash."""
 
-    """
     hash: str
     size: int
     entries: List[CloudFileEntry] = field(default_factory=list)
@@ -133,9 +134,11 @@ class DuplicateGroup:
         """
         return self.size * (len(self.entries) + len(self.local_paths) - 1)
 
+
 # ---------------------------------------------------------------------------
 # Dynamic pricing — live provider APIs with on-disk cache, no hardcoded rates
 # ---------------------------------------------------------------------------
+
 
 def _pricing_cache_dir() -> Path:
     """Return (creating if needed) the on-disk pricing cache directory.
@@ -148,6 +151,7 @@ def _pricing_cache_dir() -> Path:
     d = root / "Cortex" / "pricing"
     d.mkdir(parents=True, exist_ok=True)
     return d
+
 
 class PricingCatalog:
     """Storage pricing resolved at runtime from the provider's public API.
@@ -231,8 +235,7 @@ class PricingCatalog:
         Returns:
             Optional[Any]: Result of the operation.
         """
-        req = urllib.request.Request(url, headers={"Accept": "application/json",
-                                                   "User-Agent": "cortex-cleaner"})
+        req = urllib.request.Request(url, headers={"Accept": "application/json", "User-Agent": "cortex-cleaner"})
         try:
             with urllib.request.urlopen(req, timeout=self.timeout) as resp:
                 return json.loads(resp.read().decode("utf-8", errors="replace"))
@@ -263,7 +266,7 @@ class PricingCatalog:
         if not doc:
             return {}
         products = doc.get("products") or {}
-        on_demand = ((doc.get("terms") or {}).get("OnDemand") or {})
+        on_demand = (doc.get("terms") or {}).get("OnDemand") or {}
         rates: Dict[str, float] = {}
         for sku, product in products.items():
             attrs = product.get("attributes") or {}
@@ -299,9 +302,11 @@ class PricingCatalog:
         Returns:
             Dict[str, float]: Dictionary mapping identifiers to status or values.
         """
-        base = ("https://prices.azure.com/api/retail/prices?$filter="
-                "serviceName eq 'Storage' and priceType eq 'Consumption'"
-                f" and armRegionName eq '{region}'")
+        base = (
+            "https://prices.azure.com/api/retail/prices?$filter="
+            "serviceName eq 'Storage' and priceType eq 'Consumption'"
+            f" and armRegionName eq '{region}'"
+        )
         rates: Dict[str, float] = {}
         url: Optional[str] = base
         pages = 0
@@ -373,6 +378,7 @@ class PricingCatalog:
                 best, best_len = v, len(k)
         return best
 
+
 def _normalise_class(name: str) -> str:
     """Fold vendor storage-class / meter names into a comparable key.
 
@@ -383,10 +389,26 @@ def _normalise_class(name: str) -> str:
         str: Formatted string or path.
     """
     s = (name or "").strip().lower()
-    for token in ("standard", "general purpose", "blob", "data stored", "storage",
-                  "lrs", "grs", "zrs", "ra-", "gzrs", "(", ")", "-", "_", "/"):
+    for token in (
+        "standard",
+        "general purpose",
+        "blob",
+        "data stored",
+        "storage",
+        "lrs",
+        "grs",
+        "zrs",
+        "ra-",
+        "gzrs",
+        "(",
+        ")",
+        "-",
+        "_",
+        "/",
+    ):
         s = s.replace(token, " ")
     return " ".join(s.split()) or (name or "").strip().lower()
+
 
 _PRICING = PricingCatalog()
 
@@ -394,10 +416,9 @@ _PRICING = PricingCatalog()
 # Provider abstraction
 # ---------------------------------------------------------------------------
 
-class CloudProvider(ABC):
-    """Base interface for cloud providers: streaming list_objects plus live cost estimate.
 
-    """
+class CloudProvider(ABC):
+    """Base interface for cloud providers: streaming list_objects plus live cost estimate."""
 
     #: Key used to look up live pricing (``""`` = provider has no storage rate).
     pricing_key: str = ""
@@ -460,7 +481,7 @@ class CloudProvider(ABC):
             if rate is None:
                 stats.unpriced_classes.add(cls)
                 continue
-            total += (byte_count / (1024 ** 3)) * rate
+            total += (byte_count / (1024**3)) * rate
         return total
 
     def validate_config(self) -> Tuple[bool, str]:
@@ -471,14 +492,15 @@ class CloudProvider(ABC):
         """
         return True, ""
 
+
 # ---------------------------------------------------------------------------
 # S3 Provider
 # ---------------------------------------------------------------------------
 
-class S3Provider(CloudProvider):
-    """S3 backend using boto3, preferring versioned listing to expose billable old versions.
 
-    """
+class S3Provider(CloudProvider):
+    """S3 backend using boto3, preferring versioned listing to expose billable old versions."""
+
     pricing_key = "s3"
 
     def __init__(self, config: Dict[str, Any]):
@@ -493,9 +515,7 @@ class S3Provider(CloudProvider):
         self._init_client()
 
     def _init_client(self):
-        """Build the boto3 client, letting boto3 fall back to env/IAM/SSO credentials.
-
-        """
+        """Build the boto3 client, letting boto3 fall back to env/IAM/SSO credentials."""
         try:
             import boto3
         except ImportError:
@@ -593,8 +613,7 @@ class S3Provider(CloudProvider):
                     if max_keys and count >= max_keys:
                         return
                     last_modified = record.get("LastModified")
-                    mtime = (last_modified if isinstance(last_modified, datetime)
-                             else datetime.now(timezone.utc))
+                    mtime = last_modified if isinstance(last_modified, datetime) else datetime.now(timezone.utc)
                     etag = str(record.get("ETag", "")).strip('"')
                     yield CloudFileEntry(
                         path=f"s3://{bucket}/{record['Key']}",
@@ -624,14 +643,15 @@ class S3Provider(CloudProvider):
         """
         return super().estimate_cost(stats)
 
+
 # ---------------------------------------------------------------------------
 # Azure Blob Provider
 # ---------------------------------------------------------------------------
 
-class AzureBlobProvider(CloudProvider):
-    """Azure Blob backend using BlobServiceClient, listing blobs with metadata, tags, and versions.
 
-    """
+class AzureBlobProvider(CloudProvider):
+    """Azure Blob backend using BlobServiceClient, listing blobs with metadata, tags, and versions."""
+
     pricing_key = "azure"
 
     def __init__(self, config: Dict[str, Any]):
@@ -646,9 +666,7 @@ class AzureBlobProvider(CloudProvider):
         self._init_client()
 
     def _init_client(self):
-        """Build the BlobServiceClient from a connection string, account URL, or DefaultAzureCredential.
-
-        """
+        """Build the BlobServiceClient from a connection string, account URL, or DefaultAzureCredential."""
         try:
             from azure.storage.blob import BlobServiceClient
         except ImportError:
@@ -663,6 +681,7 @@ class AzureBlobProvider(CloudProvider):
                 if credential is None:
                     try:
                         from azure.identity import DefaultAzureCredential
+
                         credential = DefaultAzureCredential()
                     except ImportError:
                         credential = None
@@ -717,8 +736,11 @@ class AzureBlobProvider(CloudProvider):
         # "versions" is only valid where blob versioning is on; degrade cleanly.
         for include in (["metadata", "tags", "versions"], ["metadata"], None):
             try:
-                iterator = (container_client.list_blobs(name_starts_with=prefix, include=include)
-                            if include else container_client.list_blobs(name_starts_with=prefix))
+                iterator = (
+                    container_client.list_blobs(name_starts_with=prefix, include=include)
+                    if include
+                    else container_client.list_blobs(name_starts_with=prefix)
+                )
                 for blob in iterator:
                     if max_keys and count >= max_keys:
                         return
@@ -728,8 +750,7 @@ class AzureBlobProvider(CloudProvider):
                     yield CloudFileEntry(
                         path=f"az://{container}/{blob.name}",
                         size=int(getattr(blob, "size", 0) or 0),
-                        mtime=(last_modified if isinstance(last_modified, datetime)
-                               else datetime.now(timezone.utc)),
+                        mtime=(last_modified if isinstance(last_modified, datetime) else datetime.now(timezone.utc)),
                         etag=etag,
                         storage_class=str(tier) if tier else "Hot",
                         provider="azure",
@@ -755,9 +776,11 @@ class AzureBlobProvider(CloudProvider):
         """
         return super().estimate_cost(stats)
 
+
 # ---------------------------------------------------------------------------
 # Google Drive Provider (Drive v3 REST — OAuth token or rclone-managed token)
 # ---------------------------------------------------------------------------
+
 
 class GoogleDriveProvider(CloudProvider):
     """Google Drive listing via the Drive v3 REST API.
@@ -778,9 +801,7 @@ class GoogleDriveProvider(CloudProvider):
             config (Dict[str, Any]): The config parameter.
         """
         super().__init__(config)
-        self._token = (config.get("access_token")
-                       or os.environ.get("GOOGLE_OAUTH_ACCESS_TOKEN")
-                       or "")
+        self._token = config.get("access_token") or os.environ.get("GOOGLE_OAUTH_ACCESS_TOKEN") or ""
 
     def _get(self, params: Dict[str, str]) -> Optional[Dict[str, Any]]:
         """GET one JSON API page with the bearer token.
@@ -794,10 +815,13 @@ class GoogleDriveProvider(CloudProvider):
         if not self._token:
             return None
         url = f"{self.API}?{urllib.parse.urlencode(params)}"
-        req = urllib.request.Request(url, headers={
-            "Authorization": f"Bearer {self._token}",
-            "Accept": "application/json",
-        })
+        req = urllib.request.Request(
+            url,
+            headers={
+                "Authorization": f"Bearer {self._token}",
+                "Accept": "application/json",
+            },
+        )
         try:
             with urllib.request.urlopen(req, timeout=30) as resp:
                 return json.loads(resp.read().decode("utf-8", errors="replace"))
@@ -847,8 +871,7 @@ class GoogleDriveProvider(CloudProvider):
                 if raw_size is None:
                     continue
                 try:
-                    mtime = datetime.fromisoformat(
-                        str(f.get("modifiedTime", "")).replace("Z", "+00:00"))
+                    mtime = datetime.fromisoformat(str(f.get("modifiedTime", "")).replace("Z", "+00:00"))
                 except ValueError:
                     mtime = datetime.now(timezone.utc)
                 yield CloudFileEntry(
@@ -868,9 +891,11 @@ class GoogleDriveProvider(CloudProvider):
                 return
             params["pageToken"] = token
 
+
 # ---------------------------------------------------------------------------
 # OneDrive / SharePoint Provider (Microsoft Graph)
 # ---------------------------------------------------------------------------
+
 
 class OneDriveProvider(CloudProvider):
     """OneDrive / SharePoint listing via Microsoft Graph ``/children``.
@@ -890,9 +915,7 @@ class OneDriveProvider(CloudProvider):
             config (Dict[str, Any]): The config parameter.
         """
         super().__init__(config)
-        self._token = (config.get("access_token")
-                       or os.environ.get("MSGRAPH_ACCESS_TOKEN")
-                       or "")
+        self._token = config.get("access_token") or os.environ.get("MSGRAPH_ACCESS_TOKEN") or ""
 
     def _get(self, url: str) -> Optional[Dict[str, Any]]:
         """GET one JSON API page with the bearer token.
@@ -905,10 +928,13 @@ class OneDriveProvider(CloudProvider):
         """
         if not self._token:
             return None
-        req = urllib.request.Request(url, headers={
-            "Authorization": f"Bearer {self._token}",
-            "Accept": "application/json",
-        })
+        req = urllib.request.Request(
+            url,
+            headers={
+                "Authorization": f"Bearer {self._token}",
+                "Accept": "application/json",
+            },
+        )
         try:
             with urllib.request.urlopen(req, timeout=30) as resp:
                 return json.loads(resp.read().decode("utf-8", errors="replace"))
@@ -935,8 +961,7 @@ class OneDriveProvider(CloudProvider):
             return
         drive = (bucket or "me/drive").strip("/")
         root = f"{self.GRAPH}/{drive}/root"
-        url = (f"{root}:/{urllib.parse.quote(prefix.strip('/'))}:/children"
-               if prefix else f"{root}/children")
+        url = f"{root}:/{urllib.parse.quote(prefix.strip('/'))}:/children" if prefix else f"{root}/children"
         count = 0
         while url:
             doc = self._get(url)
@@ -948,8 +973,7 @@ class OneDriveProvider(CloudProvider):
                 if "folder" in item:
                     continue
                 try:
-                    mtime = datetime.fromisoformat(
-                        str(item.get("lastModifiedDateTime", "")).replace("Z", "+00:00"))
+                    mtime = datetime.fromisoformat(str(item.get("lastModifiedDateTime", "")).replace("Z", "+00:00"))
                 except ValueError:
                     mtime = datetime.now(timezone.utc)
                 file_info = item.get("file") or {}
@@ -958,8 +982,9 @@ class OneDriveProvider(CloudProvider):
                     path=f"onedrive://{drive}/{item.get('name', '')}",
                     size=int(item.get("size", 0) or 0),
                     mtime=mtime,
-                    etag=str(hashes.get("quickXorHash") or hashes.get("sha256Hash")
-                             or item.get("eTag") or "").strip('"'),
+                    etag=str(hashes.get("quickXorHash") or hashes.get("sha256Hash") or item.get("eTag") or "").strip(
+                        '"'
+                    ),
                     storage_class="ONEDRIVE",
                     provider="onedrive",
                     bucket=drive,
@@ -969,9 +994,11 @@ class OneDriveProvider(CloudProvider):
                 count += 1
             url = doc.get("@odata.nextLink")
 
+
 # ---------------------------------------------------------------------------
 # Rclone Provider (covers 40+ providers)
 # ---------------------------------------------------------------------------
+
 
 class RcloneProvider(CloudProvider):
     """Any of rclone's 40+ backends via ``rclone lsjson``.
@@ -1004,6 +1031,7 @@ class RcloneProvider(CloudProvider):
             Optional[str]: Formatted string or path.
         """
         import shutil as _shutil
+
         for candidate in (explicit, os.environ.get("RCLONE_BINARY"), "rclone"):
             if not candidate:
                 continue
@@ -1030,8 +1058,7 @@ class RcloneProvider(CloudProvider):
         if not self.binary:
             return []
         try:
-            proc = subprocess.run([self.binary, "listremotes"],
-                                  capture_output=True, text=True, timeout=30)
+            proc = subprocess.run([self.binary, "listremotes"], capture_output=True, text=True, timeout=30)
             if proc.returncode != 0:
                 return []
             return [line.strip().rstrip(":") for line in proc.stdout.splitlines() if line.strip()]
@@ -1109,14 +1136,14 @@ class RcloneProvider(CloudProvider):
         """
         return 0.0
 
+
 # ---------------------------------------------------------------------------
 # Cloud Storage Analyzer
 # ---------------------------------------------------------------------------
 
-class CloudStorageAnalyzer:
-    """Orchestrates provider instantiation, target scanning, duplicate grouping, and HTML reporting.
 
-    """
+class CloudStorageAnalyzer:
+    """Orchestrates provider instantiation, target scanning, duplicate grouping, and HTML reporting."""
 
     PROVIDERS = {
         "s3": S3Provider,
@@ -1159,8 +1186,7 @@ class CloudStorageAnalyzer:
                 self._providers[name] = cls(config)
             except Exception:
                 continue
-        self.default_provider = default if default in self._providers else next(
-            iter(self._providers), "")
+        self.default_provider = default if default in self._providers else next(iter(self._providers), "")
 
     def get_provider(self, name: str) -> Optional[CloudProvider]:
         """Return the instantiated provider by name, or ``None``.
@@ -1191,8 +1217,7 @@ class CloudStorageAnalyzer:
         az = self._providers.get("azure")
         if az is not None and getattr(az, "_client", None) is not None:
             try:
-                out["azure"] = [f"azure://{c.name}"
-                                for c in az._client.list_containers()]  # type: ignore[attr-defined]
+                out["azure"] = [f"azure://{c.name}" for c in az._client.list_containers()]  # type: ignore[attr-defined]
             except Exception:
                 pass
         rc = self._providers.get("rclone")
@@ -1233,8 +1258,7 @@ class CloudStorageAnalyzer:
 
         provider = self._providers.get(provider_name)
         if not provider:
-            raise ValueError(
-                f"Unknown provider {provider_name!r}; available: {sorted(self._providers)}")
+            raise ValueError(f"Unknown provider {provider_name!r}; available: {sorted(self._providers)}")
 
         # For rclone, the first segment names the remote to use.
         if isinstance(provider, RcloneProvider) and bucket and not provider.remote:
@@ -1272,6 +1296,7 @@ class CloudStorageAnalyzer:
             Tuple[List[CloudFileEntry], CloudScanStats]: List of processed items or identifiers.
         """
         import asyncio
+
         self.cancel_event = cancel_event or threading.Event()
         self.progress_cb = progress_cb or (lambda *_: None)
 
@@ -1331,12 +1356,14 @@ class CloudStorageAnalyzer:
             if len(objs) + len(locals_for_hash) < 2:
                 continue
             seen.add(h)
-            groups.append(DuplicateGroup(
-                hash=h,
-                size=objs[0].size,
-                entries=objs,
-                local_paths=locals_for_hash,
-            ))
+            groups.append(
+                DuplicateGroup(
+                    hash=h,
+                    size=objs[0].size,
+                    entries=objs,
+                    local_paths=locals_for_hash,
+                )
+            )
 
         # Local-only collisions that also matter for reclaim reporting.
         for h, paths in (local_hashes or {}).items():
@@ -1372,9 +1399,8 @@ class CloudStorageAnalyzer:
 
         priced_total = 0.0
         rows: List[str] = []
-        for cls, byte_count in sorted(stats.by_storage_class.items(),
-                                      key=lambda kv: kv[1], reverse=True):
-            gb = byte_count / (1024 ** 3)
+        for cls, byte_count in sorted(stats.by_storage_class.items(), key=lambda kv: kv[1], reverse=True):
+            gb = byte_count / (1024**3)
             provider = self._providers.get(provider_for_class.get(cls, ""))
             rate = None
             if provider is not None and provider.pricing_key and provider.region:
@@ -1442,6 +1468,7 @@ class CloudStorageAnalyzer:
 
         html.append("</body></html>")
         return "\n".join(html)
+
 
 __all__ = [
     "CloudStorageAnalyzer",

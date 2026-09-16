@@ -13,6 +13,7 @@ from typing import List, Dict
 
 from ..core.config import Config
 
+
 class StartupManager:
     """Groups related helpers: init, list startup items, list windows startup items, read registry startup items, read startup folder items, list macos startup items, read plist items, list linux startup items."""
 
@@ -29,7 +30,7 @@ class StartupManager:
 
         self.startup_items = []
         self.error_count = 0
-    
+
     def list_startup_items(self) -> List[Dict]:
         """Populate ``startup_items`` from every autostart location for this OS.
 
@@ -38,7 +39,7 @@ class StartupManager:
         """
         self.startup_items = []
         self.error_count = 0
-        
+
         try:
             if self.system == "windows":
                 self._list_windows_startup_items()
@@ -48,51 +49,63 @@ class StartupManager:
                 self._list_linux_startup_items()
         except Exception:
             self.error_count += 1
-        
+
         return self.startup_items
-    
+
     def _list_windows_startup_items(self):
         """Collect registry Run/RunOnce values plus Startup-folder files."""
         try:
             # Registry-based items: HKCU/HKLM x Run/RunOnce.
             try:
                 import winreg
-                
+
                 self._read_registry_startup_items(
-                    winreg.HKEY_CURRENT_USER,
-                    r"Software\Microsoft\Windows\CurrentVersion\Run"
+                    winreg.HKEY_CURRENT_USER, r"Software\Microsoft\Windows\CurrentVersion\Run"
                 )
-                
+
                 self._read_registry_startup_items(
-                    winreg.HKEY_LOCAL_MACHINE,
-                    r"Software\Microsoft\Windows\CurrentVersion\Run"
+                    winreg.HKEY_LOCAL_MACHINE, r"Software\Microsoft\Windows\CurrentVersion\Run"
                 )
-                
+
                 self._read_registry_startup_items(
-                    winreg.HKEY_CURRENT_USER,
-                    r"Software\Microsoft\Windows\CurrentVersion\RunOnce"
+                    winreg.HKEY_CURRENT_USER, r"Software\Microsoft\Windows\CurrentVersion\RunOnce"
                 )
-                
+
                 self._read_registry_startup_items(
-                    winreg.HKEY_LOCAL_MACHINE,
-                    r"Software\Microsoft\Windows\CurrentVersion\RunOnce"
+                    winreg.HKEY_LOCAL_MACHINE, r"Software\Microsoft\Windows\CurrentVersion\RunOnce"
                 )
             except Exception:
                 self.error_count += 1
-            
+
             # File-based items: per-user and all-users Startup folders.
             try:
-                startup_folder = Path.home() / "AppData" / "Roaming" / "Microsoft" / "Windows" / "Start Menu" / "Programs" / "Startup"
+                startup_folder = (
+                    Path.home()
+                    / "AppData"
+                    / "Roaming"
+                    / "Microsoft"
+                    / "Windows"
+                    / "Start Menu"
+                    / "Programs"
+                    / "Startup"
+                )
                 self._read_startup_folder_items(startup_folder)
-                
-                all_users_startup = Path(os.environ.get("PROGRAMDATA", r"C:\ProgramData")) / "Microsoft" / "Windows" / "Start Menu" / "Programs" / "Startup"
+
+                all_users_startup = (
+                    Path(os.environ.get("PROGRAMDATA", r"C:\ProgramData"))
+                    / "Microsoft"
+                    / "Windows"
+                    / "Start Menu"
+                    / "Programs"
+                    / "Startup"
+                )
                 self._read_startup_folder_items(all_users_startup)
             except Exception:
                 self.error_count += 1
-                
+
         except Exception:
             self.error_count += 1
-    
+
     def _read_registry_startup_items(self, hive, key_path):
         """Append every value under one Run/RunOnce key.
 
@@ -102,25 +115,27 @@ class StartupManager:
         """
         try:
             import winreg
-            
+
             with winreg.OpenKey(hive, key_path) as key:
                 i = 0
                 while True:
                     try:
                         name, value, _ = winreg.EnumValue(key, i)
-                        self.startup_items.append({
-                            "name": name,
-                            "path": value,
-                            "location": f"Registry: {key_path}",
-                            "enabled": True,
-                            "type": "registry"
-                        })
+                        self.startup_items.append(
+                            {
+                                "name": name,
+                                "path": value,
+                                "location": f"Registry: {key_path}",
+                                "enabled": True,
+                                "type": "registry",
+                            }
+                        )
                         i += 1
                     except WindowsError:
                         break
         except Exception:
             self.error_count += 1
-    
+
     def _read_startup_folder_items(self, folder_path: Path):
         """Append each file in one Startup folder.
 
@@ -131,33 +146,35 @@ class StartupManager:
             if folder_path.exists():
                 for item in folder_path.iterdir():
                     if item.is_file():
-                        self.startup_items.append({
-                            "name": item.name,
-                            "path": str(item),
-                            "location": f"Startup Folder: {folder_path}",
-                            "enabled": True,
-                            "type": "file"
-                        })
+                        self.startup_items.append(
+                            {
+                                "name": item.name,
+                                "path": str(item),
+                                "location": f"Startup Folder: {folder_path}",
+                                "enabled": True,
+                                "type": "file",
+                            }
+                        )
         except Exception:
             self.error_count += 1
-    
+
     def _list_macos_startup_items(self):
         """List macos startup items helper."""
         try:
             # Launch agents in ~/Library/LaunchAgents
             user_agents = Path.home() / "Library" / "LaunchAgents"
             self._read_plist_items(user_agents)
-            
+
             # Launch agents in /Library/LaunchAgents
             system_agents = Path("/Library/LaunchAgents")
             self._read_plist_items(system_agents)
-            
+
             # Launch daemons in /Library/LaunchDaemons
             system_daemons = Path("/Library/LaunchDaemons")
             self._read_plist_items(system_daemons)
         except Exception:
             self.error_count += 1
-    
+
     def _read_plist_items(self, folder_path: Path):
         """Append each launchd plist in one folder (name only, no parsing).
 
@@ -169,32 +186,31 @@ class StartupManager:
                 for plist_file in folder_path.glob("*.plist"):
                     try:
                         plist_name = plist_file.stem
-                        self.startup_items.append({
-                            "name": plist_name,
-                            "path": str(plist_file),
-                            "location": f"Plist: {folder_path}",
-                            "enabled": True,  # Assume enabled
-                            "type": "plist"
-                        })
+                        self.startup_items.append(
+                            {
+                                "name": plist_name,
+                                "path": str(plist_file),
+                                "location": f"Plist: {folder_path}",
+                                "enabled": True,  # Assume enabled
+                                "type": "plist",
+                            }
+                        )
                     except Exception:
                         continue
         except Exception:
             self.error_count += 1
-    
+
     def _list_linux_startup_items(self):
         """List linux startup items helper."""
         try:
             # Autostart directory items
-            autostart_dirs = [
-                Path.home() / ".config" / "autostart",
-                Path("/etc/xdg/autostart")
-            ]
-            
+            autostart_dirs = [Path.home() / ".config" / "autostart", Path("/etc/xdg/autostart")]
+
             for autostart_dir in autostart_dirs:
                 self._read_desktop_items(autostart_dir)
         except Exception:
             self.error_count += 1
-    
+
     def _read_desktop_items(self, folder_path: Path):
         """Read startup items from Linux .desktop files.
 
@@ -206,18 +222,20 @@ class StartupManager:
                 for desktop_file in folder_path.glob("*.desktop"):
                     try:
                         # Try to read basic info from desktop file
-                        self.startup_items.append({
-                            "name": desktop_file.name,
-                            "path": str(desktop_file),
-                            "location": f"Desktop: {folder_path}",
-                            "enabled": True,  # Assume enabled
-                            "type": "desktop"
-                        })
+                        self.startup_items.append(
+                            {
+                                "name": desktop_file.name,
+                                "path": str(desktop_file),
+                                "location": f"Desktop: {folder_path}",
+                                "enabled": True,  # Assume enabled
+                                "type": "desktop",
+                            }
+                        )
                     except Exception:
                         continue
         except Exception:
             self.error_count += 1
-    
+
     def _registry_backup_path(self) -> Path:
         """JSON sidecar where disabled Run/RunOnce values are preserved.
 
@@ -234,6 +252,7 @@ class StartupManager:
         """
         try:
             import json
+
             with open(self._registry_backup_path(), encoding="utf-8") as handle:
                 data = json.load(handle)
             return data if isinstance(data, dict) else {}
@@ -248,6 +267,7 @@ class StartupManager:
         """
         try:
             import json
+
             self._registry_backup_path().parent.mkdir(exist_ok=True)
             with open(self._registry_backup_path(), "w", encoding="utf-8") as handle:
                 json.dump(backup, handle, indent=2)
@@ -292,10 +312,20 @@ class StartupManager:
                     reverse=True,
                 )
                 startup_folders = [
-                    Path.home() / "AppData" / "Roaming" / "Microsoft" / "Windows"
-                    / "Start Menu" / "Programs" / "Startup",
+                    Path.home()
+                    / "AppData"
+                    / "Roaming"
+                    / "Microsoft"
+                    / "Windows"
+                    / "Start Menu"
+                    / "Programs"
+                    / "Startup",
                     Path(os.environ.get("PROGRAMDATA", r"C:\ProgramData"))
-                    / "Microsoft" / "Windows" / "Start Menu" / "Programs" / "Startup",
+                    / "Microsoft"
+                    / "Windows"
+                    / "Start Menu"
+                    / "Programs"
+                    / "Startup",
                 ]
                 for candidate in candidates:
                     if candidate.suffix.lower() == ".json":
@@ -322,11 +352,12 @@ class StartupManager:
                 import winreg
 
                 hive = getattr(winreg, record.get("hive", "HKEY_CURRENT_USER"))
-                with winreg.OpenKey(
-                    hive, record["key_path"], 0, winreg.KEY_SET_VALUE
-                ) as key:
+                with winreg.OpenKey(hive, record["key_path"], 0, winreg.KEY_SET_VALUE) as key:
                     winreg.SetValueEx(
-                        key, wanted, 0, record.get("value_type", winreg.REG_SZ),
+                        key,
+                        wanted,
+                        0,
+                        record.get("value_type", winreg.REG_SZ),
                         record["value_data"],
                     )
                 backup.pop(wanted, None)
@@ -338,7 +369,7 @@ class StartupManager:
                 return False
         except Exception:
             return False
-    
+
     def disable_startup_item(self, name: str, item_type: str) -> bool:
         """
         Disable a specific startup item.
@@ -351,9 +382,9 @@ class StartupManager:
             bool: True if successful, False otherwise.
         """
         if platform.system() == "Windows":
-            if item_type == 'registry':
+            if item_type == "registry":
                 return self._disable_registry_item(name)
-            elif item_type == 'file':
+            elif item_type == "file":
                 return self._disable_startup_folder_item(name)
         return False
 
@@ -381,10 +412,7 @@ class StartupManager:
                     hive: hive.
                     key_path: key path."""
                 try:
-                    with winreg.OpenKey(
-                        hive, key_path, 0,
-                        winreg.KEY_QUERY_VALUE | winreg.KEY_SET_VALUE
-                    ) as key:
+                    with winreg.OpenKey(hive, key_path, 0, winreg.KEY_QUERY_VALUE | winreg.KEY_SET_VALUE) as key:
                         value_data, value_type = winreg.QueryValueEx(key, name)
                         snapshot[name] = {
                             "hive": hive_name,
@@ -395,14 +423,12 @@ class StartupManager:
                 except Exception:
                     pass
 
-            capture("HKEY_CURRENT_USER", winreg.HKEY_CURRENT_USER,
-                    r"Software\Microsoft\Windows\CurrentVersion\Run")
-            capture("HKEY_LOCAL_MACHINE", winreg.HKEY_LOCAL_MACHINE,
-                    r"Software\Microsoft\Windows\CurrentVersion\Run")
-            capture("HKEY_CURRENT_USER", winreg.HKEY_CURRENT_USER,
-                    r"Software\Microsoft\Windows\CurrentVersion\RunOnce")
-            capture("HKEY_LOCAL_MACHINE", winreg.HKEY_LOCAL_MACHINE,
-                    r"Software\Microsoft\Windows\CurrentVersion\RunOnce")
+            capture("HKEY_CURRENT_USER", winreg.HKEY_CURRENT_USER, r"Software\Microsoft\Windows\CurrentVersion\Run")
+            capture("HKEY_LOCAL_MACHINE", winreg.HKEY_LOCAL_MACHINE, r"Software\Microsoft\Windows\CurrentVersion\Run")
+            capture("HKEY_CURRENT_USER", winreg.HKEY_CURRENT_USER, r"Software\Microsoft\Windows\CurrentVersion\RunOnce")
+            capture(
+                "HKEY_LOCAL_MACHINE", winreg.HKEY_LOCAL_MACHINE, r"Software\Microsoft\Windows\CurrentVersion\RunOnce"
+            )
 
             if not snapshot:
                 return False
@@ -429,7 +455,7 @@ class StartupManager:
             return True
         except Exception:
             return False
-    
+
     def _disable_startup_folder_item(self, name: str) -> bool:
         """Disable a file-based startup item.
 
@@ -458,22 +484,27 @@ class StartupManager:
                     item_path.rename(new_location)
                 except Exception:
                     pass
-            
+
             # Check current user and all users startup folders
             startup_folders = [
                 Path.home() / "AppData" / "Roaming" / "Microsoft" / "Windows" / "Start Menu" / "Programs" / "Startup",
-                Path(os.environ.get("PROGRAMDATA", r"C:\ProgramData")) / "Microsoft" / "Windows" / "Start Menu" / "Programs" / "Startup"
+                Path(os.environ.get("PROGRAMDATA", r"C:\ProgramData"))
+                / "Microsoft"
+                / "Windows"
+                / "Start Menu"
+                / "Programs"
+                / "Startup",
             ]
-            
+
             for folder in startup_folders:
                 item_path = folder / name
                 if item_path.exists():
                     move_to_backup(item_path)
-            
+
             return True
         except Exception:
             return False
-    
+
     def get_stats(self) -> dict:
         """Get statistics about startup items.
 
@@ -482,15 +513,15 @@ class StartupManager:
         """
         enabled_count = sum(1 for item in self.startup_items if item.get("enabled", True))
         disabled_count = len(self.startup_items) - enabled_count
-        
+
         return {
             "total_startup_items": len(self.startup_items),
             "enabled_items": enabled_count,
             "disabled_items": disabled_count,
             "system_type": self.system,
-            "errors": self.error_count
+            "errors": self.error_count,
         }
-    
+
     def filter_by_type(self, item_type: str) -> List[Dict]:
         """Filter startup items by type.
 

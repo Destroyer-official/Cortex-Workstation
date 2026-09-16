@@ -26,14 +26,9 @@ DLL = REPO / "target" / "debug" / "nexus_engine.dll"
 sys.path.insert(0, str(NATIVE))
 
 if not (NATIVE / "nexus_ffi.py").is_file() or not DLL.is_file():
-    missing = [
-        str(p.relative_to(REPO))
-        for p in (NATIVE / "nexus_ffi.py", DLL)
-        if not p.is_file()
-    ]
+    missing = [str(p.relative_to(REPO)) for p in (NATIVE / "nexus_ffi.py", DLL) if not p.is_file()]
     pytest.skip(
-        f"transport parity requires native bridge + engine dll; missing: "
-        f"{', '.join(missing)}",
+        f"transport parity requires native bridge + engine dll; missing: " f"{', '.join(missing)}",
         allow_module_level=True,
     )
 
@@ -170,6 +165,7 @@ def cli():
 
 class TestTransportParity:
     """Group testtransportparity tests covering parity list names and meta; parity search; parity drives."""
+
     def test_parity_list_names_and_meta(self, cli, ffi, parity_tree):
         """Verify parity list names and meta via ffi.read_dir_sync, pytest.skip, diffs.append.
 
@@ -204,15 +200,11 @@ class TestTransportParity:
             if int(c["size"]) != int(f["size"]):
                 diffs.append(f"{name}: size {c['size']} vs {f['size']}")
             if (c.get("ext") or "").lower() != (f.get("ext") or "").lower():
-                diffs.append(
-                    f"{name}: ext {c.get('ext')!r} vs {f.get('ext')!r}"
-                )
+                diffs.append(f"{name}: ext {c.get('ext')!r} vs {f.get('ext')!r}")
             dt = abs(int(c["modifiedMs"]) - int(f["modifiedMs"]))
             if dt > MTIME_TOLERANCE_MS:
                 diffs.append(f"{name}: modifiedMs delta {dt}ms")
-        assert not diffs, f"metadata mismatches ({len(diffs)}):\n" + "\n".join(
-            diffs[:20]
-        )
+        assert not diffs, f"metadata mismatches ({len(diffs)}):\n" + "\n".join(diffs[:20])
 
     def test_parity_search(self, cli, ffi, parity_tree):
         """Verify parity search via ffi.search, pytest.skip, _cli_search.
@@ -236,8 +228,7 @@ class TestTransportParity:
         assert cli_set, "cli search returned no hits for seeded token"
         assert ffi_set, "ffi search returned no hits for seeded token"
         assert cli_set == ffi_set, (
-            f"hit-set mismatch: cli-only={sorted(cli_set - ffi_set)} "
-            f"ffi-only={sorted(ffi_set - cli_set)}"
+            f"hit-set mismatch: cli-only={sorted(cli_set - ffi_set)} " f"ffi-only={sorted(ffi_set - cli_set)}"
         )
 
     def test_parity_drives(self, cli, ffi):
@@ -277,6 +268,4 @@ class TestTransportParity:
             b = int(ffi_by[letter].get("freeBytes", 0))
             if a == 0 and b == 0:
                 continue
-            assert abs(a - b) <= 0.05 * max(a, b), (
-                f"{letter}: freeBytes {a} vs {b} (>5% apart)"
-            )
+            assert abs(a - b) <= 0.05 * max(a, b), f"{letter}: freeBytes {a} vs {b} (>5% apart)"

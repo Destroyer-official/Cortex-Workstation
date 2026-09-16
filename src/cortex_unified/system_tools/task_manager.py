@@ -38,6 +38,7 @@ def _describe(name: str, exe: str) -> str:
     """
     try:
         from cortex_unified.system_tools.process_meta import describe
+
         return describe(name, exe)
     except Exception:  # noqa: BLE001
         return ""
@@ -68,7 +69,7 @@ class TaskManager:
 
         Initializes the instance and configures internal state.
         """
-        self._cache: dict[int, Any] = {}   # pid -> psutil.Process
+        self._cache: dict[int, Any] = {}  # pid -> psutil.Process
         self._installed_bytes: int | None = None  # physical RAM incl. reserved
 
     # -- public API ---------------------------------------------------------
@@ -153,10 +154,14 @@ class TaskManager:
             return False, "psutil is not installed."
         try:
             from cortex_unified.core.proc import is_protected_process
+
             proc = psutil.Process(pid)
             name = proc.name() or ""
             if is_protected_process(pid) or is_protected_process(name):
-                return False, f"Action denied: '{name}' is a protected Windows system process. Terminating it would destabilize the OS or crash the desktop shell."
+                return (
+                    False,
+                    f"Action denied: '{name}' is a protected Windows system process. Terminating it would destabilize the OS or crash the desktop shell.",
+                )
             if force:
                 proc.kill()
             else:
@@ -171,8 +176,7 @@ class TaskManager:
 
     # -- internals ----------------------------------------------------------
 
-    def _collect_processes(self, psutil, cores: int,
-                           handles: dict[int, Any]) -> list[dict[str, Any]]:
+    def _collect_processes(self, psutil, cores: int, handles: dict[int, Any]) -> list[dict[str, Any]]:
         """Collect processes helper. Returns procs.
 
         Args:
@@ -200,18 +204,20 @@ class TaskManager:
                         exe = handle.exe()
                     except (psutil.AccessDenied, Exception):  # noqa: BLE001
                         exe = ""
-                    procs.append({
-                        "pid": pid,
-                        "name": name or "?",
-                        # Normalize to a 0-100 scale across all cores, like Task Manager.
-                        "cpu": round(raw_cpu / cores, 1),
-                        "rss": mem.rss if mem else 0,
-                        "threads": handle.num_threads(),
-                        "user": user,
-                        "status": handle.status(),
-                        "exe": exe,
-                        "desc": _describe(name, exe),
-                    })
+                    procs.append(
+                        {
+                            "pid": pid,
+                            "name": name or "?",
+                            # Normalize to a 0-100 scale across all cores, like Task Manager.
+                            "cpu": round(raw_cpu / cores, 1),
+                            "rss": mem.rss if mem else 0,
+                            "threads": handle.num_threads(),
+                            "user": user,
+                            "status": handle.status(),
+                            "exe": exe,
+                            "desc": _describe(name, exe),
+                        }
+                    )
             except (psutil.NoSuchProcess, psutil.AccessDenied):
                 continue
             except Exception:  # noqa: BLE001 - never let one bad process break the list
@@ -272,11 +278,18 @@ class TaskManager:
             return None
         try:
             from cortex_unified.core import proc as _proc
+
             out = _proc.run(
-                ["powershell", "-NoProfile", "-NonInteractive", "-Command",
-                 "(Get-CimInstance Win32_PhysicalMemory | "
-                 "Measure-Object -Property Capacity -Sum).Sum"],
-                text=True, timeout=15, creationflags=_NO_WINDOW,
+                [
+                    "powershell",
+                    "-NoProfile",
+                    "-NonInteractive",
+                    "-Command",
+                    "(Get-CimInstance Win32_PhysicalMemory | " "Measure-Object -Property Capacity -Sum).Sum",
+                ],
+                text=True,
+                timeout=15,
+                creationflags=_NO_WINDOW,
             )
             val = int((out.stdout or "0").strip() or 0)
             self._installed_bytes = val

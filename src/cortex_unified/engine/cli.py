@@ -66,12 +66,13 @@ _LEVEL_ORDER = {"bad": 0, "questionable": 1, "good": 2, "verygood": 3}
 def _require_feature(feature) -> None:
     """Gate a CLI command on a licensing Feature (clean click error if denied).
 
- Handles require feature for.
+    Handles require feature for.
 
- Args:
- feature: The feature parameter.
- """
+    Args:
+    feature: The feature parameter.
+    """
     from cortex_unified.licensing.gating import EntitlementError, require
+
     try:
         require(feature)
     except EntitlementError as exc:
@@ -99,25 +100,23 @@ def _fmt_memory_stats(stats: dict) -> str:
         "Top consumers:",
     ]
     for entry in stats.get("top_consumers", []):
-        lines.append(
-            f"  {_fmt_bytes(entry['rss_bytes']):>10}  "
-            f"{entry['name']} (pid {entry['pid']})"
-        )
+        lines.append(f"  {_fmt_bytes(entry['rss_bytes']):>10}  " f"{entry['name']} (pid {entry['pid']})")
     return "\n".join(lines)
 
 
 def _find_app_by_name(name: str):
     """Locate an installed/uninstalled app record by display name.
 
- Handles find app by name for.
+    Handles find app by name for.
 
- Args:
- name (str): The name parameter.
- """
+    Args:
+    name (str): The name parameter.
+    """
     from cortex_unified.system_tools.leftover_cleaner import (
         InstalledApp,
         read_installed_apps,
     )
+
     wanted = name.strip().lower()
     for app in read_installed_apps():
         if app.name.lower() == wanted:
@@ -129,12 +128,12 @@ def _find_app_by_name(name: str):
 def _echo_findings(findings, as_json: bool) -> None:
     """Echo findings.
 
- Handles echo findings for.
+    Handles echo findings for.
 
- Args:
- findings: The findings parameter.
- as_json (bool): The as json parameter.
- """
+    Args:
+    findings: The findings parameter.
+    as_json (bool): The as json parameter.
+    """
     if as_json:
         click.echo(_json.dumps([f.to_dict() for f in findings], indent=2))
         return
@@ -143,10 +142,11 @@ def _echo_findings(findings, as_json: bool) -> None:
         return
     total = sum(f.size_bytes for f in findings)
     for f in findings:
-        click.echo(f"  [{f.level:^12}] {_fmt_bytes(f.size_bytes):>10}  "
-                   f"{f.kind:<8}  {f.path}")
-    click.echo(f"\n  {len(findings)} item(s), {_fmt_bytes(total)} reclaimable. "
-               "Review before cleaning: 'Questionable' rows may be shared.")
+        click.echo(f"  [{f.level:^12}] {_fmt_bytes(f.size_bytes):>10}  " f"{f.kind:<8}  {f.path}")
+    click.echo(
+        f"\n  {len(findings)} item(s), {_fmt_bytes(total)} reclaimable. "
+        "Review before cleaning: 'Questionable' rows may be shared."
+    )
 
 
 def _fmt_bytes(n: int) -> str:
@@ -175,8 +175,8 @@ if click is not None:
     def main() -> None:
         """Main helper.
 
- Handles main for.
- """
+        Handles main for.
+        """
 
     @main.command()
     @click.option("--json", "as_json", is_flag=True, help="Machine-readable output.")
@@ -192,9 +192,7 @@ if click is not None:
             include_disabled (bool): The include disabled parameter.
             max_risk (str): The max risk parameter.
         """
-        report = CleanerService().scan_categories(
-            max_risk=RiskLevel(max_risk), include_disabled=include_disabled
-        )
+        report = CleanerService().scan_categories(max_risk=RiskLevel(max_risk), include_disabled=include_disabled)
         if as_json:
             click.echo(_json.dumps(report.to_dict(), indent=2))
             return
@@ -234,17 +232,12 @@ if click is not None:
             max_risk (str): The max risk parameter.
         """
         service = CleanerService()
-        report = service.scan_categories(
-            max_risk=RiskLevel(max_risk), include_disabled=include_disabled
-        )
+        report = service.scan_categories(max_risk=RiskLevel(max_risk), include_disabled=include_disabled)
         if not report.scans:
             click.echo("Nothing to clean.")
             return
 
-        chosen = (
-            DeletionMethod.DRY_RUN if not apply
-            else DeletionMethod(method)
-        )
+        chosen = DeletionMethod.DRY_RUN if not apply else DeletionMethod(method)
         results = service.clean_categories(report, chosen)
         freed = sum(r.size for r in results if r.succeeded and r.method is not DeletionMethod.DRY_RUN)
         ok = sum(1 for r in results if r.succeeded)
@@ -267,12 +260,12 @@ if click is not None:
     def duplicates(paths: tuple[str, ...], as_json: bool) -> None:
         """Duplicates helper.
 
- Handles duplicates for.
+        Handles duplicates for.
 
- Args:
- paths (tuple[str, ..]): Filesystem path to the target file or directory.
- as_json (bool): The as json parameter.
- """
+        Args:
+        paths (tuple[str, ..]): Filesystem path to the target file or directory.
+        as_json (bool): The as json parameter.
+        """
         groups = CleanerService().find_duplicates([Path(p) for p in paths])
         if as_json:
             click.echo(_json.dumps({k: [str(p) for p in v] for k, v in groups.items()}, indent=2))
@@ -292,13 +285,13 @@ if click is not None:
     def large(path: str, min_mb: float, limit: int) -> None:
         """Large helper.
 
- Handles large for.
+        Handles large for.
 
- Args:
- path (str): Filesystem path to the target file or directory.
- min_mb (float): The min mb parameter.
- limit (int): The limit parameter.
- """
+        Args:
+        path (str): Filesystem path to the target file or directory.
+        min_mb (float): The min mb parameter.
+        limit (int): The limit parameter.
+        """
         for e in CleanerService().find_large_files(path, min_mb=min_mb, limit=limit):
             click.echo(f"  {_fmt_bytes(e.size):>10}  {e.path}")
 
@@ -307,11 +300,11 @@ if click is not None:
     def empty(path: str) -> None:
         """Empty helper.
 
- Handles empty for.
+        Handles empty for.
 
- Args:
- path (str): Filesystem path to the target file or directory.
- """
+        Args:
+        path (str): Filesystem path to the target file or directory.
+        """
         files, dirs = CleanerService().find_empty(path)
         click.echo(f"Empty files: {len(files)}, empty dirs: {len(dirs)}")
         for p in files + dirs:
@@ -334,8 +327,10 @@ if click is not None:
             force_flash (bool): The force flash parameter.
         """
         info = detect_storage(target)
-        click.echo(f"Detected medium: {info.kind.value}"
-                   + ("" if info.kind.overwrite_effective else "  (overwrite NOT reliable here)"))
+        click.echo(
+            f"Detected medium: {info.kind.value}"
+            + ("" if info.kind.overwrite_effective else "  (overwrite NOT reliable here)")
+        )
         if not apply:
             click.echo("[PREVIEW] Re-run with --apply to shred.")
             return
@@ -345,8 +340,11 @@ if click is not None:
             click.echo(f"{res.outcome.value}: {target}" + (f"  ({res.reason})" if res.reason else ""))
         except OverwriteNotEffective as exc:
             click.echo(f"Refused: {exc}", err=True)
-            click.echo("Tip: use full-disk encryption + key destruction, or the drive's "
-                       "hardware secure-erase; or pass --force-flash to overwrite anyway.", err=True)
+            click.echo(
+                "Tip: use full-disk encryption + key destruction, or the drive's "
+                "hardware secure-erase; or pass --force-flash to overwrite anyway.",
+                err=True,
+            )
             sys.exit(2)
 
     # ------------------------------------------------------------------
@@ -357,8 +355,8 @@ if click is not None:
     def leftovers() -> None:
         """Leftovers helper.
 
- Handles leftovers for.
- """
+        Handles leftovers for.
+        """
 
     @leftovers.command("scan")
     @click.argument("app_name")
@@ -366,13 +364,14 @@ if click is not None:
     def leftovers_scan(app_name: str, as_json: bool) -> None:
         """Scan APP_NAME's leftovers (read-only; works after uninstall too).
 
- Handles leftovers scan for.
+        Handles leftovers scan for.
 
- Args:
- app_name (str): The app name parameter.
- as_json (bool): The as json parameter.
- """
+        Args:
+        app_name (str): The app name parameter.
+        as_json (bool): The as json parameter.
+        """
         from cortex_unified.system_tools.leftover_cleaner import LeftoverScanner
+
         app = _find_app_by_name(app_name)
         findings = LeftoverScanner().scan_app(app)
         if not as_json:
@@ -384,12 +383,13 @@ if click is not None:
     def leftovers_orphans(as_json: bool) -> None:
         """List Program Files folders no installed app claims (read-only).
 
- Handles leftovers orphans for.
+        Handles leftovers orphans for.
 
- Args:
- as_json (bool): The as json parameter.
- """
+        Args:
+        as_json (bool): The as json parameter.
+        """
         from cortex_unified.system_tools.leftover_cleaner import LeftoverScanner
+
         findings = LeftoverScanner().scan_orphans()
         if not as_json:
             click.echo("Scanning Program Files for orphan folders...\n")
@@ -397,77 +397,92 @@ if click is not None:
 
     @leftovers.command("clean")
     @click.argument("app_name")
-    @click.option("--apply", "apply", is_flag=True,
-                  help="Actually clean (default: dry-run listing only).")
-    @click.option("--min-level",
-                  type=click.Choice(["questionable", "good", "verygood"]),
-                  default="good",
-                  help="Only clean findings at this confidence or higher.")
-    @click.option("--restore-point", "restore_point", is_flag=True,
-                  help="Attempt a System Restore checkpoint first (admin).")
+    @click.option("--apply", "apply", is_flag=True, help="Actually clean (default: dry-run listing only).")
+    @click.option(
+        "--min-level",
+        type=click.Choice(["questionable", "good", "verygood"]),
+        default="good",
+        help="Only clean findings at this confidence or higher.",
+    )
+    @click.option(
+        "--restore-point", "restore_point", is_flag=True, help="Attempt a System Restore checkpoint first (admin)."
+    )
     @click.option("--json", "as_json", is_flag=True)
-    def leftovers_clean(app_name: str, apply: bool, min_level: str,
-                        restore_point: bool, as_json: bool) -> None:
+    def leftovers_clean(app_name: str, apply: bool, min_level: str, restore_point: bool, as_json: bool) -> None:
         """Clean APP_NAME's leftovers. Dry-run unless --apply.
 
- Handles leftovers clean for.
+        Handles leftovers clean for.
 
- Args:
- app_name (str): The app name parameter.
- apply (bool): The apply parameter.
- min_level (str): The min level parameter.
- restore_point (bool): The restore point parameter.
- as_json (bool): The as json parameter.
- """
+        Args:
+        app_name (str): The app name parameter.
+        apply (bool): The apply parameter.
+        min_level (str): The min level parameter.
+        restore_point (bool): The restore point parameter.
+        as_json (bool): The as json parameter.
+        """
         from cortex_unified.system_tools.leftover_cleaner import (
             LeftoverCleaner,
             LeftoverFinding,
             LeftoverScanner,
         )
+
         app = _find_app_by_name(app_name)
-        findings = [f for f in LeftoverScanner().scan_app(app)
-                    if _LEVEL_ORDER.get(f.level.lower(), 0)
-                    >= _LEVEL_ORDER[min_level]]
+        findings = [
+            f
+            for f in LeftoverScanner().scan_app(app)
+            if _LEVEL_ORDER.get(f.level.lower(), 0) >= _LEVEL_ORDER[min_level]
+        ]
         if not findings:
             click.echo("Nothing to clean at this confidence level.")
             return
         if not apply:
             if as_json:
-                click.echo(_json.dumps(
-                    {"app": app.name, "dry_run": True,
-                     "would_clean": [f.to_dict() for f in findings]}, indent=2))
+                click.echo(
+                    _json.dumps(
+                        {"app": app.name, "dry_run": True, "would_clean": [f.to_dict() for f in findings]}, indent=2
+                    )
+                )
             else:
                 click.echo("[DRY-RUN] Would clean:\n")
                 _echo_findings(findings, as_json=False)
-                click.echo("\nRe-run with --apply to move files to the Recycle Bin "
-                           "(registry keys are backed up as .reg first).")
+                click.echo(
+                    "\nRe-run with --apply to move files to the Recycle Bin "
+                    "(registry keys are backed up as .reg first)."
+                )
             return
         outcomes = LeftoverCleaner().clean(
-            [LeftoverFinding(kind=f.kind, path=f.path,
-                             size_bytes=f.size_bytes, score=f.score,
-                             level=f.level, reasons=list(f.reasons),
-                             app_name=f.app_name)
-             for f in findings],
+            [
+                LeftoverFinding(
+                    kind=f.kind,
+                    path=f.path,
+                    size_bytes=f.size_bytes,
+                    score=f.score,
+                    level=f.level,
+                    reasons=list(f.reasons),
+                    app_name=f.app_name,
+                )
+                for f in findings
+            ],
             create_restore_point=restore_point,
         )
         ok = [o for o in outcomes if o.ok]
         failed = [o for o in outcomes if not o.ok]
-        freed = sum(f.size_bytes for f, o in zip(findings, outcomes)
-                    if o.disposition == "recycled")
+        freed = sum(f.size_bytes for f, o in zip(findings, outcomes) if o.disposition == "recycled")
         payload = {
             "app": app.name,
-            "ok": len(ok), "failed": len(failed),
+            "ok": len(ok),
+            "failed": len(failed),
             "recycled_bytes": freed,
             "outcomes": [o.to_dict() for o in outcomes],
         }
         if as_json:
             click.echo(_json.dumps(payload, indent=2))
         else:
-            click.echo(f"Cleaned '{app.name}': {len(ok)} ok, {len(failed)} failed, "
-                       f"{_fmt_bytes(freed)} to the Recycle Bin.")
+            click.echo(
+                f"Cleaned '{app.name}': {len(ok)} ok, {len(failed)} failed, " f"{_fmt_bytes(freed)} to the Recycle Bin."
+            )
             for o in failed[:10]:
-                click.echo(f"  FAILED [{o.disposition}] {o.path}: {o.detail}",
-                           err=True)
+                click.echo(f"  FAILED [{o.disposition}] {o.path}: {o.detail}", err=True)
         if failed:
             sys.exit(1)
 
@@ -477,29 +492,28 @@ if click is not None:
     def license() -> None:
         """License helper.
 
- Handles license for.
- """
+        Handles license for.
+        """
 
     @license.command("status")
     @click.option("--json", "as_json", is_flag=True)
     def license_status(as_json: bool) -> None:
         """Show the current tier, features and expiry (works offline).
 
- Handles license status for.
+        Handles license status for.
 
- Args:
- as_json (bool): The as json parameter.
- """
+        Args:
+        as_json (bool): The as json parameter.
+        """
         from cortex_unified.licensing import effective_features
+
         state = get_license_manager().validate()
         if as_json:
-            click.echo(_json.dumps(
-                {**state.to_dict(),
-                 "features": sorted(f.value for f in effective_features())},
-                indent=2))
+            click.echo(
+                _json.dumps({**state.to_dict(), "features": sorted(f.value for f in effective_features())}, indent=2)
+            )
             return
-        click.echo(f"Tier:     {state.tier.value.title()}"
-                   f"{' (trial)' if state.trial else ''}")
+        click.echo(f"Tier:     {state.tier.value.title()}" f"{' (trial)' if state.trial else ''}")
         if state.licensed:
             click.echo(f"Key:      {state._masked_key()}")
             click.echo(f"Expires:  {state.expiry}")
@@ -511,31 +525,30 @@ if click is not None:
 
     @license.command("activate")
     @click.option("--key", required=True, help="License key from your order.")
-    @click.option("--tier",
-                  type=click.Choice([t.value for t in Tier]),
-                  default="pro", show_default=True)
+    @click.option("--tier", type=click.Choice([t.value for t in Tier]), default="pro", show_default=True)
     @click.option("--name", default="", help="Licensed-to name.")
     @click.option("--email", default="", help="Licensed-to email.")
-    @click.option("--days", type=int, default=DEFAULT_TERM_DAYS,
-                  help="License term in days.")
+    @click.option("--days", type=int, default=DEFAULT_TERM_DAYS, help="License term in days.")
     @click.option("--json", "as_json", is_flag=True)
-    def license_activate(key: str, tier: str, name: str, email: str,
-                         days: int, as_json: bool) -> None:
+    def license_activate(key: str, tier: str, name: str, email: str, days: int, as_json: bool) -> None:
         """Bind KEY to this machine and activate TIER (fully offline).
 
- Handles license activate for.
+        Handles license activate for.
 
- Args:
- key (str): The key parameter.
- tier (str): The tier parameter.
- name (str): The name parameter.
- email (str): The email parameter.
- days (int): The days parameter.
- as_json (bool): The as json parameter.
- """
+        Args:
+        key (str): The key parameter.
+        tier (str): The tier parameter.
+        name (str): The name parameter.
+        email (str): The email parameter.
+        days (int): The days parameter.
+        as_json (bool): The as json parameter.
+        """
         try:
             state = get_license_manager().activate(
-                key=key, tier=Tier(tier), name=name, email=email,
+                key=key,
+                tier=Tier(tier),
+                name=name,
+                email=email,
                 term_days=days,
             )
         except ValueError as exc:
@@ -543,19 +556,18 @@ if click is not None:
         if as_json:
             click.echo(_json.dumps(state.to_dict(), indent=2))
             return
-        click.echo(f"Activated: {state.tier.value.title()} "
-                   f"(expires {state.expiry}).")
+        click.echo(f"Activated: {state.tier.value.title()} " f"(expires {state.expiry}).")
 
     @license.command("trial")
     @click.option("--json", "as_json", is_flag=True)
     def license_trial(as_json: bool) -> None:
         """License trial.
 
- Handles license trial for.
+        Handles license trial for.
 
- Args:
- as_json (bool): The as json parameter.
- """
+        Args:
+        as_json (bool): The as json parameter.
+        """
         f"""Start the once-per-machine {TRIAL_DAYS}-day Pro trial."""
         try:
             state = get_license_manager().start_trial()
@@ -570,8 +582,8 @@ if click is not None:
     def license_deactivate() -> None:
         """Remove the license; this machine returns to the Free tier.
 
- Handles license deactivate for.
- """
+        Handles license deactivate for.
+        """
         get_license_manager().deactivate()
         click.echo("License removed. Tier: Free.")
 
@@ -581,19 +593,19 @@ if click is not None:
     def boost() -> None:
         """Boost helper.
 
- Handles boost for.
- """
+        Handles boost for.
+        """
 
     @boost.command("status")
     @click.option("--json", "as_json", is_flag=True)
     def boost_status(as_json: bool) -> None:
         """Preview what a boost would change on this machine right now.
 
- Handles boost status for.
+        Handles boost status for.
 
- Args:
- as_json (bool): The as json parameter.
- """
+        Args:
+        as_json (bool): The as json parameter.
+        """
         _require_feature(Feature.GAMING_MODE)
         preview = GameMode().preview()
         if as_json:
@@ -608,22 +620,20 @@ if click is not None:
 
     @boost.command("start")
     @click.option("--dry-run", is_flag=True, help="Report without changing anything.")
-    @click.option("--extra-suspend", multiple=True,
-                  help="Extra process name to pause (repeatable).")
+    @click.option("--extra-suspend", multiple=True, help="Extra process name to pause (repeatable).")
     @click.option("--json", "as_json", is_flag=True)
     def boost_start(dry_run: bool, extra_suspend: tuple, as_json: bool) -> None:
         """Apply the gaming boost (power plan + background quieting).
 
- Handles boost start for.
+        Handles boost start for.
 
- Args:
- dry_run (bool): The dry run parameter.
- extra_suspend (tuple): The extra suspend parameter.
- as_json (bool): The as json parameter.
- """
+        Args:
+        dry_run (bool): The dry run parameter.
+        extra_suspend (tuple): The extra suspend parameter.
+        as_json (bool): The as json parameter.
+        """
         _require_feature(Feature.GAMING_MODE)
-        report = GameMode(extra_suspend=tuple(extra_suspend),
-                          dry_run=dry_run).start()
+        report = GameMode(extra_suspend=tuple(extra_suspend), dry_run=dry_run).start()
         if as_json:
             click.echo(_json.dumps(report.to_dict(), indent=2))
             return
@@ -638,11 +648,11 @@ if click is not None:
     def boost_stop(as_json: bool) -> None:
         """Restore the pre-boost power plan and resume paused apps.
 
- Handles boost stop for.
+        Handles boost stop for.
 
- Args:
- as_json (bool): The as json parameter.
- """
+        Args:
+        as_json (bool): The as json parameter.
+        """
         report = GameMode().stop()
         if as_json:
             click.echo(_json.dumps(report.to_dict(), indent=2))
@@ -655,13 +665,14 @@ if click is not None:
     def debug(as_json: bool, verbose: bool) -> None:
         """Debug helper.
 
- Handles debug for.
+        Handles debug for.
 
- Args:
- as_json (bool): The as json parameter.
- verbose (bool): The verbose parameter.
- """
+        Args:
+        as_json (bool): The as json parameter.
+        verbose (bool): The verbose parameter.
+        """
         from cortex_unified.debug.runner import DiagnosticRunner
+
         runner = DiagnosticRunner(verbose=verbose)
         report = runner.run_all()
         if as_json:
@@ -670,28 +681,24 @@ if click is not None:
             sys.exit(1)
 
     @main.command()
-    @click.option("--min-rss-mb", type=int, default=50, show_default=True,
-                  help="Skip processes smaller than this.")
-    @click.option("--apply", is_flag=True,
-                  help="Actually trim (default: dry run).")
+    @click.option("--min-rss-mb", type=int, default=50, show_default=True, help="Skip processes smaller than this.")
+    @click.option("--apply", is_flag=True, help="Actually trim (default: dry run).")
     @click.option("--stats-only", is_flag=True, help="Just show memory stats.")
     @click.option("--json", "as_json", is_flag=True)
-    def memory(min_rss_mb: int, apply: bool, stats_only: bool,
-               as_json: bool) -> None:
+    def memory(min_rss_mb: int, apply: bool, stats_only: bool, as_json: bool) -> None:
         """Memory helper.
 
- Handles memory for.
+        Handles memory for.
 
- Args:
- min_rss_mb (int): The min rss mb parameter.
- apply (bool): The apply parameter.
- stats_only (bool): The stats only parameter.
- as_json (bool): The as json parameter.
- """
+        Args:
+        min_rss_mb (int): The min rss mb parameter.
+        apply (bool): The apply parameter.
+        stats_only (bool): The stats only parameter.
+        as_json (bool): The as json parameter.
+        """
         if stats_only:
             stats = memory_stats()
-            click.echo(_json.dumps(stats, indent=2) if as_json
-                       else _fmt_memory_stats(stats))
+            click.echo(_json.dumps(stats, indent=2) if as_json else _fmt_memory_stats(stats))
             return
         _require_feature(Feature.MEMORY_OPTIMIZER)
         result = optimize(min_rss_mb=min_rss_mb, dry_run=not apply)
@@ -705,8 +712,8 @@ else:  # pragma: no cover
     def main() -> None:
         """Main helper.
 
- Handles main for.
- """
+        Handles main for.
+        """
         raise SystemExit("The 'click' package is required for the Cortex CLI. Install it with: pip install click")
 
 

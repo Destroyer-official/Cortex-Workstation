@@ -13,6 +13,7 @@ from typing import List, Dict
 
 from ..core.config import Config
 
+
 class ProcessAnalyzer:
     """Groups related helpers: init, list processes, list windows processes, list macos processes, list linux processes, list services, list windows services, list macos services."""
 
@@ -40,7 +41,7 @@ class ProcessAnalyzer:
         """
         self.processes = []
         self.error_count = 0
-        
+
         try:
             if self.system == "windows":
                 self._list_windows_processes()
@@ -50,9 +51,9 @@ class ProcessAnalyzer:
                 self._list_linux_processes()
         except Exception:
             self.error_count += 1
-        
+
         return self.processes
-    
+
     def _list_windows_processes(self):
         """List windows processes helper (spawns a subprocess)."""
         try:
@@ -65,76 +66,82 @@ class ProcessAnalyzer:
                 if len(rows) > 1:
                     for parts in rows[1:]:  # Skip header
                         if len(parts) >= 8:
-                            self.processes.append({
-                                "pid": parts[1],
-                                "name": parts[0],
-                                "session_name": parts[2],
-                                "session_num": parts[3],
-                                "mem_usage": parts[4],
-                                "status": parts[5],
-                                "username": parts[6],
-                                "cpu_time": parts[7],
-                                "window_title": parts[8] if len(parts) > 8 else ""
-                            })
+                            self.processes.append(
+                                {
+                                    "pid": parts[1],
+                                    "name": parts[0],
+                                    "session_name": parts[2],
+                                    "session_num": parts[3],
+                                    "mem_usage": parts[4],
+                                    "status": parts[5],
+                                    "username": parts[6],
+                                    "cpu_time": parts[7],
+                                    "window_title": parts[8] if len(parts) > 8 else "",
+                                }
+                            )
         except Exception:
             self.error_count += 1
-    
+
     def _list_macos_processes(self):
         """List macos processes helper (spawns a subprocess)."""
         try:
             cmd = ["ps", "aux"]
             result = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
-            
+
             if result.returncode == 0:
-                lines = result.stdout.strip().split('\n')
+                lines = result.stdout.strip().split("\n")
                 if len(lines) > 1:
                     for line in lines[1:]:  # Skip header
                         parts = line.split(None, 10)
                         if len(parts) >= 11:
-                            self.processes.append({
-                                "user": parts[0],
-                                "pid": parts[1],
-                                "cpu_percent": parts[2],
-                                "mem_percent": parts[3],
-                                "vsz": parts[4],
-                                "rss": parts[5],
-                                "tt": parts[6],
-                                "stat": parts[7],
-                                "started": parts[8],
-                                "time": parts[9],
-                                "command": parts[10]
-                            })
+                            self.processes.append(
+                                {
+                                    "user": parts[0],
+                                    "pid": parts[1],
+                                    "cpu_percent": parts[2],
+                                    "mem_percent": parts[3],
+                                    "vsz": parts[4],
+                                    "rss": parts[5],
+                                    "tt": parts[6],
+                                    "stat": parts[7],
+                                    "started": parts[8],
+                                    "time": parts[9],
+                                    "command": parts[10],
+                                }
+                            )
         except Exception:
             self.error_count += 1
-    
+
     def _list_linux_processes(self):
         """List linux processes helper (spawns a subprocess)."""
         try:
             cmd = ["ps", "aux"]
             result = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
-            
+
             if result.returncode == 0:
-                lines = result.stdout.strip().split('\n')
+                lines = result.stdout.strip().split("\n")
                 if len(lines) > 1:
                     for line in lines[1:]:  # Skip header
                         parts = line.split(None, 10)
                         if len(parts) >= 11:
-                            self.processes.append({
-                                "user": parts[0],
-                                "pid": parts[1],
-                                "cpu_percent": parts[2],
-                                "mem_percent": parts[3],
-                                "vsz": parts[4],
-                                "rss": parts[5],
-                                "tty": parts[6],
-                                "stat": parts[7],
-                                "started": parts[8],
-                                "time": parts[9],
-                                "command": parts[10]
-                            })
+                            self.processes.append(
+                                {
+                                    "user": parts[0],
+                                    "pid": parts[1],
+                                    "cpu_percent": parts[2],
+                                    "mem_percent": parts[3],
+                                    "vsz": parts[4],
+                                    "rss": parts[5],
+                                    "tty": parts[6],
+                                    "stat": parts[7],
+                                    "started": parts[8],
+                                    "time": parts[9],
+                                    "command": parts[10],
+                                }
+                            )
         except Exception:
             self.error_count += 1
-    
+
     def list_services(self) -> List[Dict]:
         """Populate ``services`` from the platform's service listing.
 
@@ -143,7 +150,7 @@ class ProcessAnalyzer:
         """
         self.services = []
         self.error_count = 0
-        
+
         try:
             if self.system == "windows":
                 self._list_windows_services()
@@ -153,18 +160,18 @@ class ProcessAnalyzer:
                 self._list_linux_services()
         except Exception:
             self.error_count += 1
-        
+
         return self.services
-    
+
     def _list_windows_services(self):
         """List Windows services using sc query."""
         try:
             cmd = ["sc", "query"]
             result = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
-            
+
             if result.returncode == 0:
                 service_info = {}
-                for line in result.stdout.split('\n'):
+                for line in result.stdout.split("\n"):
                     line = line.strip()
                     if line.startswith("SERVICE_NAME:"):
                         if service_info:
@@ -180,67 +187,63 @@ class ProcessAnalyzer:
                             service_info["state"] = parts[2].strip()
                     elif line.startswith("WIN32_EXIT_CODE"):
                         service_info["exit_code"] = line.split(":")[1].strip()
-                
+
                 # Flush the final service record after the loop.
                 if service_info:
                     self.services.append(service_info)
         except Exception:
             self.error_count += 1
-    
+
     def _list_macos_services(self):
         """List macos services helper (spawns a subprocess)."""
         try:
             cmd = ["launchctl", "list"]
             result = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
-            
+
             if result.returncode == 0:
-                lines = result.stdout.strip().split('\n')
+                lines = result.stdout.strip().split("\n")
                 if len(lines) > 1:
                     for line in lines[1:]:  # Skip header
                         parts = line.split()
                         if len(parts) >= 3:
-                            self.services.append({
-                                "pid": parts[0],
-                                "last_exit_code": parts[1],
-                                "label": parts[2]
-                            })
+                            self.services.append({"pid": parts[0], "last_exit_code": parts[1], "label": parts[2]})
         except Exception:
             self.error_count += 1
-    
+
     def _list_linux_services(self):
         """List Linux services using systemctl, falling back to ``service``."""
         try:
             cmd = ["systemctl", "list-units", "--type=service", "--no-pager"]
             result = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
-            
+
             if result.returncode == 0:
-                lines = result.stdout.strip().split('\n')
+                lines = result.stdout.strip().split("\n")
                 # Drop the header line and systemctl's trailing blank/summary lines.
                 for line in lines[1:-6]:
                     parts = line.split(None, 4)
                     if len(parts) >= 5:
-                        self.services.append({
-                            "unit": parts[0],
-                            "load": parts[1],
-                            "active": parts[2],
-                            "sub": parts[3],
-                            "description": parts[4]
-                        })
+                        self.services.append(
+                            {
+                                "unit": parts[0],
+                                "load": parts[1],
+                                "active": parts[2],
+                                "sub": parts[3],
+                                "description": parts[4],
+                            }
+                        )
         except Exception:
             # Fallback to service command
             try:
                 cmd = ["service", "--status-all"]
                 result = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
-                
+
                 if result.returncode == 0:
-                    for line in result.stdout.strip().split('\n'):
+                    for line in result.stdout.strip().split("\n"):
                         if line.strip():
-                            self.services.append({
-                                "service": line.strip()
-                            })
+                            self.services.append({"service": line.strip()})
             except Exception:
                 self.error_count += 1
-    
+
     def find_high_resource_processes(self, cpu_threshold: float = 50.0, mem_threshold: float = 50.0) -> List[Dict]:
         """Flag processes at or above the CPU/memory percentage thresholds.
 
@@ -252,14 +255,14 @@ class ProcessAnalyzer:
         List[Dict]: List of processed items or identifiers.
         """
         self.high_resource_processes = []
-        
+
         if not self.processes:
             self.list_processes()
-        
+
         try:
             for process in self.processes:
                 high_resource = False
-                
+
                 if self.system == "windows":
                     # tasklist /v reports memory strings and CPU time, not
                     # instantaneous percentages, so thresholding here is
@@ -269,7 +272,7 @@ class ProcessAnalyzer:
                     try:
                         cpu_percent = float(process.get("cpu_percent", 0))
                         mem_percent = float(process.get("mem_percent", 0))
-                        
+
                         if cpu_percent >= cpu_threshold or mem_percent >= mem_threshold:
                             high_resource = True
                             process["high_resource_reason"] = []
@@ -280,14 +283,14 @@ class ProcessAnalyzer:
                     except ValueError:
                         # ps prints "-" for unavailable percentages.
                         pass
-                
+
                 if high_resource:
                     self.high_resource_processes.append(process)
         except Exception:
             self.error_count += 1
-        
+
         return self.high_resource_processes
-    
+
     def get_stats(self) -> dict:
         """Snapshot counts for UI display.
 
@@ -297,15 +300,15 @@ class ProcessAnalyzer:
         total_processes = len(self.processes)
         total_services = len(self.services)
         high_resource_count = len(self.high_resource_processes)
-        
+
         return {
             "total_processes": total_processes,
             "total_services": total_services,
             "high_resource_processes": high_resource_count,
             "system_type": self.system,
-            "errors": self.error_count
+            "errors": self.error_count,
         }
-    
+
     def filter_processes_by_name(self, name_pattern: str) -> List[Dict]:
         """Case-insensitive substring match on process name.
 
@@ -320,7 +323,7 @@ class ProcessAnalyzer:
             if name_pattern.lower() in process.get("name", "").lower():
                 filtered.append(process)
         return filtered
-    
+
     def filter_services_by_state(self, state: str) -> List[Dict]:
         """Case-insensitive substring match on service state.
 

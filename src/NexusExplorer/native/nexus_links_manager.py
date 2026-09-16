@@ -23,6 +23,7 @@ class LinkType(Enum):
 
     Distinguishes DIRECTORY_JUNCTION, DIRECTORY/FILE_SYMLINK, HARDLINK (nlink>1), and REGULAR.
     """
+
     DIRECTORY_JUNCTION = "Directory Junction"
     DIRECTORY_SYMLINK = "Directory Symlink"
     FILE_SYMLINK = "File Symlink"
@@ -36,6 +37,7 @@ class LinkItem:
 
     Stores path/name, LinkType, raw target, broken flag, directory flag, size, hardlink count, and error.
     """
+
     path: str
     name: str
     link_type: LinkType
@@ -53,6 +55,7 @@ class LinkOperationResult:
 
     Holds success, message, and created/target paths.
     """
+
     success: bool
     message: str
     created_path: Optional[str] = None
@@ -113,7 +116,11 @@ class LinksManager:
                     target_raw = os.readlink(p_orig)
                     target_path = str(target_raw)
                     # Check if target exists
-                    resolved = (p_orig.parent / target_raw).resolve() if not os.path.isabs(target_raw) else Path(target_raw).resolve()
+                    resolved = (
+                        (p_orig.parent / target_raw).resolve()
+                        if not os.path.isabs(target_raw)
+                        else Path(target_raw).resolve()
+                    )
                     is_broken = not resolved.exists()
                     if is_dir:
                         # Determine if junction or symlink
@@ -248,12 +255,15 @@ class LinksManager:
 
         if platform.system() == "Windows":
             import subprocess
+
             try:
                 # mklink /J <Link> <Target>
                 cmd = ["cmd", "/c", "mklink", "/J", str(link), str(target)]
                 res = subprocess.run(cmd, capture_output=True, text=True, timeout=10)
                 if res.returncode == 0:
-                    return LinkOperationResult(True, f"Directory Junction created: {link.name} -> {target}", str(link), str(target))
+                    return LinkOperationResult(
+                        True, f"Directory Junction created: {link.name} -> {target}", str(link), str(target)
+                    )
                 return LinkOperationResult(False, res.stderr.strip() or res.stdout.strip() or "mklink failed")
             except Exception as exc:
                 return LinkOperationResult(False, str(exc))
@@ -301,7 +311,9 @@ class LinksManager:
             return LinkOperationResult(True, f"Symbolic Link created: {link.name} -> {target}", str(link), str(target))
         except OSError as exc:
             # On Windows without Developer Mode or Admin rights, os.symlink can raise WinError 1314
-            return LinkOperationResult(False, f"Symlink creation failed (Admin rights or Developer Mode required): {exc}")
+            return LinkOperationResult(
+                False, f"Symlink creation failed (Admin rights or Developer Mode required): {exc}"
+            )
 
     @classmethod
     def create_hardlink(cls, link_path: str | Path, target_file: str | Path) -> LinkOperationResult:

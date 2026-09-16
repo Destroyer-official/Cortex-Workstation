@@ -16,13 +16,28 @@ class ResidualCleaner:
     """Find leftover application folders after uninstall using token matching."""
 
     # Directories that should NEVER be flagged as residuals
-    _SYSTEM_DIRS = frozenset([
-        "microsoft", "windows", "common files", "internet explorer",
-        "windows defender", "windows mail", "windows media player",
-        "windows nt", "windows photo viewer", "windows sidebar",
-        "windowsapps", "microsoft.net", "msbuild", "reference assemblies",
-        "dotnet", "aspnet", "program files", "programdata",
-    ])
+    _SYSTEM_DIRS = frozenset(
+        [
+            "microsoft",
+            "windows",
+            "common files",
+            "internet explorer",
+            "windows defender",
+            "windows mail",
+            "windows media player",
+            "windows nt",
+            "windows photo viewer",
+            "windows sidebar",
+            "windowsapps",
+            "microsoft.net",
+            "msbuild",
+            "reference assemblies",
+            "dotnet",
+            "aspnet",
+            "program files",
+            "programdata",
+        ]
+    )
 
     def __init__(self):
         """Initialize the instance and configure internal state.
@@ -74,11 +89,13 @@ class ResidualCleaner:
                         continue
 
                     if self._matches_tokens(entry_lower, tokens):
-                        leftovers.append({
-                            "type": "folder",
-                            "path": full_path,
-                            "size": self._get_size(full_path),
-                        })
+                        leftovers.append(
+                            {
+                                "type": "folder",
+                                "path": full_path,
+                                "size": self._get_size(full_path),
+                            }
+                        )
             except PermissionError:
                 continue
             except Exception as exc:
@@ -100,8 +117,7 @@ class ResidualCleaner:
         raw = app_name.lower()
 
         # Remove common suffixes that pollute matching
-        for noise in ("(x64)", "(x86)", "(64-bit)", "(32-bit)", "- free",
-                       "version", "edition", "update", "setup"):
+        for noise in ("(x64)", "(x86)", "(64-bit)", "(32-bit)", "- free", "version", "edition", "update", "setup"):
             raw = raw.replace(noise, "")
 
         # Tokenize on whitespace, dashes, underscores

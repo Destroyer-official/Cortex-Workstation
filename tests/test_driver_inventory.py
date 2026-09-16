@@ -11,6 +11,7 @@ IS_WINDOWS = platform.system() == "Windows"
 
 class TestParse:
     """Group testparse tests covering empty; single object; dedupes identical name version; skips nameless; yyyymmdd date."""
+
     def test_empty(self):
         """Verify empty via DriverInventory._parse."""
         assert DriverInventory._parse(None) == []
@@ -58,6 +59,7 @@ class TestParse:
 
 class TestSupport:
     """Group testsupport tests covering is supported matches platform; list drivers returns list; to dict."""
+
     def test_is_supported_matches_platform(self):
         """Verify is supported matches platform via DriverInventory.is_supported."""
         assert DriverInventory.is_supported() == IS_WINDOWS

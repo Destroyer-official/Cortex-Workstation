@@ -15,6 +15,7 @@ from cortex_unified.system_tools.network_monitor import (
 
 class TestClassification:
     """Group testclassification tests covering loopback is private; lan is private; public is not private; unparseable defaults private."""
+
     def test_loopback_is_private(self):
         """Verify loopback is private via _is_private."""
         assert _is_private("127.0.0.1") is True
@@ -39,6 +40,7 @@ class TestClassification:
 
 class TestConnectionFlags:
     """Group testconnectionflags tests covering public listener flagged; localhost listener not public; external established flagged; internal established not external; to dict shape."""
+
     def test_public_listener_flagged(self):
         """Verify public listener flagged via Connection."""
         c = Connection("TCP", "0.0.0.0", 445, "", 0, "LISTEN", 4, "System")
@@ -52,14 +54,12 @@ class TestConnectionFlags:
 
     def test_external_established_flagged(self):
         """Verify external established flagged via Connection."""
-        c = Connection("TCP", "192.168.1.5", 55000, "8.8.8.8", 443,
-                       "ESTABLISHED", 200, "chrome.exe")
+        c = Connection("TCP", "192.168.1.5", 55000, "8.8.8.8", 443, "ESTABLISHED", 200, "chrome.exe")
         assert c.remote_external is True
 
     def test_internal_established_not_external(self):
         """Verify internal established not external via Connection."""
-        c = Connection("TCP", "192.168.1.5", 55000, "192.168.1.1", 443,
-                       "ESTABLISHED", 200, "chrome.exe")
+        c = Connection("TCP", "192.168.1.5", 55000, "192.168.1.1", 443, "ESTABLISHED", 200, "chrome.exe")
         assert c.remote_external is False
 
     def test_to_dict_shape(self):
@@ -70,12 +70,22 @@ class TestConnectionFlags:
         assert d["local"] == "0.0.0.0:80"
         assert d["service"] == "HTTP"
         assert d["listening_public"] is True
-        assert set(d) >= {"protocol", "local", "remote", "status", "pid",
-                          "process", "service", "listening_public", "remote_external"}
+        assert set(d) >= {
+            "protocol",
+            "local",
+            "remote",
+            "status",
+            "pid",
+            "process",
+            "service",
+            "listening_public",
+            "remote_external",
+        }
 
 
 class TestMonitor:
     """Group testmonitor tests covering connections returns list; summarize counts."""
+
     def test_connections_returns_list(self):
         """Verify connections returns list via NetworkMonitor, connections."""
         conns = NetworkMonitor().connections()
@@ -86,8 +96,7 @@ class TestMonitor:
         """Verify summarize counts via NetworkMonitor.summarize, Connection."""
         conns = [
             Connection("TCP", "0.0.0.0", 445, "", 0, "LISTEN", 4, "System"),
-            Connection("TCP", "192.168.1.5", 5000, "8.8.8.8", 443,
-                       "ESTABLISHED", 10, "app"),
+            Connection("TCP", "192.168.1.5", 5000, "8.8.8.8", 443, "ESTABLISHED", 10, "app"),
             Connection("TCP", "127.0.0.1", 1234, "", 0, "LISTEN", 11, "loc"),
         ]
         s = NetworkMonitor.summarize(conns)

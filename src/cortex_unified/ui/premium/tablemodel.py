@@ -168,9 +168,11 @@ class RecordTableModel(QAbstractTableModel):
         role: int = Qt.ItemDataRole.DisplayRole,
     ) -> Any:
         """Return header data."""
-        if (orientation is Qt.Orientation.Horizontal
-                and role == Qt.ItemDataRole.DisplayRole
-                and 0 <= section < len(self._columns)):
+        if (
+            orientation is Qt.Orientation.Horizontal
+            and role == Qt.ItemDataRole.DisplayRole
+            and 0 <= section < len(self._columns)
+        ):
             return self._columns[section].header
         return None
 
@@ -255,9 +257,7 @@ class RecordFilterProxy(QSortFilterProxyModel):
         """The active case-folded filter term."""
         return self._term
 
-    def filterAcceptsRow(  # noqa: N802
-        self, source_row: int, source_parent: QModelIndex
-    ) -> bool:
+    def filterAcceptsRow(self, source_row: int, source_parent: QModelIndex) -> bool:  # noqa: N802
         """Filter accepts row."""
         if not self._term:
             return True
@@ -389,8 +389,7 @@ def bind_table(
     if sortable and sort_column is not None:
         view.sortByColumn(sort_column, sort_order)
 
-    return TableBinding(view=view, model=model, proxy=proxy,
-                        columns=tuple(columns))
+    return TableBinding(view=view, model=model, proxy=proxy, columns=tuple(columns))
 
 
 __all__ = [

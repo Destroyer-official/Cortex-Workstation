@@ -38,6 +38,7 @@ SE_INCREASE_QUOTA_NAME = "SeIncreaseQuotaPrivilege"
 
 class LUID(ctypes.Structure):
     """L U I D."""
+
     _fields_ = [
         ("LowPart", wintypes.DWORD),
         ("HighPart", wintypes.LONG),
@@ -46,6 +47,7 @@ class LUID(ctypes.Structure):
 
 class LUID_AND_ATTRIBUTES(ctypes.Structure):
     """L U I D_ A N D_ A T T R I B U T E S."""
+
     _fields_ = [
         ("Luid", LUID),
         ("Attributes", wintypes.DWORD),
@@ -54,6 +56,7 @@ class LUID_AND_ATTRIBUTES(ctypes.Structure):
 
 class TOKEN_PRIVILEGES(ctypes.Structure):
     """T O K E N_ P R I V I L E G E S."""
+
     _fields_ = [
         ("PrivilegeCount", wintypes.DWORD),
         ("Privileges", LUID_AND_ATTRIBUTES * 1),
@@ -62,6 +65,7 @@ class TOKEN_PRIVILEGES(ctypes.Structure):
 
 class MEMORYSTATUSEX(ctypes.Structure):
     """M E M O R Y S T A T U S E X."""
+
     _fields_ = [
         ("dwLength", wintypes.DWORD),
         ("dwMemoryLoad", wintypes.DWORD),

@@ -22,6 +22,7 @@ from typing import Callable, Dict, List, Optional, Tuple
 @dataclass
 class DirectorySlackStat:
     """Directory Slack Stat data container."""
+
     path: str
     file_count: int
     logical_size_bytes: int
@@ -33,6 +34,7 @@ class DirectorySlackStat:
 @dataclass
 class VolumeSlackReport:
     """Volume Slack Report data container."""
+
     volume: str
     cluster_size_bytes: int
     total_files_scanned: int

@@ -61,6 +61,7 @@ from typing import Callable, Dict, List, Optional, Set
 
 try:
     import psutil  # type: ignore
+
     HAS_PSUTIL = True
 except ImportError:
     HAS_PSUTIL = False
@@ -69,9 +70,11 @@ except ImportError:
 # Data structures
 # ---------------------------------------------------------------------------
 
+
 @dataclass(slots=True)
 class PortableApp:
     """Portable application record parsed from appinfo.ini or exe detection."""
+
     id: str
     name: str
     version: str
@@ -95,9 +98,11 @@ class PortableApp:
         d["launch_exe"] = str(d["launch_exe"]) if d["launch_exe"] else None
         return d
 
+
 # ---------------------------------------------------------------------------
 # Root discovery — dynamic
 # ---------------------------------------------------------------------------
+
 
 def _find_removable_drives() -> List[Path]:
     """List removable drive roots for portable app discovery.
@@ -109,12 +114,14 @@ def _find_removable_drives() -> List[Path]:
     try:
         if os.name == "nt":
             import string
+
             for letter in string.ascii_uppercase:
                 d = Path(f"{letter}:\\")
                 try:
                     if d.exists():
                         # check removable via GetDriveTypeW
                         import ctypes
+
                         typ = ctypes.windll.kernel32.GetDriveTypeW(str(d))
                         # 2=removable, 3=fixed, 4=remote, 5=cdrom
                         if typ == 2:
@@ -131,6 +138,7 @@ def _find_removable_drives() -> List[Path]:
     except Exception:
         pass
     return drives
+
 
 def _find_portable_roots() -> List[Path]:
     """List candidate portable roots from env, removable drives, and home.
@@ -174,9 +182,11 @@ def _find_portable_roots() -> List[Path]:
             out.append(r)
     return out
 
+
 # ---------------------------------------------------------------------------
 # App discovery
 # ---------------------------------------------------------------------------
+
 
 def _parse_appinfo(ini_path: Path) -> Optional[PortableApp]:
     """Parse an appinfo.ini file into a PortableApp record.
@@ -205,7 +215,7 @@ def _parse_appinfo(ini_path: Path) -> Optional[PortableApp]:
             exes = list(ini_path.parent.glob("*.exe"))
             if exes:
                 launch = exes[0]
-        size = sum(f.stat().st_size for f in ini_path.parent.rglob("*") if f.is_file()) / (1024*1024)
+        size = sum(f.stat().st_size for f in ini_path.parent.rglob("*") if f.is_file()) / (1024 * 1024)
         return PortableApp(
             id=ini_path.parent.name.lower(),
             name=name,
@@ -219,14 +229,16 @@ def _parse_appinfo(ini_path: Path) -> Optional[PortableApp]:
     except Exception:
         return None
 
+
 # ---------------------------------------------------------------------------
 # Manager
 # ---------------------------------------------------------------------------
 
+
 class PortableManager:
     """Discover, update-check, and export portable apps as a USB toolkit."""
-    def __init__(self, progress: Callable[[str], None] | None = None,
-                 cancel: threading.Event | None = None):
+
+    def __init__(self, progress: Callable[[str], None] | None = None, cancel: threading.Event | None = None):
         """__init__.
 
         Initializes the instance and configures internal state.
@@ -271,17 +283,19 @@ class PortableManager:
                     # heuristic: any folder with exe is potential portable app
                     exes = list(child.glob("*.exe"))
                     if exes:
-                        size = sum(f.stat().st_size for f in child.rglob("*") if f.is_file()) / (1024*1024)
-                        apps.append(PortableApp(
-                            id=child.name.lower(),
-                            name=child.name,
-                            version="",
-                            category="Unknown",
-                            publisher="",
-                            size_mb=size,
-                            path=child,
-                            launch_exe=exes[0],
-                        ))
+                        size = sum(f.stat().st_size for f in child.rglob("*") if f.is_file()) / (1024 * 1024)
+                        apps.append(
+                            PortableApp(
+                                id=child.name.lower(),
+                                name=child.name,
+                                version="",
+                                category="Unknown",
+                                publisher="",
+                                size_mb=size,
+                                path=child,
+                                launch_exe=exes[0],
+                            )
+                        )
         return apps
 
     #: PAF installers are NSIS-based; /SILENT suppresses the pages while
@@ -325,9 +339,7 @@ class PortableManager:
                 continue
 
             try:
-                req = urllib.request.Request(
-                    update_url,
-                    headers={"User-Agent": "cortex-cleaner-portable-manager"})
+                req = urllib.request.Request(update_url, headers={"User-Agent": "cortex-cleaner-portable-manager"})
                 with urllib.request.urlopen(req, timeout=15) as resp:
                     body = resp.read().decode("utf-8", errors="replace")
             except Exception as exc:
@@ -369,18 +381,14 @@ class PortableManager:
         ]
         installer = next((c for c in candidates if c.exists()), None)
         if installer is None:
-            self.progress(
-                f"{app.name}: no bundled installer; use the platform's "
-                "updater or the app's UpdateURL")
+            self.progress(f"{app.name}: no bundled installer; use the platform's " "updater or the app's UpdateURL")
             return False
 
         self.progress(f"Updating {app.name} via {installer.name}...")
         try:
             proc = subprocess.run(
-                [str(installer), self._PAF_SILENT_FLAG],
-                cwd=str(app.path.parent),
-                timeout=timeout,
-                capture_output=True)
+                [str(installer), self._PAF_SILENT_FLAG], cwd=str(app.path.parent), timeout=timeout, capture_output=True
+            )
             return proc.returncode == 0
         except Exception as exc:
             self.progress(f"Update of {app.name} failed: {exc}")
@@ -417,8 +425,7 @@ class PortableManager:
                             shutil.copytree(child, dest)
 
             if include_sysinternals:
-                tools = sysinternals_tools or ["Autoruns.exe", "procexp.exe",
-                                               "Tcpview.exe", "procmon.exe"]
+                tools = sysinternals_tools or ["Autoruns.exe", "procexp.exe", "Tcpview.exe", "procmon.exe"]
                 syn = target / "Sysinternals"
                 syn.mkdir(exist_ok=True)
                 for tool in tools:
@@ -444,10 +451,8 @@ class PortableManager:
         """
         url = f"{self._SYSINTERNALS_LIVE}/{urllib.parse.quote(tool)}"
         try:
-            req = urllib.request.Request(
-                url, headers={"User-Agent": "cortex-cleaner-portable-manager"})
-            with urllib.request.urlopen(req, timeout=timeout) as resp, \
-                    open(dest, "wb") as fh:
+            req = urllib.request.Request(url, headers={"User-Agent": "cortex-cleaner-portable-manager"})
+            with urllib.request.urlopen(req, timeout=timeout) as resp, open(dest, "wb") as fh:
                 shutil.copyfileobj(resp, fh)
         except Exception as exc:
             self.progress(f"Download {tool} failed: {exc}")
@@ -462,5 +467,6 @@ class PortableManager:
         except OSError:
             return False
         return True
+
 
 __all__ = ["PortableManager", "PortableApp"]

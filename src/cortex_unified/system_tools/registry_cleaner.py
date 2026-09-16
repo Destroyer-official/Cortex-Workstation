@@ -79,6 +79,7 @@ class RegistryCleaner:
 
         try:
             import winreg
+
             self._scan_uninstall_entries(winreg.HKEY_LOCAL_MACHINE)
             self._scan_uninstall_entries(winreg.HKEY_CURRENT_USER)
             self._scan_startup_entries()
@@ -141,6 +142,7 @@ class RegistryCleaner:
         subkey_name: The subkey name parameter.
         """
         import winreg
+
         try:
             with winreg.OpenKey(hive, full_path, 0, winreg.KEY_READ | winreg.KEY_WOW64_64KEY) as sk:
                 display_name = self._reg_val(winreg, sk, "DisplayName", subkey_name)
@@ -148,13 +150,15 @@ class RegistryCleaner:
                 # InstallLocation is frequently empty; only trust it when set.
                 install_loc = self._reg_val(winreg, sk, "InstallLocation", "")
                 if install_loc and not os.path.exists(install_loc):
-                    self.orphaned_entries.append({
-                        "name": display_name,
-                        "path": full_path,
-                        "type": "uninstall_entry",
-                        "hive": hive_name,
-                        "reason": f"InstallLocation missing: {install_loc}",
-                    })
+                    self.orphaned_entries.append(
+                        {
+                            "name": display_name,
+                            "path": full_path,
+                            "type": "uninstall_entry",
+                            "hive": hive_name,
+                            "reason": f"InstallLocation missing: {install_loc}",
+                        }
+                    )
                     return
 
                 # Many installers register only UninstallString, so fall back
@@ -163,13 +167,15 @@ class RegistryCleaner:
                 if uninstall_str:
                     exe = self._extract_exe_path(uninstall_str)
                     if exe and not os.path.exists(exe):
-                        self.orphaned_entries.append({
-                            "name": display_name,
-                            "path": full_path,
-                            "type": "uninstall_entry",
-                            "hive": hive_name,
-                            "reason": f"Uninstaller missing: {exe}",
-                        })
+                        self.orphaned_entries.append(
+                            {
+                                "name": display_name,
+                                "path": full_path,
+                                "type": "uninstall_entry",
+                                "hive": hive_name,
+                                "reason": f"Uninstaller missing: {exe}",
+                            }
+                        )
         except Exception:
             self.error_count += 1
 
@@ -201,13 +207,15 @@ class RegistryCleaner:
                             if isinstance(value, str):
                                 exe = self._extract_exe_path(value)
                                 if exe and not os.path.exists(exe):
-                                    self.orphaned_entries.append({
-                                        "name": name,
-                                        "path": f"{key_path}\\{name}",
-                                        "type": "startup_entry",
-                                        "hive": hive_name,
-                                        "reason": f"Startup executable missing: {exe}",
-                                    })
+                                    self.orphaned_entries.append(
+                                        {
+                                            "name": name,
+                                            "path": f"{key_path}\\{name}",
+                                            "type": "startup_entry",
+                                            "hive": hive_name,
+                                            "reason": f"Startup executable missing: {exe}",
+                                        }
+                                    )
                             i += 1
                         except OSError:
                             break
@@ -246,13 +254,15 @@ class RegistryCleaner:
                                     # System32 handlers are OS-inbox components,
                                     # not orphans worth deleting.
                                     if exe and not os.path.exists(exe) and "system32" not in exe.lower():
-                                        self.orphaned_entries.append({
-                                            "name": f"{ext_name} handler",
-                                            "path": cmd_path,
-                                            "type": "file_association",
-                                            "hive": "HKLM",
-                                            "reason": f"Handler missing: {exe}",
-                                        })
+                                        self.orphaned_entries.append(
+                                            {
+                                                "name": f"{ext_name} handler",
+                                                "path": cmd_path,
+                                                "type": "file_association",
+                                                "hive": "HKLM",
+                                                "reason": f"Handler missing: {exe}",
+                                            }
+                                        )
                         except (FileNotFoundError, OSError):
                             pass
                     except OSError:
@@ -270,6 +280,7 @@ class RegistryCleaner:
         Launches an asynchronous scan across the target subsystem, showing a loading indicator and disabling triggering controls.
         """
         import winreg
+
         shared_path = r"Software\Microsoft\Windows\CurrentVersion\SharedDLLs"
         try:
             with winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, shared_path, 0, winreg.KEY_READ) as key:
@@ -283,13 +294,15 @@ class RegistryCleaner:
                         # also be gone before the entry counts as debris.
                         if isinstance(ref_count, int) and ref_count == 0:
                             if not os.path.exists(dll_path):
-                                self.orphaned_entries.append({
-                                    "name": os.path.basename(dll_path),
-                                    "path": f"{shared_path}\\{dll_path}",
-                                    "type": "shared_dll",
-                                    "hive": "HKLM",
-                                    "reason": f"DLL missing with ref_count=0: {dll_path}",
-                                })
+                                self.orphaned_entries.append(
+                                    {
+                                        "name": os.path.basename(dll_path),
+                                        "path": f"{shared_path}\\{dll_path}",
+                                        "type": "shared_dll",
+                                        "hive": "HKLM",
+                                        "reason": f"DLL missing with ref_count=0: {dll_path}",
+                                    }
+                                )
                     except OSError:
                         break
         except FileNotFoundError:
@@ -302,8 +315,7 @@ class RegistryCleaner:
     # ──────────────────────────────────────────────────────────────────
 
     def backup_registry(self, backup_dir: str = None) -> Optional[str]:
-        """Export registry uninstall branches (both HKCU and HKLM) to .reg files for safety and rollback.
-        """
+        """Export registry uninstall branches (both HKCU and HKLM) to .reg files for safety and rollback."""
         if not backup_dir:
             backup_dir = os.path.join(os.environ.get("USERPROFILE", "."), "CortexCleanerBackups")
         os.makedirs(backup_dir, exist_ok=True)
@@ -315,10 +327,10 @@ class RegistryCleaner:
         exported_any = False
         try:
             result = subprocess.run(
-                ["reg", "export",
-                 r"HKCU\Software\Microsoft\Windows\CurrentVersion\Uninstall",
-                 backup_file, "/y"],
-                capture_output=True, text=True, timeout=30,
+                ["reg", "export", r"HKCU\Software\Microsoft\Windows\CurrentVersion\Uninstall", backup_file, "/y"],
+                capture_output=True,
+                text=True,
+                timeout=30,
             )
             if result.returncode == 0 and os.path.exists(backup_file) and os.path.getsize(backup_file) > 0:
                 self.backup_files.append(backup_file)
@@ -331,12 +343,16 @@ class RegistryCleaner:
 
         try:
             result_hklm = subprocess.run(
-                ["reg", "export",
-                 r"HKLM\Software\Microsoft\Windows\CurrentVersion\Uninstall",
-                 hklm_backup_file, "/y"],
-                capture_output=True, text=True, timeout=30,
+                ["reg", "export", r"HKLM\Software\Microsoft\Windows\CurrentVersion\Uninstall", hklm_backup_file, "/y"],
+                capture_output=True,
+                text=True,
+                timeout=30,
             )
-            if result_hklm.returncode == 0 and os.path.exists(hklm_backup_file) and os.path.getsize(hklm_backup_file) > 0:
+            if (
+                result_hklm.returncode == 0
+                and os.path.exists(hklm_backup_file)
+                and os.path.getsize(hklm_backup_file) > 0
+            ):
                 self.backup_files.append(hklm_backup_file)
                 self.logger.info("HKLM Registry backup saved: %s", hklm_backup_file)
                 exported_any = True
@@ -365,9 +381,7 @@ class RegistryCleaner:
             return None
 
         if not backup_dir:
-            backup_dir = os.path.join(
-                os.path.expanduser("~"), ".cortex_cleaner", "backups", "registry"
-            )
+            backup_dir = os.path.join(os.path.expanduser("~"), ".cortex_cleaner", "backups", "registry")
         os.makedirs(backup_dir, exist_ok=True)
 
         safe_name = "".join(c if c.isalnum() else "_" for c in f"{hive}_{path}")[:60]
@@ -382,14 +396,18 @@ class RegistryCleaner:
         try:
             res = subprocess.run(
                 ["reg", "export", target_key, backup_file, "/y"],
-                capture_output=True, text=True, timeout=15,
+                capture_output=True,
+                text=True,
+                timeout=15,
             )
             if res.returncode == 0 and os.path.exists(backup_file) and os.path.getsize(backup_file) > 0:
                 self.backup_files.append(backup_file)
                 self.logger.info("Created rollback backup for %s at %s", target_key, backup_file)
                 return backup_file
             else:
-                self.logger.warning("Failed to export valid non-empty rollback key %s (code %s)", target_key, res.returncode)
+                self.logger.warning(
+                    "Failed to export valid non-empty rollback key %s (code %s)", target_key, res.returncode
+                )
         except Exception as exc:
             self.logger.debug("Failed to export rollback key %s: %s", target_key, exc)
         return None
@@ -410,7 +428,9 @@ class RegistryCleaner:
         try:
             res = subprocess.run(
                 ["reg", "import", backup_file],
-                capture_output=True, text=True, timeout=30,
+                capture_output=True,
+                text=True,
+                timeout=30,
             )
             if res.returncode == 0:
                 self.logger.info("Successfully restored registry backup from %s", backup_file)
@@ -444,7 +464,9 @@ class RegistryCleaner:
         # 1. Enforce protected Windows subsystem key exclusions
         for protected in PROTECTED_REGISTRY_KEYS:
             if protected.lower() in path.lower():
-                self.logger.critical("Refusing to delete protected system registry key: %s\\%s", entry.get("hive", ""), path)
+                self.logger.critical(
+                    "Refusing to delete protected system registry key: %s\\%s", entry.get("hive", ""), path
+                )
                 return False
 
         # 2. Enforce pre-mutation rollback backup (fail-closed)
@@ -453,7 +475,8 @@ class RegistryCleaner:
             if not backup_path or not os.path.exists(backup_path) or os.path.getsize(backup_path) == 0:
                 self.logger.error(
                     "Deletion aborted: failed to create and verify pre-deletion rollback backup for %s\\%s (fail-closed)",
-                    entry.get("hive", ""), path
+                    entry.get("hive", ""),
+                    path,
                 )
                 return False
 

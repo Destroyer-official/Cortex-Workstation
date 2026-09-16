@@ -82,14 +82,13 @@ def test_default_page_exists_and_is_reachable():
 
 # --- the shell must derive from the registry, not duplicate it -------------
 
+
 def test_window_aliases_are_derived_from_the_registry():
     """``_NAV``/``_NAV_GROUPS``/``_PAGE_FACTORIES`` are views, not sources."""
     from cortex_unified.ui.premium import window
 
     assert [pid for pid, _t, _i in window._NAV] == list(registry.ordered_ids())
-    flattened = [
-        pid for _gid, _title, pids in window._NAV_GROUPS for pid in pids
-    ]
+    flattened = [pid for _gid, _title, pids in window._NAV_GROUPS for pid in pids]
     assert flattened == list(registry.ordered_ids())
     assert set(window._PAGE_FACTORIES) == set(registry.BY_ID)
 
@@ -113,8 +112,7 @@ def test_adding_one_spec_wires_nav_group_search_and_stack(monkeypatch):
         factory="cortex_unified.ui.premium.window:SettingsPage",
     )
     monkeypatch.setattr(registry, "PAGES", registry.PAGES + (extra,))
-    monkeypatch.setattr(
-        registry, "BY_ID", {s.id: s for s in registry.PAGES})
+    monkeypatch.setattr(registry, "BY_ID", {s.id: s for s in registry.PAGES})
 
     app = QApplication.instance() or QApplication([])
     apply_theme(app, "dark")

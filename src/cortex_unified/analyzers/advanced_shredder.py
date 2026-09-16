@@ -39,18 +39,44 @@ class AdvancedShredder:
 
     # Gutmann 35-pass magnetic transition patterns
     _GUTMANN_PATTERNS = [
-        None, None, None, None,  # 1-4: Random
-        b"\x55", b"\xAA", b"\x92\x49\x24", b"\x49\x24\x92", b"\x24\x92\x49",  # 5-9
-        b"\x00", b"\x11", b"\x22", b"\x33", b"\x44", b"\x55", b"\x66", b"\x77",  # 10-17
-        b"\x88", b"\x99", b"\xAA", b"\xBB", b"\xCC", b"\xDD", b"\xEE", b"\xFF",  # 18-25
-        b"\x92\x49\x24", b"\x49\x24\x92", b"\x24\x92\x49",  # 26-28
-        b"\x6D\xB6\xDB", b"\xB6\xDB\x6D", b"\xDB\x6D\xB6",  # 29-31
-        None, None, None, None,  # 32-35: Random
+        None,
+        None,
+        None,
+        None,  # 1-4: Random
+        b"\x55",
+        b"\xaa",
+        b"\x92\x49\x24",
+        b"\x49\x24\x92",
+        b"\x24\x92\x49",  # 5-9
+        b"\x00",
+        b"\x11",
+        b"\x22",
+        b"\x33",
+        b"\x44",
+        b"\x55",
+        b"\x66",
+        b"\x77",  # 10-17
+        b"\x88",
+        b"\x99",
+        b"\xaa",
+        b"\xbb",
+        b"\xcc",
+        b"\xdd",
+        b"\xee",
+        b"\xff",  # 18-25
+        b"\x92\x49\x24",
+        b"\x49\x24\x92",
+        b"\x24\x92\x49",  # 26-28
+        b"\x6d\xb6\xdb",
+        b"\xb6\xdb\x6d",
+        b"\xdb\x6d\xb6",  # 29-31
+        None,
+        None,
+        None,
+        None,  # 32-35: Random
     ]
 
-    _VSITR_PATTERNS = [
-        b"\x00", b"\xFF", b"\x00", b"\xFF", b"\x00", b"\xFF", b"\xAA"
-    ]
+    _VSITR_PATTERNS = [b"\x00", b"\xff", b"\x00", b"\xff", b"\x00", b"\xff", b"\xaa"]
 
     def __init__(self):
         """Initialize the instance and configure internal state.
@@ -100,6 +126,7 @@ class AdvancedShredder:
             return False
 
         from cortex_unified.engine.guard import PathGuard
+
         guard_verdict = PathGuard().check(file_path)
         if not guard_verdict.safe:
             self.logger.warning("Shred blocked by PathGuard: %s (%s)", file_path, guard_verdict.reason)
@@ -111,8 +138,12 @@ class AdvancedShredder:
             try:
                 method = ShredMethod(method)
             except ValueError as e:
-                self.logger.error("Unknown shred method '%s'. Valid methods: %s", method, [m.value for m in ShredMethod])
-                raise ValueError(f"Unknown shred method '{method}'. Valid methods: {[m.value for m in ShredMethod]}") from e
+                self.logger.error(
+                    "Unknown shred method '%s'. Valid methods: %s", method, [m.value for m in ShredMethod]
+                )
+                raise ValueError(
+                    f"Unknown shred method '{method}'. Valid methods: {[m.value for m in ShredMethod]}"
+                ) from e
         elif not isinstance(method, ShredMethod):
             raise ValueError(f"Method must be a ShredMethod or valid method string, got {type(method).__name__}")
 
@@ -121,15 +152,15 @@ class AdvancedShredder:
         elif method == ShredMethod.RANDOM or method == ShredMethod.NIST_800_88:
             patterns = [None]
         elif method == ShredMethod.DOD_5220_22_M:
-            patterns = [b"\x00", b"\xFF", None]
+            patterns = [b"\x00", b"\xff", None]
         elif method == ShredMethod.DOD_5220_22_M_ECE:
-            patterns = [b"\x00", b"\xFF", None, b"\x96", b"\x00", b"\xFF", None]
+            patterns = [b"\x00", b"\xff", None, b"\x96", b"\x00", b"\xff", None]
         elif method == ShredMethod.GUTMANN:
             patterns = list(self._GUTMANN_PATTERNS)
         elif method == ShredMethod.VSITR:
             patterns = list(self._VSITR_PATTERNS)
         elif method == ShredMethod.SCHNEIER:
-            patterns = [b"\xFF", b"\x00", None, None, None, None, None]
+            patterns = [b"\xff", b"\x00", None, None, None, None, None]
         else:
             raise ValueError(f"Unsupported shred method: {method}")
 
@@ -200,6 +231,7 @@ class AdvancedShredder:
             return False
 
         from cortex_unified.engine.guard import PathGuard
+
         guard_verdict = PathGuard().check(dir_path)
         if not guard_verdict.safe:
             self.logger.warning("Directory shred blocked by PathGuard: %s (%s)", dir_path, guard_verdict.reason)

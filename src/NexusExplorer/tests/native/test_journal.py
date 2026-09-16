@@ -111,7 +111,8 @@ def test_orphans_detects_interrupted_and_ignores_completed(data_dir, ffi, tmp_pa
         "ts_ms": int(time.time() * 1000) - 600_000,  # 10 min old
         "job_id": jid,
         "kind": "copy",
-        "state": "running","pid": 999999,
+        "state": "running",
+        "pid": 999999,
         "sources": [str(src)],
         "dest_dir": str(dst_bad),
     }

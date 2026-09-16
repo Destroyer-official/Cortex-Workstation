@@ -50,6 +50,7 @@ if _IS_WINDOWS:
         """Mirrors the Win32 WIN32_FIND_DATAW structure filled by
         FindFirstFileExW/FindNextFileW (attributes, timestamps, size,
         and the filename buffers; MAX_PATH-truncated)."""
+
         _fields_ = [
             ("dwFileAttributes", wintypes.DWORD),
             ("ftCreationTime", wintypes.FILETIME),
@@ -69,8 +70,12 @@ if _IS_WINDOWS:
     _FindFirstFileExW = _kernel32.FindFirstFileExW
     _FindFirstFileExW.restype = wintypes.HANDLE
     _FindFirstFileExW.argtypes = [
-        wintypes.LPCWSTR, wintypes.INT, ctypes.POINTER(_WIN32_FIND_DATAW),
-        wintypes.LPVOID, wintypes.LPVOID, wintypes.DWORD,
+        wintypes.LPCWSTR,
+        wintypes.INT,
+        ctypes.POINTER(_WIN32_FIND_DATAW),
+        wintypes.LPVOID,
+        wintypes.LPVOID,
+        wintypes.DWORD,
     ]
 
     _FindNextFileW = _kernel32.FindNextFileW
@@ -148,9 +153,11 @@ def _fallback_scandir(path: str) -> list[tuple[str, str, bool, int, int]]:
 # Data structures
 # ---------------------------------------------------------------------------
 
+
 @dataclass(slots=True, frozen=True)
 class IndexedEntry:
     """A single indexed file/directory entry."""
+
     path: str
     name: str
     ext: str
@@ -163,6 +170,7 @@ class IndexedEntry:
 @dataclass
 class IndexStats:
     """Statistics about the current index."""
+
     total_files: int = 0
     total_dirs: int = 0
     total_bytes: int = 0
@@ -173,6 +181,7 @@ class IndexStats:
 # ---------------------------------------------------------------------------
 # In-memory prefix search (sorted array with bisect)
 # ---------------------------------------------------------------------------
+
 
 class _PrefixIndex:
     """Sorted array of (lowercase_name, path) for O(log n) prefix search."""
@@ -233,6 +242,7 @@ class _PrefixIndex:
 # ---------------------------------------------------------------------------
 # Core index
 # ---------------------------------------------------------------------------
+
 
 class FileIndex:
     """Thread-safe file path index backed by in-memory dicts + sorted prefix array."""
@@ -448,8 +458,7 @@ def _save_index_to_db(conn: sqlite3.Connection, index: FileIndex) -> int:
     try:
         conn.execute("DELETE FROM files")
         conn.executemany(
-            "INSERT INTO files (path, name, ext, is_dir, size, modified_ms, parent) "
-            "VALUES (?, ?, ?, ?, ?, ?, ?)",
+            "INSERT INTO files (path, name, ext, is_dir, size, modified_ms, parent) " "VALUES (?, ?, ?, ?, ?, ?, ?)",
             [(e.path, e.name, e.ext, int(e.is_dir), e.size, e.modified_ms, e.parent) for e in entries],
         )
         conn.execute("COMMIT")
@@ -465,10 +474,17 @@ def _load_index_from_db(conn: sqlite3.Connection, index: FileIndex) -> int:
     cur = conn.execute("SELECT path, name, ext, is_dir, size, modified_ms, parent FROM files")
     count = 0
     for row in cur:
-        index.add(IndexedEntry(
-            path=row[0], name=row[1], ext=row[2] or "",
-            is_dir=bool(row[3]), size=row[4], modified_ms=row[5], parent=row[6],
-        ))
+        index.add(
+            IndexedEntry(
+                path=row[0],
+                name=row[1],
+                ext=row[2] or "",
+                is_dir=bool(row[3]),
+                size=row[4],
+                modified_ms=row[5],
+                parent=row[6],
+            )
+        )
         count += 1
     log.info("Loaded %d entries from index DB", count)
     return count
@@ -485,10 +501,18 @@ def _fts5_search(conn: sqlite3.Connection, query: str, max_results: int = 1000) 
             "WHERE files_fts MATCH ? LIMIT ?",
             (pattern, max_results),
         )
-        return [IndexedEntry(
-            path=r[0], name=r[1], ext=r[2] or "", is_dir=bool(r[3]),
-            size=r[4], modified_ms=r[5], parent=r[6],
-        ) for r in cur]
+        return [
+            IndexedEntry(
+                path=r[0],
+                name=r[1],
+                ext=r[2] or "",
+                is_dir=bool(r[3]),
+                size=r[4],
+                modified_ms=r[5],
+                parent=r[6],
+            )
+            for r in cur
+        ]
     except sqlite3.OperationalError:
         log.warning("FTS5 match failed for query: %s", query, exc_info=True)
         return []
@@ -497,6 +521,7 @@ def _fts5_search(conn: sqlite3.Connection, query: str, max_results: int = 1000) 
 # ---------------------------------------------------------------------------
 # Background indexer worker
 # ---------------------------------------------------------------------------
+
 
 class _IndexWorker(QThread):
     """Background thread that walks filesystem and builds the index.
@@ -594,6 +619,7 @@ class _IndexWorker(QThread):
 # Incremental update worker
 # ---------------------------------------------------------------------------
 
+
 class _IncrementalWorker(QThread):
     """Background worker for incremental re-scanning of a single root."""
 
@@ -630,9 +656,13 @@ class _IncrementalWorker(QThread):
                     existing = self._index._entries.get(full_path)
                 if existing is None or existing.modified_ms != modified_ms or existing.size != size:
                     ie = IndexedEntry(
-                        path=full_path, name=name, ext=ext,
-                        is_dir=is_dir, size=size,
-                        modified_ms=modified_ms, parent=current,
+                        path=full_path,
+                        name=name,
+                        ext=ext,
+                        is_dir=is_dir,
+                        size=size,
+                        modified_ms=modified_ms,
+                        parent=current,
                     )
                     self._index.add(ie)
                     count += 1
@@ -640,8 +670,7 @@ class _IncrementalWorker(QThread):
                     stack.append(full_path)
         # Remove stale entries that no longer exist on disk
         with self._index._lock:
-            stale = [p for p in self._index._entries
-                     if p.startswith(self._root) and p not in seen]
+            stale = [p for p in self._index._entries if p.startswith(self._root) and p not in seen]
         for p in stale:
             self._index.remove(p)
             count += 1
@@ -651,6 +680,7 @@ class _IncrementalWorker(QThread):
 # ---------------------------------------------------------------------------
 # Public indexer API
 # ---------------------------------------------------------------------------
+
 
 class FileIndexer(QObject):
     """Manages background indexing and provides search API."""
@@ -710,17 +740,16 @@ class FileIndexer(QObject):
             if w and w.isRunning():
                 w.requestInterruption()
                 if not w.wait(5000):
-                    log.warning(
-                        "Worker %s did not stop within 5s timeout", w
-                    )
+                    log.warning("Worker %s did not stop within 5s timeout", w)
         self._worker = None
         self._incr_worker = None
 
     def is_indexing(self) -> bool:
         """Return True while a full or incremental worker thread is
         running."""
-        return (self._worker is not None and self._worker.isRunning()) or \
-               (self._incr_worker is not None and self._incr_worker.isRunning())
+        return (self._worker is not None and self._worker.isRunning()) or (
+            self._incr_worker is not None and self._incr_worker.isRunning()
+        )
 
     def _on_worker_finished(self, total: int):
         """Rebuild the prefix index and emit indexing_finished +
@@ -818,8 +847,7 @@ class FileIndexer(QObject):
         """Warn when garbage collected without an explicit shutdown()."""
         try:
             log.warning(
-                "FileIndexer garbage collected without explicit shutdown(); "
-                "call shutdown() before discarding"
+                "FileIndexer garbage collected without explicit shutdown(); " "call shutdown() before discarding"
             )
         except Exception:
             pass

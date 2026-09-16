@@ -14,9 +14,10 @@ import html
 
 from ..core.config import Config
 
+
 class ReportsGenerator:
     """Renders result dicts into report files across four formats."""
-    
+
     def __init__(self, config: Config = None, reports_dir: str = None):
         """Configure output location and error tracking.
 
@@ -27,15 +28,15 @@ class ReportsGenerator:
         self.config = config or Config()
         self.reports_dir = reports_dir or self._get_default_reports_dir()
         self.error_count = 0
-        
+
         Path(self.reports_dir).mkdir(parents=True, exist_ok=True)
-    
+
     def _get_default_reports_dir(self) -> str:
         """Return ``~/.deepcleaner/reports`` (per-user, no admin needed)."""
         home = Path.home()
         reports_dir = home / ".deepcleaner" / "reports"
         return str(reports_dir)
-    
+
     def generate_text_report(self, data: Dict, report_name: str = None) -> str:
         """Write ``data`` as indented plain text under ``report_name``.
 
@@ -50,18 +51,18 @@ class ReportsGenerator:
             if not report_name:
                 timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
                 report_name = f"report_{timestamp}.txt"
-            
+
             content = self._format_text_report(data)
 
             report_file = Path(self.reports_dir) / report_name
-            with open(report_file, 'w', encoding='utf-8') as f:
+            with open(report_file, "w", encoding="utf-8") as f:
                 f.write(content)
-            
+
             return str(report_file)
         except Exception as e:
             self.error_count += 1
             raise Exception(f"Failed to generate text report: {str(e)}")
-    
+
     def _format_text_report(self, data: Dict) -> str:
         """Assemble banner, timestamp, and sections into plain text."""
         lines = []
@@ -70,20 +71,20 @@ class ReportsGenerator:
         lines.append("=" * 60)
         lines.append(f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
         lines.append("")
-        
+
         self._add_text_section(lines, data, 0)
-        
+
         lines.append("")
         lines.append("=" * 60)
         lines.append("END OF REPORT")
         lines.append("=" * 60)
-        
+
         return "\n".join(lines)
-    
+
     def _add_text_section(self, lines: List[str], data: Dict, indent: int):
         """Recursively append dict/list values as indented lines."""
         indent_str = "  " * indent
-        
+
         for key, value in data.items():
             if isinstance(value, dict):
                 lines.append(f"{indent_str}{key}:")
@@ -97,7 +98,7 @@ class ReportsGenerator:
                         lines.append(f"{indent_str}  - {item}")
             else:
                 lines.append(f"{indent_str}{key}: {value}")
-    
+
     def generate_html_report(self, data: Dict, report_name: str = None) -> str:
         """Write ``data`` as a styled standalone HTML page.
 
@@ -112,18 +113,18 @@ class ReportsGenerator:
             if not report_name:
                 timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
                 report_name = f"report_{timestamp}.html"
-            
+
             content = self._format_html_report(data)
 
             report_file = Path(self.reports_dir) / report_name
-            with open(report_file, 'w', encoding='utf-8') as f:
+            with open(report_file, "w", encoding="utf-8") as f:
                 f.write(content)
-            
+
             return str(report_file)
         except Exception as e:
             self.error_count += 1
             raise Exception(f"Failed to generate HTML report: {str(e)}")
-    
+
     def _format_html_report(self, data: Dict) -> str:
         """Embed timestamp and rendered sections into the HTML shell."""
         html_content = f"""
@@ -152,11 +153,11 @@ class ReportsGenerator:
 </html>
 """
         return html_content
-    
+
     def _format_html_section(self, data: Dict, level: int) -> str:
         """Recursively render nested dicts/lists as HTML fragments."""
         html_content = ""
-        
+
         for key, value in data.items():
             key_escaped = html.escape(str(key))
             if isinstance(value, dict):
@@ -184,9 +185,9 @@ class ReportsGenerator:
                 html_content += f"<div class='key'>{key_escaped}:</div>\n"
                 html_content += f"<div class='value'>{value_escaped}</div>\n"
                 html_content += "</div>\n"
-        
+
         return html_content
-    
+
     def generate_json_report(self, data: Dict, report_name: str = None) -> str:
         """Write ``data`` as JSON wrapped with a generation timestamp.
 
@@ -201,21 +202,18 @@ class ReportsGenerator:
             if not report_name:
                 timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
                 report_name = f"report_{timestamp}.json"
-            
-            report_data = {
-                "report_generated": datetime.now().isoformat(),
-                "data": data
-            }
+
+            report_data = {"report_generated": datetime.now().isoformat(), "data": data}
 
             report_file = Path(self.reports_dir) / report_name
-            with open(report_file, 'w', encoding='utf-8') as f:
+            with open(report_file, "w", encoding="utf-8") as f:
                 json.dump(report_data, f, indent=2, default=str)
-            
+
             return str(report_file)
         except Exception as e:
             self.error_count += 1
             raise Exception(f"Failed to generate JSON report: {str(e)}")
-    
+
     def generate_csv_report(self, data: Dict, report_name: str = None) -> str:
         """Write tabular ``data`` as CSV.
 
@@ -230,9 +228,9 @@ class ReportsGenerator:
             if not report_name:
                 timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
                 report_name = f"report_{timestamp}.csv"
-            
+
             report_file = Path(self.reports_dir) / report_name
-            with open(report_file, 'w', newline='', encoding='utf-8') as f:
+            with open(report_file, "w", newline="", encoding="utf-8") as f:
                 writer = csv.writer(f)
 
                 if "headers" in data:
@@ -240,63 +238,61 @@ class ReportsGenerator:
 
                 if "rows" in data:
                     writer.writerows(data["rows"])
-            
+
             return str(report_file)
         except Exception as e:
             self.error_count += 1
             raise Exception(f"Failed to generate CSV report: {str(e)}")
-    
+
     def get_stats(self) -> dict:
         """Return report count, directory, and accumulated error total."""
         try:
             reports_path = Path(self.reports_dir)
             report_files = list(reports_path.glob("report_*.*"))
-            
+
             return {
                 "total_reports": len(report_files),
                 "reports_directory": self.reports_dir,
-                "errors": self.error_count
+                "errors": self.error_count,
             }
         except Exception:
             self.error_count += 1
-            return {
-                "total_reports": 0,
-                "reports_directory": self.reports_dir,
-                "errors": self.error_count
-            }
-    
+            return {"total_reports": 0, "reports_directory": self.reports_dir, "errors": self.error_count}
+
     def list_reports(self) -> List[Dict]:
         """Enumerate report files with size/mtime metadata."""
         try:
             reports_path = Path(self.reports_dir)
             reports = []
-            
+
             for file in reports_path.glob("report_*.*"):
                 try:
                     stat = file.stat()
-                    reports.append({
-                        "name": file.name,
-                        "path": str(file),
-                        "size_bytes": stat.st_size,
-                        "modified": datetime.fromtimestamp(stat.st_mtime).isoformat(),
-                        "extension": file.suffix
-                    })
+                    reports.append(
+                        {
+                            "name": file.name,
+                            "path": str(file),
+                            "size_bytes": stat.st_size,
+                            "modified": datetime.fromtimestamp(stat.st_mtime).isoformat(),
+                            "extension": file.suffix,
+                        }
+                    )
                 except Exception:
                     continue
-            
+
             # ISO timestamps sort chronologically as plain strings
             reports.sort(key=lambda x: x["modified"], reverse=True)
             return reports
         except Exception:
             self.error_count += 1
             return []
-    
+
     def delete_report(self, report_name: str) -> bool:
         """Delete a report file by name.
-        
+
         Args:
             report_name: Name of the report to delete
-            
+
         Returns:
             True if successful, False otherwise
         """

@@ -39,6 +39,7 @@ def _noise(n=4000, seed=7):
 
 # --- primitives -------------------------------------------------------------
 
+
 def test_fuzzy_hash_is_deterministic():
     """Verify fuzzy hash is deterministic via _text, fuzzy_hash_bytes."""
     data = _text()
@@ -76,6 +77,7 @@ def test_empty_signature():
 
 
 # --- finder -----------------------------------------------------------------
+
 
 def test_finder_groups_near_identical_binaries(tmp_path):
     """Verify finder groups near identical binaries via FuzzyDuplicateFinder, finder.find_fuzzy_duplicates, groups.values.

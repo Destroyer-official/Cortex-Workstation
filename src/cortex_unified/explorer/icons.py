@@ -1,4 +1,5 @@
 """Vector icon pipeline for Explorer subsystem."""
+
 from __future__ import annotations
 
 import sys

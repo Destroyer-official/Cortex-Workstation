@@ -23,6 +23,7 @@ class CaseTransformation(Enum):
 
     Converts raw numeric values into formatted, localized, and human-readable string representations.
     """
+
     NONE = "None"
     UPPERCASE = "UPPERCASE"
     LOWERCASE = "lowercase"
@@ -38,6 +39,7 @@ class RenamePlanItem:
 
     Holds original/new paths and names plus validity, error, and changed flags from collision checks.
     """
+
     original_path: str
     original_name: str
     new_name: str
@@ -53,6 +55,7 @@ class RenameTransaction:
 
     Stores timestamp and (old_path, new_path) pairs for reverse-order revert.
     """
+
     timestamp: float
     items: List[Tuple[str, str]]  # (old_path, new_path)
 
@@ -123,6 +126,7 @@ class BatchRenamer:
 
         try:
             from PIL import Image, ExifTags
+
             with Image.open(file_path) as img:
                 meta["dimensions"] = f"{img.width}x{img.height}"
                 exif_data = img.getexif()
@@ -157,6 +161,7 @@ class BatchRenamer:
 
         try:
             import mutagen
+
             audio = mutagen.File(file_path)
             if audio:
                 if "artist" in audio:
@@ -213,14 +218,16 @@ class BatchRenamer:
         for path_input in file_paths:
             path_obj = Path(path_input)
             if not path_obj.exists():
-                plan.append(RenamePlanItem(
-                    original_path=str(path_input),
-                    original_name=path_obj.name,
-                    new_name=path_obj.name,
-                    new_path=str(path_input),
-                    is_valid=False,
-                    error_message="File does not exist",
-                ))
+                plan.append(
+                    RenamePlanItem(
+                        original_path=str(path_input),
+                        original_name=path_obj.name,
+                        new_name=path_obj.name,
+                        new_path=str(path_input),
+                        is_valid=False,
+                        error_message="File does not exist",
+                    )
+                )
                 continue
 
             stem = path_obj.stem
@@ -236,14 +243,16 @@ class BatchRenamer:
                     try:
                         working_name = re.sub(search_pattern, replace_pattern, working_name)
                     except re.error as e:
-                        plan.append(RenamePlanItem(
-                            original_path=str(path_obj),
-                            original_name=path_obj.name,
-                            new_name=path_obj.name,
-                            new_path=str(path_obj),
-                            is_valid=False,
-                            error_message=f"Regex error: {e}",
-                        ))
+                        plan.append(
+                            RenamePlanItem(
+                                original_path=str(path_obj),
+                                original_name=path_obj.name,
+                                new_name=path_obj.name,
+                                new_path=str(path_obj),
+                                is_valid=False,
+                                error_message=f"Regex error: {e}",
+                            )
+                        )
                         continue
                 else:
                     working_name = working_name.replace(search_pattern, replace_pattern)
@@ -318,7 +327,7 @@ class BatchRenamer:
             has_invalid = any(c in invalid_chars for c in final_name)
 
             final_path = str(parent_dir / final_name)
-            is_changed = (final_name != path_obj.name)
+            is_changed = final_name != path_obj.name
             is_valid = not has_invalid and len(final_name.strip()) > 0
             err_msg = "Contains invalid Windows characters" if has_invalid else ""
 
@@ -332,15 +341,17 @@ class BatchRenamer:
 
             seen_targets[final_path.lower()] = str(path_obj)
 
-            plan.append(RenamePlanItem(
-                original_path=str(path_obj.resolve()),
-                original_name=path_obj.name,
-                new_name=final_name,
-                new_path=final_path,
-                is_valid=is_valid,
-                error_message=err_msg,
-                is_changed=is_changed,
-            ))
+            plan.append(
+                RenamePlanItem(
+                    original_path=str(path_obj.resolve()),
+                    original_name=path_obj.name,
+                    new_name=final_name,
+                    new_path=final_path,
+                    is_valid=is_valid,
+                    error_message=err_msg,
+                    is_changed=is_changed,
+                )
+            )
 
             counter += step_counter
 

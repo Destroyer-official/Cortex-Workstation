@@ -22,13 +22,14 @@ from cortex_unified.system_tools.load_tester import (
     TcpLoadConfig,
 )
 
-
 # ---------------------------------------------------------------------------
 # Safety gate
 # ---------------------------------------------------------------------------
 
+
 class TestAuthorization:
     """Group testauthorization tests covering loopback authorized; localhost authorized; private lan authorized; public denied without token; public denied with unverifiable token; unresolvable denied."""
+
     def test_loopback_authorized(self):
         """Verify loopback authorized via TargetAuthorizer, authorize."""
         a = TargetAuthorizer().authorize("127.0.0.1")
@@ -56,8 +57,7 @@ class TestAuthorization:
     def test_public_denied_with_unverifiable_token(self):
         # verify_public defaults on; a random token won't be hosted on 8.8.8.8.
         """Verify public denied with unverifiable token via TargetAuthorizer, authorize."""
-        a = TargetAuthorizer().authorize("8.8.8.8", ownership_token="cortex-xyz",
-                                        verify_public=False)
+        a = TargetAuthorizer().authorize("8.8.8.8", ownership_token="cortex-xyz", verify_public=False)
         # With verify_public=False we still must NOT auto-authorize a public host.
         assert a.authorized is False
 
@@ -79,6 +79,7 @@ class TestAuthorization:
 
 class TestRefusesUnauthorized:
     """Group testrefusesunauthorized tests covering run http refuses unauthorized; run tcp refuses unauthorized."""
+
     def test_run_http_refuses_unauthorized(self):
         """Verify run http refuses unauthorized via Authorization, pytest.raises, HttpLoadConfig."""
         auth = Authorization(False, "denied", "8.8.8.8", "8.8.8.8", "nope")
@@ -96,8 +97,10 @@ class TestRefusesUnauthorized:
 # Metrics math
 # ---------------------------------------------------------------------------
 
+
 class TestMetrics:
     """Group testmetrics tests covering percentiles; rps and error rate; empty latencies safe; summary keys."""
+
     def test_percentiles(self):
         """Verify percentiles via LoadResult, r.percentile, float."""
         r = LoadResult(kind="http", target="x")
@@ -126,16 +129,17 @@ class TestMetrics:
         r.latencies_ms = [10.0, 20.0, 30.0]
         r.total, r.succeeded = 3, 3
         s = r.summary()
-        assert set(s) >= {"rps", "error_rate", "p50_ms", "p95_ms", "p99_ms",
-                          "avg_ms", "max_ms", "status_counts"}
+        assert set(s) >= {"rps", "error_rate", "p50_ms", "p95_ms", "p99_ms", "avg_ms", "max_ms", "status_counts"}
 
 
 # ---------------------------------------------------------------------------
 # Real localhost run (authorized, harmless)
 # ---------------------------------------------------------------------------
 
+
 class TestLocalRun:
     """Group testlocalrun tests covering http against local server; cancel stops run."""
+
     def test_http_against_local_server(self):
         """Verify http against local server via socketserver.TCPServer, threading.Thread, t.start."""
         import http.server
@@ -143,6 +147,7 @@ class TestLocalRun:
 
         class Quiet(http.server.SimpleHTTPRequestHandler):
             """Helper quiet using self.send_response, self.send_header, self.end_headers."""
+
             def log_message(self, *a):  # silence
                 """Log message."""
                 pass
@@ -161,8 +166,7 @@ class TestLocalRun:
             try:
                 auth = TargetAuthorizer().authorize("127.0.0.1")
                 assert auth.authorized
-                cfg = HttpLoadConfig(url=f"http://127.0.0.1:{port}/",
-                                     concurrency=4, duration_s=2)
+                cfg = HttpLoadConfig(url=f"http://127.0.0.1:{port}/", concurrency=4, duration_s=2)
                 res = LoadTester().run_http(cfg, auth, confirm=True)
                 assert res.total > 0
                 assert res.succeeded > 0

@@ -33,9 +33,7 @@ ProgressCallback = Callable[[str, int], None]  # (current_dir, files_seen)
 #: Attribute bits that mean "the logical size may overstate disk usage", so an
 #: allocated-size measurement is worth the extra syscall.
 _MEASURE_MASK = (
-    winattrs.FILE_ATTRIBUTE_SPARSE_FILE
-    | winattrs.FILE_ATTRIBUTE_COMPRESSED
-    | winattrs.FILE_ATTRIBUTE_REPARSE_POINT
+    winattrs.FILE_ATTRIBUTE_SPARSE_FILE | winattrs.FILE_ATTRIBUTE_COMPRESSED | winattrs.FILE_ATTRIBUTE_REPARSE_POINT
 )
 
 
@@ -43,22 +41,21 @@ _MEASURE_MASK = (
 class WalkOptions:
     """Walk Options.
 
- Handles walk options for.
- """
+    Handles walk options for.
+    """
 
     exclude_dir_names: frozenset[str] = field(
         default_factory=lambda: frozenset(
-            {".git", "__pycache__", "node_modules", ".svn", ".hg", "$RECYCLE.BIN",
-             "System Volume Information"}
+            {".git", "__pycache__", "node_modules", ".svn", ".hg", "$RECYCLE.BIN", "System Volume Information"}
         )
     )
     exclude_globs: tuple[str, ...] = ()
     exclude_regexes: tuple[str, ...] = ()
     follow_symlinks: bool = False
     max_depth: int | None = None
-    min_size: int = 0            # only yield files >= this many bytes
-    min_age_days: float = 0.0    # only yield files at least this old
-    collect_dirs: bool = False   # include directory entries in results
+    min_size: int = 0  # only yield files >= this many bytes
+    min_age_days: float = 0.0  # only yield files at least this old
+    collect_dirs: bool = False  # include directory entries in results
 
     # -- Windows reparse-point policy (see engine/winattrs.py) --------------
     #: Skip cloud placeholders (OneDrive Files On-Demand and friends). Their
@@ -111,8 +108,8 @@ class FastWalker:
     def reset(self) -> None:
         """Reset helper.
 
- Handles reset for.
- """
+        Handles reset for.
+        """
         self._cancel.clear()
         self.cloud_skipped = 0
         self.cloud_skipped_bytes = 0
@@ -123,15 +120,15 @@ class FastWalker:
     def _excluded_dir(self, name: str, full: str) -> bool:
         """Excluded dir.
 
- Handles excluded dir for.
+        Handles excluded dir for.
 
- Args:
- name (str): The name parameter.
- full (str): The full parameter.
+        Args:
+        name (str): The name parameter.
+        full (str): The full parameter.
 
- Returns:
- bool: True if the operation succeeded, False otherwise.
- """
+        Returns:
+        bool: True if the operation succeeded, False otherwise.
+        """
         if name in self.options.exclude_dir_names:
             return True
         return self._matches_patterns(name, full)
@@ -177,9 +174,7 @@ class FastWalker:
             Iterator[FileEntry]: Result of the operation.
         """
         opts = self.options
-        min_mtime_cutoff = (
-            time.time() - opts.min_age_days * 86400.0 if opts.min_age_days > 0 else None
-        )
+        min_mtime_cutoff = time.time() - opts.min_age_days * 86400.0 if opts.min_age_days > 0 else None
         root_path = Path(root)
         # Stack of (dir_path, depth)
         stack: list[tuple[str, int]] = [(os.fspath(root_path), 0)]
@@ -223,9 +218,13 @@ class FastWalker:
                                 stack.append((entry.path, depth + 1))
                             if opts.collect_dirs:
                                 yield FileEntry(
-                                    Path(entry.path), 0, dst.st_mtime,
-                                    is_dir=True, is_symlink=is_symlink,
-                                    attrs=dattrs, reparse_tag=dtag,
+                                    Path(entry.path),
+                                    0,
+                                    dst.st_mtime,
+                                    is_dir=True,
+                                    is_symlink=is_symlink,
+                                    attrs=dattrs,
+                                    reparse_tag=dtag,
                                 )
                             continue
 
@@ -252,9 +251,13 @@ class FastWalker:
                         if opts.measure_on_disk and attrs & _MEASURE_MASK:
                             on_disk = winattrs.on_disk_size(entry.path, st.st_size)
                         yield FileEntry(
-                            Path(entry.path), st.st_size, st.st_mtime,
-                            is_dir=False, is_symlink=is_symlink,
-                            attrs=attrs, reparse_tag=winattrs.reparse_tag_of(st),
+                            Path(entry.path),
+                            st.st_size,
+                            st.st_mtime,
+                            is_dir=False,
+                            is_symlink=is_symlink,
+                            attrs=attrs,
+                            reparse_tag=winattrs.reparse_tag_of(st),
                             on_disk=on_disk,
                         )
                     except (OSError, ValueError) as exc:
@@ -298,9 +301,7 @@ class FastWalker:
         result.junctions_skipped = self.junctions_skipped
         return result
 
-    def find_empty(
-        self, root: os.PathLike[str] | str
-    ) -> tuple[list[Path], list[Path]]:
+    def find_empty(self, root: os.PathLike[str] | str) -> tuple[list[Path], list[Path]]:
         """Return (empty_files, empty_dirs) using a single scandir pass.
 
         A directory is "empty" when it has no non-excluded children (files or
@@ -338,7 +339,8 @@ class FastWalker:
                         # A junction is a pointer, not an empty folder: never
                         # descend it and never offer it for deletion.
                         if self.options.skip_junctions and winattrs.is_junction(
-                                winattrs.reparse_tag_of(entry.stat(follow_symlinks=False))):
+                            winattrs.reparse_tag_of(entry.stat(follow_symlinks=False))
+                        ):
                             non_empty_children[dpath] += 1
                             continue
                         _visit(entry.path)
@@ -373,6 +375,7 @@ class FastWalker:
             try:
                 import ctypes
                 from ctypes import wintypes
+
                 drive_letter = v_str[0].upper()
                 vol_path = f"\\\\.\\{drive_letter}:"
 

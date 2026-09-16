@@ -29,15 +29,15 @@ from .states import StatePanel
 from .widgets import Card, title_block
 from .window import _Page
 
-
 # =====================================================================
 #  Workers
 # =====================================================================
 
+
 class HealthReportWorker(QObject):
     """Background worker (HealthReportWorker) performing HealthReportWorker. Signals finished, failed report status. Configured with fmt. Its run() step calls self._collect, ReportsGenerator, gen.generate_html_report, gen.generate_json_report."""
 
-    finished = Signal(str, dict)   # (report_path, data)
+    finished = Signal(str, dict)  # (report_path, data)
     failed = Signal(str)
 
     def __init__(self, fmt: str):
@@ -62,11 +62,13 @@ class HealthReportWorker(QObject):
         data: dict = {}
         try:
             from cortex_unified.system_tools.system_info import SystemInfo
+
             data["System"] = SystemInfo().snapshot()
         except Exception as exc:  # noqa: BLE001
             data["System"] = {"error": str(exc)}
         try:
             from cortex_unified.system_tools.disk_health import DiskHealthMonitor
+
             disks = [d.to_dict() for d in DiskHealthMonitor().get_health()]
             data["Disk Health"] = disks or "Not reported (may require Administrator)"
         except Exception as exc:  # noqa: BLE001
@@ -80,6 +82,7 @@ class HealthReportWorker(QObject):
         """
         try:
             from cortex_unified.reports.reports import ReportsGenerator
+
             data = self._collect()
             gen = ReportsGenerator()
             if self._fmt == "html":
@@ -118,26 +121,29 @@ class ManifestListWorker(QObject):
             sessions = sorted(p for p in root.iterdir() if p.is_dir())
         except OSError:
             return rows
-        for session in reversed(sessions):          # newest first
+        for session in reversed(sessions):  # newest first
             journal_file = session / "journal.json"
             if not journal_file.is_file():
                 continue
             try:
-                payload = json.loads(
-                    journal_file.read_text(encoding="utf-8"))
+                payload = json.loads(journal_file.read_text(encoding="utf-8"))
             except (OSError, ValueError):
                 continue
             ok = int(payload.get("ok_count", 0))
             failed = int(payload.get("fail_count", 0))
-            rows.append({
-                "backup_name": f"Leftover cleanup \u2014 {session.name}",
-                "timestamp": payload.get("timestamp", session.name),
-                "files_backed_up": ok,
-                "_kind": "leftovers",
-                "_detail": (f"{ok} cleaned, {failed} failed. Files are in "
-                            f"the Recycle Bin; .reg/.xml backups and the "
-                            f"journal are in {session}"),
-            })
+            rows.append(
+                {
+                    "backup_name": f"Leftover cleanup \u2014 {session.name}",
+                    "timestamp": payload.get("timestamp", session.name),
+                    "files_backed_up": ok,
+                    "_kind": "leftovers",
+                    "_detail": (
+                        f"{ok} cleaned, {failed} failed. Files are in "
+                        f"the Recycle Bin; .reg/.xml backups and the "
+                        f"journal are in {session}"
+                    ),
+                }
+            )
         return rows
 
     def run(self):
@@ -147,6 +153,7 @@ class ManifestListWorker(QObject):
         """
         try:
             from cortex_unified.reports.restore_manager import RestoreManager
+
             manifests = list(RestoreManager().list_manifests())
             for m in manifests:
                 m.setdefault("_kind", "manifest")
@@ -161,6 +168,7 @@ class RestoreWorker(QObject):
 
     Emits ``finished`` with the restore result dict or ``failed`` with an error.
     """
+
     finished = Signal(dict)
     failed = Signal(str)
 
@@ -186,8 +194,10 @@ class RestoreWorker(QObject):
         """
         try:
             from cortex_unified.reports.restore_manager import RestoreManager
+
             res = RestoreManager().restore_from_manifest(
-                self._file, dry_run=self._dry, overwrite_existing=self._overwrite)
+                self._file, dry_run=self._dry, overwrite_existing=self._overwrite
+            )
             self.finished.emit(res)
         except Exception as exc:  # noqa: BLE001
             self.failed.emit(str(exc))
@@ -196,6 +206,7 @@ class RestoreWorker(QObject):
 # =====================================================================
 #  PC Health Report  (feature I)
 # =====================================================================
+
 
 class HealthReportPage(_Page):
     """PC Health Report page: Generate a shareable snapshot of your system: hardware, OS, memory,."""
@@ -209,11 +220,13 @@ class HealthReportPage(_Page):
             win: Parent window or shell controller instance.
         """
         super().__init__(win)
-        self.v.addWidget(title_block(
-            "PC Health Report",
-            "Generate a shareable snapshot of your system: hardware, OS, memory, "
-            "disks and drive health. Fully offline; written to your reports folder.",
-        ))
+        self.v.addWidget(
+            title_block(
+                "PC Health Report",
+                "Generate a shareable snapshot of your system: hardware, OS, memory, "
+                "disks and drive health. Fully offline; written to your reports folder.",
+            )
+        )
 
         row = QHBoxLayout()
         self.html_btn = QPushButton("Export HTML")
@@ -287,13 +300,13 @@ class HealthReportPage(_Page):
             "",
             f"<b>OS:</b> {p.get('system', '?')} {p.get('release', '')}",
             f"<b>Host:</b> {p.get('hostname', '')}",
-            f"<b>Memory:</b> {mem.get('total_human', '?')} total, "
-            f"{mem.get('used_percent', '?')}% used",
+            f"<b>Memory:</b> {mem.get('total_human', '?')} total, " f"{mem.get('used_percent', '?')}% used",
         ]
         dh = data.get("Disk Health")
         if isinstance(dh, list) and dh:
-            lines.append(f"<b>Drives:</b> " + ", ".join(
-                f"{d.get('name', '?')} ({d.get('health_status', '?')})" for d in dh))
+            lines.append(
+                f"<b>Drives:</b> " + ", ".join(f"{d.get('name', '?')} ({d.get('health_status', '?')})" for d in dh)
+            )
         self.preview.setText("<br>".join(lines))
         self.win.statusBar().showMessage(f"Report written to {path}", 6000)
 
@@ -303,10 +316,12 @@ class HealthReportPage(_Page):
             return
         try:
             import os
+
             os.startfile(self._last_path)  # type: ignore[attr-defined]  # Windows
         except AttributeError:
             import subprocess
             import sys
+
             opener = "open" if sys.platform == "darwin" else "xdg-open"
             subprocess.Popen([opener, self._last_path])
         except Exception as exc:  # noqa: BLE001
@@ -329,6 +344,7 @@ class HealthReportPage(_Page):
 #  Backups / Restore  (feature G)
 # =====================================================================
 
+
 class BackupsPage(_Page):
     """List backup manifests and restore files from them.
 
@@ -344,11 +360,13 @@ class BackupsPage(_Page):
             win: Parent window or shell controller instance.
         """
         super().__init__(win)
-        self.v.addWidget(title_block(
-            "Backups & Restore",
-            "Restore files from backups Cortex made before cleaning. A dry-run "
-            "preview always runs first so you know exactly what will be restored.",
-        ))
+        self.v.addWidget(
+            title_block(
+                "Backups & Restore",
+                "Restore files from backups Cortex made before cleaning. A dry-run "
+                "preview always runs first so you know exactly what will be restored.",
+            )
+        )
 
         row = QHBoxLayout()
         self.refresh_btn = QPushButton("Refresh")
@@ -421,8 +439,9 @@ class BackupsPage(_Page):
             manifests (list): The manifests parameter.
         """
         if not manifests:
-            self.state.show_empty("No backups found yet. Cortex creates these before "
-                                   "cleaning when backups are enabled in Settings.")
+            self.state.show_empty(
+                "No backups found yet. Cortex creates these before " "cleaning when backups are enabled in Settings."
+            )
         else:
             self.state.clear()
         self.refresh_btn.setEnabled(True)
@@ -435,8 +454,9 @@ class BackupsPage(_Page):
             self.tbl.setItem(r, 1, QTableWidgetItem(str(m.get("timestamp", ""))))
             self.tbl.setItem(r, 2, QTableWidgetItem(str(m.get("files_backed_up", 0))))
         if not manifests:
-            self.status.setText("No backups found yet. Cortex creates these before "
-                                 "cleaning when backups are enabled in Settings.")
+            self.status.setText(
+                "No backups found yet. Cortex creates these before " "cleaning when backups are enabled in Settings."
+            )
         else:
             self.status.setText(f"{len(manifests)} backup(s) available.")
 
@@ -470,22 +490,28 @@ class BackupsPage(_Page):
         self.status.setText(
             f"Dry-run: {res['restored']} file(s) would be restored, "
             f"{res['skipped']} skipped, {res['errors']} error(s). "
-            + (f"First issues: {res['error_details'][0]}" if res.get("error_details") else ""))
+            + (f"First issues: {res['error_details'][0]}" if res.get("error_details") else "")
+        )
 
     def _restore(self):
         """Validate the current selection and ask the user to confirm via a message box showing 'Overwrite existing?'."""
         mf = self._selected_manifest()
         if not mf:
             return
-        overwrite = QMessageBox.question(
-            self, "Overwrite existing?",
-            "If a file already exists at its original location, overwrite it?\n\n"
-            "Yes = overwrite existing files.  No = skip files that already exist.",
-            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
-            QMessageBox.StandardButton.No,
-        ) == QMessageBox.StandardButton.Yes
+        overwrite = (
+            QMessageBox.question(
+                self,
+                "Overwrite existing?",
+                "If a file already exists at its original location, overwrite it?\n\n"
+                "Yes = overwrite existing files.  No = skip files that already exist.",
+                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+                QMessageBox.StandardButton.No,
+            )
+            == QMessageBox.StandardButton.Yes
+        )
         confirm = QMessageBox.question(
-            self, "Confirm restore",
+            self,
+            "Confirm restore",
             "Restore files from this backup to their original locations?",
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
             QMessageBox.StandardButton.No,
@@ -502,8 +528,7 @@ class BackupsPage(_Page):
             res (dict): The res parameter.
         """
         self._busy(False)
-        msg = (f"Restored {res['restored']} file(s). "
-               f"Skipped {res['skipped']}, {res['errors']} error(s).")
+        msg = f"Restored {res['restored']} file(s). " f"Skipped {res['skipped']}, {res['errors']} error(s)."
         QMessageBox.information(self, "Restore complete", msg)
         self.status.setText(msg)
         self.win.statusBar().showMessage(msg, 6000)

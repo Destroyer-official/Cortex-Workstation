@@ -15,6 +15,7 @@ from cortex_unified.system_tools.network_traffic import (
 
 class TestSample:
     """Group testsample tests covering first sample zero rate; since start starts zero; second sample has nonnegative rates; per nic present and sorted; to dict shape."""
+
     def test_first_sample_zero_rate(self):
         """Verify first sample zero rate via TrafficMonitor, tm.sample."""
         tm = TrafficMonitor()
@@ -33,6 +34,7 @@ class TestSample:
     def test_second_sample_has_nonnegative_rates(self):
         """Verify second sample has nonnegative rates via TrafficMonitor, tm.sample, time.sleep."""
         import time
+
         tm = TrafficMonitor()
         tm.sample()
         time.sleep(0.2)
@@ -55,8 +57,15 @@ class TestSample:
         """Verify to dict shape via TrafficMonitor, tm.sample, to_dict."""
         tm = TrafficMonitor()
         d = tm.sample().to_dict()
-        assert set(d) >= {"send_rate", "recv_rate", "total_sent", "total_recv",
-                          "sent_since_start", "recv_since_start", "per_nic"}
+        assert set(d) >= {
+            "send_rate",
+            "recv_rate",
+            "total_sent",
+            "total_recv",
+            "sent_since_start",
+            "recv_since_start",
+            "per_nic",
+        }
 
 
 def test_singleton():

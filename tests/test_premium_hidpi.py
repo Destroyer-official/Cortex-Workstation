@@ -44,6 +44,7 @@ def window(app):
     """
     from cortex_unified.ui.premium.theme import apply_theme
     from cortex_unified.ui.premium.window import PremiumMainWindow
+
     apply_theme(app, "dark")
     win = PremiumMainWindow("dark")
     win.resize(1180, 760)

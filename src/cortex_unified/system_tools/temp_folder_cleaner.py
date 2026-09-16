@@ -21,6 +21,7 @@ from typing import Callable, Dict, List, Optional, Tuple
 @dataclass
 class TempLocation:
     """Temp Location data container."""
+
     name: str
     path: str
     total_files: int
@@ -33,6 +34,7 @@ class TempLocation:
 @dataclass
 class TempScanReport:
     """Temp Scan Report data container."""
+
     locations: List[TempLocation]
     total_files: int
     total_size_bytes: int
@@ -44,6 +46,7 @@ class TempScanReport:
 @dataclass
 class TempCleanResult:
     """Temp Clean Result data container."""
+
     files_deleted: int
     bytes_freed: int
     locked_skipped: int
@@ -72,7 +75,9 @@ class TempFolderCleaner:
 
         # Windows Installer Patch Cache
         sys_drive = os.environ.get("SystemDrive", "C:")
-        locations.append(("Installer Patch Cache", os.path.join(sys_drive, os.sep, "Windows", "Installer", "$PatchCache$")))
+        locations.append(
+            ("Installer Patch Cache", os.path.join(sys_drive, os.sep, "Windows", "Installer", "$PatchCache$"))
+        )
 
         # SoftwareDistribution Download cache
         locations.append(("Windows Update Cache", os.path.join(windir, "SoftwareDistribution", "Download")))
@@ -86,7 +91,9 @@ class TempFolderCleaner:
             locations.append(("NVIDIA GLCache", os.path.join(local_app, "NVIDIA", "GLCache")))
             locations.append(("AMD DxCache", os.path.join(local_app, "AMD", "DxCache")))
             locations.append(("Temp Internet Files", os.path.join(local_app, "Microsoft", "Windows", "INetCache")))
-            locations.append(("Edge Cache", os.path.join(local_app, "Microsoft", "Edge", "User Data", "Default", "Cache")))
+            locations.append(
+                ("Edge Cache", os.path.join(local_app, "Microsoft", "Edge", "User Data", "Default", "Cache"))
+            )
 
         return [(n, p) for n, p in locations if p]
 
@@ -136,8 +143,12 @@ class TempFolderCleaner:
         )
 
     @classmethod
-    def clean(cls, stale_hours: int = 24, locations_filter: Optional[List[str]] = None,
-              progress_cb: Optional[Callable[[int, str], None]] = None) -> TempCleanResult:
+    def clean(
+        cls,
+        stale_hours: int = 24,
+        locations_filter: Optional[List[str]] = None,
+        progress_cb: Optional[Callable[[int, str], None]] = None,
+    ) -> TempCleanResult:
         """Delete stale temp files across all discovered temp locations."""
         now = time.time()
         stale_threshold = now - (stale_hours * 3600)

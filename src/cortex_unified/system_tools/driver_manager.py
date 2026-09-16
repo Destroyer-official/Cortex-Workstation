@@ -69,10 +69,10 @@ from typing import Any, Callable, Dict, List, Optional, Tuple
 
 from cortex_unified.system_tools.restore_point import RestorePointManager
 
-
 # ---------------------------------------------------------------------------
 # Data structures
 # ---------------------------------------------------------------------------
+
 
 @dataclass(frozen=True, slots=True)
 class DriverInfo:
@@ -80,6 +80,7 @@ class DriverInfo:
 
     Manages DriverInfo operations and coordinates related state changes for the component.
     """
+
     hardware_id: str
     device_name: str
     manufacturer: str
@@ -107,6 +108,7 @@ class DriverInfo:
             dict: Dictionary mapping identifiers to status or values.
         """
         import dataclasses
+
         return dataclasses.asdict(self)
 
 
@@ -116,6 +118,7 @@ class DriverPack:
 
     Manages DriverPack operations and coordinates related state changes for the component.
     """
+
     name: str
     version: str
     date: str
@@ -133,6 +136,7 @@ class ScanResult:
 
     Launches an asynchronous scan across the target subsystem, showing a loading indicator and disabling triggering controls.
     """
+
     drivers: List[DriverInfo]
     total_devices: int
     outdated_count: int
@@ -147,18 +151,22 @@ class ScanResult:
         Returns:
             str: Formatted string or path.
         """
-        return json.dumps({
-            "total_devices": self.total_devices,
-            "outdated_count": self.outdated_count,
-            "missing_count": self.missing_count,
-            "scan_time": self.scan_time,
-            "drivers": [d.to_dict() for d in self.drivers],
-        }, indent=2)
+        return json.dumps(
+            {
+                "total_devices": self.total_devices,
+                "outdated_count": self.outdated_count,
+                "missing_count": self.missing_count,
+                "scan_time": self.scan_time,
+                "drivers": [d.to_dict() for d in self.drivers],
+            },
+            indent=2,
+        )
 
 
 # ---------------------------------------------------------------------------
 # Core driver manager
 # ---------------------------------------------------------------------------
+
 
 class DriverManager:
     """Drivermanager.
@@ -213,8 +221,12 @@ class DriverManager:
             raise RuntimeError("Cancelled")
         try:
             proc = subprocess.run(
-                cmd, capture_output=True, text=True, timeout=timeout,
-                encoding=sys.getdefaultencoding(), errors="replace"
+                cmd,
+                capture_output=True,
+                text=True,
+                timeout=timeout,
+                encoding=sys.getdefaultencoding(),
+                errors="replace",
             )
             return proc.returncode, proc.stdout, proc.stderr
         except subprocess.TimeoutExpired:
@@ -282,6 +294,7 @@ class DriverManager:
             dict: Dictionary mapping identifiers to status or values.
         """
         import dataclasses
+
         return dataclasses.asdict(pack)
 
     # -- enumeration
@@ -362,19 +375,29 @@ $results | ConvertTo-Json -Depth 3
             except Exception:
                 pass
 
-            result.append(DriverInfo(
-                hardware_id=d.get("InstanceId", ""),
-                device_name=d.get("DeviceName", ""),
-                manufacturer=d.get("Manufacturer", ""),
-                provider=d.get("Provider", ""),
-                current_version=d.get("Version", ""),
-                current_date=date_str,
-                hardware_ids=d.get("HardwareIds", []) if isinstance(d.get("HardwareIds"), list) else [d.get("HardwareIds", "")],
-                compatible_ids=d.get("CompatibleIds", []) if isinstance(d.get("CompatibleIds"), list) else [d.get("CompatibleIds", "")],
-                driver_store_path=store_path,
-                inf_name=inf_name,
-                class_guid=d.get("ClassGuid", ""),
-            ))
+            result.append(
+                DriverInfo(
+                    hardware_id=d.get("InstanceId", ""),
+                    device_name=d.get("DeviceName", ""),
+                    manufacturer=d.get("Manufacturer", ""),
+                    provider=d.get("Provider", ""),
+                    current_version=d.get("Version", ""),
+                    current_date=date_str,
+                    hardware_ids=(
+                        d.get("HardwareIds", [])
+                        if isinstance(d.get("HardwareIds"), list)
+                        else [d.get("HardwareIds", "")]
+                    ),
+                    compatible_ids=(
+                        d.get("CompatibleIds", [])
+                        if isinstance(d.get("CompatibleIds"), list)
+                        else [d.get("CompatibleIds", "")]
+                    ),
+                    driver_store_path=store_path,
+                    inf_name=inf_name,
+                    class_guid=d.get("ClassGuid", ""),
+                )
+            )
         return result
 
     # -- version checking (online)
@@ -453,15 +476,19 @@ $results | ConvertTo-Json -Depth 3
 
                 if new_ver and self._version_newer(new_ver, drv.current_version):
                     merged = drv.to_dict()
-                    merged.update({
-                        "latest_version": new_ver,
-                        "is_outdated": True,
-                        # WUA only offers signed/WHQL drivers through this
-                        # search, so anything it returns is WHQL-listed.
-                        "whql_certified": True,
-                        "metadata": {**(merged.get("metadata") or {}),
-                                     "wua_update_title": str(getattr(update, "Title", ""))},
-                    })
+                    merged.update(
+                        {
+                            "latest_version": new_ver,
+                            "is_outdated": True,
+                            # WUA only offers signed/WHQL drivers through this
+                            # search, so anything it returns is WHQL-listed.
+                            "whql_certified": True,
+                            "metadata": {
+                                **(merged.get("metadata") or {}),
+                                "wua_update_title": str(getattr(update, "Title", "")),
+                            },
+                        }
+                    )
                     by_hwid[hid.lower()] = DriverInfo(**merged)
                 break
 
@@ -488,12 +515,14 @@ $results | ConvertTo-Json -Depth 3
         """
         try:
             import pythoncom
+
             pythoncom.CoInitialize()
         except ImportError:
             # win32com comes from pywin32; without it there is no COM.
             return None
         try:
             import win32com.client
+
             session = win32com.client.Dispatch("Microsoft.Update.Session")
             searcher = session.CreateUpdateSearcher()
             searcher.ServerSelection = 2  # ssWindowsUpdate
@@ -526,10 +555,18 @@ $results | ConvertTo-Json -Depth 3
             if latest_pack:
                 # Compare versions
                 if self._version_newer(latest_pack.version, drv.current_version):
-                    updated.append(DriverInfo(
-                        **{**drv.to_dict(), "latest_version": latest_pack.version,
-                           "latest_date": latest_pack.date, "download_url": latest_pack.download_url,
-                           "whql_certified": latest_pack.whql, "is_outdated": True}))
+                    updated.append(
+                        DriverInfo(
+                            **{
+                                **drv.to_dict(),
+                                "latest_version": latest_pack.version,
+                                "latest_date": latest_pack.date,
+                                "download_url": latest_pack.download_url,
+                                "whql_certified": latest_pack.whql,
+                                "is_outdated": True,
+                            }
+                        )
+                    )
                 else:
                     updated.append(drv)
             else:
@@ -548,6 +585,7 @@ $results | ConvertTo-Json -Depth 3
         Returns:
             bool: True if the operation succeeded, False otherwise.
         """
+
         def parse(v: str) -> List[int]:
             """Parse and decode structured data from strings or byte streams.
 
@@ -560,6 +598,7 @@ $results | ConvertTo-Json -Depth 3
                 List[int]: List of processed items or identifiers.
             """
             return [int(x) for x in re.split(r"[.\-_]", v) if x.isdigit()]
+
         p1, p2 = parse(v1), parse(v2)
         for a, b in zip(p1, p2):
             if a != b:
@@ -655,17 +694,23 @@ $results | ConvertTo-Json -Depth 3
         """
         import tempfile
         import urllib.request
+
         try:
             with tempfile.TemporaryDirectory() as tmpdir:
                 pkg_path = Path(tmpdir) / "driver.cab"
                 urllib.request.urlretrieve(drv.download_url, pkg_path)
                 # Verify SHA256 if available
                 # Extract and install
-                rc, _, _ = self._run([
-                    "pnputil.exe", "/add-driver", str(pkg_path),
-                    "/install" + (" /force" if force else ""),
-                    "/reboot" if False else ""
-                ], timeout=300)
+                rc, _, _ = self._run(
+                    [
+                        "pnputil.exe",
+                        "/add-driver",
+                        str(pkg_path),
+                        "/install" + (" /force" if force else ""),
+                        "/reboot" if False else "",
+                    ],
+                    timeout=300,
+                )
                 return rc == 0
         except Exception as exc:
             self.progress(f"Download/install failed: {exc}")
@@ -683,10 +728,9 @@ $results | ConvertTo-Json -Depth 3
         Returns:
             bool: True if the operation succeeded, False otherwise.
         """
-        rc, _, _ = self._run([
-            "pnputil.exe", "/add-driver", inf_name,
-            "/install" + (" /force" if force else "")
-        ], timeout=120)
+        rc, _, _ = self._run(
+            ["pnputil.exe", "/add-driver", inf_name, "/install" + (" /force" if force else "")], timeout=120
+        )
         return rc == 0
 
     def cleanup_driver_store(self, dry_run: bool = True) -> Tuple[int, int]:

@@ -45,8 +45,10 @@ def fake_env(monkeypatch, tmp_path):
 #  ExclusionsStore
 # =====================================================================
 
+
 class TestExclusionsStore:
     """Group testexclusionsstore tests covering add is persisted and prefix matched; discard removes and persists; corrupt file degrades to empty."""
+
     def test_add_is_persisted_and_prefix_matched(self, tmp_path):
         """Verify add is persisted and prefix matched via ExclusionsStore, reloaded.is_excluded, store.add.
 
@@ -54,6 +56,7 @@ class TestExclusionsStore:
             tmp_path: Filesystem path to the target file or directory.
         """
         from cortex_unified.system_tools.leftover_cleaner import ExclusionsStore
+
         store = ExclusionsStore(tmp_path / "ex.json")
         target = tmp_path / "roaming" / "ZetaSoft"
         assert store.add(str(target)) is True
@@ -61,7 +64,7 @@ class TestExclusionsStore:
         reloaded = ExclusionsStore(tmp_path / "ex.json")
         assert reloaded.is_excluded(str(target))
         child = target / "ZetaEditor" / "Cache"
-        assert reloaded.is_excluded(child)          # beneath it -> excluded
+        assert reloaded.is_excluded(child)  # beneath it -> excluded
         assert not reloaded.is_excluded(tmp_path / "roaming")  # above -> free
         assert not reloaded.is_excluded(tmp_path / "other")
 
@@ -72,6 +75,7 @@ class TestExclusionsStore:
             tmp_path: Filesystem path to the target file or directory.
         """
         from cortex_unified.system_tools.leftover_cleaner import ExclusionsStore
+
         p = tmp_path / "ex.json"
         store = ExclusionsStore(p)
         store.add(str(tmp_path / "a"))
@@ -85,15 +89,17 @@ class TestExclusionsStore:
             tmp_path: Filesystem path to the target file or directory.
         """
         from cortex_unified.system_tools.leftover_cleaner import ExclusionsStore
+
         p = tmp_path / "ex.json"
         p.write_text("{not json", encoding="utf-8")
         store = ExclusionsStore(p)
         assert len(store) == 0
-        assert store.add(str(tmp_path / "x")) is True   # still usable
+        assert store.add(str(tmp_path / "x")) is True  # still usable
 
 
 class TestScannerExclusions:
     """Group testscannerexclusions tests covering scan app skips excluded folders; clean refuses excluded paths even when asked."""
+
     def test_scan_app_skips_excluded_folders(self, fake_env):
         """Verify scan app skips excluded folders via ExclusionsStore, store.add, InstalledApp.
 
@@ -105,18 +111,17 @@ class TestScannerExclusions:
             InstalledApp,
             LeftoverScanner,
         )
+
         target = fake_env / "roaming" / "ZetaSoft ZetaEditor"
         target.mkdir(parents=True)
         store = ExclusionsStore(fake_env / "ex.json")
         store.add(str(target))
 
         app = InstalledApp(name="ZetaEditor", publisher="ZetaSoft")
-        findings = LeftoverScanner(installed_apps=[],
-                                   exclusions=store).scan_app(app)
+        findings = LeftoverScanner(installed_apps=[], exclusions=store).scan_app(app)
         assert all(f.path.lower() != str(target).lower() for f in findings)
 
-    def test_clean_refuses_excluded_paths_even_when_asked(self, tmp_path,
-                                                          monkeypatch):
+    def test_clean_refuses_excluded_paths_even_when_asked(self, tmp_path, monkeypatch):
         """Defense in depth: a stale caller cannot delete an excluded path.
 
         Args:
@@ -129,6 +134,7 @@ class TestScannerExclusions:
             LeftoverCleaner,
             LeftoverFinding,
         )
+
         calls = []
 
         def fake_send2trash(path):  # must never be reached
@@ -140,6 +146,7 @@ class TestScannerExclusions:
             calls.append(path)
 
         import send2trash
+
         monkeypatch.setattr(send2trash, "send2trash", fake_send2trash)
         store = ExclusionsStore(tmp_path / "ex.json")
         protected = tmp_path / "keepme"
@@ -147,16 +154,15 @@ class TestScannerExclusions:
         store.add(str(protected))
 
         cleaner = LeftoverCleaner(backup_root=tmp_path / "b")
-        outcome = cleaner.clean(
-            [LeftoverFinding(kind="folder", path=str(protected))],
-            exclusions=store)
+        outcome = cleaner.clean([LeftoverFinding(kind="folder", path=str(protected))], exclusions=store)
         assert outcome[0].disposition == "skipped"
         assert outcome[0].ok is False
-        assert calls == []                       # recycle never invoked
+        assert calls == []  # recycle never invoked
 
 
 class TestCleanCancel:
     """Group testcleancancel tests covering cancel event stops between items."""
+
     def test_cancel_event_stops_between_items(self, tmp_path, monkeypatch):
         """Verify cancel event stops between items via monkeypatch.setattr, Event, LeftoverCleaner.
 
@@ -170,6 +176,7 @@ class TestCleanCancel:
             LeftoverCleaner,
             LeftoverFinding,
         )
+
         processed = []
 
         def fake_send2trash(path):
@@ -180,23 +187,30 @@ class TestCleanCancel:
             """
             processed.append(path)
             if len(processed) == 1:
-                ev.set()                          # cancel after first item
+                ev.set()  # cancel after first item
 
         import send2trash
+
         monkeypatch.setattr(send2trash, "send2trash", fake_send2trash)
 
-        a = tmp_path / "a"; a.mkdir()
-        b = tmp_path / "b"; b.mkdir()
-        c = tmp_path / "c"; c.mkdir()
+        a = tmp_path / "a"
+        a.mkdir()
+        b = tmp_path / "b"
+        b.mkdir()
+        c = tmp_path / "c"
+        c.mkdir()
         ev = Event()
 
         cleaner = LeftoverCleaner(backup_root=tmp_path / "b")
-        outcomes = cleaner.clean([
-            LeftoverFinding(kind="folder", path=str(a)),
-            LeftoverFinding(kind="folder", path=str(b)),
-            LeftoverFinding(kind="folder", path=str(c)),
-        ], cancel_event=ev)
-        assert len(outcomes) == 1                  # stopped after first
+        outcomes = cleaner.clean(
+            [
+                LeftoverFinding(kind="folder", path=str(a)),
+                LeftoverFinding(kind="folder", path=str(b)),
+                LeftoverFinding(kind="folder", path=str(c)),
+            ],
+            cancel_event=ev,
+        )
+        assert len(outcomes) == 1  # stopped after first
         assert b.exists() and c.exists()
 
 
@@ -204,8 +218,10 @@ class TestCleanCancel:
 #  Similar-name disambiguation
 # =====================================================================
 
+
 class TestDisambiguation:
     """Group testdisambiguation tests covering weaker name match penalised."""
+
     def test_weaker_name_match_penalised(self, fake_env):
         """For app 'ZetaEditor', folder 'ZetaEditor' outranks 'ZetaEditorSuite'
         - the suite folder likely belongs to a different product."""
@@ -213,6 +229,7 @@ class TestDisambiguation:
             InstalledApp,
             LeftoverScanner,
         )
+
         exact = fake_env / "local" / "ZetaEditor"
         exact.mkdir()
         suite = fake_env / "roaming" / "ZetaEditor Suite"
@@ -223,23 +240,23 @@ class TestDisambiguation:
         by_base = {Path(f.path).name.lower(): f for f in findings}
         assert "zetaeditor" in by_base
         if "suite" in Path(suite.name).name.lower():
-            suite_f = next((f for f in findings
-                            if f.path == str(suite)), None)
+            suite_f = next((f for f in findings if f.path == str(suite)), None)
             exact_f = by_base["zetaeditor"]
             if suite_f is not None:
                 # The exact match must score at least as high; the weaker
                 # match carries a disambiguation penalty.
                 assert exact_f.score >= suite_f.score
-                assert any("weaker name match" in r
-                           for r in suite_f.reasons)
+                assert any("weaker name match" in r for r in suite_f.reasons)
 
 
 # =====================================================================
 #  Settings: consent fields
 # =====================================================================
 
+
 class TestSettingsConsent:
     """Group testsettingsconsent tests covering update check defaults off; leftover restore point defaults on; fields roundtrip; corrupt file uses safe defaults."""
+
     def test_update_check_defaults_off(self, tmp_path):
         """Verify update check defaults off via SettingsStore.
 
@@ -247,8 +264,9 @@ class TestSettingsConsent:
             tmp_path: Filesystem path to the target file or directory.
         """
         from cortex_unified.ui.premium.settings_store import SettingsStore
+
         s = SettingsStore(tmp_path / "s.json")
-        assert s.update_check is False          # opt-in ONLY
+        assert s.update_check is False  # opt-in ONLY
 
     def test_leftover_restore_point_defaults_on(self, tmp_path):
         """Verify leftover restore point defaults on via SettingsStore.
@@ -257,6 +275,7 @@ class TestSettingsConsent:
             tmp_path: Filesystem path to the target file or directory.
         """
         from cortex_unified.ui.premium.settings_store import SettingsStore
+
         s = SettingsStore(tmp_path / "s.json")
         assert s.leftover_restore_point is True  # safe default
 
@@ -267,6 +286,7 @@ class TestSettingsConsent:
             tmp_path: Filesystem path to the target file or directory.
         """
         from cortex_unified.ui.premium.settings_store import SettingsStore
+
         s = SettingsStore(tmp_path / "s.json")
         s.update_check = True
         s.leftover_restore_point = False
@@ -281,6 +301,7 @@ class TestSettingsConsent:
             tmp_path: Filesystem path to the target file or directory.
         """
         from cortex_unified.ui.premium.settings_store import SettingsStore
+
         p = tmp_path / "s.json"
         p.write_text("garbage{", encoding="utf-8")
         s = SettingsStore(p)
@@ -290,6 +311,7 @@ class TestSettingsConsent:
 
 class TestUpdateCheckGate:
     """Group testupdatecheckgate tests covering scheduler noops without consent."""
+
     def test_scheduler_noops_without_consent(self, monkeypatch):
         """No network call may happen unless the user opted in.
 
@@ -300,22 +322,24 @@ class TestUpdateCheckGate:
         from cortex_unified.system_tools import update_checker as uc
 
         called = []
-        monkeypatch.setattr(uc, "check_for_update",
-                            lambda *a, **k: called.append(1))
+        monkeypatch.setattr(uc, "check_for_update", lambda *a, **k: called.append(1))
 
         class FakeWin:
             """Helper fakewin using SB."""
+
             def statusBar(self):
                 """StatusBar using SB."""
+
                 class SB:
                     """Helper sb."""
+
                     def showMessage(self, *a, **k):
                         """ShowMessage."""
                         pass
+
                 return SB()
 
-        app_mod._schedule_update_check(FakeWin(), type("S", (), {
-            "update_check": False})())
+        app_mod._schedule_update_check(FakeWin(), type("S", (), {"update_check": False})())
         assert called == []
 
 
@@ -323,8 +347,10 @@ class TestUpdateCheckGate:
 #  Backups page: leftover journals listed read-only
 # =====================================================================
 
+
 class TestBackupsLeftoverJournals:
     """Group testbackupsleftoverjournals tests covering worker lists journal sessions."""
+
     def test_worker_lists_journal_sessions(self, tmp_path, monkeypatch):
         """Verify worker lists journal sessions via rp.ManifestListWorker._leftover_sessions.__func__, rp.ManifestListWorker._leftover_sessions, monkeypatch.setattr.
 
@@ -336,27 +362,36 @@ class TestBackupsLeftoverJournals:
 
         session = tmp_path / "CortexCleanerBackups" / "leftovers" / "20260101_120000"
         session.mkdir(parents=True)
-        (session / "journal.json").write_text(json.dumps({
-            "timestamp": "2026-01-01T12:00:00",
-            "ok_count": 3, "fail_count": 1,
-            "items": [],
-        }), encoding="utf-8")
+        (session / "journal.json").write_text(
+            json.dumps(
+                {
+                    "timestamp": "2026-01-01T12:00:00",
+                    "ok_count": 3,
+                    "fail_count": 1,
+                    "items": [],
+                }
+            ),
+            encoding="utf-8",
+        )
 
         class FakeRestoreManager:
             """Helper fakerestoremanager."""
+
             def list_manifests(self):
                 """List manifests."""
                 return [{"backup_name": "op-manifest", "_kind": "manifest"}]
 
         from cortex_unified.reports import restore_manager as rm_mod
-        monkeypatch.setattr(rm_mod.RestoreManager, "list_manifests",
-                            lambda self: FakeRestoreManager().list_manifests())
+
+        monkeypatch.setattr(rm_mod.RestoreManager, "list_manifests", lambda self: FakeRestoreManager().list_manifests())
 
         # Point the worker's home-relative path into tmp via monkeypatched home.
         monkeypatch.setenv("USERPROFILE", str(tmp_path))
-        rows = rp.ManifestListWorker._leftover_sessions.__func__() \
-            if hasattr(rp.ManifestListWorker._leftover_sessions, "__func__") \
+        rows = (
+            rp.ManifestListWorker._leftover_sessions.__func__()
+            if hasattr(rp.ManifestListWorker._leftover_sessions, "__func__")
             else rp.ManifestListWorker._leftover_sessions()
+        )
 
         # The helper reads Path.home(); USERPROFILE drives it on Windows.
         leftover_rows = [r for r in rows if r.get("_kind") == "leftovers"]

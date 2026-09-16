@@ -17,6 +17,7 @@ class SplitPreset(Enum):
 
     Maps CUSTOM/10MB/50MB/100MB/CD-700MB/FAT32-4GB/DVD labels to PRESET_BYTES byte counts.
     """
+
     CUSTOM = "Custom Size"
     MB_10 = "10 MB"
     MB_50 = "50 MB"
@@ -42,6 +43,7 @@ class SplitManifest:
 
     Stores original name/size, chunk size, part count, uppercase SHA-256, timestamp, and part filenames.
     """
+
     original_filename: str
     original_size: int
     chunk_size: int
@@ -57,6 +59,7 @@ class SplitResult:
 
     Holds success, created part paths, manifest path, elapsed seconds, and error.
     """
+
     success: bool
     parts_created: List[str]
     manifest_path: str
@@ -70,6 +73,7 @@ class JoinResult:
 
     Holds success, output path, byte total, manifest hash-verified flag, elapsed seconds, and error.
     """
+
     success: bool
     output_path: str
     total_bytes: int
@@ -288,7 +292,7 @@ class FileSplitterJoiner:
             verified = False
 
             if manifest_data:
-                verified = (actual_hash == manifest_data.sha256.upper())
+                verified = actual_hash == manifest_data.sha256.upper()
             else:
                 verified = True  # No manifest to verify against, but join was successful
 

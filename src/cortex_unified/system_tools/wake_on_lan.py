@@ -12,13 +12,8 @@ _MAGIC_REPEAT = 16
 _PACKET_SIZE = 102
 _MIN_TIMEOUT = 0.05
 _MAX_TIMEOUT = 5.0
-_PRIVATE_NETWORKS = tuple(
-    ipaddress.IPv4Network(value)
-    for value in ("10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16")
-)
-_MAC_PATTERN = re.compile(
-    r"^(?:[0-9A-Fa-f]{2}:){5}[0-9A-Fa-f]{2}$"
-)
+_PRIVATE_NETWORKS = tuple(ipaddress.IPv4Network(value) for value in ("10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16"))
+_MAC_PATTERN = re.compile(r"^(?:[0-9A-Fa-f]{2}:){5}[0-9A-Fa-f]{2}$")
 
 
 class WakeOnLanError(RuntimeError):
@@ -51,9 +46,7 @@ def validate_mac(mac: str | bytes) -> bytes:
     elif isinstance(mac, str) and _MAC_PATTERN.fullmatch(mac):
         raw = bytes.fromhex(mac.replace(":", ""))
     else:
-        raise InvalidMacAddress(
-            "MAC must contain exactly six colon-separated hexadecimal octets"
-        )
+        raise InvalidMacAddress("MAC must contain exactly six colon-separated hexadecimal octets")
     if len(raw) != 6:
         raise InvalidMacAddress("MAC must contain exactly six bytes")
     if raw == b"\x00" * 6:
@@ -63,16 +56,12 @@ def validate_mac(mac: str | bytes) -> bytes:
     if raw[0] & 0x01:
         raise InvalidMacAddress("multicast MAC addresses are not supported")
     if raw[0] & 0x02:
-        raise InvalidMacAddress(
-            "locally administered/randomized MAC addresses are unsupported"
-        )
+        raise InvalidMacAddress("locally administered/randomized MAC addresses are unsupported")
     return raw
 
 
 def _active_private_networks(
-    active_networks: Iterable[
-        str | ipaddress.IPv4Network | ipaddress.IPv4Interface
-    ],
+    active_networks: Iterable[str | ipaddress.IPv4Network | ipaddress.IPv4Interface],
 ) -> tuple[ipaddress.IPv4Network, ...]:
     """Active private networks helper. Returns unique.
 
@@ -90,13 +79,9 @@ def _active_private_networks(
             else:
                 network = ipaddress.ip_network(str(value), strict=False)
         except ValueError as exc:
-            raise InvalidBroadcastAddress(
-                f"invalid active IPv4 network: {value!r}"
-            ) from exc
+            raise InvalidBroadcastAddress(f"invalid active IPv4 network: {value!r}") from exc
         if not isinstance(network, ipaddress.IPv4Network):
-            raise InvalidBroadcastAddress(
-                f"active network is not IPv4: {value!r}"
-            )
+            raise InvalidBroadcastAddress(f"active network is not IPv4: {value!r}")
         if (
             not any(network.subnet_of(scope) for scope in _PRIVATE_NETWORKS)
             or network.is_loopback
@@ -104,26 +89,22 @@ def _active_private_networks(
             or network.is_multicast
             or network.prefixlen > 30
         ):
-            raise InvalidBroadcastAddress(
-                f"active network is not a usable private LAN: {value!r}"
-            )
+            raise InvalidBroadcastAddress(f"active network is not a usable private LAN: {value!r}")
         networks.append(network)
-    unique = tuple(sorted(
-        set(networks),
-        key=lambda item: (int(item.network_address), item.prefixlen),
-    ))
-    if not unique:
-        raise InvalidBroadcastAddress(
-            "at least one active private IPv4 network is required"
+    unique = tuple(
+        sorted(
+            set(networks),
+            key=lambda item: (int(item.network_address), item.prefixlen),
         )
+    )
+    if not unique:
+        raise InvalidBroadcastAddress("at least one active private IPv4 network is required")
     return unique
 
 
 def validate_broadcast(
     broadcast: str,
-    active_networks: Iterable[
-        str | ipaddress.IPv4Network | ipaddress.IPv4Interface
-    ],
+    active_networks: Iterable[str | ipaddress.IPv4Network | ipaddress.IPv4Interface],
 ) -> str:
     """Return a subnet-directed broadcast in a supplied active private LAN.
 
@@ -137,23 +118,14 @@ def validate_broadcast(
     try:
         address = ipaddress.ip_address(str(broadcast))
     except ValueError as exc:
-        raise InvalidBroadcastAddress(
-            f"invalid IPv4 broadcast address: {broadcast!r}"
-        ) from exc
+        raise InvalidBroadcastAddress(f"invalid IPv4 broadcast address: {broadcast!r}") from exc
     if not isinstance(address, ipaddress.IPv4Address):
         raise InvalidBroadcastAddress("broadcast address must be IPv4")
     networks = _active_private_networks(active_networks)
     if address == ipaddress.IPv4Address("255.255.255.255"):
-        raise InvalidBroadcastAddress(
-            "the limited broadcast address is not allowed"
-        )
-    if not any(
-        address == network.broadcast_address and address in network
-        for network in networks
-    ):
-        raise InvalidBroadcastAddress(
-            "broadcast is not the directed broadcast of a supplied active LAN"
-        )
+        raise InvalidBroadcastAddress("the limited broadcast address is not allowed")
+    if not any(address == network.broadcast_address and address in network for network in networks):
+        raise InvalidBroadcastAddress("broadcast is not the directed broadcast of a supplied active LAN")
     return str(address)
 
 
@@ -176,9 +148,7 @@ def build_magic_packet(mac: str | bytes) -> bytes:
 def send_magic_packet(
     mac: str | bytes,
     broadcast: str,
-    active_networks: Iterable[
-        str | ipaddress.IPv4Network | ipaddress.IPv4Interface
-    ],
+    active_networks: Iterable[str | ipaddress.IPv4Network | ipaddress.IPv4Interface],
     *,
     port: int = 9,
     timeout: float = 1.0,
@@ -193,11 +163,7 @@ def send_magic_packet(
     Returns:
     int: Result of the operation.
     """
-    valid_port = (
-        isinstance(port, int)
-        and not isinstance(port, bool)
-        and 1 <= port <= 65535
-    )
+    valid_port = isinstance(port, int) and not isinstance(port, bool) and 1 <= port <= 65535
     if not valid_port:
         raise ValueError("UDP port must be an integer from 1 through 65535")
     try:
@@ -206,9 +172,7 @@ def send_magic_packet(
         raise ValueError("timeout must be a finite positive number") from exc
     if not math.isfinite(requested_timeout) or requested_timeout <= 0:
         raise ValueError("timeout must be a finite positive number")
-    bounded_timeout = min(
-        _MAX_TIMEOUT, max(_MIN_TIMEOUT, requested_timeout)
-    )
+    bounded_timeout = min(_MAX_TIMEOUT, max(_MIN_TIMEOUT, requested_timeout))
     packet = build_magic_packet(mac)
     destination = validate_broadcast(broadcast, active_networks)
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -217,20 +181,21 @@ def send_magic_packet(
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
         sent = sock.sendto(packet, (destination, port))
     except (OSError, TimeoutError) as exc:
-        raise WakeOnLanSendError(
-            f"could not send Wake-on-LAN packet to {destination}:{port}: {exc}"
-        ) from exc
+        raise WakeOnLanSendError(f"could not send Wake-on-LAN packet to {destination}:{port}: {exc}") from exc
     finally:
         sock.close()
     if sent != len(packet):
-        raise WakeOnLanSendError(
-            f"partial Wake-on-LAN datagram send ({sent}/{len(packet)} bytes)"
-        )
+        raise WakeOnLanSendError(f"partial Wake-on-LAN datagram send ({sent}/{len(packet)} bytes)")
     return sent
 
 
 __all__ = [
-    "InvalidBroadcastAddress", "InvalidMacAddress", "WakeOnLanError",
-    "WakeOnLanSendError", "build_magic_packet", "send_magic_packet",
-    "validate_broadcast", "validate_mac",
+    "InvalidBroadcastAddress",
+    "InvalidMacAddress",
+    "WakeOnLanError",
+    "WakeOnLanSendError",
+    "build_magic_packet",
+    "send_magic_packet",
+    "validate_broadcast",
+    "validate_mac",
 ]

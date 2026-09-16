@@ -43,10 +43,7 @@ def _json_safe(value: Any, depth: int = 0) -> Any:
     if isinstance(value, float):
         return value if math.isfinite(value) else None
     if isinstance(value, Mapping):
-        return {
-            _text(key, 128): _json_safe(item, depth + 1)
-            for key, item in list(value.items())[:256]
-        }
+        return {_text(key, 128): _json_safe(item, depth + 1) for key, item in list(value.items())[:256]}
     if isinstance(value, (list, tuple, set)):
         return [_json_safe(item, depth + 1) for item in list(value)[:256]]
     return _text(value, 1024)
@@ -55,6 +52,7 @@ def _json_safe(value: Any, depth: int = 0) -> Any:
 @dataclass(slots=True, frozen=True)
 class InventoryService:
     """Inventory Service data container."""
+
     name: str
     port: int | None = None
     protocol: str = "tcp"
@@ -78,6 +76,7 @@ class InventoryService:
 @dataclass(slots=True, frozen=True)
 class InventoryFinding:
     """Inventory Finding data container."""
+
     code: str
     title: str
     severity: str = "info"
@@ -101,6 +100,7 @@ class InventoryFinding:
 @dataclass(slots=True, frozen=True)
 class InventoryDevice:
     """Inventory Device data container."""
+
     ip: str
     mac: str = ""
     hostname: str = ""
@@ -127,6 +127,7 @@ class InventoryDevice:
 @dataclass(slots=True, frozen=True)
 class DeviceMetadata:
     """Device Metadata data container."""
+
     identity_key: str
     custom_name: str = ""
     trust_state: str = "unknown"
@@ -149,6 +150,7 @@ class DeviceMetadata:
 @dataclass(slots=True, frozen=True)
 class InventoryChange:
     """Inventory Change data container."""
+
     kind: str
     device_id: str
     severity: str
@@ -168,6 +170,7 @@ class InventoryChange:
 @dataclass(slots=True)
 class InventoryChanges:
     """Inventory Changes data container."""
+
     new_devices: list[InventoryChange] = field(default_factory=list)
     changed_addresses: list[InventoryChange] = field(default_factory=list)
     new_services: list[InventoryChange] = field(default_factory=list)
@@ -184,8 +187,7 @@ class InventoryChanges:
             "new_services": [item.to_dict() for item in self.new_services],
             "new_findings": [item.to_dict() for item in self.new_findings],
             "severity_changes": [item.to_dict() for item in self.severity_changes],
-            "disappeared_devices": [
-                item.to_dict() for item in self.disappeared_devices],
+            "disappeared_devices": [item.to_dict() for item in self.disappeared_devices],
             "gateway_mac_changes": [item.to_dict() for item in self.gateway_mac_changes],
         }
 
@@ -193,6 +195,7 @@ class InventoryChanges:
 @dataclass(slots=True)
 class InventorySnapshot:
     """Inventory Snapshot data container."""
+
     snapshot_id: int
     observed_at: str
     devices: list[InventoryDevice]
@@ -258,8 +261,7 @@ def _service(value: Any) -> InventoryService:
         if port is not None and not 1 <= port <= 65535:
             port = None
         return InventoryService(
-            name=_text(value.get("name") or value.get(
-                "service") or "service", 256),
+            name=_text(value.get("name") or value.get("service") or "service", 256),
             port=port,
             protocol=_text(value.get("protocol") or value.get("transport") or "tcp", 16).lower(),
             details=_json_safe(value.get("details") or value.get("metadata") or {}),
@@ -277,18 +279,14 @@ def _service(value: Any) -> InventoryService:
             protocol=_text(getattr(value, "transport", "tcp"), 16).lower(),
             details=_json_safe(getattr(value, "metadata", {})),
         )
-    raise TypeError(
-        "service entries must be strings, integers, mappings, observations, or InventoryService"
-    )
+    raise TypeError("service entries must be strings, integers, mappings, observations, or InventoryService")
 
 
 def _finding(value: Any) -> InventoryFinding:
     """Coerce a mapping or finding object into a validated InventoryFinding."""
     if isinstance(value, InventoryFinding):
         return value
-    if (not isinstance(value, Mapping)
-            and not _get(value, "code", "")
-            and not _get(value, "title", "")):
+    if not isinstance(value, Mapping) and not _get(value, "code", "") and not _get(value, "title", ""):
         raise TypeError("finding entries must be mappings or finding objects")
     severity = _text(_get(value, "severity", "info") or "info", 16).lower()
     if severity not in _SEVERITIES:
@@ -307,8 +305,7 @@ def _finding(value: Any) -> InventoryFinding:
 
 def _get(value: Any, name: str, default: Any = None) -> Any:
     """Read an attribute mapping-style or object-style, with a default."""
-    return value.get(name, default) if isinstance(
-        value, Mapping) else getattr(value, name, default)
+    return value.get(name, default) if isinstance(value, Mapping) else getattr(value, name, default)
 
 
 def normalize_device(value: Any) -> InventoryDevice:
@@ -324,24 +321,19 @@ def normalize_device(value: Any) -> InventoryDevice:
     services: list[InventoryService] = []
     if isinstance(raw_services, Mapping):
         services.extend(
-            InventoryService(
-                name=_text(
-                    name, 256), details={
-                    "value": _json_safe(detail)})
-            for name, detail in raw_services.items())
+            InventoryService(name=_text(name, 256), details={"value": _json_safe(detail)})
+            for name, detail in raw_services.items()
+        )
     else:
         services.extend(_service(item) for item in raw_services)
     for attribute in ("service_observations", "observations", "scanned_services"):
-        for item in (_get(value, attribute, ()) or ()):
+        for item in _get(value, attribute, ()) or ():
             services.append(_service(item))
-    for port in (_get(value, "open_ports", ()) or ()):
+    for port in _get(value, "open_ports", ()) or ():
         services.append(_service(port))
-    findings = tuple(_finding(item)
-                     for item in (_get(value, "findings", ()) or ()))
-    unique_services = {
-        item.key: item for item in services[:_MAX_ITEMS_PER_DEVICE]}
-    unique_findings = {
-        item.key: item for item in findings[:_MAX_ITEMS_PER_DEVICE]}
+    findings = tuple(_finding(item) for item in (_get(value, "findings", ()) or ()))
+    unique_services = {item.key: item for item in services[:_MAX_ITEMS_PER_DEVICE]}
+    unique_findings = {item.key: item for item in findings[:_MAX_ITEMS_PER_DEVICE]}
     return InventoryDevice(
         ip=ip,
         mac=_normalize_mac(_get(value, "mac")),
@@ -401,8 +393,7 @@ class NetworkInventory:
 
     def _new_connection(self) -> sqlite3.Connection:
         """Open a SQLite connection with row access and FK/busy-timeout pragmas."""
-        connection = sqlite3.connect(
-            self._database, timeout=5.0, check_same_thread=False)
+        connection = sqlite3.connect(self._database, timeout=5.0, check_same_thread=False)
         connection.row_factory = sqlite3.Row
         connection.execute("PRAGMA foreign_keys = ON")
         connection.execute("PRAGMA busy_timeout = 5000")
@@ -423,13 +414,9 @@ class NetworkInventory:
         """Create or upgrade the schema version in a transaction (v0 -> v2)."""
         connection = self._connect()
         try:
-            version = int(connection.execute(
-                "PRAGMA user_version").fetchone()[0])
+            version = int(connection.execute("PRAGMA user_version").fetchone()[0])
             if version > _SCHEMA_VERSION:
-                message = (
-                    f"inventory schema {version} is newer than supported "
-                    f"{_SCHEMA_VERSION}"
-                )
+                message = f"inventory schema {version} is newer than supported " f"{_SCHEMA_VERSION}"
                 raise RuntimeError(message)
             if version == 0:
                 connection.executescript("""
@@ -559,38 +546,28 @@ class NetworkInventory:
         for device in normalized:
             key, confidence = _identity(device)
             if key in current:
-                raise ValueError(
-                    f"duplicate device identity in snapshot: {key}")
+                raise ValueError(f"duplicate device identity in snapshot: {key}")
             current[key] = (device, confidence)
         timestamp = _timestamp(observed_at)
         gateway_mac = _normalize_mac(gateway_mac)
         if not gateway_mac:
             gateway_mac = next(
-                (
-                    device.mac
-                    for device in normalized
-                    if device.is_gateway and device.mac
-                ),
+                (device.mac for device in normalized if device.is_gateway and device.mac),
                 "",
             )
 
         connection = self._connect()
         try:
             connection.execute("BEGIN IMMEDIATE")
-            previous_id, previous_gateway, previous = self._load_previous(
-                connection)
-            changes = self._compare(
-                current, previous, previous_gateway, gateway_mac)
+            previous_id, previous_gateway, previous = self._load_previous(connection)
+            changes = self._compare(current, previous, previous_gateway, gateway_mac)
             cursor = connection.execute(
-                "INSERT INTO snapshots(observed_at, gateway_mac) "
-                "VALUES (?, ?)",
+                "INSERT INTO snapshots(observed_at, gateway_mac) " "VALUES (?, ?)",
                 (timestamp, gateway_mac),
             )
             snapshot_id = int(cursor.lastrowid)
             for identity_key, (device, confidence) in current.items():
-                self._store_device(
-                    connection, snapshot_id, timestamp, identity_key,
-                    confidence, device)
+                self._store_device(connection, snapshot_id, timestamp, identity_key, confidence, device)
             self._enforce_retention(connection)
             connection.commit()
         except Exception:
@@ -622,33 +599,27 @@ class NetworkInventory:
             combined = {item.key: item for item in device.findings}
             for item in by_ip.get(device.ip, ()):
                 combined[item.key] = item
-            enriched.append(InventoryDevice(
-                ip=device.ip,
-                mac=device.mac,
-                hostname=device.hostname,
-                vendor=device.vendor,
-                services=device.services,
-                findings=tuple(combined.values()),
-                device_id=device.device_id,
-                is_gateway=device.is_gateway,
-            ))
+            enriched.append(
+                InventoryDevice(
+                    ip=device.ip,
+                    mac=device.mac,
+                    hostname=device.hostname,
+                    vendor=device.vendor,
+                    services=device.services,
+                    findings=tuple(combined.values()),
+                    device_id=device.device_id,
+                    is_gateway=device.is_gateway,
+                )
+            )
         snapshot = self.record_snapshot(enriched)
         return InventoryChanges(
             new_devices=[item for item in snapshot.changes if item.kind == "new_device"],
             changed_addresses=[item for item in snapshot.changes if item.kind == "address_changed"],
             new_services=[item for item in snapshot.changes if item.kind == "new_service"],
             new_findings=[item for item in snapshot.changes if item.kind == "new_finding"],
-            severity_changes=[
-                item for item in snapshot.changes
-                if item.kind == "severity_changed"
-            ],
-            disappeared_devices=[
-                item for item in snapshot.changes
-                if item.kind == "device_disappeared"
-            ],
-            gateway_mac_changes=[
-                item for item in snapshot.changes if item.kind == "gateway_mac_changed"
-            ],
+            severity_changes=[item for item in snapshot.changes if item.kind == "severity_changed"],
+            disappeared_devices=[item for item in snapshot.changes if item.kind == "device_disappeared"],
+            gateway_mac_changes=[item for item in snapshot.changes if item.kind == "gateway_mac_changed"],
         )
 
     @staticmethod
@@ -656,16 +627,12 @@ class NetworkInventory:
         connection: sqlite3.Connection,
     ) -> tuple[int | None, str, dict[str, dict[str, Any]]]:
         """Load the newest snapshot's observations, services, findings, and gateway."""
-        row = connection.execute(
-            "SELECT id, gateway_mac FROM snapshots ORDER BY id DESC LIMIT 1"
-        ).fetchone()
+        row = connection.execute("SELECT id, gateway_mac FROM snapshots ORDER BY id DESC LIMIT 1").fetchone()
         if row is None:
             return None, "", {}
         snapshot_id = int(row["id"])
         result: dict[str, dict[str, Any]] = {}
-        for observation in connection.execute(
-            "SELECT * FROM observations WHERE snapshot_id = ?", (snapshot_id,)
-        ):
+        for observation in connection.execute("SELECT * FROM observations WHERE snapshot_id = ?", (snapshot_id,)):
             key = str(observation["identity_key"])
             result[key] = {
                 "ip": str(observation["ip"]),
@@ -676,19 +643,16 @@ class NetworkInventory:
                 "findings": {},
             }
         for service in connection.execute(
-            "SELECT identity_key, service_key, data_json "
-            "FROM snapshot_services WHERE snapshot_id = ?",
+            "SELECT identity_key, service_key, data_json " "FROM snapshot_services WHERE snapshot_id = ?",
             (snapshot_id,),
         ):
             key = str(service["identity_key"])
             if key in result:
                 service_key = str(service["service_key"])
-                result[key]["services"][service_key] = json.loads(
-                    str(service["data_json"])
-                )
+                result[key]["services"][service_key] = json.loads(str(service["data_json"]))
         for finding in connection.execute(
-            "SELECT identity_key, finding_key, severity, data_json "
-            "FROM snapshot_findings WHERE snapshot_id = ?", (snapshot_id,)
+            "SELECT identity_key, finding_key, severity, data_json " "FROM snapshot_findings WHERE snapshot_id = ?",
+            (snapshot_id,),
         ):
             key = str(finding["identity_key"])
             if key in result:
@@ -713,111 +677,116 @@ class NetworkInventory:
             if matched_key is None:
                 # A same-IP fallback is useful for detecting hardware/MAC
                 # replacement, but is explicitly low confidence due to DHCP.
-                matches = [
-                    key for key in unmatched
-                    if previous[key]["ip"] == device.ip
-                ]
+                matches = [key for key in unmatched if previous[key]["ip"] == device.ip]
                 if len(matches) == 1:
                     matched_key = matches[0]
                     confidence = "low"
             if matched_key is None:
-                changes.append(InventoryChange(
-                    kind="new_device",
-                    device_id=identity_key,
-                    severity="info",
-                    message=f"New device observed at {device.ip}",
-                    current=device.to_dict(),
-                    identity_confidence=confidence,
-                ))
+                changes.append(
+                    InventoryChange(
+                        kind="new_device",
+                        device_id=identity_key,
+                        severity="info",
+                        message=f"New device observed at {device.ip}",
+                        current=device.to_dict(),
+                        identity_confidence=confidence,
+                    )
+                )
                 continue
             unmatched.discard(matched_key)
             old = previous[matched_key]
             if old["ip"] != device.ip:
-                changes.append(InventoryChange(
-                    kind="address_changed",
-                    device_id=identity_key,
-                    severity="info",
-                    message=f"Device address changed from {old['ip']} to {device.ip}",
-                    previous=old["ip"],
-                    current=device.ip,
-                    identity_confidence=confidence,
-                ))
+                changes.append(
+                    InventoryChange(
+                        kind="address_changed",
+                        device_id=identity_key,
+                        severity="info",
+                        message=f"Device address changed from {old['ip']} to {device.ip}",
+                        previous=old["ip"],
+                        current=device.ip,
+                        identity_confidence=confidence,
+                    )
+                )
             if old["mac"] != device.mac and (old["mac"] or device.mac):
-                changes.append(InventoryChange(
-                    kind="mac_changed",
-                    device_id=identity_key,
-                    severity="medium",
-                    message=(
-                        "MAC address changed for the device at "
-                        f"{device.ip}"
-                    ),
-                    previous=old["mac"],
-                    current=device.mac,
-                    identity_confidence=confidence,
-                ))
+                changes.append(
+                    InventoryChange(
+                        kind="mac_changed",
+                        device_id=identity_key,
+                        severity="medium",
+                        message=("MAC address changed for the device at " f"{device.ip}"),
+                        previous=old["mac"],
+                        current=device.mac,
+                        identity_confidence=confidence,
+                    )
+                )
             old_services = old["services"]
             for service in device.services:
                 if service.key not in old_services:
-                    changes.append(InventoryChange(
-                        kind="new_service",
-                        device_id=identity_key,
-                        severity="low",
-                        message=f"New service observed: {service.name}",
-                        current=service.to_dict(),
-                        identity_confidence=confidence,
-                    ))
+                    changes.append(
+                        InventoryChange(
+                            kind="new_service",
+                            device_id=identity_key,
+                            severity="low",
+                            message=f"New service observed: {service.name}",
+                            current=service.to_dict(),
+                            identity_confidence=confidence,
+                        )
+                    )
             old_findings = old["findings"]
             for finding in device.findings:
                 prior = old_findings.get(finding.key)
                 if prior is None:
-                    changes.append(InventoryChange(
-                        kind="new_finding",
-                        device_id=identity_key,
-                        severity=finding.severity,
-                        message=f"New security finding: {finding.title}",
-                        current=finding.to_dict(),
-                        identity_confidence=confidence,
-                    ))
+                    changes.append(
+                        InventoryChange(
+                            kind="new_finding",
+                            device_id=identity_key,
+                            severity=finding.severity,
+                            message=f"New security finding: {finding.title}",
+                            current=finding.to_dict(),
+                            identity_confidence=confidence,
+                        )
+                    )
                 elif prior["severity"] != finding.severity:
                     direction = (
-                        "increased" if _SEVERITIES[finding.severity] >
-                        _SEVERITIES.get(prior["severity"], 0) else "decreased"
+                        "increased"
+                        if _SEVERITIES[finding.severity] > _SEVERITIES.get(prior["severity"], 0)
+                        else "decreased"
                     )
-                    changes.append(InventoryChange(
-                        kind="severity_changed",
-                        device_id=identity_key,
-                        severity=finding.severity,
-                        message=(
-                            f"Finding severity {direction}: "
-                            f"{finding.title}"
-                        ),
-                        previous=prior["severity"],
-                        current=finding.severity,
-                        identity_confidence=confidence,
-                    ))
+                    changes.append(
+                        InventoryChange(
+                            kind="severity_changed",
+                            device_id=identity_key,
+                            severity=finding.severity,
+                            message=(f"Finding severity {direction}: " f"{finding.title}"),
+                            previous=prior["severity"],
+                            current=finding.severity,
+                            identity_confidence=confidence,
+                        )
+                    )
         for identity_key in sorted(unmatched):
             old = previous[identity_key]
-            changes.append(InventoryChange(
-                kind="device_disappeared",
-                device_id=identity_key,
-                severity="info",
-                message=(
-                    "Previously observed device disappeared from "
-                    f"{old['ip']}"
-                ),
-                previous={"ip": old["ip"], "mac": old["mac"]},
-                identity_confidence=old["confidence"],
-            ))
+            changes.append(
+                InventoryChange(
+                    kind="device_disappeared",
+                    device_id=identity_key,
+                    severity="info",
+                    message=("Previously observed device disappeared from " f"{old['ip']}"),
+                    previous={"ip": old["ip"], "mac": old["mac"]},
+                    identity_confidence=old["confidence"],
+                )
+            )
         if previous and previous_gateway and gateway_mac != previous_gateway:
-            changes.append(InventoryChange(
-                kind="gateway_mac_changed",
-                device_id="gateway",
-                severity="high",
-                message="The default gateway MAC address changed",
-                previous=previous_gateway,
-                current=gateway_mac,
-                identity_confidence="high" if gateway_mac else "low",
-            ))
+            changes.append(
+                InventoryChange(
+                    kind="gateway_mac_changed",
+                    device_id="gateway",
+                    severity="high",
+                    message="The default gateway MAC address changed",
+                    previous=previous_gateway,
+                    current=gateway_mac,
+                    identity_confidence="high" if gateway_mac else "low",
+                )
+            )
         return changes
 
     @staticmethod
@@ -840,16 +809,19 @@ class NetworkInventory:
         )
         connection.execute(
             "INSERT INTO observations VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-            (snapshot_id, identity_key, device.ip, device.mac, device.hostname,
-             device.vendor, int(device.is_gateway), confidence),
+            (
+                snapshot_id,
+                identity_key,
+                device.ip,
+                device.mac,
+                device.hostname,
+                device.vendor,
+                int(device.is_gateway),
+                confidence,
+            ),
         )
         for service in device.services:
-            data = json.dumps(
-                service.to_dict(),
-                sort_keys=True,
-                separators=(
-                    ",",
-                    ":"))
+            data = json.dumps(service.to_dict(), sort_keys=True, separators=(",", ":"))
             connection.execute(
                 "INSERT INTO services VALUES (?, ?, ?, ?, ?) "
                 "ON CONFLICT(identity_key, service_key) DO UPDATE SET "
@@ -861,55 +833,42 @@ class NetworkInventory:
                 (snapshot_id, identity_key, service.key, data),
             )
         for finding in device.findings:
-            data = json.dumps(
-                finding.to_dict(),
-                sort_keys=True,
-                separators=(
-                    ",",
-                    ":"))
+            data = json.dumps(finding.to_dict(), sort_keys=True, separators=(",", ":"))
             connection.execute(
                 "INSERT INTO findings VALUES (?, ?, ?, ?, ?, ?) "
                 "ON CONFLICT(identity_key, finding_key) DO UPDATE SET "
                 "last_seen=excluded.last_seen, severity=excluded.severity, "
                 "data_json=excluded.data_json",
-                (identity_key, finding.key, timestamp, timestamp,
-                 finding.severity, data),
+                (identity_key, finding.key, timestamp, timestamp, finding.severity, data),
             )
             connection.execute(
                 "INSERT INTO snapshot_findings VALUES (?, ?, ?, ?, ?)",
-                (snapshot_id,
-                 identity_key,
-                 finding.key,
-                 finding.severity,
-                 data),
+                (snapshot_id, identity_key, finding.key, finding.severity, data),
             )
 
     def _enforce_retention(self, connection: sqlite3.Connection) -> None:
         """Delete snapshots beyond the retention limit and orphaned catalog rows."""
         connection.execute(
-            "DELETE FROM snapshots WHERE id NOT IN "
-            "(SELECT id FROM snapshots ORDER BY id DESC LIMIT ?)",
+            "DELETE FROM snapshots WHERE id NOT IN " "(SELECT id FROM snapshots ORDER BY id DESC LIMIT ?)",
             (self.retention,),
         )
         # Catalog rows are useful only while their device has retained history.
         connection.execute(
-            "DELETE FROM services WHERE identity_key NOT IN "
-            "(SELECT DISTINCT identity_key FROM observations)")
+            "DELETE FROM services WHERE identity_key NOT IN " "(SELECT DISTINCT identity_key FROM observations)"
+        )
         connection.execute(
-            "DELETE FROM findings WHERE identity_key NOT IN "
-            "(SELECT DISTINCT identity_key FROM observations)")
+            "DELETE FROM findings WHERE identity_key NOT IN " "(SELECT DISTINCT identity_key FROM observations)"
+        )
         connection.execute(
-            "DELETE FROM devices WHERE identity_key NOT IN "
-            "(SELECT DISTINCT identity_key FROM observations)")
+            "DELETE FROM devices WHERE identity_key NOT IN " "(SELECT DISTINCT identity_key FROM observations)"
+        )
 
     @staticmethod
     def _metadata_identity(value: Any) -> str:
         """Validate an ``id:/mac:/ip:`` key, or derive one from a device."""
         if isinstance(value, str):
             key = value.strip()
-            if (key.startswith(("id:", "mac:", "ip:"))
-                    and len(key) <= 320 and not any(
-                        ord(char) < 32 for char in key)):
+            if key.startswith(("id:", "mac:", "ip:")) and len(key) <= 320 and not any(ord(char) < 32 for char in key):
                 return key
             raise ValueError("invalid inventory identity key")
         device = normalize_device(value)
@@ -926,12 +885,9 @@ class NetworkInventory:
         name = _text(custom_name, 255)
         trust = _text(trust_state, 16).lower() or "unknown"
         if trust not in _TRUST_STATES:
-            raise ValueError(
-                "trust_state must be unknown, trusted, guest, or blocked")
+            raise ValueError("trust_state must be unknown, trusted, guest, or blocked")
         raw_tags = tags.split(",") if isinstance(tags, str) else tags
-        normalized_tags = tuple(sorted({
-            _text(tag, 64) for tag in raw_tags if _text(tag, 64)
-        }))
+        normalized_tags = tuple(sorted({_text(tag, 64) for tag in raw_tags if _text(tag, 64)}))
         if len(normalized_tags) > 32:
             raise ValueError("device metadata supports at most 32 tags")
         return name, trust, normalized_tags, _text(notes, 4096)
@@ -947,8 +903,7 @@ class NetworkInventory:
     ) -> DeviceMetadata:
         """Atomically create or replace user-owned device metadata."""
         key = self._metadata_identity(identity)
-        name, trust, normalized_tags, clean_notes = self._metadata_values(
-            custom_name, trust_state, tags, notes)
+        name, trust, normalized_tags, clean_notes = self._metadata_values(custom_name, trust_state, tags, notes)
         updated_at = _timestamp(None)
         with self._lock:
             connection = self._connect()
@@ -961,8 +916,7 @@ class NetworkInventory:
                     "trust_state=excluded.trust_state, "
                     "tags_json=excluded.tags_json, notes=excluded.notes, "
                     "updated_at=excluded.updated_at",
-                    (key, name, trust, json.dumps(normalized_tags),
-                     clean_notes, updated_at),
+                    (key, name, trust, json.dumps(normalized_tags), clean_notes, updated_at),
                 )
                 connection.commit()
             except Exception:
@@ -970,8 +924,7 @@ class NetworkInventory:
                 raise
             finally:
                 self._release(connection)
-        return DeviceMetadata(
-            key, name, trust, normalized_tags, clean_notes, updated_at)
+        return DeviceMetadata(key, name, trust, normalized_tags, clean_notes, updated_at)
 
     def get_metadata(self, identity: Any) -> DeviceMetadata | None:
         """Fetch one device's user metadata, or ``None``."""
@@ -992,9 +945,7 @@ class NetworkInventory:
         with self._lock:
             connection = self._connect()
             try:
-                rows = connection.execute(
-                    "SELECT * FROM device_metadata ORDER BY identity_key"
-                ).fetchall()
+                rows = connection.execute("SELECT * FROM device_metadata ORDER BY identity_key").fetchall()
             finally:
                 self._release(connection)
         return [self._metadata_from_row(row) for row in rows]
@@ -1006,9 +957,7 @@ class NetworkInventory:
             raw_tags = json.loads(str(row["tags_json"]))
         except (json.JSONDecodeError, TypeError):
             raw_tags = []
-        tags = tuple(
-            _text(tag, 64) for tag in raw_tags[:32]
-            if isinstance(tag, str) and _text(tag, 64))
+        tags = tuple(_text(tag, 64) for tag in raw_tags[:32] if isinstance(tag, str) and _text(tag, 64))
         return DeviceMetadata(
             identity_key=str(row["identity_key"]),
             custom_name=str(row["custom_name"]),
@@ -1024,7 +973,8 @@ class NetworkInventory:
         with self._lock:
             connection = self._connect()
             try:
-                rows = connection.execute("""
+                rows = connection.execute(
+                    """
                     SELECT s.id AS snapshot_id, s.observed_at,
                            (SELECT COUNT(*) FROM observations o
                             WHERE o.snapshot_id = s.id) AS device_count,
@@ -1040,7 +990,9 @@ class NetworkInventory:
                             WHERE sf.snapshot_id = s.id) AS risk_score
                     FROM snapshots s
                     ORDER BY s.id DESC LIMIT ?
-                """, (bounded,)).fetchall()
+                """,
+                    (bounded,),
+                ).fetchall()
             finally:
                 self._release(connection)
         return [dict(row) for row in reversed(rows)]
@@ -1084,23 +1036,44 @@ class NetworkInventory:
                 self._release(connection)
         with target.open("w", newline="", encoding="utf-8-sig") as handle:
             writer = csv.writer(handle)
-            writer.writerow([
-                "schema", "identity_key", "ip", "mac", "hostname",
-                "vendor", "custom_name", "trust_state", "tags", "notes",
-            ])
+            writer.writerow(
+                [
+                    "schema",
+                    "identity_key",
+                    "ip",
+                    "mac",
+                    "hostname",
+                    "vendor",
+                    "custom_name",
+                    "trust_state",
+                    "tags",
+                    "notes",
+                ]
+            )
             for row in rows:
                 try:
                     tags = ",".join(json.loads(str(row["tags_json"])))
                 except (json.JSONDecodeError, TypeError):
                     tags = ""
-                writer.writerow([
-                    "cortex-network-inventory-v2",
-                    *[self._csv_cell(value) for value in (
-                        row["identity_key"], row["ip"], row["mac"],
-                        row["hostname"], row["vendor"], row["custom_name"],
-                        row["trust_state"], tags, row["notes"],
-                    )],
-                ])
+                writer.writerow(
+                    [
+                        "cortex-network-inventory-v2",
+                        *[
+                            self._csv_cell(value)
+                            for value in (
+                                row["identity_key"],
+                                row["ip"],
+                                row["mac"],
+                                row["hostname"],
+                                row["vendor"],
+                                row["custom_name"],
+                                row["trust_state"],
+                                tags,
+                                row["notes"],
+                            )
+                        ],
+                    ]
+                )
         return len(rows)
 
     def import_inventory_csv(
@@ -1116,8 +1089,7 @@ class NetworkInventory:
             raise ValueError("inventory CSV exceeds the 2 MiB limit")
         with source.open("r", newline="", encoding="utf-8-sig") as handle:
             reader = csv.DictReader(handle)
-            required = {"schema", "identity_key", "custom_name",
-                        "trust_state", "tags", "notes"}
+            required = {"schema", "identity_key", "custom_name", "trust_state", "tags", "notes"}
             if not reader.fieldnames or not required.issubset(reader.fieldnames):
                 raise ValueError("inventory CSV is missing required columns")
             records = []
@@ -1126,8 +1098,7 @@ class NetworkInventory:
                     raise ValueError("inventory CSV exceeds the device limit")
                 if row.get("schema") != "cortex-network-inventory-v2":
                     raise ValueError("unsupported inventory CSV schema")
-                key = self._metadata_identity(
-                    self._csv_value(row.get("identity_key", "")))
+                key = self._metadata_identity(self._csv_value(row.get("identity_key", "")))
                 values = self._metadata_values(
                     self._csv_value(row.get("custom_name", "")),
                     self._csv_value(row.get("trust_state", "unknown")),
@@ -1180,8 +1151,7 @@ class NetworkInventory:
         with self._lock:
             connection = self._connect()
             try:
-                return int(connection.execute(
-                    "SELECT COUNT(*) FROM snapshots").fetchone()[0])
+                return int(connection.execute("SELECT COUNT(*) FROM snapshots").fetchone()[0])
             finally:
                 self._release(connection)
 
@@ -1207,16 +1177,14 @@ def _timestamp(value: dt.datetime | str | None) -> str:
         try:
             current = dt.datetime.fromisoformat(value.replace("Z", "+00:00"))
         except ValueError as exc:
-            raise ValueError(
-                "observed_at must be an ISO-8601 timestamp") from exc
+            raise ValueError("observed_at must be an ISO-8601 timestamp") from exc
     elif isinstance(value, dt.datetime):
         current = value
     else:
         raise TypeError("observed_at must be datetime, ISO string, or None")
     if current.tzinfo is None:
         current = current.replace(tzinfo=dt.timezone.utc)
-    return current.astimezone(
-        dt.timezone.utc).isoformat().replace("+00:00", "Z")
+    return current.astimezone(dt.timezone.utc).isoformat().replace("+00:00", "Z")
 
 
 __all__ = [

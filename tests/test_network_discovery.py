@@ -27,13 +27,14 @@ from cortex_unified.system_tools.network_discovery import (
     NetworkDiscovery,
 )
 
-
 # ---------------------------------------------------------------------------
 # The phantom-device regression
 # ---------------------------------------------------------------------------
 
+
 class TestUsableHost:
     """Group testusablehost tests covering zero mac is absence not presence; broadcast mac rejected; multicast mac rejected; broadcast ip rejected; multicast ip rejected; real device accepted."""
+
     def test_zero_mac_is_absence_not_presence(self):
         """An all-zero MAC means the ARP probe got no reply."""
         assert NetworkDiscovery._usable_host("192.168.1.50", "00:00:00:00:00:00") is False
@@ -74,6 +75,7 @@ def test_windows_neighbor_query_excludes_incomplete_states():
     /24 would again report ~254 non-existent devices.
     """
     import inspect
+
     target = inspect.unwrap(NetworkDiscovery._read_neighbors_windows)
     source = inspect.getsource(target)
     assert "00-00-00-00-00-00" in source
@@ -89,6 +91,7 @@ def test_windows_neighbor_query_excludes_incomplete_states():
 # MAC identity: vendor vs deliberately private
 # ---------------------------------------------------------------------------
 
+
 class TestMacIdentity:
     """Vendor resolution must be authoritative, never a hardcoded guess.
 
@@ -98,8 +101,7 @@ class TestMacIdentity:
     thing entitled to decide a name.
     """
 
-    @pytest.mark.skipif(not oui.has_full_registry(),
-                        reason="IEEE registry not downloaded on this machine")
+    @pytest.mark.skipif(not oui.has_full_registry(), reason="IEEE registry not downloaded on this machine")
     def test_real_assignments_resolve_from_the_registry(self):
         # Espressif is the ESP32/ESP8266 maker - the classic "mystery device".
         """Verify real assignments resolve from the registry via pytest.mark.skipif, oui.lookup, oui.has_full_registry."""
@@ -136,7 +138,8 @@ class TestMacIdentity:
             "Registry,Assignment,Organization Name,Organization Address\n"
             "MA-L,ABCDEF,IEEE Registration Authority,x\n"
             "MA-L,ABCDE0,Real Vendor Inc.,y\n",
-            encoding="utf-8")
+            encoding="utf-8",
+        )
         oui.load_ieee_registry(csv_file)
         assert oui.lookup("ab:cd:ef:00:00:01") == ""
         assert oui.lookup("ab:cd:e0:00:00:01") == "Real Vendor Inc."
@@ -186,7 +189,7 @@ class TestMacIdentity:
         Converts raw numeric values into formatted, localized, and human-readable string representations.
         """
         assert oui.normalize("84-28-D6-14-54-E3") == "84:28:d6:14:54:e3"
-        assert oui.normalize("8428.d614.54e3") == ""      # not 6 groups
+        assert oui.normalize("8428.d614.54e3") == ""  # not 6 groups
         assert oui.normalize("garbage") == ""
         assert oui.normalize("") == ""
 
@@ -195,8 +198,10 @@ class TestMacIdentity:
 # Device naming and classification
 # ---------------------------------------------------------------------------
 
+
 class TestDeviceLabelling:
     """Group testdevicelabelling tests covering friendly name beats uuid hostname; model used when no friendly name; real hostname is used; uuid detection; gateway without a name reads as router; private address is not used as a name."""
+
     def test_friendly_name_beats_uuid_hostname(self):
         """Chromecasts use a raw UUID as hostname; the user's own name wins."""
         dev = Device(
@@ -208,8 +213,7 @@ class TestDeviceLabelling:
 
     def test_model_used_when_no_friendly_name(self):
         """Verify model used when no friendly name via Device."""
-        dev = Device(ip="192.168.31.138", hostname="67334274-6f36-cd6c-16e2-66e0b3178c34",
-                     services={"model": "R3G"})
+        dev = Device(ip="192.168.31.138", hostname="67334274-6f36-cd6c-16e2-66e0b3178c34", services={"model": "R3G"})
         assert dev.label == "R3G"
 
     def test_real_hostname_is_used(self):
@@ -230,8 +234,7 @@ class TestDeviceLabelling:
 
     def test_private_address_is_not_used_as_a_name(self):
         """Verify private address is not used as a name via Device."""
-        dev = Device(ip="192.168.31.246", mac="36:fe:fa:8b:25:6b",
-                     vendor="private address (randomized by the device)")
+        dev = Device(ip="192.168.31.246", mac="36:fe:fa:8b:25:6b", vendor="private address (randomized by the device)")
         # Falling back to the IP is more useful than repeating the caveat.
         assert dev.label == "192.168.31.246"
 
@@ -242,6 +245,7 @@ class TestDeviceLabelling:
 
 class TestDeviceKind:
     """Group testdevicekind tests covering chromecast classified from service and port; esp board classified from the registry vendor name; classified from self reported model; unknown vendor is not guessed into a category; printer classified."""
+
     def test_chromecast_classified_from_service_and_port(self):
         """Verify chromecast classified from service and port via Device."""
         dev = Device(ip="1.1.1.1", services={"_googlecast._tcp": ""}, open_ports=[8009])
@@ -288,6 +292,7 @@ class TestDeviceKind:
 
 class TestEvidence:
     """Group testevidence tests covering evidence lists every source; evidence never empty."""
+
     def test_evidence_lists_every_source(self):
         """Verify evidence lists every source via Device."""
         dev = Device(ip="1.1.1.1", sources={"neighbor", "mdns", "ssdp"})
@@ -301,12 +306,13 @@ class TestEvidence:
 
 class TestMerge:
     """Group testmerge tests covering observations combine without losing data; merge does not overwrite existing values."""
+
     def test_observations_combine_without_losing_data(self):
         """Verify observations combine without losing data via Device, first.merge."""
-        first = Device(ip="1.1.1.1", mac="20:51:f5:61:77:60", sources={"neighbor"},
-                       open_ports=[8009])
-        second = Device(ip="1.1.1.1", hostname="tv", sources={"mdns"},
-                        services={"friendly": "Family Room TV"}, open_ports=[8008])
+        first = Device(ip="1.1.1.1", mac="20:51:f5:61:77:60", sources={"neighbor"}, open_ports=[8009])
+        second = Device(
+            ip="1.1.1.1", hostname="tv", sources={"mdns"}, services={"friendly": "Family Room TV"}, open_ports=[8008]
+        )
         first.merge(second)
         assert first.mac == "20:51:f5:61:77:60"
         assert first.hostname == "tv"
@@ -325,8 +331,10 @@ class TestMerge:
 # DNS / mDNS parsing
 # ---------------------------------------------------------------------------
 
+
 class TestDnsParsing:
     """Group testdnsparsing tests covering query is well formed; parses an a record; handles name compression; malformed packet does not raise; compression loop is bounded; txt record decoded."""
+
     def test_query_is_well_formed(self):
         """Verify query is well formed via NetworkDiscovery._build_dns_query, query.endswith, struct.unpack."""
         query = NetworkDiscovery._build_dns_query("_googlecast._tcp.local")
@@ -368,9 +376,8 @@ class TestDnsParsing:
         assert NetworkDiscovery._parse_dns_records(b"\x00\x01\x02") == []
         # Truncated mid-record.
         assert isinstance(
-            NetworkDiscovery._parse_dns_records(
-                struct.pack(">HHHHHH", 0, 0x8400, 0, 5, 0, 0) + b"\x05esp32"),
-            list)
+            NetworkDiscovery._parse_dns_records(struct.pack(">HHHHHH", 0, 0x8400, 0, 5, 0, 0) + b"\x05esp32"), list
+        )
 
     def test_compression_loop_is_bounded(self):
         """A pointer cycle must terminate instead of hanging the scan."""
@@ -394,10 +401,10 @@ class TestDnsParsing:
 
 class TestServiceSplitting:
     """Group testservicesplitting tests covering splits instance and type; bare service type; non service name."""
+
     def test_splits_instance_and_type(self):
         """Verify splits instance and type via NetworkDiscovery._split_service_instance."""
-        service, instance = NetworkDiscovery._split_service_instance(
-            "Family Room._googlecast._tcp.local")
+        service, instance = NetworkDiscovery._split_service_instance("Family Room._googlecast._tcp.local")
         assert service == "_googlecast._tcp"
         assert instance == "Family Room"
 
@@ -415,9 +422,11 @@ class TestServiceSplitting:
 
 def test_ssdp_headers_parsed_case_insensitively():
     """Verify ssdp headers parsed case insensitively via NetworkDiscovery._parse_http_headers, startswith."""
-    raw = (b"HTTP/1.1 200 OK\r\n"
-           b"SERVER: Linux/4.14 UPnP/1.0 Chromecast/1.6\r\n"
-           b"ST: urn:dial-multiscreen-org:service:dial:1\r\n\r\n")
+    raw = (
+        b"HTTP/1.1 200 OK\r\n"
+        b"SERVER: Linux/4.14 UPnP/1.0 Chromecast/1.6\r\n"
+        b"ST: urn:dial-multiscreen-org:service:dial:1\r\n\r\n"
+    )
     headers = NetworkDiscovery._parse_http_headers(raw)
     assert "Chromecast" in headers["server"]
     assert headers["st"].startswith("urn:dial")
@@ -427,8 +436,10 @@ def test_ssdp_headers_parsed_case_insensitively():
 # Safety: only ever probe our own private subnets
 # ---------------------------------------------------------------------------
 
+
 class TestScanScope:
     """Group testscanscope tests covering interface network computed; bad netmask is survivable; real interfaces are private only; oversized subnet is skipped with an explanation; manual scope can only narrow active interface; no interfaces reports clearly."""
+
     def test_interface_network_computed(self):
         """Verify interface network computed via Interface."""
         iface = Interface("Wi-Fi", "192.168.31.182", "255.255.255.0")
@@ -441,6 +452,7 @@ class TestScanScope:
     def test_real_interfaces_are_private_only(self):
         """Whatever this machine has, we must never target public space."""
         import ipaddress
+
         for iface in NetworkDiscovery.local_interfaces():
             addr = ipaddress.IPv4Address(iface.ip)
             assert addr.is_private
@@ -454,8 +466,8 @@ class TestScanScope:
         """
         disco = NetworkDiscovery()
         monkeypatch.setattr(
-            NetworkDiscovery, "local_interfaces",
-            staticmethod(lambda: [Interface("huge", "10.0.0.5", "255.0.0.0")]))
+            NetworkDiscovery, "local_interfaces", staticmethod(lambda: [Interface("huge", "10.0.0.5", "255.0.0.0")])
+        )
         monkeypatch.setattr(disco, "default_gateways", lambda: set())
         monkeypatch.setattr(disco, "_read_neighbors", lambda: [])
         monkeypatch.setattr(disco, "_discover_mdns", lambda c: [])
@@ -482,27 +494,30 @@ class TestScanScope:
         """
         disco = NetworkDiscovery()
         monkeypatch.setattr(
-            NetworkDiscovery, "local_interfaces",
-            staticmethod(lambda: [
-                Interface("lan", "192.168.50.20", "255.255.255.0")]))
+            NetworkDiscovery,
+            "local_interfaces",
+            staticmethod(lambda: [Interface("lan", "192.168.50.20", "255.255.255.0")]),
+        )
         monkeypatch.setattr(disco, "default_gateways", lambda: set())
-        monkeypatch.setattr(disco, "_read_neighbors", lambda: [
-            Device("192.168.50.10", sources={"neighbor"}),
-            Device("192.168.50.200", sources={"neighbor"}),
-        ])
+        monkeypatch.setattr(
+            disco,
+            "_read_neighbors",
+            lambda: [
+                Device("192.168.50.10", sources={"neighbor"}),
+                Device("192.168.50.200", sources={"neighbor"}),
+            ],
+        )
         monkeypatch.setattr(disco, "_discover_mdns", lambda _cancel: [])
         monkeypatch.setattr(disco, "_discover_ssdp", lambda _cancel: [])
         monkeypatch.setattr(disco, "_discover_wsd", lambda _cancel: [])
         monkeypatch.setattr(disco, "_resolve_names", lambda *_args: None)
-        result = disco.scan(
-            deep=False, requested_networks=["192.168.50.0/25"])
+        result = disco.scan(deep=False, requested_networks=["192.168.50.0/25"])
         assert result.networks == ["192.168.50.0/25"]
         assert "192.168.50.10" in {item.ip for item in result.devices}
         assert "192.168.50.200" not in {item.ip for item in result.devices}
 
         with pytest.raises(ValueError, match="active local interface"):
-            disco.scan(
-                deep=False, requested_networks=["192.168.51.0/24"])
+            disco.scan(deep=False, requested_networks=["192.168.51.0/24"])
 
     def test_no_interfaces_reports_clearly(self, monkeypatch):
         """Verify no interfaces reports clearly via disco.scan, NetworkDiscovery, monkeypatch.setattr.
@@ -511,8 +526,7 @@ class TestScanScope:
             monkeypatch: The monkeypatch parameter.
         """
         disco = NetworkDiscovery()
-        monkeypatch.setattr(NetworkDiscovery, "local_interfaces",
-                            staticmethod(lambda: []))
+        monkeypatch.setattr(NetworkDiscovery, "local_interfaces", staticmethod(lambda: []))
         result = disco.scan()
         assert result.devices == []
         assert any("nothing to scan" in n.lower() for n in result.notes)
@@ -520,6 +534,7 @@ class TestScanScope:
 
 class TestCancellation:
     """Group testcancellation tests covering already cancelled scan does almost nothing."""
+
     def test_already_cancelled_scan_does_almost_nothing(self, monkeypatch):
         """Verify already cancelled scan does almost nothing via threading.Event, disco.scan, NetworkDiscovery.
 
@@ -530,8 +545,10 @@ class TestCancellation:
         event = threading.Event()
         event.set()
         monkeypatch.setattr(
-            NetworkDiscovery, "local_interfaces",
-            staticmethod(lambda: [Interface("eth", "192.168.31.182", "255.255.255.0")]))
+            NetworkDiscovery,
+            "local_interfaces",
+            staticmethod(lambda: [Interface("eth", "192.168.31.182", "255.255.255.0")]),
+        )
         monkeypatch.setattr(disco, "default_gateways", lambda: set())
         monkeypatch.setattr(disco, "_read_neighbors", lambda: [])
 
@@ -550,8 +567,10 @@ class TestCancellation:
 # Reporting
 # ---------------------------------------------------------------------------
 
+
 class TestNotes:
     """Group testnotes tests covering randomized macs are explained; client isolation suggested when only router answers; no spurious notes for a healthy scan."""
+
     def test_randomized_macs_are_explained(self):
         """Verify randomized macs are explained via NetworkDiscovery._build_notes, Device."""
         devices = [Device(ip="1.1.1.1", mac="36:fe:fa:8b:25:6b")]
@@ -561,31 +580,31 @@ class TestNotes:
     def test_client_isolation_suggested_when_only_router_answers(self):
         """Verify client isolation suggested when only router answers via NetworkDiscovery._build_notes, ipaddress.IPv4Network, Device."""
         import ipaddress
+
         devices = [Device(ip="192.168.1.1", mac="84:28:d6:14:54:e3", is_gateway=True)]
-        notes = NetworkDiscovery._build_notes(
-            devices, [ipaddress.IPv4Network("192.168.1.0/24")], {"192.168.1.1"})
+        notes = NetworkDiscovery._build_notes(devices, [ipaddress.IPv4Network("192.168.1.0/24")], {"192.168.1.1"})
         assert any("isolation" in n for n in notes)
 
     def test_no_spurious_notes_for_a_healthy_scan(self):
         """Verify no spurious notes for a healthy scan via NetworkDiscovery._build_notes, ipaddress.IPv4Network, Device."""
         import ipaddress
+
         # All globally-assigned MACs, so no privacy-address note is expected.
         devices = [
             Device(ip="192.168.1.1", mac="84:28:d6:14:54:e3", is_gateway=True),
             Device(ip="192.168.1.5", mac="20:51:f5:61:77:60"),
             Device(ip="192.168.1.6", mac="24:0a:c4:11:22:33"),
         ]
-        notes = NetworkDiscovery._build_notes(
-            devices, [ipaddress.IPv4Network("192.168.1.0/24")], {"192.168.1.1"})
+        notes = NetworkDiscovery._build_notes(devices, [ipaddress.IPv4Network("192.168.1.0/24")], {"192.168.1.1"})
         assert notes == []
 
 
 def test_result_serializes_to_json():
     """Verify result serializes to json via DiscoveryResult, json.loads, json.dumps."""
     import json
+
     result = DiscoveryResult(
-        devices=[Device(ip="192.168.1.5", mac="24:0a:c4:11:22:33",
-                        sources={"neighbor"})],
+        devices=[Device(ip="192.168.1.5", mac="24:0a:c4:11:22:33", sources={"neighbor"})],
         networks=["192.168.1.0/24"],
         duration_seconds=3.14159,
     )
@@ -600,8 +619,7 @@ def test_result_serializes_to_json():
 def test_ip_sort_key_orders_numerically():
     """Verify ip sort key orders numerically via sorted."""
     ips = ["192.168.1.100", "192.168.1.2", "192.168.1.20"]
-    assert sorted(ips, key=NetworkDiscovery._ip_sort_key) == [
-        "192.168.1.2", "192.168.1.20", "192.168.1.100"]
+    assert sorted(ips, key=NetworkDiscovery._ip_sort_key) == ["192.168.1.2", "192.168.1.20", "192.168.1.100"]
 
 
 @pytest.mark.parametrize("bad", ["", "not-an-ip", "999.1.1.1"])

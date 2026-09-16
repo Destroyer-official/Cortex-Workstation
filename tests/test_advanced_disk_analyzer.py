@@ -31,6 +31,7 @@ from cortex_unified.analyzers.advanced_disk_analyzer import (
 
 class TestFileEntry:
     """Group testfileentry tests covering default values; cloud provider field; is dir flag."""
+
     def test_default_values(self):
         """Verify default values via FileEntry."""
         e = FileEntry(
@@ -89,6 +90,7 @@ class TestFileEntry:
 
 class TestFolderNode:
     """Group testfoldernode tests covering empty node; add single file; add file in subdirectory; add multiple files accumulates sizes; add file with empty relpath; add file root only parts."""
+
     def test_empty_node(self):
         """Verify empty node via FolderNode."""
         node = FolderNode(name="root", path="/root")
@@ -172,6 +174,7 @@ class TestFolderNode:
 
 class TestFolderNodeTreemap:
     """Group testfoldernodetreemap tests covering single file produces root entry; children listed in parent; max depth truncation; file count and folder count."""
+
     def test_single_file_produces_root_entry(self):
         """Verify single file produces root entry via FolderNode, root.add_file, root.to_treemap."""
         root = FolderNode(name="", path="")
@@ -219,6 +222,7 @@ class TestFolderNodeTreemap:
 
 class TestFolderNodeSunburst:
     """Group testfoldernodesunburst tests covering root has empty parent; child references parent path; max depth truncation; value matches size."""
+
     def test_root_has_empty_parent(self):
         """Verify root has empty parent via FolderNode, root.add_file, root.to_sunburst."""
         root = FolderNode(name="", path="")
@@ -261,6 +265,7 @@ class TestFolderNodeSunburst:
 
 class TestFolderNodeBarChart:
     """Group testfoldernodebarchart tests covering excludes root from bar; top n limit; sorted largest first; bar chart with no children."""
+
     def test_excludes_root_from_bar(self):
         """Verify excludes root from bar via FolderNode, root.add_file, root.to_bar_chart."""
         root = FolderNode(name="", path="")
@@ -302,6 +307,7 @@ class TestFolderNodeBarChart:
 
 class TestCloudScanner:
     """Group testcloudscanner tests covering default providers; custom providers; scan local path no colon skips; rclone not available yields nothing."""
+
     def test_default_providers(self):
         """Verify default providers via CloudScanner."""
         scanner = CloudScanner()
@@ -327,9 +333,7 @@ class TestCloudScanner:
         Args:
             monkeypatch: The monkeypatch parameter.
         """
-        monkeypatch.setattr(
-            "cortex_unified.analyzers.advanced_disk_analyzer.HAS_RCLONE", False
-        )
+        monkeypatch.setattr("cortex_unified.analyzers.advanced_disk_analyzer.HAS_RCLONE", False)
         scanner = CloudScanner()
         assert scanner._rclone_available is False
         entries = list(scanner.scan("s3:bucket/folder"))
@@ -343,6 +347,7 @@ class TestCloudScanner:
 
 class TestAdvancedDiskAnalyzerInit:
     """Group testadvanceddiskanalyzerinit tests covering default init; custom cancel event; progress callback stored; include cloud false uses local scanner; include cloud true without deps uses local."""
+
     def test_default_init(self):
         """Verify default init via AdvancedDiskAnalyzer."""
         analyzer = AdvancedDiskAnalyzer()
@@ -388,6 +393,7 @@ class TestAdvancedDiskAnalyzerInit:
 
 class TestBuildTree:
     """Group testbuildtree tests covering build tree from entries; build tree skips directories; build tree handles missing extension; build tree nested paths; size accuracy sum matches."""
+
     def test_build_tree_from_entries(self):
         """Verify build tree from entries via AdvancedDiskAnalyzer, analyzer.build_tree, FileEntry."""
         entries = [
@@ -438,10 +444,7 @@ class TestBuildTree:
 
     def test_size_accuracy_sum_matches(self):
         """Verify size accuracy sum matches via AdvancedDiskAnalyzer, analyzer.build_tree, FileEntry."""
-        entries = [
-            FileEntry(f"/file_{i}.dat", i * 100, 0.0, 0.0, 0.0, False, ".dat")
-            for i in range(1, 11)
-        ]
+        entries = [FileEntry(f"/file_{i}.dat", i * 100, 0.0, 0.0, 0.0, False, ".dat") for i in range(1, 11)]
         analyzer = AdvancedDiskAnalyzer()
         root = analyzer.build_tree(entries)
         expected = sum(i * 100 for i in range(1, 11))
@@ -456,6 +459,7 @@ class TestBuildTree:
 
 class TestGetVisualizations:
     """Group testgetvisualizations tests covering returns empty dict before build; returns all keys after build; total size matches tree; extension breakdown is dict."""
+
     def test_returns_empty_dict_before_build(self):
         """Verify returns empty dict before build via AdvancedDiskAnalyzer, analyzer.get_visualizations."""
         analyzer = AdvancedDiskAnalyzer()
@@ -510,6 +514,7 @@ class TestGetVisualizations:
 
 class TestGetStats:
     """Group testgetstats tests covering initial stats are zero; stats after manual scan increment."""
+
     def test_initial_stats_are_zero(self):
         """Verify initial stats are zero via AdvancedDiskAnalyzer, analyzer.get_stats."""
         analyzer = AdvancedDiskAnalyzer()
@@ -534,6 +539,7 @@ class TestGetStats:
 
 class TestScanRealDirectory:
     """Group testscanrealdirectory tests covering scan finds files; scan builds correct tree; scan respects cancellation; scan cancelled before start; scan progress callback; scan progress callback fires at interval."""
+
     def test_scan_finds_files(self, tmp_path):
         """Verify scan finds files via scanner.scan, PosixScanner, Path.
 
@@ -596,9 +602,7 @@ class TestScanRealDirectory:
             if files >= 5:
                 cancel_event.set()
 
-        scanner = PosixScanner(
-            cancel_event=cancel_event, progress_cb=_cancel_on_progress
-        )
+        scanner = PosixScanner(cancel_event=cancel_event, progress_cb=_cancel_on_progress)
         entries = list(scanner.scan(str(tmp_path)))
         assert len(entries) < 500
 
@@ -670,6 +674,7 @@ class TestScanRealDirectory:
 
 class TestScanSync:
     """Group testscansync tests covering returns entries and tree; real scan sync; collects all files; with progress cb."""
+
     def _scan_and_build(self, root, **kwargs):
         """Helper: scan synchronously and build tree, bypassing broken async wrapper.
 
@@ -747,6 +752,7 @@ class TestScanSync:
 
 class TestScannerBaseHelpers:
     """Group testscannerbasehelpers tests covering check cancel default not set; check cancel when set; report increments counter; report calls callback at interval; report does not call below interval."""
+
     def test_check_cancel_default_not_set(self):
         """Verify check cancel default not set via scanner._check_cancel, PosixScanner."""
         scanner = PosixScanner()

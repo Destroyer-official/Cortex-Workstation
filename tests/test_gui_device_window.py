@@ -43,6 +43,7 @@ def window(app):
     from cortex_unified.ui.premium.window import (
         PremiumMainWindow,
     )
+
     apply_theme(app, "dark")
     win = PremiumMainWindow("dark")
     yield win
@@ -61,8 +62,8 @@ def _observation(port=443, name="https", **kwargs):
         {"evidence": ["TCP connection accepted"]},
     )
     return ServiceObservation(
-        ip="192.168.50.20", port=port, transport="tcp", name=name,
-        source="tcp_connect", metadata=metadata, **kwargs)
+        ip="192.168.50.20", port=port, transport="tcp", name=name, source="tcp_connect", metadata=metadata, **kwargs
+    )
 
 
 def _device(**kwargs):
@@ -118,10 +119,16 @@ def test_window_renders_completed_scan_payload_with_severity_badge(window):
     device = _device()
     device.fingerprint = fingerprint_device(device)
     finding = SecurityFinding(
-        code="reachable-telnet", severity="high",
-        title="Reachable Telnet service", detail="Synthetic fixture",
-        remediation="Disable Telnet.", device_ip=device.ip,
-        evidence=["synthetic"], confidence=0.9, port=23)
+        code="reachable-telnet",
+        severity="high",
+        title="Reachable Telnet service",
+        detail="Synthetic fixture",
+        remediation="Disable Telnet.",
+        device_ip=device.ip,
+        evidence=["synthetic"],
+        confidence=0.9,
+        port=23,
+    )
     payload = {
         "device": device.to_dict(),
         "services": [
@@ -140,14 +147,28 @@ def test_window_renders_completed_scan_payload_with_severity_badge(window):
         "advertised_services": {"_http._tcp": "Front Door Camera"},
         "discovery_sources": ["mdns", "neighbor"],
         "identity_key": "mac:00:11:22:33:44:55",
-        "metadata": {"custom_name": "Front Door", "trust_state": "trusted",
-                     "tags": ["camera"], "notes": "", "updated_at": ""},
-        "lifetime": {"first_seen": "2026-01-01T00:00:00Z",
-                     "last_seen": "2026-02-01T00:00:00Z",
-                     "identity_confidence": "high"},
-        "trends": [{"observed_at": "2026-02-01T00:00:00Z", "device_count": 4,
-                    "service_count": 6, "finding_count": 1, "risk_score": 7,
-                    "snapshot_id": 3}],
+        "metadata": {
+            "custom_name": "Front Door",
+            "trust_state": "trusted",
+            "tags": ["camera"],
+            "notes": "",
+            "updated_at": "",
+        },
+        "lifetime": {
+            "first_seen": "2026-01-01T00:00:00Z",
+            "last_seen": "2026-02-01T00:00:00Z",
+            "identity_confidence": "high",
+        },
+        "trends": [
+            {
+                "observed_at": "2026-02-01T00:00:00Z",
+                "device_count": 4,
+                "service_count": 6,
+                "finding_count": 1,
+                "risk_score": 7,
+                "snapshot_id": 3,
+            }
+        ],
         "history_error": "",
     }
 
@@ -179,16 +200,15 @@ def test_worker_refuses_target_outside_authorized_scope(monkeypatch):
     Args:
         monkeypatch: The monkeypatch parameter.
     """
+
     def fail_scan(*_args, **_kwargs):
         """Fail scan using AssertionError."""
         raise AssertionError("an out-of-scope device must never be scanned")
 
     from cortex_unified.system_tools import network_service_scanner
 
-    monkeypatch.setattr(
-        network_service_scanner.NetworkServiceScanner, "scan", fail_scan)
-    worker = device_window_module.DeviceDeepScanWorker(
-        _device(ip="192.168.99.5", service_observations=[]), SCOPES)
+    monkeypatch.setattr(network_service_scanner.NetworkServiceScanner, "scan", fail_scan)
+    worker = device_window_module.DeviceDeepScanWorker(_device(ip="192.168.99.5", service_observations=[]), SCOPES)
     errors: list[str] = []
     worker.failed.connect(errors.append)
     worker.run()
@@ -207,21 +227,27 @@ def test_worker_collects_services_findings_and_history(monkeypatch):
     )
 
     monkeypatch.setattr(
-        network_service_scanner.NetworkServiceScanner, "scan",
-        lambda *_args, **_kwargs: [_observation(23, "telnet",
-                                                banner="TELNET ready")])
+        network_service_scanner.NetworkServiceScanner,
+        "scan",
+        lambda *_args, **_kwargs: [_observation(23, "telnet", banner="TELNET ready")],
+    )
     monkeypatch.setattr(
-        network_tools.NetworkTools, "ping",
-        lambda *_args, **_kwargs: network_tools.PingResult(
-            "192.168.50.20", True, avg_ms=3.0))
+        network_tools.NetworkTools,
+        "ping",
+        lambda *_args, **_kwargs: network_tools.PingResult("192.168.50.20", True, avg_ms=3.0),
+    )
+    monkeypatch.setattr(network_tools.NetworkTools, "reverse_dns", staticmethod(lambda _ip: "camera.lan"))
     monkeypatch.setattr(
-        network_tools.NetworkTools, "reverse_dns",
-        staticmethod(lambda _ip: "camera.lan"))
-    monkeypatch.setattr(
-        device_window_module.DeviceDeepScanWorker, "_history",
+        device_window_module.DeviceDeepScanWorker,
+        "_history",
         lambda self, _device: {
-            "identity_key": "mac:00:11:22:33:44:55", "metadata": None,
-            "lifetime": None, "trends": [], "history_error": ""})
+            "identity_key": "mac:00:11:22:33:44:55",
+            "metadata": None,
+            "lifetime": None,
+            "trends": [],
+            "history_error": "",
+        },
+    )
 
     worker = device_window_module.DeviceDeepScanWorker(_device(), SCOPES)
     results: list[dict] = []
@@ -252,23 +278,24 @@ def test_worker_reports_missing_nmap_without_failing(monkeypatch):
     )
 
     monkeypatch.setattr(
-        network_service_scanner.NetworkServiceScanner, "scan",
-        lambda *_args, **_kwargs: [_observation()])
+        network_service_scanner.NetworkServiceScanner, "scan", lambda *_args, **_kwargs: [_observation()]
+    )
     monkeypatch.setattr(nmap_adapter.shutil, "which", lambda _name: None)
+    monkeypatch.setattr(device_window_module.DeviceDeepScanWorker, "_ping", lambda self: {"reachable": False})
+    monkeypatch.setattr(device_window_module.DeviceDeepScanWorker, "_reverse_dns", lambda self: "")
     monkeypatch.setattr(
-        device_window_module.DeviceDeepScanWorker, "_ping",
-        lambda self: {"reachable": False})
-    monkeypatch.setattr(
-        device_window_module.DeviceDeepScanWorker, "_reverse_dns",
-        lambda self: "")
-    monkeypatch.setattr(
-        device_window_module.DeviceDeepScanWorker, "_history",
+        device_window_module.DeviceDeepScanWorker,
+        "_history",
         lambda self, _device: {
-            "identity_key": "", "metadata": None, "lifetime": None,
-            "trends": [], "history_error": ""})
+            "identity_key": "",
+            "metadata": None,
+            "lifetime": None,
+            "trends": [],
+            "history_error": "",
+        },
+    )
 
-    worker = device_window_module.DeviceDeepScanWorker(
-        _device(), SCOPES, nmap_modes=("connect", "version"))
+    worker = device_window_module.DeviceDeepScanWorker(_device(), SCOPES, nmap_modes=("connect", "version"))
     results: list[dict] = []
     worker.finished.connect(results.append)
     worker.run()
@@ -409,6 +436,7 @@ def test_lan_page_opens_retains_and_safely_closes_device_window(
 
     class FakeWorker:
         """Helper fakeworker."""
+
         def __init__(self):
             """Initialize the instance and configure internal state.
 
@@ -442,12 +470,14 @@ def test_lan_page_opens_retains_and_safely_closes_device_window(
         fake_start_scan,
     )
     page = window._pages["landevices"]
-    page._on_loaded(DiscoveryResult(
-        devices=[_device()],
-        networks=list(SCOPES),
-        duration_seconds=0.1,
-        audit_profile="advanced",
-    ))
+    page._on_loaded(
+        DiscoveryResult(
+            devices=[_device()],
+            networks=list(SCOPES),
+            duration_seconds=0.1,
+            audit_profile="advanced",
+        )
+    )
     page.tbl.selectRow(0)
     assert page.device_btn.isEnabled()
 

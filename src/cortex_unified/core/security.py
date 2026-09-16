@@ -51,10 +51,19 @@ PROTECTED_PATHS_COMMON = {
 
 # System file extensions that should not be deleted
 PROTECTED_EXTENSIONS = {
-    ".sys", ".dll", ".exe", ".com", ".bat", ".cmd",  # Windows system
-    ".dylib", ".framework",  # macOS system
-    ".so", ".ko", ".a",  # Linux system
+    ".sys",
+    ".dll",
+    ".exe",
+    ".com",
+    ".bat",
+    ".cmd",  # Windows system
+    ".dylib",
+    ".framework",  # macOS system
+    ".so",
+    ".ko",
+    ".a",  # Linux system
 }
+
 
 def _get_protected_paths() -> set:
     """Protected system locations for the current platform.
@@ -75,6 +84,7 @@ def _get_protected_paths() -> set:
         # Dynamically protect drive roots system directories across all drives
         try:
             import psutil
+
             for part in psutil.disk_partitions(all=False):
                 mount = part.mountpoint.rstrip("\\/")
                 if mount:
@@ -92,22 +102,23 @@ def _get_protected_paths() -> set:
     else:  # Linux and others
         return PROTECTED_PATHS_LINUX | PROTECTED_PATHS_COMMON
 
+
 def is_safe_path(path: Union[str, Path], base_dir: Union[str, Path] = None) -> bool:
     """Check if a path is safe to modify.
-    
+
     This function performs multiple safety checks:
     1. Verifies the path exists
     2. Checks if path is within base_dir (if specified)
     3. Ensures path is not in protected system directories
     4. Checks file extension is not a system file
-    
+
     Args:
         path: Path to check
         base_dir: Optional base directory to restrict operations to
-    
+
     Returns:
         True if path is safe to modify, False otherwise
-    
+
     Examples:
         >>> is_safe_path("/home/user/document.txt")
         True
@@ -165,15 +176,16 @@ def is_safe_path(path: Union[str, Path], base_dir: Union[str, Path] = None) -> b
         # Undeterminable safety means unsafe; never fail open here.
         return False
 
+
 def is_system_file(path: Union[str, Path]) -> bool:
     """Check if a file is a system file.
-    
+
     Args:
         path: Path to check
-    
+
     Returns:
         True if file is a system file, False otherwise
-    
+
     Examples:
         >>> is_system_file("C:\\Windows\\System32\\kernel32.dll")
         True
@@ -214,19 +226,19 @@ def is_system_file(path: Union[str, Path]) -> bool:
         # undeletable rather than risking an OS file.
         return True
 
-def validate_paths(paths: List[Union[str, Path]], 
-                   base_dir: Union[str, Path] = None) -> Tuple[List[Path], List[str]]:
+
+def validate_paths(paths: List[Union[str, Path]], base_dir: Union[str, Path] = None) -> Tuple[List[Path], List[str]]:
     """Validate multiple paths and return safe ones + errors.
-    
+
     Args:
         paths: List of paths to validate
         base_dir: Optional base directory to restrict operations to
-    
+
     Returns:
         Tuple of (safe_paths, error_messages)
         - safe_paths: List of Path objects that passed validation
         - error_messages: List of error messages for rejected paths
-    
+
     Examples:
         >>> safe, errors = validate_paths(["/tmp/test.txt", "/etc/passwd"])
         >>> len(safe)
@@ -236,7 +248,7 @@ def validate_paths(paths: List[Union[str, Path]],
     """
     safe_paths = []
     errors = []
-    
+
     for path in paths:
         try:
             if is_safe_path(path, base_dir):
@@ -250,8 +262,9 @@ def validate_paths(paths: List[Union[str, Path]],
                     errors.append(f"Unsafe or invalid path: {path}")
         except Exception as e:
             errors.append(f"Error validating path {path}: {e}")
-    
+
     return safe_paths, errors
+
 
 def is_path_writable(path: Union[str, Path]) -> bool:
     """Check if a path is writable.
@@ -277,28 +290,30 @@ def is_path_writable(path: Union[str, Path]) -> bool:
     except Exception:
         return False
 
+
 def get_safe_temp_dir() -> Path:
     """Get a safe temporary directory for the current platform.
-    
+
     Returns:
         Path to safe temporary directory
     """
     import tempfile
+
     return Path(tempfile.gettempdir())
 
-def check_deletion_safety(path: Union[str, Path], 
-                         allow_system_files: bool = False) -> Tuple[bool, str]:
+
+def check_deletion_safety(path: Union[str, Path], allow_system_files: bool = False) -> Tuple[bool, str]:
     """Check if it's safe to delete a path.
-    
+
     Args:
         path: Path to check
         allow_system_files: Whether to allow deletion of system files
-    
+
     Returns:
         Tuple of (is_safe, reason)
         - is_safe: True if safe to delete
         - reason: Explanation if not safe, empty string if safe
-    
+
     Examples:
         >>> safe, reason = check_deletion_safety("/tmp/test.txt")
         >>> safe

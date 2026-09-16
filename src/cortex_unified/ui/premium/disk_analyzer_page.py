@@ -137,9 +137,7 @@ def _discover_fixed_drives() -> List[Tuple[str, str]]:
                     import ctypes
 
                     buf = ctypes.create_unicode_buffer(256)
-                    ctypes.windll.kernel32.GetVolumeInformationW(
-                        str(p), buf, 256, None, None, None, None, 0
-                    )
+                    ctypes.windll.kernel32.GetVolumeInformationW(str(p), buf, 256, None, None, None, None, 0)
                     vol = buf.value
                 except Exception:
                     pass
@@ -281,18 +279,10 @@ class DiskAnalyzerPage(_Page):
         results_lay.addLayout(header_row)
 
         self._tbl = QTableWidget(0, 6)
-        self._tbl.setHorizontalHeaderLabels(
-            ["Folder", "Size", "% of Total", "Files", "Folders", "Depth"]
-        )
-        self._tbl.horizontalHeader().setSectionResizeMode(
-            0, QHeaderView.ResizeMode.Stretch
-        )
-        self._tbl.horizontalHeader().setSectionResizeMode(
-            1, QHeaderView.ResizeMode.ResizeToContents
-        )
-        self._tbl.horizontalHeader().setSectionResizeMode(
-            2, QHeaderView.ResizeMode.ResizeToContents
-        )
+        self._tbl.setHorizontalHeaderLabels(["Folder", "Size", "% of Total", "Files", "Folders", "Depth"])
+        self._tbl.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
+        self._tbl.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeMode.ResizeToContents)
+        self._tbl.horizontalHeader().setSectionResizeMode(2, QHeaderView.ResizeMode.ResizeToContents)
         self._tbl.verticalHeader().setVisible(False)
         self._tbl.setAlternatingRowColors(True)
         self._tbl.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectRows)
@@ -341,9 +331,7 @@ class DiskAnalyzerPage(_Page):
 
         Launches a native file dialog and populates the selected path into the corresponding target input widget.
         """
-        folder = QFileDialog.getExistingDirectory(
-            self, "Select folder to analyze", self._path_edit.text()
-        )
+        folder = QFileDialog.getExistingDirectory(self, "Select folder to analyze", self._path_edit.text())
         if folder:
             self._path_edit.setText(folder)
             # Switch to "Custom path" if it isn't already
@@ -361,9 +349,7 @@ class DiskAnalyzerPage(_Page):
 
         self._scan_btn.setEnabled(False)
         self._progress.setVisible(True)
-        self._state.show_loading(
-            f"Scanning {path} (depth {self._depth_spin.value()})\u2026"
-        )
+        self._state.show_loading(f"Scanning {path} (depth {self._depth_spin.value()})\u2026")
         self._status.setText(f"Starting scan of {path}\u2026")
         self._tbl.setRowCount(0)
 
@@ -403,16 +389,12 @@ class DiskAnalyzerPage(_Page):
 
         bar_items = tree.to_bar_chart(top_n=50)
         if bar_items:
-            self._card_largest.set_value(
-                f"{bar_items[0]['name']} — {fmt_bytes(bar_items[0]['size'])}"
-            )
+            self._card_largest.set_value(f"{bar_items[0]['name']} — {fmt_bytes(bar_items[0]['size'])}")
 
         # Treemap data (table with size bars)
         treemap = tree.to_treemap(max_depth=max_depth)
         # Sort by size descending, skip root
-        treemap = sorted(
-            [n for n in treemap if n["path"]], key=lambda n: n["size"], reverse=True
-        )
+        treemap = sorted([n for n in treemap if n["path"]], key=lambda n: n["size"], reverse=True)
 
         self._last_tree = tree
         if hasattr(self, "sunburst_btn"):
@@ -420,9 +402,7 @@ class DiskAnalyzerPage(_Page):
             self.treemap_btn.setEnabled(True)
 
         if not treemap:
-            self._state.show_empty(
-                "No folders found. The path may be empty or inaccessible."
-            )
+            self._state.show_empty("No folders found. The path may be empty or inaccessible.")
             self._status.setText("Scan complete \u2014 no folders found.")
             return
 
@@ -437,33 +417,23 @@ class DiskAnalyzerPage(_Page):
             pct = (size_bytes / total_size * 100) if total_size else 0
 
             size_item = QTableWidgetItem(fmt_bytes(size_bytes))
-            size_item.setTextAlignment(
-                Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter
-            )
+            size_item.setTextAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
             self._tbl.setItem(r, 1, size_item)
 
             pct_item = QTableWidgetItem(f"{pct:.1f}%")
-            pct_item.setTextAlignment(
-                Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter
-            )
+            pct_item.setTextAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
             self._tbl.setItem(r, 2, pct_item)
 
             files_item = QTableWidgetItem(f"{node['file_count']:,}")
-            files_item.setTextAlignment(
-                Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter
-            )
+            files_item.setTextAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
             self._tbl.setItem(r, 3, files_item)
 
             folders_item = QTableWidgetItem(f"{node['folder_count']:,}")
-            folders_item.setTextAlignment(
-                Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter
-            )
+            folders_item.setTextAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
             self._tbl.setItem(r, 4, folders_item)
 
             depth_item = QTableWidgetItem(str(_compute_depth(tree, node["path"])))
-            depth_item.setTextAlignment(
-                Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignVCenter
-            )
+            depth_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignVCenter)
             self._tbl.setItem(r, 5, depth_item)
 
         self._tbl.resizeRowsToContents()
@@ -474,9 +444,7 @@ class DiskAnalyzerPage(_Page):
             f"{tree.file_count:,} files, {fmt_bytes(total_size)} total, "
             f"{n_folders} folder nodes shown."
         )
-        self.win.statusBar().showMessage(
-            f"Disk scan complete: {n_folders} folders", 5000
-        )
+        self.win.statusBar().showMessage(f"Disk scan complete: {n_folders} folders", 5000)
 
     def _fail(self, msg: str):
         """Handle an operation failure and notify the user.
@@ -496,12 +464,14 @@ class DiskAnalyzerPage(_Page):
         if not getattr(self, "_last_tree", None):
             return
         from PySide6.QtWidgets import QFileDialog, QMessageBox
+
         default_name = f"sunburst_{Path(self._path_edit.text()).stem or 'disk'}.html"
         save_path, _ = QFileDialog.getSaveFileName(self, "Save Sunburst Chart", default_name, "HTML Files (*.html)")
         if not save_path:
             return
         try:
             from cortex_unified.visualization.sunburst_generator import SunburstGenerator
+
             tree_data = self._last_tree.to_sunburst()
             gen = SunburstGenerator(tree_data)
             html_content = gen.export_as_html()
@@ -515,12 +485,14 @@ class DiskAnalyzerPage(_Page):
         if not getattr(self, "_last_tree", None):
             return
         from PySide6.QtWidgets import QFileDialog, QMessageBox
+
         default_name = f"treemap_{Path(self._path_edit.text()).stem or 'disk'}.html"
         save_path, _ = QFileDialog.getSaveFileName(self, "Save TreeMap Chart", default_name, "HTML Files (*.html)")
         if not save_path:
             return
         try:
             from cortex_unified.visualization.treemap_generator import TreeMapGenerator
+
             tree_data = self._last_tree.to_treemap()
             gen = TreeMapGenerator(tree_data)
             html_content = gen.export_as_html()

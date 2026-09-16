@@ -25,6 +25,7 @@ def _ctx(category="user_temp", ext="tmp", size=5_000_000, age=40, path="C:/Users
 
 class TestFeaturize:
     """Group testfeaturize tests covering includes bias and known features; handles sparse context."""
+
     def test_includes_bias_and_known_features(self):
         """Verify includes bias and known features via f.startswith, featurize, _ctx."""
         feats = featurize(_ctx())
@@ -43,6 +44,7 @@ class TestFeaturize:
 
 class TestLearning:
     """Group testlearning tests covering score in unit interval; learns to favor accepted pattern; learns to avoid skipped pattern; recommend defaults true until trained; rank orders by score."""
+
     def test_score_in_unit_interval(self, tmp_path):
         """Verify score in unit interval via SmartSuggester, s.score, _ctx.
 
@@ -108,6 +110,7 @@ class TestLearning:
 
 class TestBoundsAndPersistence:
     """Group testboundsandpersistence tests covering model size is capped; save and reload roundtrip; corrupt model does not crash; reset."""
+
     def test_model_size_is_capped(self, tmp_path):
         """Verify model size is capped via SmartSuggester, s.observe, s.stats.
 
@@ -117,6 +120,7 @@ class TestBoundsAndPersistence:
         s = SmartSuggester(model_path=tmp_path / "m.json")
         # Feed many distinct extensions to blow past the cap, ensure it's bounded.
         from cortex_unified.core import smart_suggest
+
         for i in range(smart_suggest._MAX_FEATURES + 500):
             s.observe({"category": f"c{i}", "extension": f"e{i}"}, cleaned=bool(i % 2))
         assert s.stats()["feature_count"] <= smart_suggest._MAX_FEATURES
@@ -135,7 +139,7 @@ class TestBoundsAndPersistence:
         assert s.save() is True
         assert path.exists()
 
-        s2 = SmartSuggester(model_path=path)          # reload
+        s2 = SmartSuggester(model_path=path)  # reload
         assert abs(s2.score(_ctx()) - trained_score) < 1e-9
         assert s2.stats()["updates"] == 20
 
@@ -147,7 +151,7 @@ class TestBoundsAndPersistence:
         """
         path = tmp_path / "m.json"
         path.write_text("{ this is not valid json", encoding="utf-8")
-        s = SmartSuggester(model_path=path)            # must not raise
+        s = SmartSuggester(model_path=path)  # must not raise
         assert s.stats()["updates"] == 0
 
     def test_reset(self, tmp_path):

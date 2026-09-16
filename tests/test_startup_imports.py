@@ -41,18 +41,14 @@ def _run(code: str) -> str:
         env=env,
     )
     assert result.returncode == 0, (
-        f"subprocess failed ({result.returncode}):\n"
-        f"stdout: {result.stdout}\nstderr: {result.stderr}"
+        f"subprocess failed ({result.returncode}):\n" f"stdout: {result.stdout}\nstderr: {result.stderr}"
     )
     return result.stdout.strip()
 
 
 def test_package_import_does_not_load_heavy_dependencies():
     """``import cortex_unified`` must stay cheap for every entry point."""
-    loaded = _run(
-        "import sys, cortex_unified\n"
-        f"print(','.join(m for m in {_HEAVY!r} if m in sys.modules))"
-    )
+    loaded = _run("import sys, cortex_unified\n" f"print(','.join(m for m in {_HEAVY!r} if m in sys.modules))")
     assert loaded == "", (
         f"importing cortex_unified eagerly loaded: {loaded}. Keep the package "
         "root free of expensive imports (see cortex_unified/__init__.py)."
@@ -62,8 +58,7 @@ def test_package_import_does_not_load_heavy_dependencies():
 def test_engine_import_does_not_load_recycle_bin_stack():
     """A read-only engine import must not load the recycle-bin COM stack."""
     loaded = _run(
-        "import sys, cortex_unified.engine.service\n"
-        "print('send2trash' if 'send2trash' in sys.modules else '')"
+        "import sys, cortex_unified.engine.service\n" "print('send2trash' if 'send2trash' in sys.modules else '')"
     )
     assert loaded == "", (
         "importing the engine loaded send2trash; recycling must resolve it "
@@ -91,10 +86,7 @@ def test_legacy_convenience_exports_still_resolve():
 
 def test_version_is_importable_without_side_effects():
     """``__version__`` is read by the CLI and logging setup at import time."""
-    out = _run(
-        "import sys, cortex_unified\n"
-        "print(cortex_unified.__version__, 'send2trash' in sys.modules)"
-    )
+    out = _run("import sys, cortex_unified\n" "print(cortex_unified.__version__, 'send2trash' in sys.modules)")
     version, heavy = out.split()
     assert version and heavy == "False"
 
@@ -113,10 +105,7 @@ def test_unknown_attribute_still_raises_attribute_error():
 
 def test_has_trash_flag_contract_preserved():
     """``_HAS_TRASH`` is imported directly by tests; keep it resolvable."""
-    out = _run(
-        "from cortex_unified.engine.secure_delete import _HAS_TRASH\n"
-        "print(isinstance(_HAS_TRASH, bool))"
-    )
+    out = _run("from cortex_unified.engine.secure_delete import _HAS_TRASH\n" "print(isinstance(_HAS_TRASH, bool))")
     assert out == "True"
 
 
@@ -133,8 +122,7 @@ _CLI_FORBIDDEN = ("docker", "send2trash", "psutil")
 def test_legacy_cli_import_does_not_load_optional_heavy_sdks():
     """Building the command tree must not import per-command dependencies."""
     loaded = _run(
-        "import sys, cortex_unified.cli.cli\n"
-        f"print(','.join(m for m in {_CLI_FORBIDDEN!r} if m in sys.modules))"
+        "import sys, cortex_unified.cli.cli\n" f"print(','.join(m for m in {_CLI_FORBIDDEN!r} if m in sys.modules))"
     )
     assert loaded == "", (
         f"importing the legacy CLI eagerly loaded: {loaded}. Import "
@@ -144,26 +132,26 @@ def test_legacy_cli_import_does_not_load_optional_heavy_sdks():
 
 def test_legacy_cli_still_exposes_every_command():
     """Deferring imports must not drop or rename any command."""
-    out = _run(
-        "from cortex_unified.cli.cli import main\n"
-        "print(len(main.commands), ','.join(sorted(main.commands)))"
-    )
+    out = _run("from cortex_unified.cli.cli import main\n" "print(len(main.commands), ','.join(sorted(main.commands)))")
     count, names = out.split(" ", 1)
     # 21 commands including Next-Gen tools (clean-ai, clean-shaders, trim-ssd, verify-checksums, vss-health).
     assert int(count) == 21, f"expected 21 commands, got {count}: {names}"
     # Spot-check the commands whose dependencies are now deferred.
-    for expected in ("docker-cleanup", "secure-delete", "generate-report",
-                     "restore", "scan-broken-links", "analyze-disk",
-                     "clean-temp"):
+    for expected in (
+        "docker-cleanup",
+        "secure-delete",
+        "generate-report",
+        "restore",
+        "scan-broken-links",
+        "analyze-disk",
+        "clean-temp",
+    ):
         assert expected in names
 
 
 def test_legacy_cli_registry_flag_contract_preserved():
     """``HAS_REGISTRY_CLEANER`` was a module constant; keep it readable."""
-    out = _run(
-        "import cortex_unified.cli.cli as c\n"
-        "print(isinstance(c.HAS_REGISTRY_CLEANER, bool))"
-    )
+    out = _run("import cortex_unified.cli.cli as c\n" "print(isinstance(c.HAS_REGISTRY_CLEANER, bool))")
     assert out == "True"
 
 
@@ -188,4 +176,3 @@ def test_ui_launcher_and_module_entrypoints():
         "print(callable(launcher.main), callable(dbg.main), callable(app.main))"
     )
     assert out == "True True True"
-

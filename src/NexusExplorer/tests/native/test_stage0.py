@@ -29,6 +29,7 @@ class TestFormatters:
 
     Converts raw numeric values into formatted, localized, and human-readable string representations.
     """
+
     def test_human_bytes_scale(self):
         """Verify human bytes scale via endswith, human."""
         assert human(0) == "0 B"
@@ -92,8 +93,7 @@ class TestOpenWithQuotingRegression:
 
 
 @pytest.mark.skipif(
-    os.name != "nt" or not any(p.is_file() for p in CLI_CANDIDATES),
-    reason="Windows-only engine binary required"
+    os.name != "nt" or not any(p.is_file() for p in CLI_CANDIDATES), reason="Windows-only engine binary required"
 )
 class TestCliJsonContract:
     """Group testclijsoncontract tests covering list json round trip; list json consumer keys."""

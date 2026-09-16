@@ -146,8 +146,7 @@ class SystemTrayManager(QObject):
         """
         self.tray_icon.showMessage(
             "Low Disk Space ⚠️",
-            f"Only {free_gb:.1f} GB free on your system drive.  "
-            f"Open Cortex Workstation to clean junk files.",
+            f"Only {free_gb:.1f} GB free on your system drive.  " f"Open Cortex Workstation to clean junk files.",
             QSystemTrayIcon.Critical,
             10000,
         )

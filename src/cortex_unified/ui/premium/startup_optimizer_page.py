@@ -215,9 +215,7 @@ class _EnableWorker(QObject):
                     with winreg.OpenKey(hive, sub, 0, winreg.KEY_WRITE) as key:
                         winreg.SetValueEx(key, name, 0, winreg.REG_SZ, val)
                     try:
-                        with winreg.OpenKey(
-                            hive, backup_sub, 0, winreg.KEY_WRITE
-                        ) as bk:
+                        with winreg.OpenKey(hive, backup_sub, 0, winreg.KEY_WRITE) as bk:
                             winreg.DeleteValue(bk, name)
                     except OSError:
                         pass
@@ -513,8 +511,7 @@ class StartupOptimizerPage(_Page):
         self._all_entries = entries
         if not entries:
             self.state.show_empty(
-                "No startup entries found. This is unusual — check that "
-                "you have administrative privileges."
+                "No startup entries found. This is unusual — check that " "you have administrative privileges."
             )
             self.status.setText("No entries found.")
             self._update_summary()
@@ -543,9 +540,7 @@ class StartupOptimizerPage(_Page):
         """Implement apply filters via currentText, _entry_matches_filter, _sort_entries."""
         type_filter = self.type_combo.currentText()
         sort_key = self.sort_combo.currentText()
-        filtered = [
-            e for e in self._all_entries if _entry_matches_filter(e, type_filter)
-        ]
+        filtered = [e for e in self._all_entries if _entry_matches_filter(e, type_filter)]
         self._visible_entries = _sort_entries(filtered, sort_key)
         self._populate_table(self._visible_entries)
         self._update_summary()
@@ -601,9 +596,7 @@ class StartupOptimizerPage(_Page):
             list: List of processed items or identifiers.
         """
         rows = sorted({idx.row() for idx in self.tbl.selectedIndexes()})
-        return [
-            self._visible_entries[r] for r in rows if r < len(self._visible_entries)
-        ]
+        return [self._visible_entries[r] for r in rows if r < len(self._visible_entries)]
 
     def _update_buttons(self):
         """Collect the rows currently selected in the results table and map them back to data objects."""
@@ -643,9 +636,7 @@ class StartupOptimizerPage(_Page):
         self._worker = None
         self.progress.setVisible(False)
         self.status.setText(f"Disabled {len(disabled)} entries.")
-        self.win.statusBar().showMessage(
-            f"Disabled {len(disabled)} startup entries", 5000
-        )
+        self.win.statusBar().showMessage(f"Disabled {len(disabled)} startup entries", 5000)
         self._run_scan()
 
     def _on_disable_fail(self, msg: str):
@@ -692,9 +683,7 @@ class StartupOptimizerPage(_Page):
         self._worker = None
         self.progress.setVisible(False)
         self.status.setText(f"Enabled {len(enabled)} entries.")
-        self.win.statusBar().showMessage(
-            f"Enabled {len(enabled)} startup entries", 5000
-        )
+        self.win.statusBar().showMessage(f"Enabled {len(enabled)} startup entries", 5000)
         self._run_scan()
 
     def _on_enable_fail(self, msg: str):

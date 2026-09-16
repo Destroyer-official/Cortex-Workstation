@@ -21,7 +21,7 @@ class BackgroundAgent(QObject):
 
     alert_high_ram = Signal(float)
     alert_high_cpu = Signal(float)
-    alert_low_disk = Signal(float)          # free GB
+    alert_low_disk = Signal(float)  # free GB
     status_update = Signal(dict)
 
     def __init__(self, check_interval: int = 10):
@@ -38,8 +38,8 @@ class BackgroundAgent(QObject):
         self._is_running = threading.Event()
 
         # Thresholds
-        self.ram_threshold = 90.0   # percent
-        self.cpu_threshold = 90.0   # percent
+        self.ram_threshold = 90.0  # percent
+        self.cpu_threshold = 90.0  # percent
         self.disk_free_threshold_gb = 5.0
 
         # Cooldowns — don't spam the user
@@ -79,8 +79,8 @@ class BackgroundAgent(QObject):
                 stats = {
                     "ram_percent": mem.percent,
                     "cpu_percent": cpu,
-                    "disk_free_gb": disk.free / (1024 ** 3),
-                    "disk_total_gb": disk.total / (1024 ** 3),
+                    "disk_free_gb": disk.free / (1024**3),
+                    "disk_total_gb": disk.total / (1024**3),
                 }
                 self.status_update.emit(stats)
 
@@ -94,7 +94,7 @@ class BackgroundAgent(QObject):
                     self.alert_high_cpu.emit(cpu)
                     self._last_cpu_alert = now
 
-                free_gb = disk.free / (1024 ** 3)
+                free_gb = disk.free / (1024**3)
                 if free_gb < self.disk_free_threshold_gb and (now - self._last_disk_alert) > self._alert_cooldown:
                     self.alert_low_disk.emit(free_gb)
                     self._last_disk_alert = now

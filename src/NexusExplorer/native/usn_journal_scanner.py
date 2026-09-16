@@ -17,6 +17,7 @@ class UsnJournalStatus:
 
     Records drive, supported/active flags, journal/first/next/lowest/max USNs, size deltas, estimated records, and error.
     """
+
     drive_letter: str
     is_supported: bool
     is_active: bool
@@ -36,6 +37,7 @@ class USN_JOURNAL_DATA_V0(ctypes.Structure):
 
     Maps UsnJournalID/First/Next/LowestValid/Max plus MaximumSize/AllocationDelta for FSCTL_QUERY_USN_JOURNAL DeviceIoControl.
     """
+
     _fields_ = [
         ("UsnJournalID", ctypes.c_uint64),
         ("FirstUsn", ctypes.c_int64),
@@ -53,7 +55,7 @@ class UsnJournalScanner:
     Opens volume with CreateFileW, issues FSCTL 0x900F4, and estimates records as (Next-First)//128; Windows-only.
     """
 
-    FSCTL_QUERY_USN_JOURNAL = 0x000900f4
+    FSCTL_QUERY_USN_JOURNAL = 0x000900F4
     GENERIC_READ = 0x80000000
     GENERIC_WRITE = 0x40000000
     FILE_SHARE_READ = 0x00000001
@@ -106,7 +108,12 @@ class UsnJournalScanner:
                 None,
             )
             if handle == wintypes.HANDLE(-1).value or handle == 0:
-                return UsnJournalStatus(clean_drive, True, False, error=f"Access denied (Admin rights required to inspect physical volume, Win32 Error: {err})")
+                return UsnJournalStatus(
+                    clean_drive,
+                    True,
+                    False,
+                    error=f"Access denied (Admin rights required to inspect physical volume, Win32 Error: {err})",
+                )
 
         try:
             journal_data = USN_JOURNAL_DATA_V0()
@@ -125,7 +132,9 @@ class UsnJournalScanner:
 
             if not ok:
                 err = ctypes.GetLastError()
-                return UsnJournalStatus(clean_drive, True, False, error=f"USN Journal not active on volume (Win32 Error {err})")
+                return UsnJournalStatus(
+                    clean_drive, True, False, error=f"USN Journal not active on volume (Win32 Error {err})"
+                )
 
             est_records = max(0, int((journal_data.NextUsn - journal_data.FirstUsn) // 128))
 

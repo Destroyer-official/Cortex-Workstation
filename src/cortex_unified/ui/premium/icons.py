@@ -40,6 +40,7 @@ from PySide6.QtGui import QIcon, QPainter, QPixmap
 
 _LOG = logging.getLogger("cortex.ui.icons")
 
+
 def _get_icon_dirs() -> list[Path]:
     candidates: list[Path] = []
     if getattr(sys, "frozen", False):
@@ -49,19 +50,24 @@ def _get_icon_dirs() -> list[Path]:
             candidates.append(Path(meipass) / "resources" / "icons")
             candidates.append(Path(meipass) / "assets" / "icons")
         exe_dir = Path(sys.executable).resolve().parent
-        candidates.extend([
-            exe_dir / "_internal" / "src" / "cortex_unified" / "resources" / "icons",
-            exe_dir / "_internal" / "resources" / "icons",
-            exe_dir / "resources" / "icons",
-            exe_dir / "assets" / "icons",
-        ])
-    candidates.extend([
-        Path(__file__).resolve().parents[2] / "resources" / "icons",  # src/cortex_unified/resources/icons
-        Path(__file__).resolve().parents[3] / "resources" / "icons",  # src/resources/icons or root
-        Path(__file__).parent / "resources" / "icons",
-    ])
+        candidates.extend(
+            [
+                exe_dir / "_internal" / "src" / "cortex_unified" / "resources" / "icons",
+                exe_dir / "_internal" / "resources" / "icons",
+                exe_dir / "resources" / "icons",
+                exe_dir / "assets" / "icons",
+            ]
+        )
+    candidates.extend(
+        [
+            Path(__file__).resolve().parents[2] / "resources" / "icons",  # src/cortex_unified/resources/icons
+            Path(__file__).resolve().parents[3] / "resources" / "icons",  # src/resources/icons or root
+            Path(__file__).parent / "resources" / "icons",
+        ]
+    )
     found = [p for p in candidates if p.is_dir()]
     return found or [Path(__file__).resolve().parents[2] / "resources" / "icons"]
+
 
 #: Candidate directories holding the shipped icon set.
 _CANDIDATE_ICON_DIRS = _get_icon_dirs()
@@ -134,6 +140,7 @@ def _render(name: str, size: int, color: str, dpr_x100: int) -> QPixmap | None:
         # shape is uniformly tinted with the target theme palette color.
         if color and (b"#" in source or b"rgb" in source or b"currentColor" not in source):
             from PySide6.QtGui import QColor
+
             painter.setCompositionMode(QPainter.CompositionMode.CompositionMode_SourceIn)
             painter.fillRect(pixmap.rect(), QColor(color))
     finally:
@@ -194,10 +201,7 @@ def available() -> frozenset[str]:
 
 def has_icon(name: str) -> bool:
     """True when *name* is shipped, without rendering it."""
-    return any(
-        (p / f"{name}.svg").is_file()
-        for p in (ICON_DIR, ICON_DIR / "ui", ICON_DIR / "filetypes")
-    )
+    return any((p / f"{name}.svg").is_file() for p in (ICON_DIR, ICON_DIR / "ui", ICON_DIR / "filetypes"))
 
 
 def icon_size(size: int) -> QSize:

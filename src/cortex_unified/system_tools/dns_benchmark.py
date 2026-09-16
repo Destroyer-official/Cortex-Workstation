@@ -20,6 +20,7 @@ from typing import Callable, Dict, List, Optional, Tuple
 @dataclass
 class DnsServerSpec:
     """Dns Server Spec data container."""
+
     provider: str
     name: str
     primary_ip: str
@@ -29,20 +30,77 @@ class DnsServerSpec:
 
 
 KNOWN_DNS_PROVIDERS: List[DnsServerSpec] = [
-    DnsServerSpec("Cloudflare", "Cloudflare Standard", "1.1.1.1", "1.0.0.1", "Fast & Standard", "Lowest latency, privacy-first, zero logs"),
-    DnsServerSpec("Cloudflare", "Cloudflare Security", "1.1.1.2", "1.0.0.2", "Security & Malware", "Automated malware and phishing blocking"),
-    DnsServerSpec("Google", "Google Public DNS", "8.8.8.8", "8.8.4.4", "Fast & Standard", "Global geo-distributed anycast infrastructure"),
-    DnsServerSpec("Quad9", "Quad9 Secure", "9.9.9.9", "149.112.112.112", "Security & Malware", "Threat intelligence blocklist, Swiss privacy"),
-    DnsServerSpec("OpenDNS", "OpenDNS Home", "208.67.222.222", "208.67.220.220", "Fast & Standard", "Cisco Umbrella threat intelligence"),
-    DnsServerSpec("AdGuard", "AdGuard Default", "94.140.14.14", "94.140.15.15", "Ad Blocking", "Blocks ads, trackers, and malicious domains"),
-    DnsServerSpec("Control D", "Control D Uncensored", "76.76.2.0", "76.76.10.0", "Fast & Standard", "High-speed modern DNS with zero logging"),
-    DnsServerSpec("CleanBrowsing", "CleanBrowsing Security", "185.228.168.9", "185.228.169.9", "Security & Malware", "Blocks phishing, malicious sites, and exploits"),
+    DnsServerSpec(
+        "Cloudflare",
+        "Cloudflare Standard",
+        "1.1.1.1",
+        "1.0.0.1",
+        "Fast & Standard",
+        "Lowest latency, privacy-first, zero logs",
+    ),
+    DnsServerSpec(
+        "Cloudflare",
+        "Cloudflare Security",
+        "1.1.1.2",
+        "1.0.0.2",
+        "Security & Malware",
+        "Automated malware and phishing blocking",
+    ),
+    DnsServerSpec(
+        "Google",
+        "Google Public DNS",
+        "8.8.8.8",
+        "8.8.4.4",
+        "Fast & Standard",
+        "Global geo-distributed anycast infrastructure",
+    ),
+    DnsServerSpec(
+        "Quad9",
+        "Quad9 Secure",
+        "9.9.9.9",
+        "149.112.112.112",
+        "Security & Malware",
+        "Threat intelligence blocklist, Swiss privacy",
+    ),
+    DnsServerSpec(
+        "OpenDNS",
+        "OpenDNS Home",
+        "208.67.222.222",
+        "208.67.220.220",
+        "Fast & Standard",
+        "Cisco Umbrella threat intelligence",
+    ),
+    DnsServerSpec(
+        "AdGuard",
+        "AdGuard Default",
+        "94.140.14.14",
+        "94.140.15.15",
+        "Ad Blocking",
+        "Blocks ads, trackers, and malicious domains",
+    ),
+    DnsServerSpec(
+        "Control D",
+        "Control D Uncensored",
+        "76.76.2.0",
+        "76.76.10.0",
+        "Fast & Standard",
+        "High-speed modern DNS with zero logging",
+    ),
+    DnsServerSpec(
+        "CleanBrowsing",
+        "CleanBrowsing Security",
+        "185.228.168.9",
+        "185.228.169.9",
+        "Security & Malware",
+        "Blocks phishing, malicious sites, and exploits",
+    ),
 ]
 
 
 @dataclass
 class DnsBenchmarkResult:
     """Dns Benchmark Result data container."""
+
     server: DnsServerSpec
     min_ms: float
     avg_ms: float
@@ -154,9 +212,7 @@ class DnsBenchmarkEngine:
         total = len(target_servers)
 
         with concurrent.futures.ThreadPoolExecutor(max_workers=8) as executor:
-            future_to_server = {
-                executor.submit(cls.benchmark_server, s): s for s in target_servers
-            }
+            future_to_server = {executor.submit(cls.benchmark_server, s): s for s in target_servers}
 
             for idx, future in enumerate(concurrent.futures.as_completed(future_to_server)):
                 if cancel_check and cancel_check():
@@ -177,7 +233,9 @@ class DnsBenchmarkEngine:
         return reachable + unreachable
 
     @classmethod
-    def apply_dns_servers(cls, interface_name: str, primary_ip: str, secondary_ip: Optional[str] = None) -> Tuple[bool, str]:
+    def apply_dns_servers(
+        cls, interface_name: str, primary_ip: str, secondary_ip: Optional[str] = None
+    ) -> Tuple[bool, str]:
         """Configure DNS servers on the specified network adapter via netsh."""
         if platform.system() != "Windows":
             return False, "Windows only"
@@ -187,7 +245,10 @@ class DnsBenchmarkEngine:
             cmd1 = ["netsh", "interface", "ip", "set", "dns", f"name={interface_name}", "static", primary_ip]
             res1 = subprocess.run(cmd1, capture_output=True, text=True, timeout=10)
             if res1.returncode != 0:
-                return False, res1.stderr.strip() or res1.stdout.strip() or "Failed to set primary DNS (Admin rights required)"
+                return (
+                    False,
+                    res1.stderr.strip() or res1.stdout.strip() or "Failed to set primary DNS (Admin rights required)",
+                )
 
             # Set secondary DNS if provided
             if secondary_ip:
@@ -196,6 +257,8 @@ class DnsBenchmarkEngine:
 
             # Flush DNS cache to take immediate effect
             subprocess.run(["ipconfig", "/flushdns"], capture_output=True, timeout=5)
-            return True, f"Configured DNS for '{interface_name}' to {primary_ip}" + (f", {secondary_ip}" if secondary_ip else "")
+            return True, f"Configured DNS for '{interface_name}' to {primary_ip}" + (
+                f", {secondary_ip}" if secondary_ip else ""
+            )
         except Exception as exc:
             return False, str(exc)

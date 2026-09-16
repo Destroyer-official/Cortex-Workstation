@@ -25,6 +25,7 @@ from cortex_unified.analyzers.fuzzy_finder import FuzzyDuplicateFinder
 
 class _FuzzyWorker(QObject):
     """Background worker (_FuzzyWorker) performing FuzzyWorker. Signals finished, progress, failed report status. Configured with root, threshold. Its run() step calls FuzzyDuplicateFinder, finder.find_fuzzy_duplicates, emit, str."""
+
     finished = Signal(dict)
     progress = Signal(str)
     failed = Signal(str)
@@ -82,14 +83,19 @@ class FuzzyHashPage(_Page):
             win: Parent window or shell controller instance.
         """
         super().__init__(win)
-        self.v.addWidget(title_block(
-            "Fuzzy Duplicates (ssdeep/TLSH)",
-            "Context-triggered piecewise hashing (DFRWS 2006) + TLSH locality-"
-            "sensitive digests – groups files that are *similar but not byte-"
-            "identical* (a re-compiled binary, a document with edits).",
-        ))
+        self.v.addWidget(
+            title_block(
+                "Fuzzy Duplicates (ssdeep/TLSH)",
+                "Context-triggered piecewise hashing (DFRWS 2006) + TLSH locality-"
+                "sensitive digests – groups files that are *similar but not byte-"
+                "identical* (a re-compiled binary, a document with edits).",
+            )
+        )
         from PySide6.QtWidgets import (
-            QFileDialog, QProgressBar, QPushButton, QSpinBox,
+            QFileDialog,
+            QProgressBar,
+            QPushButton,
+            QSpinBox,
         )
 
         picker = QHBoxLayout()
@@ -181,16 +187,13 @@ class FuzzyHashPage(_Page):
         self.run_btn.setEnabled(True)
         if not groups:
             self.state.show_empty(
-                "No fuzzy duplicates above the score threshold. Lower the min "
-                "score or scan a different folder.")
+                "No fuzzy duplicates above the score threshold. Lower the min " "score or scan a different folder."
+            )
             self.status.setText("No fuzzy duplicates found.")
             self.win.statusBar().showMessage("No fuzzy duplicates", 5000)
             return
         self.state.clear()
-        rows = [
-            (str(p), gid, f"CTPH score >= {self.thr_spin.value()}")
-            for gid, paths in groups.items() for p in paths
-        ]
+        rows = [(str(p), gid, f"CTPH score >= {self.thr_spin.value()}") for gid, paths in groups.items() for p in paths]
         self.tbl.setRowCount(len(rows))
         for r, (path, gid, hint) in enumerate(rows):
             self.tbl.setItem(r, 0, QTableWidgetItem(path))
@@ -202,9 +205,7 @@ class FuzzyHashPage(_Page):
                 total += Path(path).stat().st_size
             except OSError:
                 pass
-        self.status.setText(
-            f"{len(groups)} fuzzy groups, {len(rows)} files, "
-            f"{fmt_bytes(total)} if all removed.")
+        self.status.setText(f"{len(groups)} fuzzy groups, {len(rows)} files, " f"{fmt_bytes(total)} if all removed.")
         self.win.statusBar().showMessage(f"{len(groups)} fuzzy-duplicate groups", 5000)
 
     def _fail(self, msg):

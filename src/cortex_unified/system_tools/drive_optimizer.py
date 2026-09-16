@@ -35,9 +35,10 @@ class OptimizeOp(str, enum.Enum):
 
     Manages OptimizeOp operations and coordinates related state changes for the component.
     """
-    TRIM = "retrim"          # correct for SSD/NVMe
-    DEFRAG = "defrag"        # correct for HDD
-    NONE = "none"            # nothing appropriate / unsupported
+
+    TRIM = "retrim"  # correct for SSD/NVMe
+    DEFRAG = "defrag"  # correct for HDD
+    NONE = "none"  # nothing appropriate / unsupported
 
 
 @dataclass(slots=True)
@@ -46,6 +47,7 @@ class DriveInfo:
 
     Manages DriveInfo operations and coordinates related state changes for the component.
     """
+
     letter: str
     kind: StorageKind
     recommended_op: OptimizeOp
@@ -73,6 +75,7 @@ class OptimizeResult:
 
     Manages OptimizeResult operations and coordinates related state changes for the component.
     """
+
     letter: str
     op: OptimizeOp
     success: bool
@@ -140,8 +143,9 @@ class DriveOptimizer:
             return OptimizeOp.TRIM, "Removable/flash media: TRIM if supported."
         return OptimizeOp.NONE, "Unknown medium: no optimization recommended."
 
-    def optimize(self, letter: str, op: OptimizeOp | None = None,
-                cancel_event: "threading.Event | None" = None) -> OptimizeResult:
+    def optimize(
+        self, letter: str, op: OptimizeOp | None = None, cancel_event: "threading.Event | None" = None
+    ) -> OptimizeResult:
         """Run the correct optimization for *letter*. If *op* is None, auto-pick.
 
         Refuses to defrag SSD/NVMe even if explicitly asked (safety).
@@ -157,13 +161,13 @@ class DriveOptimizer:
         # Hard safety: never defragment solid-state media.
         if chosen is OptimizeOp.DEFRAG and kind in (StorageKind.SSD, StorageKind.NVME):
             return OptimizeResult(
-                letter, OptimizeOp.NONE, False,
-                f"Refused: {letter}: is {kind.value}; defragmenting an SSD is harmful. "
-                f"Use TRIM instead.",
+                letter,
+                OptimizeOp.NONE,
+                False,
+                f"Refused: {letter}: is {kind.value}; defragmenting an SSD is harmful. " f"Use TRIM instead.",
             )
         if chosen is OptimizeOp.NONE:
-            return OptimizeResult(letter, OptimizeOp.NONE, False,
-                                  "No appropriate optimization for this medium.")
+            return OptimizeResult(letter, OptimizeOp.NONE, False, "No appropriate optimization for this medium.")
 
         flag = "-ReTrim" if chosen is OptimizeOp.TRIM else "-Defrag"
         script = (
@@ -174,8 +178,7 @@ class DriveOptimizer:
         )
         out = self._run_ps(script, timeout=1800, cancel_event=cancel_event)  # defrag can be slow
         if out and "OPTIMIZE_OK" in out:
-            return OptimizeResult(letter, chosen, True,
-                                  f"{chosen.value.upper()} completed on {letter}:.")
+            return OptimizeResult(letter, chosen, True, f"{chosen.value.upper()} completed on {letter}:.")
         msg = ""
         if out and "OPTIMIZE_FAIL;" in out:
             msg = out.split("OPTIMIZE_FAIL;", 1)[1].strip()
@@ -204,8 +207,7 @@ class DriveOptimizer:
                     letters.append(line.upper())
         return letters or ["C"]
 
-    def _run_ps(self, script: str, timeout: int,
-               cancel_event: "threading.Event | None" = None) -> str | None:
+    def _run_ps(self, script: str, timeout: int, cancel_event: "threading.Event | None" = None) -> str | None:
         """_run_ps.
 
         Manages run ps operations and coordinates related state changes for the component.
@@ -221,7 +223,9 @@ class DriveOptimizer:
         try:
             proc = _proc.run(
                 ["powershell", "-NoProfile", "-NonInteractive", "-Command", script],
-                text=True, timeout=timeout, cancel_event=cancel_event,
+                text=True,
+                timeout=timeout,
+                cancel_event=cancel_event,
                 creationflags=_NO_WINDOW,
             )
             return proc.stdout if proc.stdout else (proc.stderr or None)

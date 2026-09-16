@@ -45,6 +45,7 @@ from .tokens import Spacing
 from .widgets import Card, hline, title_block
 from .window import PremiumMainWindow, _Page
 
+
 def PrimaryButton(text: str, parent=None) -> QPushButton:
     """Construct a styled accented QPushButton adhering to design system tokens.
 
@@ -62,6 +63,7 @@ def PrimaryButton(text: str, parent=None) -> QPushButton:
     btn.setCursor(Qt.CursorShape.PointingHandCursor)
     return btn
 
+
 def SecondaryButton(text: str, parent=None) -> QPushButton:
     """Construct a styled secondary QPushButton adhering to design system tokens.
 
@@ -77,6 +79,7 @@ def SecondaryButton(text: str, parent=None) -> QPushButton:
     btn = QPushButton(text, parent if isinstance(parent, QWidget) else None)
     btn.setCursor(Qt.CursorShape.PointingHandCursor)
     return btn
+
 
 from NexusExplorer.native.nexus_links_manager import LinksManager, LinkType, LinkItem
 from NexusExplorer.native.nexus_fast_copier import FastCopier, CopyMode, CopyItemProgress, CopySummary
@@ -115,11 +118,13 @@ def _fmt_bytes(b: int) -> str:
 # 1. LINKS & JUNCTIONS MANAGER PAGE
 # ===========================================================================
 
+
 class LinksManagerPage(_Page):
     """Links Manager page with folder picker, recursive option, and links table.
 
-        Backed by LinksManager, QMessageBox, QFileDialog; builds tables, buttons, and dialogs for the actions below.
+    Backed by LinksManager, QMessageBox, QFileDialog; builds tables, buttons, and dialogs for the actions below.
     """
+
     def __init__(self, win: PremiumMainWindow):
         """Build the Links Manager page with folder picker, recursive option, and links table.
 
@@ -129,7 +134,12 @@ class LinksManagerPage(_Page):
             win (PremiumMainWindow): Parent window or shell controller instance.
         """
         super().__init__(win)
-        self.v.addWidget(title_block("NTFS Links & Junctions Manager", "Inspect, create, and safely manage Directory Junctions, Symlinks, and Hardlinks."))
+        self.v.addWidget(
+            title_block(
+                "NTFS Links & Junctions Manager",
+                "Inspect, create, and safely manage Directory Junctions, Symlinks, and Hardlinks.",
+            )
+        )
 
         card = Card(self.p)
         cl = QVBoxLayout(card)
@@ -180,7 +190,7 @@ class LinksManagerPage(_Page):
     def _on_choose_folder(self):
         """Open a directory picker and remember it as the scan target.
 
-            Uses QFileDialog; updates self._scan_dir, self.selected_path_label.
+        Uses QFileDialog; updates self._scan_dir, self.selected_path_label.
         """
         folder = QFileDialog.getExistingDirectory(self, "Select Folder to Scan for Links")
         if folder:
@@ -190,7 +200,7 @@ class LinksManagerPage(_Page):
     def _on_scan(self):
         """Scan the chosen directory (or home) for links on the worker runtime.
 
-            Uses LinksManager; updates self._scan_dir, self.scan_btn, self.table.
+        Uses LinksManager; updates self._scan_dir, self.scan_btn, self.table.
         """
         target = self._scan_dir or Path.home()
         self.scan_btn.setEnabled(False)
@@ -229,7 +239,7 @@ class LinksManagerPage(_Page):
     def _on_remove_link(self):
         """Confirm and remove the selected link without touching its target files.
 
-            Uses LinksManager, QMessageBox; updates self.table, self._items, self._on_scan.
+        Uses LinksManager, QMessageBox; updates self.table, self._items, self._on_scan.
         """
         sel = self.table.currentRow()
         if sel < 0 or sel >= len(self._items):
@@ -238,7 +248,8 @@ class LinksManagerPage(_Page):
 
         item = self._items[sel]
         confirm = QMessageBox.question(
-            self, "Confirm Link Removal",
+            self,
+            "Confirm Link Removal",
             f"Safely remove {item.link_type.value} '{item.name}'?\n\nTarget directory files will NOT be deleted.",
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
         )
@@ -255,11 +266,13 @@ class LinksManagerPage(_Page):
 # 2. FAST COPIER & TRANSFER ENGINE PAGE
 # ===========================================================================
 
+
 class FastCopierPage(_Page):
     """Fast Copier page with source/destination pickers, mode combo, and progress bar.
 
-        Backed by FastCopier, QMessageBox, QFileDialog; builds tables, buttons, and dialogs for the actions below.
+    Backed by FastCopier, QMessageBox, QFileDialog; builds tables, buttons, and dialogs for the actions below.
     """
+
     def __init__(self, win: PremiumMainWindow):
         """Build the Fast Copier page with source/destination pickers, mode combo, and progress bar.
 
@@ -269,7 +282,12 @@ class FastCopierPage(_Page):
             win (PremiumMainWindow): Parent window or shell controller instance.
         """
         super().__init__(win)
-        self.v.addWidget(title_block("High-Throughput Fast File Copier", "Multi-threaded asynchronous transfer engine with unbuffered direct streaming and SHA-256 verification."))
+        self.v.addWidget(
+            title_block(
+                "High-Throughput Fast File Copier",
+                "Multi-threaded asynchronous transfer engine with unbuffered direct streaming and SHA-256 verification.",
+            )
+        )
 
         card = Card(self.p)
         cl = QVBoxLayout(card)
@@ -338,7 +356,7 @@ class FastCopierPage(_Page):
     def _on_add_source(self):
         """Append a picked source directory to the copy list.
 
-            Uses QFileDialog; updates self._sources, self.sources_label.
+        Uses QFileDialog; updates self._sources, self.sources_label.
         """
         folder = QFileDialog.getExistingDirectory(self, "Select Source Directory")
         if folder:
@@ -348,7 +366,7 @@ class FastCopierPage(_Page):
     def _on_choose_dest(self):
         """Pick the destination directory for the batch copy.
 
-            Uses QFileDialog; updates self._dest_dir, self.dest_label.
+        Uses QFileDialog; updates self._dest_dir, self.dest_label.
         """
         folder = QFileDialog.getExistingDirectory(self, "Select Destination Directory")
         if folder:
@@ -358,10 +376,12 @@ class FastCopierPage(_Page):
     def _on_start_copy(self):
         """Run the batch copy in the background with the chosen mode and speed limit.
 
-            Uses FastCopier, QMessageBox; updates self._sources, self._dest_dir, self.start_btn.
+        Uses FastCopier, QMessageBox; updates self._sources, self._dest_dir, self.start_btn.
         """
         if not self._sources or not self._dest_dir:
-            QMessageBox.information(self, "Fast Copier", "Please select source files/folders and destination directory.")
+            QMessageBox.information(
+                self, "Fast Copier", "Please select source files/folders and destination directory."
+            )
             return
 
         self.start_btn.setEnabled(False)
@@ -413,11 +433,13 @@ class FastCopierPage(_Page):
 # 3. FORENSIC TIMESTAMP & ATTRIBUTE TOUCH PAGE
 # ===========================================================================
 
+
 class TimestampTouchPage(_Page):
     """Timestamp Touch page with file picker, datetime editors, and attribute checkboxes.
 
-        Backed by TimestampTouchEngine, QMessageBox, QFileDialog; builds tables, buttons, and dialogs for the actions below.
+    Backed by TimestampTouchEngine, QMessageBox, QFileDialog; builds tables, buttons, and dialogs for the actions below.
     """
+
     def __init__(self, win: PremiumMainWindow):
         """Build the Timestamp Touch page with file picker, datetime editors, and attribute checkboxes.
 
@@ -427,7 +449,12 @@ class TimestampTouchPage(_Page):
             win (PremiumMainWindow): Parent window or shell controller instance.
         """
         super().__init__(win)
-        self.v.addWidget(title_block("Forensic File Timestamp & Attribute Modifier", "Inspect, stomp, and synchronize MACB timestamps (Created, Modified, Accessed) and Win32 attribute flags."))
+        self.v.addWidget(
+            title_block(
+                "Forensic File Timestamp & Attribute Modifier",
+                "Inspect, stomp, and synchronize MACB timestamps (Created, Modified, Accessed) and Win32 attribute flags.",
+            )
+        )
 
         card = Card(self.p)
         cl = QVBoxLayout(card)
@@ -509,7 +536,7 @@ class TimestampTouchPage(_Page):
     def _on_choose_files(self):
         """Pick files and preload the first file's timestamps and attributes into the editors.
 
-            Uses TimestampTouchEngine, QFileDialog; updates self._selected_files, self.files_label, self.created_edit.
+        Uses TimestampTouchEngine, QFileDialog; updates self._selected_files, self.files_label, self.created_edit.
         """
         files, _ = QFileDialog.getOpenFileNames(self, "Select Files to Touch")
         if files:
@@ -529,7 +556,7 @@ class TimestampTouchPage(_Page):
     def _on_apply(self):
         """Apply the chosen timestamps and attributes to every selected file.
 
-            Uses TimestampTouchEngine, QMessageBox; updates self._selected_files, self.created_edit, self.set_created_check.
+        Uses TimestampTouchEngine, QMessageBox; updates self._selected_files, self.created_edit, self.set_created_check.
         """
         if not self._selected_files:
             QMessageBox.information(self, "Timestamp Touch", "Please select files first.")
@@ -548,18 +575,22 @@ class TimestampTouchPage(_Page):
             TimestampTouchEngine.set_timestamps(f, c_ts, m_ts, a_ts)
             TimestampTouchEngine.set_attributes(f, readonly=ro, hidden=hid, system=sys, archive=arch)
 
-        QMessageBox.information(self, "Success", f"Updated timestamps and attributes on {len(self._selected_files)} file(s).")
+        QMessageBox.information(
+            self, "Success", f"Updated timestamps and attributes on {len(self._selected_files)} file(s)."
+        )
 
 
 # ===========================================================================
 # 4. ARCHIVE STUDIO PAGE
 # ===========================================================================
 
+
 class ArchiveManagerPage(_Page):
     """Archive Studio page with open/test/extract/create buttons and a contents table.
 
-        Backed by ArchiveManager, QMessageBox, QFileDialog; builds tables, buttons, and dialogs for the actions below.
+    Backed by ArchiveManager, QMessageBox, QFileDialog; builds tables, buttons, and dialogs for the actions below.
     """
+
     def __init__(self, win: PremiumMainWindow):
         """Build the Archive Studio page with open/test/extract/create buttons and a contents table.
 
@@ -569,7 +600,12 @@ class ArchiveManagerPage(_Page):
             win (PremiumMainWindow): Parent window or shell controller instance.
         """
         super().__init__(win)
-        self.v.addWidget(title_block("Multi-Format Archive Studio", "Create, inspect, extract, and test ZIP, TAR, GZ, BZ2, and XZ archives with compression presets."))
+        self.v.addWidget(
+            title_block(
+                "Multi-Format Archive Studio",
+                "Create, inspect, extract, and test ZIP, TAR, GZ, BZ2, and XZ archives with compression presets.",
+            )
+        )
 
         card = Card(self.p)
         cl = QVBoxLayout(card)
@@ -618,12 +654,16 @@ class ArchiveManagerPage(_Page):
     def _on_open_archive(self):
         """Open an archive and list its entries in the table.
 
-            Uses ArchiveManager, QFileDialog; updates self._current_archive, self.archive_info_label, self.table.
+        Uses ArchiveManager, QFileDialog; updates self._current_archive, self.archive_info_label, self.table.
         """
-        f, _ = QFileDialog.getOpenFileName(self, "Open Archive", "", "Archives (*.zip *.tar *.tar.gz *.tgz *.tar.bz2 *.tbz2 *.tar.xz)")
+        f, _ = QFileDialog.getOpenFileName(
+            self, "Open Archive", "", "Archives (*.zip *.tar *.tar.gz *.tgz *.tar.bz2 *.tbz2 *.tar.xz)"
+        )
         if f:
             self._current_archive = Path(f)
-            self.archive_info_label.setText(f"Archive: {self._current_archive.name} ({_fmt_bytes(self._current_archive.stat().st_size)})")
+            self.archive_info_label.setText(
+                f"Archive: {self._current_archive.name} ({_fmt_bytes(self._current_archive.stat().st_size)})"
+            )
             entries = ArchiveManager.list_entries(self._current_archive)
             self.table.setRowCount(len(entries))
             for r, e in enumerate(entries):
@@ -635,7 +675,7 @@ class ArchiveManagerPage(_Page):
     def _on_test_archive(self):
         """Run an integrity test on the currently opened archive.
 
-            Uses ArchiveManager, QMessageBox; updates self._current_archive.
+        Uses ArchiveManager, QMessageBox; updates self._current_archive.
         """
         if not self._current_archive:
             QMessageBox.information(self, "Archive Studio", "Please open an archive first.")
@@ -650,7 +690,7 @@ class ArchiveManagerPage(_Page):
     def _on_extract_archive(self):
         """Extract the opened archive into a chosen destination folder.
 
-            Uses ArchiveManager, QMessageBox; updates self._current_archive.
+        Uses ArchiveManager, QMessageBox; updates self._current_archive.
         """
         if not self._current_archive:
             QMessageBox.information(self, "Archive Studio", "Please open an archive first.")
@@ -660,25 +700,38 @@ class ArchiveManagerPage(_Page):
         if dest:
             res = ArchiveManager.extract_archive(self._current_archive, dest)
             if res.success:
-                QMessageBox.information(self, "Extracted", f"Successfully extracted {res.total_files} files ({_fmt_bytes(res.total_uncompressed_bytes)}) in {res.elapsed_seconds:.2f}s.")
+                QMessageBox.information(
+                    self,
+                    "Extracted",
+                    f"Successfully extracted {res.total_files} files ({_fmt_bytes(res.total_uncompressed_bytes)}) in {res.elapsed_seconds:.2f}s.",
+                )
             else:
                 QMessageBox.warning(self, "Extraction Error", res.error or "Failed to extract archive.")
 
     def _on_create_archive(self):
         """Pick files and a target name, then build a new archive.
 
-            Uses ArchiveManager, QMessageBox.
+        Uses ArchiveManager, QMessageBox.
         """
         sources, _ = QFileDialog.getOpenFileNames(self, "Select Files to Compress")
         if not sources:
             return
 
-        out, _ = QFileDialog.getSaveFileName(self, "Save Archive As", "archive.zip", "ZIP Archive (*.zip);;Gzipped Tarball (*.tar.gz);;Bzip2 Tarball (*.tar.bz2);;XZ Tarball (*.tar.xz)")
+        out, _ = QFileDialog.getSaveFileName(
+            self,
+            "Save Archive As",
+            "archive.zip",
+            "ZIP Archive (*.zip);;Gzipped Tarball (*.tar.gz);;Bzip2 Tarball (*.tar.bz2);;XZ Tarball (*.tar.xz)",
+        )
         if out:
             fmt = ArchiveManager.detect_format(out) or ArchiveFormat.ZIP
             res = ArchiveManager.create_archive(sources, out, fmt=fmt)
             if res.success:
-                QMessageBox.information(self, "Archive Created", f"Created archive: {Path(out).name} ({_fmt_bytes(res.total_compressed_bytes)}).")
+                QMessageBox.information(
+                    self,
+                    "Archive Created",
+                    f"Created archive: {Path(out).name} ({_fmt_bytes(res.total_compressed_bytes)}).",
+                )
             else:
                 QMessageBox.warning(self, "Archive Creation Error", res.error or "Failed to create archive.")
 
@@ -687,11 +740,13 @@ class ArchiveManagerPage(_Page):
 # 5. PREFETCH & SYSMAIN ANALYZER PAGE
 # ===========================================================================
 
+
 class PrefetchAnalyzerPage(_Page):
     """Prefetch page with status line, scan/clean buttons, and a traces table.
 
-        Backed by PrefetchAnalyzer, QMessageBox; builds tables, buttons, and dialogs for the actions below.
+    Backed by PrefetchAnalyzer, QMessageBox; builds tables, buttons, and dialogs for the actions below.
     """
+
     def __init__(self, win: PremiumMainWindow):
         """Build the Prefetch page with status line, scan/clean buttons, and a traces table.
 
@@ -701,7 +756,12 @@ class PrefetchAnalyzerPage(_Page):
             win (PremiumMainWindow): Parent window or shell controller instance.
         """
         super().__init__(win)
-        self.v.addWidget(title_block("Windows Prefetch & SysMain Trace Analyzer", "Analyze execution traces, executable run counts, and purge orphaned prefetch caches."))
+        self.v.addWidget(
+            title_block(
+                "Windows Prefetch & SysMain Trace Analyzer",
+                "Analyze execution traces, executable run counts, and purge orphaned prefetch caches.",
+            )
+        )
 
         card = Card(self.p)
         cl = QVBoxLayout(card)
@@ -741,7 +801,7 @@ class PrefetchAnalyzerPage(_Page):
     def _refresh_status(self):
         """Refresh the prefetch cache size, SysMain state, and privilege line.
 
-            Uses PrefetchAnalyzer; updates self.status_label.
+        Uses PrefetchAnalyzer; updates self.status_label.
         """
         st = PrefetchAnalyzer.get_status()
         self.status_label.setText(
@@ -753,7 +813,7 @@ class PrefetchAnalyzerPage(_Page):
     def _on_scan(self):
         """Scan prefetch trace files on the worker runtime.
 
-            Uses PrefetchAnalyzer; updates self.scan_btn, self.table, self._refresh_status.
+        Uses PrefetchAnalyzer; updates self.scan_btn, self.table, self._refresh_status.
         """
         self.scan_btn.setEnabled(False)
         self.table.setRowCount(0)
@@ -788,16 +848,19 @@ class PrefetchAnalyzerPage(_Page):
     def _on_clean(self):
         """Confirm and flush all prefetch traces, then rescan.
 
-            Uses PrefetchAnalyzer, QMessageBox; updates self._on_scan.
+        Uses PrefetchAnalyzer, QMessageBox; updates self._on_scan.
         """
         confirm = QMessageBox.question(
-            self, "Confirm Prefetch Purge",
+            self,
+            "Confirm Prefetch Purge",
             "Flush all Windows Prefetch execution trace files?",
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
         )
         if confirm == QMessageBox.StandardButton.Yes:
             res = PrefetchAnalyzer.clean_prefetch()
-            QMessageBox.information(self, "Prefetch Flushed", f"Deleted {res.files_deleted} traces, freed {_fmt_bytes(res.bytes_freed)}.")
+            QMessageBox.information(
+                self, "Prefetch Flushed", f"Deleted {res.files_deleted} traces, freed {_fmt_bytes(res.bytes_freed)}."
+            )
             self._on_scan()
 
 
@@ -805,11 +868,13 @@ class PrefetchAnalyzerPage(_Page):
 # 6. SEARCH INDEX OPTIMIZER PAGE
 # ===========================================================================
 
+
 class SearchIndexOptimizerPage(_Page):
     """Search Index page with status card and compact/rebuild buttons.
 
-        Backed by SearchIndexOptimizer, QMessageBox; builds tables, buttons, and dialogs for the actions below.
+    Backed by SearchIndexOptimizer, QMessageBox; builds tables, buttons, and dialogs for the actions below.
     """
+
     def __init__(self, win: PremiumMainWindow):
         """Build the Search Index page with status card and compact/rebuild buttons.
 
@@ -819,7 +884,12 @@ class SearchIndexOptimizerPage(_Page):
             win (PremiumMainWindow): Parent window or shell controller instance.
         """
         super().__init__(win)
-        self.v.addWidget(title_block("Windows Search Index Database Optimizer", "Inspect, compact, and repair the Windows Search Catalog database (Windows.edb)."))
+        self.v.addWidget(
+            title_block(
+                "Windows Search Index Database Optimizer",
+                "Inspect, compact, and repair the Windows Search Catalog database (Windows.edb).",
+            )
+        )
 
         card = Card(self.p)
         cl = QVBoxLayout(card)
@@ -868,10 +938,11 @@ class SearchIndexOptimizerPage(_Page):
     def _on_compact(self):
         """Confirm and run offline ESENT compaction in the background.
 
-            Uses SearchIndexOptimizer, QMessageBox; updates self.compact_btn, self._refresh, self.win.
+        Uses SearchIndexOptimizer, QMessageBox; updates self.compact_btn, self._refresh, self.win.
         """
         confirm = QMessageBox.question(
-            self, "Confirm Compaction",
+            self,
+            "Confirm Compaction",
             "Stop Windows Search service and run offline ESENT database compaction?",
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
         )
@@ -905,10 +976,11 @@ class SearchIndexOptimizerPage(_Page):
     def _on_rebuild(self):
         """Confirm and trigger a full search-index rebuild.
 
-            Uses SearchIndexOptimizer, QMessageBox; updates self._refresh.
+        Uses SearchIndexOptimizer, QMessageBox; updates self._refresh.
         """
         confirm = QMessageBox.question(
-            self, "Confirm Index Rebuild",
+            self,
+            "Confirm Index Rebuild",
             "Reset and rebuild the entire Windows Search catalog? (Indexing will run in background)",
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
         )
@@ -922,11 +994,13 @@ class SearchIndexOptimizerPage(_Page):
 # 7. DNS BENCHMARK PAGE
 # ===========================================================================
 
+
 class DnsBenchmarkPage(_Page):
     """DNS Benchmark page with run/apply buttons and a results table.
 
-        Backed by DnsBenchmarkEngine, QMessageBox; builds tables, buttons, and dialogs for the actions below.
+    Backed by DnsBenchmarkEngine, QMessageBox; builds tables, buttons, and dialogs for the actions below.
     """
+
     def __init__(self, win: PremiumMainWindow):
         """Build the DNS Benchmark page with run/apply buttons and a results table.
 
@@ -936,7 +1010,12 @@ class DnsBenchmarkPage(_Page):
             win (PremiumMainWindow): Parent window or shell controller instance.
         """
         super().__init__(win)
-        self.v.addWidget(title_block("DNS Latency Benchmark & Resolver Selector", "Benchmark real round-trip DNS latency across top global and security providers."))
+        self.v.addWidget(
+            title_block(
+                "DNS Latency Benchmark & Resolver Selector",
+                "Benchmark real round-trip DNS latency across top global and security providers.",
+            )
+        )
 
         card = Card(self.p)
         cl = QVBoxLayout(card)
@@ -974,7 +1053,7 @@ class DnsBenchmarkPage(_Page):
     def _on_benchmark(self):
         """Run the full DNS benchmark on the worker runtime.
 
-            Uses DnsBenchmarkEngine; updates self.run_btn, self.table, self._results.
+        Uses DnsBenchmarkEngine; updates self.run_btn, self.table, self._results.
         """
         self.run_btn.setEnabled(False)
         self.table.setRowCount(0)
@@ -1006,7 +1085,9 @@ class DnsBenchmarkPage(_Page):
                 self.table.setItem(r, 1, name_item)
                 self.table.setItem(r, 2, QTableWidgetItem(res.server.primary_ip))
                 self.table.setItem(r, 3, QTableWidgetItem(f"{res.avg_ms} ms" if res.is_reachable else "Timeout"))
-                self.table.setItem(r, 4, QTableWidgetItem(f"{res.min_ms} / {res.max_ms} ms" if res.is_reachable else "-"))
+                self.table.setItem(
+                    r, 4, QTableWidgetItem(f"{res.min_ms} / {res.max_ms} ms" if res.is_reachable else "-")
+                )
                 self.table.setItem(r, 5, QTableWidgetItem(res.server.category))
 
         self.win.worker_runtime.run(_work, on_result=_done, on_error=lambda err: self.run_btn.setEnabled(True))
@@ -1014,7 +1095,7 @@ class DnsBenchmarkPage(_Page):
     def _on_apply_dns(self):
         """Apply the selected provider's DNS servers to Wi-Fi, falling back to Ethernet.
 
-            Uses DnsBenchmarkEngine, QMessageBox; updates self.table, self._results.
+        Uses DnsBenchmarkEngine, QMessageBox; updates self.table, self._results.
         """
         sel = self.table.currentRow()
         if sel < 0 or sel >= len(self._results):
@@ -1028,7 +1109,9 @@ class DnsBenchmarkPage(_Page):
             ok, msg = DnsBenchmarkEngine.apply_dns_servers("Ethernet", res.server.primary_ip, res.server.secondary_ip)
 
         if ok:
-            QMessageBox.information(self, "DNS Applied", f"Successfully set DNS to {res.server.name} ({res.server.primary_ip}).")
+            QMessageBox.information(
+                self, "DNS Applied", f"Successfully set DNS to {res.server.name} ({res.server.primary_ip})."
+            )
         else:
             QMessageBox.warning(self, "DNS Configuration", f"Failed to apply DNS: {msg}")
 
@@ -1037,11 +1120,13 @@ class DnsBenchmarkPage(_Page):
 # 8. DISK BENCHMARK PAGE
 # ===========================================================================
 
+
 class DiskBenchmarkPage(_Page):
     """Disk Benchmark page with target picker, progress label, and results table.
 
-        Backed by DiskBenchmarkEngine, QFileDialog; builds tables, buttons, and dialogs for the actions below.
+    Backed by DiskBenchmarkEngine, QFileDialog; builds tables, buttons, and dialogs for the actions below.
     """
+
     def __init__(self, win: PremiumMainWindow):
         """Build the Disk Benchmark page with target picker, progress label, and results table.
 
@@ -1051,7 +1136,12 @@ class DiskBenchmarkPage(_Page):
             win (PremiumMainWindow): Parent window or shell controller instance.
         """
         super().__init__(win)
-        self.v.addWidget(title_block("Storage Throughput & IOPS Benchmark", "Measure Sequential Read/Write and Random 4KB IOPS performance across storage drives."))
+        self.v.addWidget(
+            title_block(
+                "Storage Throughput & IOPS Benchmark",
+                "Measure Sequential Read/Write and Random 4KB IOPS performance across storage drives.",
+            )
+        )
 
         card = Card(self.p)
         cl = QVBoxLayout(card)
@@ -1101,7 +1191,7 @@ class DiskBenchmarkPage(_Page):
     def _on_select_target(self):
         """Pick the drive or folder to benchmark.
 
-            Uses QFileDialog; updates self._target_path, self.target_label.
+        Uses QFileDialog; updates self._target_path, self.target_label.
         """
         folder = QFileDialog.getExistingDirectory(self, "Select Benchmark Target Drive")
         if folder:
@@ -1111,7 +1201,7 @@ class DiskBenchmarkPage(_Page):
     def _on_start_bench(self):
         """Run a 64 MB storage benchmark on the target in the background.
 
-            Uses DiskBenchmarkEngine; updates self.start_btn, self.progress_label, self._target_path.
+        Uses DiskBenchmarkEngine; updates self.start_btn, self.progress_label, self._target_path.
         """
         self.start_btn.setEnabled(False)
         self.progress_label.setText("Running storage benchmark (64MB sample)...")
@@ -1147,11 +1237,13 @@ class DiskBenchmarkPage(_Page):
 # 9. RAM & WORKING SET OPTIMIZER PAGE
 # ===========================================================================
 
+
 class MemoryOptimizerPage(_Page):
     """RAM Optimizer page with summary line, process table, and trim button.
 
-        Backed by MemoryOptimizer, QMessageBox; builds tables, buttons, and dialogs for the actions below.
+    Backed by MemoryOptimizer, QMessageBox; builds tables, buttons, and dialogs for the actions below.
     """
+
     def __init__(self, win: PremiumMainWindow):
         """Build the RAM Optimizer page with summary line, process table, and trim button.
 
@@ -1161,7 +1253,12 @@ class MemoryOptimizerPage(_Page):
             win (PremiumMainWindow): Parent window or shell controller instance.
         """
         super().__init__(win)
-        self.v.addWidget(title_block("RAM & Working Set Optimizer", "Inspect physical RAM composition and safely trim background process working sets."))
+        self.v.addWidget(
+            title_block(
+                "RAM & Working Set Optimizer",
+                "Inspect physical RAM composition and safely trim background process working sets.",
+            )
+        )
 
         card = Card(self.p)
         cl = QVBoxLayout(card)
@@ -1199,7 +1296,7 @@ class MemoryOptimizerPage(_Page):
     def _on_refresh(self):
         """Refresh the RAM summary and top-30 process memory table.
 
-            Uses MemoryOptimizer; updates self.ram_summary, self.table.
+        Uses MemoryOptimizer; updates self.ram_summary, self.table.
         """
         m = MemoryOptimizer.get_system_ram_metrics()
         self.ram_summary.setText(
@@ -1219,10 +1316,12 @@ class MemoryOptimizerPage(_Page):
     def _on_trim(self):
         """Trim background process working sets, then refresh.
 
-            Uses MemoryOptimizer, QMessageBox; updates self._on_refresh.
+        Uses MemoryOptimizer, QMessageBox; updates self._on_refresh.
         """
         res = MemoryOptimizer.optimize_all_background_working_sets()
-        QMessageBox.information(self, "Memory Optimized", f"Trimmed working sets of {res.processes_trimmed} background processes.")
+        QMessageBox.information(
+            self, "Memory Optimized", f"Trimmed working sets of {res.processes_trimmed} background processes."
+        )
         self._on_refresh()
 
 
@@ -1230,11 +1329,13 @@ class MemoryOptimizerPage(_Page):
 # 10. DEVELOPER ARTIFACTS CLEANER PAGE
 # ===========================================================================
 
+
 class DevCleanerPage(_Page):
     """Dev Cleaner page with scan/clean buttons and a caches table.
 
-        Backed by DevCleaner, QMessageBox; builds tables, buttons, and dialogs for the actions below.
+    Backed by DevCleaner, QMessageBox; builds tables, buttons, and dialogs for the actions below.
     """
+
     def __init__(self, win: PremiumMainWindow):
         """Build the Dev Cleaner page with scan/clean buttons and a caches table.
 
@@ -1244,7 +1345,12 @@ class DevCleanerPage(_Page):
             win (PremiumMainWindow): Parent window or shell controller instance.
         """
         super().__init__(win)
-        self.v.addWidget(title_block("Developer Build Artifacts & Cache Purger", "Scan and clean Docker, Python, Node.js, Rust/Cargo, Gradle, Go, and .NET NuGet caches."))
+        self.v.addWidget(
+            title_block(
+                "Developer Build Artifacts & Cache Purger",
+                "Scan and clean Docker, Python, Node.js, Rust/Cargo, Gradle, Go, and .NET NuGet caches.",
+            )
+        )
 
         card = Card(self.p)
         cl = QVBoxLayout(card)
@@ -1280,7 +1386,7 @@ class DevCleanerPage(_Page):
     def _on_scan(self):
         """Scan developer caches on the worker runtime.
 
-            Uses DevCleaner; updates self.scan_btn, self.table, self._items.
+        Uses DevCleaner; updates self.scan_btn, self.table, self._items.
         """
         self.scan_btn.setEnabled(False)
         self.table.setRowCount(0)
@@ -1314,20 +1420,25 @@ class DevCleanerPage(_Page):
     def _on_clean(self):
         """Confirm and purge all discovered caches, then rescan.
 
-            Uses DevCleaner, QMessageBox; updates self._items, self._on_scan.
+        Uses DevCleaner, QMessageBox; updates self._items, self._on_scan.
         """
         if not self._items:
             QMessageBox.information(self, "Dev Cleaner", "Please scan for developer caches first.")
             return
 
         confirm = QMessageBox.question(
-            self, "Confirm Clean",
+            self,
+            "Confirm Clean",
             f"Purge all {len(self._items)} developer build and package caches?",
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
         )
         if confirm == QMessageBox.StandardButton.Yes:
             res = DevCleaner.clean_items(self._items)
-            QMessageBox.information(self, "Clean Complete", f"Cleaned {res.items_cleaned} cache stores, freed {_fmt_bytes(res.bytes_freed)}.")
+            QMessageBox.information(
+                self,
+                "Clean Complete",
+                f"Cleaned {res.items_cleaned} cache stores, freed {_fmt_bytes(res.bytes_freed)}.",
+            )
             self._on_scan()
 
 
@@ -1335,11 +1446,13 @@ class DevCleanerPage(_Page):
 # 11. BROWSER DEEP CLEANER PAGE
 # ===========================================================================
 
+
 class BrowserDeepCleanerPage(_Page):
     """Browser Cleaner page with scan/clean buttons and a targets table.
 
-        Backed by BrowserDeepCleaner, QMessageBox; builds tables, buttons, and dialogs for the actions below.
+    Backed by BrowserDeepCleaner, QMessageBox; builds tables, buttons, and dialogs for the actions below.
     """
+
     def __init__(self, win: PremiumMainWindow):
         """Build the Browser Cleaner page with scan/clean buttons and a targets table.
 
@@ -1349,7 +1462,12 @@ class BrowserDeepCleanerPage(_Page):
             win (PremiumMainWindow): Parent window or shell controller instance.
         """
         super().__init__(win)
-        self.v.addWidget(title_block("Multi-Browser Deep Privacy & Cache Sanitizer", "Forensic cache and storage cleaner across Chrome, Edge, Firefox, Brave, Opera, Vivaldi, and Arc."))
+        self.v.addWidget(
+            title_block(
+                "Multi-Browser Deep Privacy & Cache Sanitizer",
+                "Forensic cache and storage cleaner across Chrome, Edge, Firefox, Brave, Opera, Vivaldi, and Arc.",
+            )
+        )
 
         card = Card(self.p)
         cl = QVBoxLayout(card)
@@ -1366,7 +1484,9 @@ class BrowserDeepCleanerPage(_Page):
         btn_row.addWidget(self.clean_btn)
 
         self.vacuum_btn = SecondaryButton("Vacuum Databases", self.p)
-        self.vacuum_btn.setToolTip("Defragments and compacts browser SQLite databases (History, Cookies, Places) to improve launch speed and reclaim space.")
+        self.vacuum_btn.setToolTip(
+            "Defragments and compacts browser SQLite databases (History, Cookies, Places) to improve launch speed and reclaim space."
+        )
         self.vacuum_btn.clicked.connect(self._on_vacuum)
         btn_row.addWidget(self.vacuum_btn)
         btn_row.addStretch(1)
@@ -1390,7 +1510,7 @@ class BrowserDeepCleanerPage(_Page):
     def _on_scan(self):
         """Scan browser caches on the worker runtime.
 
-            Uses BrowserDeepCleaner; updates self.scan_btn, self.table, self._targets.
+        Uses BrowserDeepCleaner; updates self.scan_btn, self.table, self._targets.
         """
         self.scan_btn.setEnabled(False)
         self.table.setRowCount(0)
@@ -1424,29 +1544,35 @@ class BrowserDeepCleanerPage(_Page):
     def _on_clean(self):
         """Confirm and purge transient browser caches (logins preserved), then rescan.
 
-            Uses BrowserDeepCleaner, QMessageBox; updates self._targets, self._on_scan.
+        Uses BrowserDeepCleaner, QMessageBox; updates self._targets, self._on_scan.
         """
         if not self._targets:
             QMessageBox.information(self, "Browser Cleaner", "Please scan for browser caches first.")
             return
 
         confirm = QMessageBox.question(
-            self, "Confirm Clean",
+            self,
+            "Confirm Clean",
             "Purge transient browser caches? (Logins and cookies are preserved)",
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
         )
         if confirm == QMessageBox.StandardButton.Yes:
             res = BrowserDeepCleaner.clean_targets(self._targets)
-            QMessageBox.information(self, "Browsers Cleaned", f"Cleaned {res.browsers_cleaned} browser profiles ({res.files_deleted} files), freed {_fmt_bytes(res.bytes_freed)}.")
+            QMessageBox.information(
+                self,
+                "Browsers Cleaned",
+                f"Cleaned {res.browsers_cleaned} browser profiles ({res.files_deleted} files), freed {_fmt_bytes(res.bytes_freed)}.",
+            )
             self._on_scan()
 
     def _on_vacuum(self):
         """Find and VACUUM browser SQLite databases to compact and reclaim space.
 
-            Uses QMessageBox; updates self.vacuum_btn, self.win.
+        Uses QMessageBox; updates self.vacuum_btn, self.win.
         """
         confirm = QMessageBox.question(
-            self, "Vacuum Databases",
+            self,
+            "Vacuum Databases",
             "Defragment and optimize browser SQLite databases (History, Cookies, Places)?\n\n"
             "Please make sure your web browsers are closed before running this operation.",
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
@@ -1468,6 +1594,7 @@ class BrowserDeepCleanerPage(_Page):
             """
             from pathlib import Path
             from cortex_unified.system_tools.browser_cleaner import DeepBrowserCleaner
+
             cleaner = DeepBrowserCleaner()
             items = cleaner.scan()
             dbs = [item.path for item in items if getattr(item, "can_vacuum", False) and item.path.is_file()]
@@ -1487,9 +1614,9 @@ class BrowserDeepCleanerPage(_Page):
             count, saved = result
             self.vacuum_btn.setEnabled(True)
             QMessageBox.information(
-                self, "Databases Vacuumed",
+                self,
+                "Databases Vacuumed",
                 f"Optimized {count} browser database file(s), compacted and reclaimed {_fmt_bytes(saved)}.",
             )
 
         self.win.worker_runtime.run(_work, on_result=_done, on_error=lambda err: self.vacuum_btn.setEnabled(True))
-

@@ -22,6 +22,7 @@ class HashAlgorithm(Enum):
 
     Covers MD5/SHA1/SHA256/SHA512 via hashlib plus BLAKE3/CRC32/XXHASH64 with optional-dependency fallbacks.
     """
+
     MD5 = "MD5"
     SHA1 = "SHA-1"
     SHA256 = "SHA-256"
@@ -37,6 +38,7 @@ class HashResult:
 
     Stores path, filename, size, algorithm, uppercase digest, elapsed seconds, and error.
     """
+
     path: str
     filename: str
     size: int
@@ -52,6 +54,7 @@ class VerifyItem:
 
     Holds path, expected/actual hashes, algorithm, MATCH/MISMATCH/MISSING/ERROR status, and message.
     """
+
     path: str
     expected_hash: str
     actual_hash: str
@@ -111,7 +114,9 @@ class HashTool:
                 with open(path_obj, "rb") as f:
                     while chunk := f.read(cls.CHUNK_SIZE):
                         if cancel_check and cancel_check():
-                            return HashResult(str(file_path), path_obj.name, total_size, algorithm, "", 0.0, "Cancelled")
+                            return HashResult(
+                                str(file_path), path_obj.name, total_size, algorithm, "", 0.0, "Cancelled"
+                            )
                         crc = zlib.crc32(chunk, crc)
                         bytes_read += len(chunk)
                         if progress_cb:
@@ -120,6 +125,7 @@ class HashTool:
             elif algorithm == HashAlgorithm.BLAKE3:
                 try:
                     import blake3
+
                     hasher = blake3.blake3()
                 except ImportError:
                     # Fallback to standard hashlib sha256
@@ -127,7 +133,9 @@ class HashTool:
                 with open(path_obj, "rb") as f:
                     while chunk := f.read(cls.CHUNK_SIZE):
                         if cancel_check and cancel_check():
-                            return HashResult(str(file_path), path_obj.name, total_size, algorithm, "", 0.0, "Cancelled")
+                            return HashResult(
+                                str(file_path), path_obj.name, total_size, algorithm, "", 0.0, "Cancelled"
+                            )
                         hasher.update(chunk)
                         bytes_read += len(chunk)
                         if progress_cb:
@@ -136,11 +144,14 @@ class HashTool:
             elif algorithm == HashAlgorithm.XXHASH64:
                 try:
                     import xxhash
+
                     hasher = xxhash.xxh64()
                     with open(path_obj, "rb") as f:
                         while chunk := f.read(cls.CHUNK_SIZE):
                             if cancel_check and cancel_check():
-                                return HashResult(str(file_path), path_obj.name, total_size, algorithm, "", 0.0, "Cancelled")
+                                return HashResult(
+                                    str(file_path), path_obj.name, total_size, algorithm, "", 0.0, "Cancelled"
+                                )
                             hasher.update(chunk)
                             bytes_read += len(chunk)
                             if progress_cb:
@@ -161,7 +172,9 @@ class HashTool:
                 with open(path_obj, "rb") as f:
                     while chunk := f.read(cls.CHUNK_SIZE):
                         if cancel_check and cancel_check():
-                            return HashResult(str(file_path), path_obj.name, total_size, algorithm, "", 0.0, "Cancelled")
+                            return HashResult(
+                                str(file_path), path_obj.name, total_size, algorithm, "", 0.0, "Cancelled"
+                            )
                         hasher.update(chunk)
                         bytes_read += len(chunk)
                         if progress_cb:
@@ -212,7 +225,13 @@ class HashTool:
             empty_err = "File not found"
             return {
                 algo: HashResult(str(file_path), path_obj.name, 0, algo, "", 0.0, empty_err)
-                for algo in (HashAlgorithm.MD5, HashAlgorithm.SHA1, HashAlgorithm.SHA256, HashAlgorithm.SHA512, HashAlgorithm.CRC32)
+                for algo in (
+                    HashAlgorithm.MD5,
+                    HashAlgorithm.SHA1,
+                    HashAlgorithm.SHA256,
+                    HashAlgorithm.SHA512,
+                    HashAlgorithm.CRC32,
+                )
             }
 
         start_time = time.perf_counter()
@@ -241,17 +260,43 @@ class HashTool:
 
             elapsed = time.perf_counter() - start_time
             return {
-                HashAlgorithm.MD5: HashResult(str(path_obj), path_obj.name, total_size, HashAlgorithm.MD5, md5_h.hexdigest().upper(), elapsed),
-                HashAlgorithm.SHA1: HashResult(str(path_obj), path_obj.name, total_size, HashAlgorithm.SHA1, sha1_h.hexdigest().upper(), elapsed),
-                HashAlgorithm.SHA256: HashResult(str(path_obj), path_obj.name, total_size, HashAlgorithm.SHA256, sha256_h.hexdigest().upper(), elapsed),
-                HashAlgorithm.SHA512: HashResult(str(path_obj), path_obj.name, total_size, HashAlgorithm.SHA512, sha512_h.hexdigest().upper(), elapsed),
-                HashAlgorithm.CRC32: HashResult(str(path_obj), path_obj.name, total_size, HashAlgorithm.CRC32, f"{crc & 0xFFFFFFFF:08X}", elapsed),
+                HashAlgorithm.MD5: HashResult(
+                    str(path_obj), path_obj.name, total_size, HashAlgorithm.MD5, md5_h.hexdigest().upper(), elapsed
+                ),
+                HashAlgorithm.SHA1: HashResult(
+                    str(path_obj), path_obj.name, total_size, HashAlgorithm.SHA1, sha1_h.hexdigest().upper(), elapsed
+                ),
+                HashAlgorithm.SHA256: HashResult(
+                    str(path_obj),
+                    path_obj.name,
+                    total_size,
+                    HashAlgorithm.SHA256,
+                    sha256_h.hexdigest().upper(),
+                    elapsed,
+                ),
+                HashAlgorithm.SHA512: HashResult(
+                    str(path_obj),
+                    path_obj.name,
+                    total_size,
+                    HashAlgorithm.SHA512,
+                    sha512_h.hexdigest().upper(),
+                    elapsed,
+                ),
+                HashAlgorithm.CRC32: HashResult(
+                    str(path_obj), path_obj.name, total_size, HashAlgorithm.CRC32, f"{crc & 0xFFFFFFFF:08X}", elapsed
+                ),
             }
         except Exception as exc:
             err = str(exc)
             return {
                 algo: HashResult(str(file_path), path_obj.name, total_size, algo, "", 0.0, err)
-                for algo in (HashAlgorithm.MD5, HashAlgorithm.SHA1, HashAlgorithm.SHA256, HashAlgorithm.SHA512, HashAlgorithm.CRC32)
+                for algo in (
+                    HashAlgorithm.MD5,
+                    HashAlgorithm.SHA1,
+                    HashAlgorithm.SHA256,
+                    HashAlgorithm.SHA512,
+                    HashAlgorithm.CRC32,
+                )
             }
 
     @classmethod
@@ -390,41 +435,49 @@ class HashTool:
                 progress_cb(i + 1, total, target_path.name)
 
             if not target_path.exists():
-                results.append(VerifyItem(
-                    path=str(target_path),
-                    expected_hash=expected_hash,
-                    actual_hash="",
-                    algorithm=algo,
-                    status="MISSING",
-                    error_message="File not found",
-                ))
+                results.append(
+                    VerifyItem(
+                        path=str(target_path),
+                        expected_hash=expected_hash,
+                        actual_hash="",
+                        algorithm=algo,
+                        status="MISSING",
+                        error_message="File not found",
+                    )
+                )
                 continue
 
             h_res = cls.compute_hash(target_path, algo, cancel_check=cancel_check)
             if h_res.error:
-                results.append(VerifyItem(
-                    path=str(target_path),
-                    expected_hash=expected_hash,
-                    actual_hash="",
-                    algorithm=algo,
-                    status="ERROR",
-                    error_message=h_res.error,
-                ))
+                results.append(
+                    VerifyItem(
+                        path=str(target_path),
+                        expected_hash=expected_hash,
+                        actual_hash="",
+                        algorithm=algo,
+                        status="ERROR",
+                        error_message=h_res.error,
+                    )
+                )
             elif h_res.digest.upper() == expected_hash.upper():
-                results.append(VerifyItem(
-                    path=str(target_path),
-                    expected_hash=expected_hash,
-                    actual_hash=h_res.digest,
-                    algorithm=algo,
-                    status="MATCH",
-                ))
+                results.append(
+                    VerifyItem(
+                        path=str(target_path),
+                        expected_hash=expected_hash,
+                        actual_hash=h_res.digest,
+                        algorithm=algo,
+                        status="MATCH",
+                    )
+                )
             else:
-                results.append(VerifyItem(
-                    path=str(target_path),
-                    expected_hash=expected_hash,
-                    actual_hash=h_res.digest,
-                    algorithm=algo,
-                    status="MISMATCH",
-                ))
+                results.append(
+                    VerifyItem(
+                        path=str(target_path),
+                        expected_hash=expected_hash,
+                        actual_hash=h_res.digest,
+                        algorithm=algo,
+                        status="MISMATCH",
+                    )
+                )
 
         return results

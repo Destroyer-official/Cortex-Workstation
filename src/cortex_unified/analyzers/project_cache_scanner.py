@@ -25,10 +25,22 @@ _LOG = logging.getLogger(__name__)
 
 # Directories we never descend into (huge/irrelevant/sensitive) - reuse + extend
 _SKIP_NAMES = {
-    "node_modules", ".git", ".svn", "windows", "winsxs", "system32",
-    "syswow64", "$recycle.bin", "system volume information", "assembly",
-    "installer", "drivers", "sourceengine",
-    ".cargo", ".rustup", "scoop",
+    "node_modules",
+    ".git",
+    ".svn",
+    "windows",
+    "winsxs",
+    "system32",
+    "syswow64",
+    "$recycle.bin",
+    "system volume information",
+    "assembly",
+    "installer",
+    "drivers",
+    "sourceengine",
+    ".cargo",
+    ".rustup",
+    "scoop",
 }
 
 # Extra prunes for drive-level walks to keep scans cheap
@@ -46,6 +58,7 @@ def _fixed_drive_roots() -> List[Path]:
     roots: List[Path] = []
     try:
         import psutil
+
         for p in psutil.disk_partitions(all=False):
             opts = (getattr(p, "opts", "") or "").lower()
             fstype = (getattr(p, "fstype", "") or "").lower()
@@ -74,23 +87,39 @@ def _fixed_drive_roots() -> List[Path]:
 
 def _known_code_roots() -> List[Path]:
     """High-hit-rate code parents to prefer over whole-drive walks.
-    
+
     Dynamically probes all detected fixed drives and user home directories
     for standard development roots (code, Projects, Main_projects, Repos, workspace, etc.).
     """
     candidates: List[Path] = []
-    
+
     # 1. User profile development folders
     home = Path.home()
     user_dev_subdirs = [
-        "code", "Projects", "Main_projects", "Development", "Repos", "workspace", "src", "git", "dev",
-        "Documents/code", "Documents/Projects", "Documents/Main_projects", "Documents/Development",
-        "source/repos", "IdeaProjects", "go/src", "PycharmProjects", "AndroidStudioProjects",
-        "Desktop/code", "Desktop/Projects"
+        "code",
+        "Projects",
+        "Main_projects",
+        "Development",
+        "Repos",
+        "workspace",
+        "src",
+        "git",
+        "dev",
+        "Documents/code",
+        "Documents/Projects",
+        "Documents/Main_projects",
+        "Documents/Development",
+        "source/repos",
+        "IdeaProjects",
+        "go/src",
+        "PycharmProjects",
+        "AndroidStudioProjects",
+        "Desktop/code",
+        "Desktop/Projects",
     ]
     for sub in user_dev_subdirs:
         candidates.append(home / sub)
-        
+
     # 2. Environment variables if set
     for env_var in ("WORKSPACE", "SRC", "PROJECTS_DIR", "DEV_DIR", "GOPATH"):
         val = os.environ.get(env_var)
@@ -99,9 +128,7 @@ def _known_code_roots() -> List[Path]:
 
     # 3. All detected fixed drives (C:, D:, E:, etc.)
     fixed_drives = _fixed_drive_roots()
-    drive_dev_names = [
-        "code", "Projects", "Main_projects", "Development", "Repos", "workspace", "src", "git", "dev"
-    ]
+    drive_dev_names = ["code", "Projects", "Main_projects", "Development", "Repos", "workspace", "src", "git", "dev"]
     for drive in fixed_drives:
         for name in drive_dev_names:
             candidates.append(drive / name)
@@ -178,29 +205,44 @@ class ProjectCacheScanner:
         if roots:
             # Prefer code roots - they are deep trees; allow unlimited depth there
             for root in roots:
-                if cancel_event and getattr(cancel_event, 'is_set', lambda: False)():
+                if cancel_event and getattr(cancel_event, "is_set", lambda: False)():
                     break
-                resources.extend(self._scan_root(root, keep_recent_days=self.keep_recent_days,
-                                                 progress_callback=progress_callback,
-                                                 cancel_event=cancel_event,
-                                                 max_depth=None))
+                resources.extend(
+                    self._scan_root(
+                        root,
+                        keep_recent_days=self.keep_recent_days,
+                        progress_callback=progress_callback,
+                        cancel_event=cancel_event,
+                        max_depth=None,
+                    )
+                )
             # Also do a shallow sweep of drive roots to catch stray projects outside D:\code
             drive_roots = [r for r in _fixed_drive_roots() if r not in roots]
             for root in drive_roots:
-                if cancel_event and getattr(cancel_event, 'is_set', lambda: False)():
+                if cancel_event and getattr(cancel_event, "is_set", lambda: False)():
                     break
-                resources.extend(self._scan_root(root, keep_recent_days=self.keep_recent_days,
-                                                 progress_callback=progress_callback,
-                                                 cancel_event=cancel_event,
-                                                 max_depth=max_depth))
+                resources.extend(
+                    self._scan_root(
+                        root,
+                        keep_recent_days=self.keep_recent_days,
+                        progress_callback=progress_callback,
+                        cancel_event=cancel_event,
+                        max_depth=max_depth,
+                    )
+                )
         else:
             for root in _fixed_drive_roots():
-                if cancel_event and getattr(cancel_event, 'is_set', lambda: False)():
+                if cancel_event and getattr(cancel_event, "is_set", lambda: False)():
                     break
-                resources.extend(self._scan_root(root, keep_recent_days=self.keep_recent_days,
-                                                 progress_callback=progress_callback,
-                                                 cancel_event=cancel_event,
-                                                 max_depth=max_depth))
+                resources.extend(
+                    self._scan_root(
+                        root,
+                        keep_recent_days=self.keep_recent_days,
+                        progress_callback=progress_callback,
+                        cancel_event=cancel_event,
+                        max_depth=max_depth,
+                    )
+                )
         return resources
 
     def _scan_root(
@@ -226,6 +268,7 @@ class ProjectCacheScanner:
             List[Dict]: List of processed items or identifiers.
         """
         from datetime import datetime as _dt
+
         resources: List[Dict] = []
         cutoff_date = _dt.now() - timedelta(days=keep_recent_days) if keep_recent_days > 0 else None
 
@@ -279,8 +322,9 @@ class ProjectCacheScanner:
         try:
             if max_depth is None:
                 for root, dirs, files in os.walk(folder):
-                    if cancel_event and getattr(cancel_event, 'is_set', lambda: False)():
+                    if cancel_event and getattr(cancel_event, "is_set", lambda: False)():
                         break
+
                     # Prune skips before descending, but keep any dir that is a cache pattern (e.g. node_modules)
                     def _keep_for_scan(n: str) -> bool:
                         """_keep_for_scan.
@@ -300,6 +344,7 @@ class ProjectCacheScanner:
                         if n.startswith("$"):
                             return False
                         return True
+
                     dirs[:] = [d for d in dirs if _keep_for_scan(d)]
                     dirs_to_remove = []
                     for d in list(dirs):
@@ -313,21 +358,27 @@ class ProjectCacheScanner:
                                     total_size += dir_size
                                     total_items += 1
                                     project_name = dir_path.parent.name or folder.name
-                                    resources.append({
-                                        "type": "project_cache",
-                                        "category": cat_id,
-                                        "path": str(dir_path),
-                                        "name": project_name,
-                                        "cache_name": d,
-                                        "size": dir_size,
-                                        "file_count": file_cnt,
-                                        "description": f"{description} ({d})",
-                                        "manager_name": PROJECT_CACHE_CATEGORIES.get(cat_id, {}).get("label", cat_id.title())
-                                    })
+                                    resources.append(
+                                        {
+                                            "type": "project_cache",
+                                            "category": cat_id,
+                                            "path": str(dir_path),
+                                            "name": project_name,
+                                            "cache_name": d,
+                                            "size": dir_size,
+                                            "file_count": file_cnt,
+                                            "description": f"{description} ({d})",
+                                            "manager_name": PROJECT_CACHE_CATEGORIES.get(cat_id, {}).get(
+                                                "label", cat_id.title()
+                                            ),
+                                        }
+                                    )
                                     if progress_callback and callable(progress_callback):
                                         progress_callback(
                                             f"Found {d} in {project_name} ({self._format_bytes(dir_size)})",
-                                            total_items, total_size)
+                                            total_items,
+                                            total_size,
+                                        )
                                 dirs_to_remove.append(d)
                             except Exception:
                                 continue
@@ -339,7 +390,7 @@ class ProjectCacheScanner:
                 stack = [(folder, 0)]
                 visited: set[str] = set()
                 while stack:
-                    if cancel_event and getattr(cancel_event, 'is_set', lambda: False)():
+                    if cancel_event and getattr(cancel_event, "is_set", lambda: False)():
                         break
                     cur, depth = stack.pop()
                     if depth > max_depth:
@@ -373,21 +424,27 @@ class ProjectCacheScanner:
                                         total_size += dir_size
                                         total_items += 1
                                         project_name = dir_path.parent.name or folder.name
-                                        resources.append({
-                                            "type": "project_cache",
-                                            "category": cat_id,
-                                            "path": str(dir_path),
-                                            "name": project_name,
-                                            "cache_name": name,
-                                            "size": dir_size,
-                                            "file_count": file_cnt,
-                                            "description": f"{description} ({name})",
-                                            "manager_name": PROJECT_CACHE_CATEGORIES.get(cat_id, {}).get("label", cat_id.title())
-                                        })
+                                        resources.append(
+                                            {
+                                                "type": "project_cache",
+                                                "category": cat_id,
+                                                "path": str(dir_path),
+                                                "name": project_name,
+                                                "cache_name": name,
+                                                "size": dir_size,
+                                                "file_count": file_cnt,
+                                                "description": f"{description} ({name})",
+                                                "manager_name": PROJECT_CACHE_CATEGORIES.get(cat_id, {}).get(
+                                                    "label", cat_id.title()
+                                                ),
+                                            }
+                                        )
                                         if progress_callback and callable(progress_callback):
                                             progress_callback(
                                                 f"Found {name} in {project_name} ({self._format_bytes(dir_size)})",
-                                                total_items, total_size)
+                                                total_items,
+                                                total_size,
+                                            )
                                 except Exception:
                                     continue
                                 # Do not descend into a matched cache folder
@@ -444,8 +501,8 @@ class ProjectCacheScanner:
             str: Formatted string or path.
         """
         size = float(n)
-        for unit in ('B', 'KB', 'MB', 'GB', 'TB'):
-            if size < 1024 or unit == 'PB':
+        for unit in ("B", "KB", "MB", "GB", "TB"):
+            if size < 1024 or unit == "PB":
                 return f"{size:.1f} {unit}"
             size /= 1024
         return f"{n} B"

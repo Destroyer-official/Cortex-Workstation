@@ -30,8 +30,8 @@ class ScanWorker(QObject):
     early rather than running to completion.
     """
 
-    finished = Signal(object)   # CleanupReport
-    progress = Signal(str)      # live status text
+    finished = Signal(object)  # CleanupReport
+    progress = Signal(str)  # live status text
     failed = Signal(str)
 
     def __init__(self, max_risk: str = "medium", include_disabled: bool = False):
@@ -62,7 +62,7 @@ class ScanWorker(QObject):
 class CleanWorker(QObject):
     """Executes deletion for a previously produced report (batched + cancellable)."""
 
-    finished = Signal(object, int, int)   # (bytes_freed, items_cleaned, items_skipped)
+    finished = Signal(object, int, int)  # (bytes_freed, items_cleaned, items_skipped)
     progress = Signal(str)
     failed = Signal(str)
 
@@ -87,11 +87,12 @@ class CleanWorker(QObject):
                 self.progress.emit(f"Cleaning\u2026 {done:,} / {total:,}")
 
             results = svc.clean_categories(
-                self._report, DeletionMethod(self._method),
-                progress=_prog, cancel_event=self._cancel,
+                self._report,
+                DeletionMethod(self._method),
+                progress=_prog,
+                cancel_event=self._cancel,
             )
-            freed = sum(r.size for r in results
-                        if r.succeeded and r.method is not DeletionMethod.DRY_RUN)
+            freed = sum(r.size for r in results if r.succeeded and r.method is not DeletionMethod.DRY_RUN)
             items = sum(1 for r in results if r.succeeded)
             skipped = sum(1 for r in results if not r.succeeded)
             self.finished.emit(freed, items, skipped)
@@ -101,7 +102,8 @@ class CleanWorker(QObject):
 
 class DuplicateWorker(QObject):
     """Finds byte-identical duplicate files under the given roots."""
-    finished = Signal(dict)       # {hash: [Path, ...]}
+
+    finished = Signal(dict)  # {hash: [Path, ...]}
     progress = Signal(str)
     failed = Signal(str)
 
@@ -148,8 +150,16 @@ def aggregate_roots(entries, roots) -> list[dict]:
     for rn, orig in roots_n:
         size, count = buckets[rn]
         if count:
-            out.append({"name": Path(orig).name or str(orig), "path": rn,
-                        "size": size, "count": count, "is_dir": True, "expandable": True})
+            out.append(
+                {
+                    "name": Path(orig).name or str(orig),
+                    "path": rn,
+                    "size": size,
+                    "count": count,
+                    "is_dir": True,
+                    "expandable": True,
+                }
+            )
     out.sort(key=lambda x: x["size"], reverse=True)
     return out
 
@@ -173,14 +183,14 @@ def children_under(entries, prefix: str) -> list[dict]:
             continue
         parts = rest.split("\\")
         if len(parts) == 1:
-            files.append({"name": parts[0], "path": ep, "size": e.size,
-                          "count": 1, "is_dir": False, "expandable": False})
+            files.append(
+                {"name": parts[0], "path": ep, "size": e.size, "count": 1, "is_dir": False, "expandable": False}
+            )
         else:
             key = parts[0]
             f = folders.get(key)
             if f is None:
-                f = {"name": key, "path": pn + "\\" + key, "size": 0,
-                     "count": 0, "is_dir": True, "expandable": True}
+                f = {"name": key, "path": pn + "\\" + key, "size": 0, "count": 0, "is_dir": True, "expandable": True}
                 folders[key] = f
             f["size"] += e.size
             f["count"] += 1
@@ -191,14 +201,30 @@ def children_under(entries, prefix: str) -> list[dict]:
 
 # Friendly names for common vendor/app folders (so "Google" reads "Google Chrome").
 _APP_FRIENDLY = {
-    "google": "Google Chrome", "microsoft": "Microsoft", "mozilla": "Mozilla Firefox",
-    "bravesoftware": "Brave", "vivaldi": "Vivaldi", "opera software": "Opera",
-    "discord": "Discord", "slack": "Slack", "spotify": "Spotify", "code": "VS Code",
-    "code - insiders": "VS Code Insiders", "nvidia": "NVIDIA", "amd": "AMD",
-    "steam": "Steam", "epic games": "Epic Games", "zoom": "Zoom",
-    "adobe": "Adobe", "jetbrains": "JetBrains", "postman": "Postman",
-    "docker": "Docker", "kiro": "Kiro", "packages": "Windows Store apps",
-    "temp": "Temp", "d3dscache": "DirectX shader cache",
+    "google": "Google Chrome",
+    "microsoft": "Microsoft",
+    "mozilla": "Mozilla Firefox",
+    "bravesoftware": "Brave",
+    "vivaldi": "Vivaldi",
+    "opera software": "Opera",
+    "discord": "Discord",
+    "slack": "Slack",
+    "spotify": "Spotify",
+    "code": "VS Code",
+    "code - insiders": "VS Code Insiders",
+    "nvidia": "NVIDIA",
+    "amd": "AMD",
+    "steam": "Steam",
+    "epic games": "Epic Games",
+    "zoom": "Zoom",
+    "adobe": "Adobe",
+    "jetbrains": "JetBrains",
+    "postman": "Postman",
+    "docker": "Docker",
+    "kiro": "Kiro",
+    "packages": "Windows Store apps",
+    "temp": "Temp",
+    "d3dscache": "DirectX shader cache",
 }
 
 
@@ -206,12 +232,12 @@ def group_by_app(entries, bases) -> list[dict]:
     """Group scanned cache entries by their owning app (first folder after a
     base root like %LOCALAPPDATA%). Returns friendly, selectable app nodes."""
     bases_n = [_norm(b) for b in bases]
-    groups: dict[str, list] = {}   # prefix -> [size, count, app_name]
+    groups: dict[str, list] = {}  # prefix -> [size, count, app_name]
     for e in entries:
         ep = _norm(e.path)
         for bn in bases_n:
             if ep.startswith(bn + "\\"):
-                rest = ep[len(bn):].lstrip("\\")
+                rest = ep[len(bn) :].lstrip("\\")
                 if not rest:
                     break
                 app = rest.split("\\")[0]
@@ -223,8 +249,10 @@ def group_by_app(entries, bases) -> list[dict]:
                 g[0] += e.size
                 g[1] += 1
                 break
-    out = [{"name": g[2], "path": prefix, "size": g[0], "count": g[1],
-            "is_dir": True, "expandable": True} for prefix, g in groups.items()]
+    out = [
+        {"name": g[2], "path": prefix, "size": g[0], "count": g[1], "is_dir": True, "expandable": True}
+        for prefix, g in groups.items()
+    ]
     out.sort(key=lambda x: x["size"], reverse=True)
     return out
 
@@ -232,11 +260,10 @@ def group_by_app(entries, bases) -> list[dict]:
 class DirPreviewWorker(QObject):
     """Compute a tree node's children off the UI thread (keeps expand snappy)."""
 
-    finished = Signal(int, list)   # (node_id, children)
+    finished = Signal(int, list)  # (node_id, children)
     failed = Signal(str)
 
-    def __init__(self, node_id: int, entries, mode: str,
-                 roots=None, prefix: str | None = None):
+    def __init__(self, node_id: int, entries, mode: str, roots=None, prefix: str | None = None):
         """Initialize worker."""
         super().__init__()
         self._nid = node_id
@@ -262,13 +289,26 @@ class DirPreviewWorker(QObject):
 class DuplicatePhotosWorker(QObject):
     """Find duplicate image files only (byte-for-byte, extension-filtered)."""
 
-    finished = Signal(dict)       # {hash: [Path, ...]}
+    finished = Signal(dict)  # {hash: [Path, ...]}
     progress = Signal(str)
     failed = Signal(str)
 
     IMAGE_EXTS = {
-        ".jpg", ".jpeg", ".png", ".gif", ".bmp", ".tiff", ".tif",
-        ".webp", ".heic", ".heif", ".raw", ".cr2", ".nef", ".arw", ".dng",
+        ".jpg",
+        ".jpeg",
+        ".png",
+        ".gif",
+        ".bmp",
+        ".tiff",
+        ".tif",
+        ".webp",
+        ".heic",
+        ".heif",
+        ".raw",
+        ".cr2",
+        ".nef",
+        ".arw",
+        ".dng",
     }
 
     def __init__(self, roots: list[str]):
@@ -297,7 +337,8 @@ class DuplicatePhotosWorker(QObject):
 
 class LargeFilesWorker(QObject):
     """Finds the largest files under a root path."""
-    finished = Signal(list)       # [FileEntry, ...]
+
+    finished = Signal(list)  # [FileEntry, ...]
     progress = Signal(str)
     failed = Signal(str)
 
@@ -316,8 +357,11 @@ class LargeFilesWorker(QObject):
         """Find up to 200 large files (emits finished with FileEntry list, or failed)."""
         try:
             entries = CleanerService().find_large_files(
-                self._root, min_mb=self._min_mb, limit=200,
-                progress=self.progress.emit, cancel_event=self._cancel,
+                self._root,
+                min_mb=self._min_mb,
+                limit=200,
+                progress=self.progress.emit,
+                cancel_event=self._cancel,
             )
             self.finished.emit(entries)
         except Exception as exc:  # noqa: BLE001
@@ -326,6 +370,7 @@ class LargeFilesWorker(QObject):
 
 class EmptyWorker(QObject):
     """Finds empty files and empty directories under a root path."""
+
     finished = Signal(list, list)  # (empty_files, empty_dirs)
     progress = Signal(str)
     failed = Signal(str)
@@ -352,7 +397,7 @@ class EmptyWorker(QObject):
 class DeleteSelectedWorker(QObject):
     """Delete an arbitrary list of paths via the safe SecureDeleter."""
 
-    finished = Signal(object, int, int)   # (bytes_freed, succeeded, blocked)
+    finished = Signal(object, int, int)  # (bytes_freed, succeeded, blocked)
     failed = Signal(str)
 
     def __init__(self, paths: list[str], method: str):
@@ -368,8 +413,7 @@ class DeleteSelectedWorker(QObject):
 
             deleter = SecureDeleter()
             results = deleter.delete_many(self._paths, DeletionMethod(self._method))
-            freed = sum(r.size for r in results
-                        if r.succeeded and r.method is not DeletionMethod.DRY_RUN)
+            freed = sum(r.size for r in results if r.succeeded and r.method is not DeletionMethod.DRY_RUN)
             ok = sum(1 for r in results if r.succeeded)
             blocked = sum(1 for r in results if not r.succeeded)
             self.finished.emit(freed, ok, blocked)
@@ -380,7 +424,7 @@ class DeleteSelectedWorker(QObject):
 class RestorePointWorker(QObject):
     """Create a Windows System Restore point (PowerShell-backed, so threaded)."""
 
-    finished = Signal(str, str)   # (status, message)
+    finished = Signal(str, str)  # (status, message)
     failed = Signal(str)
 
     def __init__(self, description: str = "Cortex Workstation"):
@@ -392,6 +436,7 @@ class RestorePointWorker(QObject):
         """Create a restore point (emits finished with (status, message), or failed)."""
         try:
             from cortex_unified.system_tools.restore_point import RestorePointManager
+
             res = RestorePointManager().create(self._description)
             self.finished.emit(res.status.value, res.message)
         except Exception as exc:  # noqa: BLE001
@@ -408,6 +453,7 @@ class RestorePointListWorker(QObject):
         """List restore points (emits finished with the list, or failed)."""
         try:
             from cortex_unified.system_tools.restore_point import RestorePointManager
+
             self.finished.emit(RestorePointManager().list_points())
         except Exception as exc:  # noqa: BLE001
             self.failed.emit(str(exc))
@@ -416,7 +462,7 @@ class RestorePointListWorker(QObject):
 class StorageWorker(QObject):
     """Detect the storage medium behind a path (subprocess-backed, so threaded)."""
 
-    finished = Signal(str, bool)   # (kind, overwrite_effective)
+    finished = Signal(str, bool)  # (kind, overwrite_effective)
     failed = Signal(str)
 
     def __init__(self, path: str):
@@ -428,6 +474,7 @@ class StorageWorker(QObject):
         """Detect the storage kind (emits finished with (kind, overwrite_effective), or failed)."""
         try:
             from cortex_unified.engine import detect_storage
+
             info = detect_storage(self._path)
             self.finished.emit(info.kind.value, info.kind.overwrite_effective)
         except Exception as exc:  # noqa: BLE001
@@ -437,7 +484,7 @@ class StorageWorker(QObject):
 class FreeSpaceWipeWorker(QObject):
     """Overwrite a volume's free space (Windows cipher /w). Long-running."""
 
-    finished = Signal(bool, str)   # (success, message)
+    finished = Signal(bool, str)  # (success, message)
     failed = Signal(str)
 
     def __init__(self, drive_letter: str):
@@ -458,6 +505,7 @@ class FreeSpaceWipeWorker(QObject):
         """Wipe the volume's free space (emits finished with (success, message), or failed)."""
         try:
             from cortex_unified.system_tools.free_space_wipe import FreeSpaceWiper
+
             res = FreeSpaceWiper().wipe(self._letter, cancel_event=self._cancel)
             self.finished.emit(res.success, res.message)
         except Exception as exc:  # noqa: BLE001
@@ -467,8 +515,8 @@ class FreeSpaceWipeWorker(QObject):
 class ShredWorker(QObject):
     """Storage-aware secure deletion of a single target."""
 
-    finished = Signal(str, str)   # (outcome, reason)
-    refused = Signal(str, str)    # (medium_kind, guidance)
+    finished = Signal(str, str)  # (outcome, reason)
+    refused = Signal(str, str)  # (medium_kind, guidance)
     failed = Signal(str)
 
     def __init__(self, target: str, passes: int, force_flash: bool):
@@ -542,10 +590,11 @@ class AdaptiveShredWorker(QObject):
 # Virtual disks (WSL / Docker / Hyper-V VHDX reclaim)
 # ---------------------------------------------------------------------------
 
+
 class VhdxListWorker(QObject):
     """Discovers WSL / Docker / Hyper-V virtual disks (read-only)."""
 
-    finished = Signal(list)     # list[VirtualDisk]
+    finished = Signal(list)  # list[VirtualDisk]
     progress = Signal(str)
     failed = Signal(str)
 
@@ -562,6 +611,7 @@ class VhdxListWorker(QObject):
         """Discover virtual disks (emits finished with VirtualDisk list, or failed)."""
         try:
             from cortex_unified.system_tools.vhdx_manager import VhdxManager
+
             self.progress.emit("Looking for virtual disks\u2026")
             disks = VhdxManager().list_disks()
             # The Hyper-V probe shells out to PowerShell, so a page closed
@@ -576,7 +626,7 @@ class VhdxListWorker(QObject):
 class WslShutdownWorker(QObject):
     """Runs ``wsl --shutdown`` so virtual disks can be detached and compacted."""
 
-    finished = Signal(bool, str)   # (ok, message)
+    finished = Signal(bool, str)  # (ok, message)
     progress = Signal(str)
     failed = Signal(str)
 
@@ -584,6 +634,7 @@ class WslShutdownWorker(QObject):
         """Shut down WSL (emits finished with (ok, message), or failed)."""
         try:
             from cortex_unified.system_tools.vhdx_manager import VhdxManager
+
             self.progress.emit("Stopping WSL distributions\u2026")
             ok, msg = VhdxManager().shutdown_wsl()
             self.finished.emit(ok, msg)
@@ -599,7 +650,7 @@ class VhdxCompactWorker(QObject):
     place to stop.
     """
 
-    finished = Signal(list)        # list[CompactResult]
+    finished = Signal(list)  # list[CompactResult]
     progress = Signal(str)
     failed = Signal(str)
 
@@ -617,15 +668,14 @@ class VhdxCompactWorker(QObject):
         """Compact each disk (emits finished with CompactResult list, or failed)."""
         try:
             from cortex_unified.system_tools.vhdx_manager import VhdxManager
+
             mgr = VhdxManager()
             results = []
             total = len(self._disks)
             for i, disk in enumerate(self._disks, start=1):
                 if self._cancel.is_set():
                     break
-                self.progress.emit(
-                    f"Compacting {disk.label} ({i} of {total})\u2026 this can take "
-                    f"several minutes")
+                self.progress.emit(f"Compacting {disk.label} ({i} of {total})\u2026 this can take " f"several minutes")
                 results.append(mgr.compact(disk))
             self.finished.emit(results)
         except Exception as exc:  # noqa: BLE001
@@ -649,6 +699,7 @@ class VhdxSparseWorker(QObject):
         """Toggle WSL sparse mode (emits finished with (ok, message), or failed)."""
         try:
             from cortex_unified.system_tools.vhdx_manager import VhdxManager
+
             self.progress.emit("Updating sparse mode\u2026")
             ok, msg = VhdxManager().set_sparse(self._disk, self._enabled)
             self.finished.emit(ok, msg)
@@ -660,6 +711,7 @@ class VhdxSparseWorker(QObject):
 # Component store (WinSxS) + Windows upgrade leftovers
 # ---------------------------------------------------------------------------
 
+
 class ComponentStoreAnalyzeWorker(QObject):
     """Runs DISM /AnalyzeComponentStore and inventories upgrade leftovers.
 
@@ -667,7 +719,7 @@ class ComponentStoreAnalyzeWorker(QObject):
     with a long update history, so it never blocks the UI thread.
     """
 
-    finished = Signal(object, list)   # (StoreAnalysis, list[Leftover])
+    finished = Signal(object, list)  # (StoreAnalysis, list[Leftover])
     progress = Signal(str)
     failed = Signal(str)
 
@@ -684,6 +736,7 @@ class ComponentStoreAnalyzeWorker(QObject):
         """Analyze the component store (emits finished with (analysis, leftovers), or failed)."""
         try:
             from cortex_unified.system_tools.component_store import ComponentStore
+
             store = ComponentStore()
             self.progress.emit("Asking Windows to measure the component store\u2026")
             analysis = store.analyze()
@@ -692,9 +745,7 @@ class ComponentStoreAnalyzeWorker(QObject):
             self.progress.emit("Looking for upgrade leftovers\u2026")
             # Hand the analysis over so WinSxS is sized from DISM rather than by
             # walking a folder of several hundred thousand hard links.
-            leftovers = store.find_leftovers(
-                progress=self.progress.emit, cancel_event=self._cancel,
-                analysis=analysis)
+            leftovers = store.find_leftovers(progress=self.progress.emit, cancel_event=self._cancel, analysis=analysis)
             if self._cancel.is_set():
                 return
             self.finished.emit(analysis, leftovers)
@@ -705,7 +756,7 @@ class ComponentStoreAnalyzeWorker(QObject):
 class ComponentStoreCleanWorker(QObject):
     """Runs DISM /StartComponentCleanup (optionally /ResetBase)."""
 
-    finished = Signal(object)   # CleanupOutcome
+    finished = Signal(object)  # CleanupOutcome
     progress = Signal(str)
     failed = Signal(str)
 
@@ -718,8 +769,8 @@ class ComponentStoreCleanWorker(QObject):
         """Run component-store cleanup (emits finished with CleanupOutcome, or failed)."""
         try:
             from cortex_unified.system_tools.component_store import ComponentStore
-            outcome = ComponentStore().cleanup(
-                reset_base=self._reset_base, progress=self.progress.emit)
+
+            outcome = ComponentStore().cleanup(reset_base=self._reset_base, progress=self.progress.emit)
             self.finished.emit(outcome)
         except Exception as exc:  # noqa: BLE001
             self.failed.emit(str(exc))
@@ -736,6 +787,7 @@ class ServicingTaskWorker(QObject):
         """Trigger the servicing task (emits finished with (ok, message), or failed)."""
         try:
             from cortex_unified.system_tools.component_store import ComponentStore
+
             self.progress.emit("Starting Windows' cleanup task\u2026")
             ok, msg = ComponentStore().run_servicing_task()
             self.finished.emit(ok, msg)
@@ -750,7 +802,7 @@ class LeftoverDeleteWorker(QObject):
     mistake in the leftover list cannot turn into a destructive delete.
     """
 
-    finished = Signal(object, int, int)   # (bytes_freed, removed, blocked)
+    finished = Signal(object, int, int)  # (bytes_freed, removed, blocked)
     progress = Signal(str)
     failed = Signal(str)
 
@@ -773,9 +825,8 @@ class LeftoverDeleteWorker(QObject):
             deleter = SecureDeleter()
             results = deleter.delete_many(
                 [Path(p) for p in self._paths],
-                method=DeletionMethod.DELETE,   # system dirs can't go to Recycle Bin
-                progress=lambda done, total: self.progress.emit(
-                    f"Removing\u2026 {done:,} / {total:,}"),
+                method=DeletionMethod.DELETE,  # system dirs can't go to Recycle Bin
+                progress=lambda done, total: self.progress.emit(f"Removing\u2026 {done:,} / {total:,}"),
                 cancel_event=self._cancel,
                 sizes=self._sizes or None,
             )
@@ -790,11 +841,13 @@ class LeftoverDeleteWorker(QObject):
 class ProjectCacheScanWorker(QObject):
     """Scans target folders for developer project caches across enabled categories."""
 
-    finished = Signal(list)            # List[Dict] resources
-    progress = Signal(str, int, object)   # status_text, items_found, total_bytes
+    finished = Signal(list)  # List[Dict] resources
+    progress = Signal(str, int, object)  # status_text, items_found, total_bytes
     failed = Signal(str)
 
-    def __init__(self, target_folders: list[str], keep_recent_days: int = 7, enabled_categories: list[str] | None = None):
+    def __init__(
+        self, target_folders: list[str], keep_recent_days: int = 7, enabled_categories: list[str] | None = None
+    ):
         """Store target folders, retention days, categories, and a cancel event."""
         super().__init__()
         self._target_folders = target_folders
@@ -813,7 +866,7 @@ class ProjectCacheScanWorker(QObject):
             from cortex_unified.core.config import Config
 
             cleaner = PackageManagerCleaner(Config())
-            
+
             def _prog(status: str, items: int, size: int) -> None:
                 """Relay the scanner's (status, items, bytes) progress to the signal."""
                 self.progress.emit(status, items, size)
@@ -833,8 +886,8 @@ class ProjectCacheScanWorker(QObject):
 class ProjectCacheCleanWorker(QObject):
     """Cleans selected project caches off-thread; dry run by default."""
 
-    finished = Signal(dict)            # results dict
-    progress = Signal(int, int, object)   # done_count, total_count, freed_bytes
+    finished = Signal(dict)  # results dict
+    progress = Signal(int, int, object)  # done_count, total_count, freed_bytes
     failed = Signal(str)
 
     def __init__(self, resources: list[dict], dry_run: bool = True):
@@ -875,6 +928,7 @@ class ProjectCacheCleanWorker(QObject):
 # Auto-discovery of project caches across fixed drives (no manual folder pick)
 # ---------------------------------------------------------------------------
 
+
 class AutoProjectCacheWorker(QObject):
     """Walks all fixed drives (or known D:\\code) for PROJECT_CACHE_CATEGORIES."""
 
@@ -898,6 +952,7 @@ class AutoProjectCacheWorker(QObject):
         try:
             from cortex_unified.analyzers.package_manager_cleaner import PackageManagerCleaner
             from cortex_unified.core.config import Config
+
             cleaner = PackageManagerCleaner(Config())
 
             def _prog(msg: str, items: int, size: int) -> None:
@@ -937,10 +992,15 @@ class CacheLogSweepWorker(QObject):
         """Find large logs (emits finished with (Path, size) pairs, or failed)."""
         try:
             from cortex_unified.analyzers.cache_cleaner import CacheCleaner
+
             cc = CacheCleaner()
             results = cc.find_large_logs(
-                self._roots, min_size_mb=self._min, exclude_archives=True,
-                progress_callback=self.progress.emit, cancel_event=self._cancel)
+                self._roots,
+                min_size_mb=self._min,
+                exclude_archives=True,
+                progress_callback=self.progress.emit,
+                cancel_event=self._cancel,
+            )
             self.finished.emit(results)
         except Exception as exc:  # noqa: BLE001
             self.failed.emit(str(exc))
@@ -956,6 +1016,7 @@ class DockerFsCacheWorker(QObject):
         """Measure Docker's filesystem cache (emits finished with a size dict, or failed)."""
         try:
             from cortex_unified.analyzers.docker_cleaner import DockerCleaner
+
             self.finished.emit(DockerCleaner().get_filesystem_cache_size())
         except Exception as exc:  # noqa: BLE001
             self.failed.emit(str(exc))
@@ -971,6 +1032,7 @@ class WslListWorker(QObject):
         """List WSL distros (emits finished with distro dicts, or failed)."""
         try:
             from cortex_unified.system_tools.wsl_cleaner import WslCleaner
+
             self.finished.emit([d.to_dict() for d in WslCleaner().list_distros()])
         except Exception as exc:  # noqa: BLE001
             self.failed.emit(str(exc))
@@ -998,6 +1060,7 @@ class LargeFileAiWorker(QObject):
         """Split large files into non-AI and AI-model lists, emitting finished with both."""
         try:
             from cortex_unified.analyzers.large_file_finder import LargeFileFinder, is_ai_model
+
             finder = LargeFileFinder(root_path=self._root)
             all_files = finder.find_large_files(min_size_mb=self._min_mb)
             other = [(p, s) for p, s in all_files if not is_ai_model(p)]
@@ -1005,4 +1068,3 @@ class LargeFileAiWorker(QObject):
             self.finished.emit(other, ai_models)
         except Exception as exc:  # noqa: BLE001
             self.failed.emit(str(exc))
-

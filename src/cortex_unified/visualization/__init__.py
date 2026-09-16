@@ -12,10 +12,4 @@ from .sunburst_generator import SunburstGenerator, SunburstSegment
 from .interactive_dashboard import InteractiveDashboard
 
 __version__ = "1.2.0"
-__all__ = [
-    "TreeMapGenerator",
-    "TreeMapNode",
-    "SunburstGenerator", 
-    "SunburstSegment",
-    "InteractiveDashboard"
-]
+__all__ = ["TreeMapGenerator", "TreeMapNode", "SunburstGenerator", "SunburstSegment", "InteractiveDashboard"]

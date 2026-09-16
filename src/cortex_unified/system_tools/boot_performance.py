@@ -47,6 +47,7 @@ class BootRecord:
 
     Holds wall-clock boot and main-path times in milliseconds.
     """
+
     when: str
     boot_ms: int
     main_path_ms: int
@@ -66,8 +67,12 @@ class BootRecord:
         Returns:
             dict[str, Any]: Dictionary mapping identifiers to status or values.
         """
-        return {"when": self.when, "boot_ms": self.boot_ms,
-                "main_path_ms": self.main_path_ms, "boot_seconds": self.boot_seconds}
+        return {
+            "when": self.when,
+            "boot_ms": self.boot_ms,
+            "main_path_ms": self.main_path_ms,
+            "boot_seconds": self.boot_seconds,
+        }
 
 
 @dataclass(slots=True)
@@ -76,6 +81,7 @@ class BootIssue:
 
     Records kind (app/driver/service/device), name, and time impact.
     """
+
     kind: str
     name: str
     impact_ms: int
@@ -96,8 +102,13 @@ class BootIssue:
         Returns:
             dict[str, Any]: Dictionary mapping identifiers to status or values.
         """
-        return {"kind": self.kind, "name": self.name, "impact_ms": self.impact_ms,
-                "impact_seconds": self.impact_seconds, "when": self.when}
+        return {
+            "kind": self.kind,
+            "name": self.name,
+            "impact_ms": self.impact_ms,
+            "impact_seconds": self.impact_seconds,
+            "when": self.when,
+        }
 
 
 class BootPerformanceMonitor:
@@ -212,11 +223,13 @@ class BootPerformanceMonitor:
         for b in _as_list(data.get("boots")):
             if not isinstance(b, dict):
                 continue
-            boots.append(BootRecord(
-                when=str(b.get("Time") or ""),
-                boot_ms=_int(b.get("BootTime")),
-                main_path_ms=_int(b.get("MainPath")),
-            ))
+            boots.append(
+                BootRecord(
+                    when=str(b.get("Time") or ""),
+                    boot_ms=_int(b.get("BootTime")),
+                    main_path_ms=_int(b.get("MainPath")),
+                )
+            )
 
         issues: list[BootIssue] = []
         for it in _as_list(data.get("issues")):
@@ -225,12 +238,14 @@ class BootPerformanceMonitor:
             name = str(it.get("Name") or "").strip()
             if not name:
                 continue
-            issues.append(BootIssue(
-                kind=_KIND.get(str(it.get("Id")), "Other"),
-                name=name,
-                impact_ms=_int(it.get("TotalTime")),
-                when=str(it.get("Time") or ""),
-            ))
+            issues.append(
+                BootIssue(
+                    kind=_KIND.get(str(it.get("Id")), "Other"),
+                    name=name,
+                    impact_ms=_int(it.get("TotalTime")),
+                    when=str(it.get("Time") or ""),
+                )
+            )
         issues.sort(key=lambda i: i.impact_ms, reverse=True)
         return boots, issues
 
@@ -248,7 +263,9 @@ class BootPerformanceMonitor:
         try:
             proc = _proc.run(
                 ["powershell", "-NoProfile", "-NonInteractive", "-Command", script],
-                text=True, timeout=60, creationflags=_NO_WINDOW,
+                text=True,
+                timeout=60,
+                creationflags=_NO_WINDOW,
             )
             return proc.stdout if proc.returncode == 0 else None
         except (_proc.ProcessCancelled, OSError, subprocess.SubprocessError) as exc:

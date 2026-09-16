@@ -35,6 +35,7 @@ IS_WINDOWS = sys.platform == "win32"
 
 class _LogWorker(QObject):
     """Background worker (_LogWorker) performing LogWorker. Signals finished, progress, failed report status. Configured with roots, min_mb. Its run() step calls CacheCleaner, cc.find_large_logs, emit, str."""
+
     finished = Signal(list)
     progress = Signal(str)
     failed = Signal(str)
@@ -117,8 +118,7 @@ class LogSweeperPage(_Page):
         for cand in self._discover_code_roots():
             try:
                 if cand.is_dir() and str(cand) not in [
-                    self.roots_list.item(i).text()
-                    for i in range(self.roots_list.count())
+                    self.roots_list.item(i).text() for i in range(self.roots_list.count())
                 ]:
                     self.roots_list.addItem(str(cand))
             except Exception:
@@ -173,9 +173,7 @@ class LogSweeperPage(_Page):
         self.tbl.setAlternatingRowColors(True)
         self.tbl.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectRows)
         self.tbl.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
-        self.tbl.itemSelectionChanged.connect(
-            lambda: self.del_btn.setEnabled(bool(self.tbl.selectedIndexes()))
-        )
+        self.tbl.itemSelectionChanged.connect(lambda: self.del_btn.setEnabled(bool(self.tbl.selectedIndexes())))
         self.v.addWidget(self.tbl, 1)
 
         self.state = StatePanel(self.p)
@@ -194,12 +192,8 @@ class LogSweeperPage(_Page):
 
     def _add_root(self):
         """Prompt the user with a file dialog (QFileDialog.getExistingDirectory) and apply the chosen path to the page state."""
-        folder = QFileDialog.getExistingDirectory(
-            self, "Select folder to sweep for logs", str(Path.home())
-        )
-        if folder and folder not in [
-            self.roots_list.item(i).text() for i in range(self.roots_list.count())
-        ]:
+        folder = QFileDialog.getExistingDirectory(self, "Select folder to sweep for logs", str(Path.home()))
+        if folder and folder not in [self.roots_list.item(i).text() for i in range(self.roots_list.count())]:
             self.roots_list.addItem(folder)
 
     def _discover_code_roots(self) -> list[Path]:
@@ -236,12 +230,8 @@ class LogSweeperPage(_Page):
 
     def _select_code_root(self):
         """Prompt the user with a file dialog (QFileDialog.getExistingDirectory) and apply the chosen path to the page state."""
-        folder = QFileDialog.getExistingDirectory(
-            self, "Select code root", str(Path.home())
-        )
-        if folder and folder not in [
-            self.roots_list.item(i).text() for i in range(self.roots_list.count())
-        ]:
+        folder = QFileDialog.getExistingDirectory(self, "Select code root", str(Path.home()))
+        if folder and folder not in [self.roots_list.item(i).text() for i in range(self.roots_list.count())]:
             self.roots_list.addItem(folder)
             self.status.setText(f"Added {folder} — sweep will include it.")
 
@@ -258,9 +248,7 @@ class LogSweeperPage(_Page):
         """
         roots = [self.roots_list.item(i).text() for i in range(self.roots_list.count())]
         if not roots:
-            QMessageBox.information(
-                self, "No roots", "Add at least one folder to scan."
-            )
+            QMessageBox.information(self, "No roots", "Add at least one folder to scan.")
             return
         self.scan_btn.setEnabled(False)
         self.progress.setVisible(True)
@@ -310,21 +298,15 @@ class LogSweeperPage(_Page):
             self.status.setText(
                 f"Found {len(results)} large log(s), {fmt_bytes(total)} total. Archives (.zip/.tar.gz) excluded."
             )
-        self.win.statusBar().showMessage(
-            f"Log sweep: {len(results)} file(s), {fmt_bytes(total)}", 5000
-        )
+        self.win.statusBar().showMessage(f"Log sweep: {len(results)} file(s), {fmt_bytes(total)}", 5000)
 
     def _delete(self):
         """Validate the current selection and ask the user to confirm via a message box showing 'No selection'."""
         rows = {idx.row() for idx in self.tbl.selectedIndexes()}
         if not rows:
-            QMessageBox.information(
-                self, "No selection", "Select log files to recycle."
-            )
+            QMessageBox.information(self, "No selection", "Select log files to recycle.")
             return
-        paths = [
-            self.tbl.item(r, 2).text() for r in sorted(rows) if self.tbl.item(r, 2)
-        ]
+        paths = [self.tbl.item(r, 2).text() for r in sorted(rows) if self.tbl.item(r, 2)]
         if not paths:
             return
         confirm = QMessageBox.question(
@@ -340,9 +322,7 @@ class LogSweeperPage(_Page):
 
         self.progress.setVisible(True)
         self.del_btn.setEnabled(False)
-        self.win.run_worker(
-            DeleteSelectedWorker(paths, "recycle"), self._on_deleted, self._fail
-        )
+        self.win.run_worker(DeleteSelectedWorker(paths, "recycle"), self._on_deleted, self._fail)
 
     def _on_deleted(self, freed: int, ok: int, blocked: int):
         """Validate the current selection and ask the user to confirm via a message box showing 'log(s), freed'.
@@ -356,8 +336,7 @@ class LogSweeperPage(_Page):
         QMessageBox.information(
             self,
             "Done",
-            f"Recycled {ok} log(s), freed {fmt_bytes(freed)}."
-            + (f" {blocked} blocked." if blocked else ""),
+            f"Recycled {ok} log(s), freed {fmt_bytes(freed)}." + (f" {blocked} blocked." if blocked else ""),
         )
         self._scan()
 

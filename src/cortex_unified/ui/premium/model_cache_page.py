@@ -37,6 +37,7 @@ class _ScanWorker(QObject):
 
     Launches an asynchronous scan across the target subsystem, showing a loading indicator and disabling triggering controls.
     """
+
     finished = Signal(list)
     failed = Signal(str)
 
@@ -58,6 +59,7 @@ class _CleanOrphansWorker(QObject):
 
     Permanently purges or removes specified target items, reclaiming storage space and logging actions taken.
     """
+
     finished = Signal(bool, str, int)
     failed = Signal(str)
 
@@ -98,12 +100,14 @@ class ModelCachePage(_Page):
             win: Parent window or shell controller instance.
         """
         super().__init__(win)
-        self.v.addWidget(title_block(
-            "Model Cache",
-            "LLM model caches (Hugging Face hub CAS, Ollama blobs, LM Studio, ComfyUI) – "
-            "measured hardlink-aware (unique inodes). Orphan blobs (interrupted downloads, *.incomplete) "
-            "are safe via ‘huggingface-cli delete-cache --orphans’. FP16→Q4_K_M saves 75% (quantization table).",
-        ))
+        self.v.addWidget(
+            title_block(
+                "Model Cache",
+                "LLM model caches (Hugging Face hub CAS, Ollama blobs, LM Studio, ComfyUI) – "
+                "measured hardlink-aware (unique inodes). Orphan blobs (interrupted downloads, *.incomplete) "
+                "are safe via ‘huggingface-cli delete-cache --orphans’. FP16→Q4_K_M saves 75% (quantization table).",
+            )
+        )
 
         row = QHBoxLayout()
         self.scan_btn = QPushButton("Scan Model Caches")
@@ -132,9 +136,17 @@ class ModelCachePage(_Page):
         self.v.addWidget(self.info)
 
         self.tbl = QTableWidget(0, 7)
-        self.tbl.setHorizontalHeaderLabels([
-            "Store", "Path", "Exists", "Actual size", "Explorer sum", "Orphans", "Hardlink saved",
-        ])
+        self.tbl.setHorizontalHeaderLabels(
+            [
+                "Store",
+                "Path",
+                "Exists",
+                "Actual size",
+                "Explorer sum",
+                "Orphans",
+                "Hardlink saved",
+            ]
+        )
         self.tbl.setMinimumHeight(self.LIST_MIN_HEIGHT)
         self.attach_single_scroll(self.tbl)
         self.tbl.verticalHeader().setVisible(False)
@@ -187,7 +199,9 @@ class ModelCachePage(_Page):
         self._stores = stores
         if not stores or not any(getattr(s, "exists", False) for s in stores):
             self.state.show_empty("No model caches found (HF hub, Ollama, LM Studio, ComfyUI). Install a model first.")
-            self.info.setText("No caches detected. Hugging Face hub at ~/.cache/huggingface/hub, Ollama at ~/.ollama/models.")
+            self.info.setText(
+                "No caches detected. Hugging Face hub at ~/.cache/huggingface/hub, Ollama at ~/.ollama/models."
+            )
             self.tbl.setRowCount(0)
             return
         self.state.clear()
@@ -226,7 +240,9 @@ class ModelCachePage(_Page):
         )
         self.clean_btn.setEnabled(has_orphan)
         self.dry_btn.setEnabled(has_orphan)
-        self.win.statusBar().showMessage(f"Model caches: {fmt_bytes(total_actual)} actual, {fmt_bytes(total_orphan)} orphans", 6000)
+        self.win.statusBar().showMessage(
+            f"Model caches: {fmt_bytes(total_actual)} actual, {fmt_bytes(total_orphan)} orphans", 6000
+        )
 
     def _clean(self, dry_run: bool):
         """_clean.
@@ -242,7 +258,8 @@ class ModelCachePage(_Page):
             return
         if not dry_run:
             confirm = QMessageBox.question(
-                self, "Clean HF orphans?",
+                self,
+                "Clean HF orphans?",
                 f"Remove {getattr(hf_store,'orphan_count',0)} orphan blobs (~{fmt_bytes(getattr(hf_store,'orphan_bytes',0))}) "
                 "via ‘huggingface-cli delete-cache --orphans’? This only touches interrupted downloads (*.incomplete) "
                 "with no snapshot link – verified safe (model-warden rule).",

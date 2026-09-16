@@ -16,6 +16,7 @@ from typing import Dict, List, Optional, Tuple
 @dataclass
 class TcpGlobalSettings:
     """Record holding autotuning_level, receive_side_scaling, ecn_capability, timestamps, rsc, raw_output."""
+
     autotuning_level: str = "normal"
     receive_side_scaling: str = "enabled"
     ecn_capability: str = "disabled"
@@ -27,6 +28,7 @@ class TcpGlobalSettings:
 @dataclass
 class NetworkResetReport:
     """Record holding dns_flushed, arp_cleared, winsock_reset, tcp_ip_reset, output_messages. Windows-only; typically requires elevation."""
+
     dns_flushed: bool = False
     arp_cleared: bool = False
     winsock_reset: bool = False
@@ -71,7 +73,9 @@ class NetworkStackOptimizer:
             return False, "Windows only"
 
         try:
-            res = subprocess.run(["netsh", "interface", "ip", "delete", "arpcache"], capture_output=True, text=True, timeout=10)
+            res = subprocess.run(
+                ["netsh", "interface", "ip", "delete", "arpcache"], capture_output=True, text=True, timeout=10
+            )
             if res.returncode == 0:
                 return True, "ARP Cache purged successfully."
             return False, res.stderr.strip() or "Failed to delete ARP cache (Admin rights required)"
@@ -164,7 +168,12 @@ class NetworkStackOptimizer:
             return False, f"Invalid autotuning level. Choose from: {', '.join(valid)}"
 
         try:
-            res = subprocess.run(["netsh", "int", "tcp", "set", "global", f"autotuninglevel={level.lower()}"], capture_output=True, text=True, timeout=10)
+            res = subprocess.run(
+                ["netsh", "int", "tcp", "set", "global", f"autotuninglevel={level.lower()}"],
+                capture_output=True,
+                text=True,
+                timeout=10,
+            )
             if res.returncode == 0:
                 return True, f"TCP Auto-Tuning level set to '{level}'."
             return False, res.stderr.strip() or res.stdout.strip()
@@ -185,7 +194,12 @@ class NetworkStackOptimizer:
             return False, "Windows only"
 
         try:
-            res = subprocess.run(["netsh", "int", "tcp", "set", "global", f"ecncapability={state.lower()}"], capture_output=True, text=True, timeout=10)
+            res = subprocess.run(
+                ["netsh", "int", "tcp", "set", "global", f"ecncapability={state.lower()}"],
+                capture_output=True,
+                text=True,
+                timeout=10,
+            )
             if res.returncode == 0:
                 return True, f"ECN capability set to '{state}'."
             return False, res.stderr.strip() or res.stdout.strip()

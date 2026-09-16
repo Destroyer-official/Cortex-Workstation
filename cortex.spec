@@ -11,6 +11,10 @@ src_dir = os.path.abspath("src")
 if src_dir not in sys.path:
     sys.path.insert(0, src_dir)
 
+native_dir = os.path.abspath("src/NexusExplorer/native")
+if native_dir not in sys.path:
+    sys.path.insert(0, native_dir)
+
 try:
     import cortex_unified
     app_version = getattr(cortex_unified, "__version__", "1.2.0")
@@ -26,15 +30,21 @@ cortex_submodules = collect_submodules("cortex_unified")
 cortex_datas = collect_data_files("cortex_unified")
 nexus_submodules = collect_submodules("NexusExplorer")
 nexus_datas = collect_data_files("NexusExplorer")
+nexus_native_modules = [
+    f[:-3]
+    for f in os.listdir(native_dir)
+    if f.endswith(".py") and not f.startswith("__")
+]
 
 a = Analysis(
     ["run_gui.py"],
-    pathex=[src_dir],
+    pathex=[src_dir, native_dir],
     binaries=[],
     datas=[
         ("assets/icons", "assets/icons"),
         ("src/cortex_unified/resources", "src/cortex_unified/resources"),
         ("src/NexusExplorer/native", "NexusExplorer/native"),
+        ("src/NexusExplorer/native", "native"),
         ("src/NexusExplorer", "NexusExplorer"),
     ] + cortex_datas + nexus_datas,
 
@@ -59,7 +69,7 @@ a = Analysis(
         "PySide6.QtWidgets",
         "PySide6.QtSvg",
         "PySide6.QtSvgWidgets",
-    ] + cortex_submodules + nexus_submodules,
+    ] + cortex_submodules + nexus_submodules + nexus_native_modules,
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],

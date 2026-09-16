@@ -86,12 +86,8 @@ class _ShredWorker(QObject):
             for i, fp in enumerate(self._file_paths):
                 if self._cancel.is_set():
                     break
-                self.progress.emit(
-                    f"Shredding ({i + 1}/{len(self._file_paths)}): {Path(fp).name}"
-                )
-                result = engine.shred_file(
-                    fp, standard=self._standard, auto_detect=False
-                )
+                self.progress.emit(f"Shredding ({i + 1}/{len(self._file_paths)}): {Path(fp).name}")
+                result = engine.shred_file(fp, standard=self._standard, auto_detect=False)
                 results.append(result)
             self.finished.emit(results)
         except Exception as exc:  # noqa: BLE001
@@ -328,9 +324,7 @@ class SecureShredderPage(_Page):
             self.file_count_label.setText(f"{n} file(s) — {fmt_bytes(total)}")
             self.shred_btn.setEnabled(True)
             # Show a preview of the first few files
-            preview = "\n".join(
-                f"  {i+1}. {Path(f).name}" for i, f in enumerate(self._files[:5])
-            )
+            preview = "\n".join(f"  {i+1}. {Path(f).name}" for i, f in enumerate(self._files[:5]))
             if n > 5:
                 preview += f"\n  ... and {n - 5} more"
             self.file_list_label.setText(preview)
@@ -378,9 +372,7 @@ class SecureShredderPage(_Page):
         self.add_files_btn.setEnabled(False)
         self.add_folder_btn.setEnabled(False)
         self.progress.setVisible(True)
-        self.state.show_loading(
-            f"Shredding {len(self._files)} file(s) with {standard.name}…"
-        )
+        self.state.show_loading(f"Shredding {len(self._files)} file(s) with {standard.name}…")
         self.status.setText("Starting secure wipe…")
         self.tbl.setRowCount(0)
 
@@ -435,9 +427,7 @@ class SecureShredderPage(_Page):
             else:
                 failed += 1
 
-        summary = (
-            f"{success} shredded, {failed} failed — {fmt_bytes(total_bytes)} wiped"
-        )
+        summary = f"{success} shredded, {failed} failed — {fmt_bytes(total_bytes)} wiped"
         self.status.setText(summary)
         self.win.statusBar().showMessage(summary, 5000)
 

@@ -3,6 +3,7 @@
 Provides standard winreg constants and stub functions when running on non-Windows
 platforms or in environments where the native C winreg extension is unavailable.
 """
+
 from __future__ import annotations
 
 import sys
@@ -10,6 +11,7 @@ import types
 
 try:
     import winreg
+
     HAS_WINREG = True
 except (ImportError, ModuleNotFoundError):
     winreg = None  # type: ignore

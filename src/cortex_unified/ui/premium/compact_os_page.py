@@ -37,6 +37,7 @@ class _ScanWorker(QObject):
 
     Launches an asynchronous scan across the target subsystem, showing a loading indicator and disabling triggering controls.
     """
+
     finished = Signal(list)
     progress = Signal(str)
     failed = Signal(str)
@@ -73,8 +74,8 @@ class _ScanWorker(QObject):
             from cortex_unified.system_tools.compact_os import CompactOSManager
 
             ests = CompactOSManager().find_compressible_folders(
-                self._root, min_size_mb=self._min,
-                cancel_event=self._cancel, progress_callback=self.progress.emit)
+                self._root, min_size_mb=self._min, cancel_event=self._cancel, progress_callback=self.progress.emit
+            )
             self.finished.emit([e.to_dict() for e in ests] if ests else [])
         except Exception as exc:  # noqa: BLE001
             self.failed.emit(str(exc))
@@ -82,6 +83,7 @@ class _ScanWorker(QObject):
 
 class _CompactWorker(QObject):
     """Background worker (_CompactWorker) performing CompactWorker. Signals finished, failed report status. Configured with path. Its run() step calls compact_folder, CompactOSManager, emit, str."""
+
     finished = Signal(bool, str)
     failed = Signal(str)
 
@@ -112,6 +114,7 @@ class _CompactWorker(QObject):
 
 class _QueryWorker(QObject):
     """Background worker (_QueryWorker) performing QueryWorker. Signals finished, failed report status. Its run() step calls CompactOSManager, m.compactos_query, m.drive_compression_state, emit."""
+
     finished = Signal(dict)
     failed = Signal(str)
 
@@ -143,15 +146,16 @@ class CompactOsPage(_Page):
             win: Parent window or shell controller instance.
         """
         super().__init__(win)
-        self.v.addWidget(title_block(
-            "CompactOS / NTFS Compression",
-            "Question, then act (USENIX ATC 2024): find folders whose text/log/"
-            "code content would compress by 50-75%, then compress only what you "
-            "select. Media and already-compressed files gain ~nothing.",
-        ))
+        self.v.addWidget(
+            title_block(
+                "CompactOS / NTFS Compression",
+                "Question, then act (USENIX ATC 2024): find folders whose text/log/"
+                "code content would compress by 50-75%, then compress only what you "
+                "select. Media and already-compressed files gain ~nothing.",
+            )
+        )
         if not IS_WINDOWS:
-            self.v.addWidget(status_note(
-                self.p, "info", "CompactOS is only available on Windows."))
+            self.v.addWidget(status_note(self.p, "info", "CompactOS is only available on Windows."))
             return
 
         self._query_btn = QPushButton("Check CompactOS Status")
@@ -191,15 +195,13 @@ class CompactOsPage(_Page):
         self.v.addWidget(self.progress)
 
         self.tbl = QTableWidget(0, 5)
-        self.tbl.setHorizontalHeaderLabels(
-            ["Folder", "Size", "Estimated savings", "Ratio", "State"])
+        self.tbl.setHorizontalHeaderLabels(["Folder", "Size", "Estimated savings", "Ratio", "State"])
         self.tbl.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
         self.tbl.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectRows)
         self.tbl.setSelectionMode(QTableWidget.SelectionMode.SingleSelection)
         self.tbl.verticalHeader().setVisible(False)
         self.tbl.setAlternatingRowColors(True)
-        self.tbl.itemSelectionChanged.connect(
-            lambda: self._compress_btn.setEnabled(bool(self.tbl.selectedIndexes())))
+        self.tbl.itemSelectionChanged.connect(lambda: self._compress_btn.setEnabled(bool(self.tbl.selectedIndexes())))
         self.v.addWidget(self.tbl, 1)
 
         self._compress_btn = QPushButton("Compress Selected Folder")
@@ -212,9 +214,11 @@ class CompactOsPage(_Page):
         self.state.bind_content(self.tbl)
         self.v.addWidget(self.state, 1)
 
-        note = QLabel("Compression requires Administrator and is reversible "
-                      "(CompactOS / right-click Properties). Logs and source "
-                      "compress best; leave media and already-packed files alone.")
+        note = QLabel(
+            "Compression requires Administrator and is reversible "
+            "(CompactOS / right-click Properties). Logs and source "
+            "compress best; leave media and already-packed files alone."
+        )
         note.setObjectName("Muted")
         note.setWordWrap(True)
         self.v.addWidget(note)
@@ -246,9 +250,11 @@ class CompactOsPage(_Page):
             info (dict): The info parameter.
         """
         self._query_btn.setEnabled(True)
-        text = (f"CompactOS: {info.get('compactos', 'Unknown')}  |  "
-                f"C: drive: {info.get('drive_state', 'Unknown')}  |  "
-                f"Elevated: {'Yes' if info.get('elevated') else 'No (compression needs Administrator)'}")
+        text = (
+            f"CompactOS: {info.get('compactos', 'Unknown')}  |  "
+            f"C: drive: {info.get('drive_state', 'Unknown')}  |  "
+            f"Elevated: {'Yes' if info.get('elevated') else 'No (compression needs Administrator)'}"
+        )
         self._status_lbl.setText(text)
 
     def _scan(self):
@@ -298,11 +304,11 @@ class CompactOsPage(_Page):
             self.tbl.setItem(r, 1, QTableWidgetItem(fmt_bytes(e["size_bytes"])))
             self.tbl.setItem(r, 2, QTableWidgetItem(fmt_bytes(e["estimated_savings"])))
             self.tbl.setItem(r, 3, QTableWidgetItem(f"{e['compressible_ratio'] * 100:.0f}%"))
-            self.tbl.setItem(r, 4, QTableWidgetItem(
-                "Compressed" if e.get("already_compressed") else "Ready"))
+            self.tbl.setItem(r, 4, QTableWidgetItem("Compressed" if e.get("already_compressed") else "Ready"))
         total = sum(e["estimated_savings"] for e in ests)
         self.win.statusBar().showMessage(
-            f"{len(ests)} compressible folders, ~{fmt_bytes(total)} potential savings", 6000)
+            f"{len(ests)} compressible folders, ~{fmt_bytes(total)} potential savings", 6000
+        )
 
     def _compress(self):
         """Validate the current selection and ask the user to confirm via a message box showing 'Compress folder'."""
@@ -313,7 +319,8 @@ class CompactOsPage(_Page):
         if not rec:
             return
         confirm = QMessageBox.question(
-            self, "Compress folder",
+            self,
+            "Compress folder",
             f"Compress {rec['path']}?\n\n"
             "This flags the folder (and contents) for NTFS compression. "
             "Requires Administrator. Reversible via Properties.",

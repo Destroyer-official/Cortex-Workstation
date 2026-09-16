@@ -38,6 +38,7 @@ _IS_WINDOWS = sys.platform == "win32"
 @dataclass
 class VolumeTrimStatus:
     """Storage volume status, media classification, and TRIM capability."""
+
     drive_letter: str
     file_system: str
     media_type: str  # "SSD", "NVMe", "HDD", "Unknown"
@@ -62,6 +63,7 @@ class VolumeTrimStatus:
 @dataclass
 class TrimAuditReport:
     """Comprehensive inspection report of storage drives and filesystem TRIM readiness."""
+
     volumes: List[VolumeTrimStatus] = field(default_factory=list)
     ntfs_trim_enabled: bool = True
     refs_trim_enabled: bool = True
@@ -80,6 +82,7 @@ class TrimAuditReport:
 @dataclass
 class TrimExecutionResult:
     """Outcome of an SSD NVMe block deallocation operation."""
+
     drive_letter: str
     success: bool
     message: str
@@ -160,6 +163,7 @@ class SsdTrimOptimizer:
                 res = _proc.run(["powershell", "-NoProfile", "-NonInteractive", "-Command", ps_cmd])
                 if res.stdout:
                     import json
+
                     data = json.loads(res.stdout)
                     if isinstance(data, dict):
                         data = [data]
@@ -175,6 +179,7 @@ class SsdTrimOptimizer:
 
         try:
             import psutil
+
             partitions = psutil.disk_partitions(all=False)
         except Exception:
             partitions = []

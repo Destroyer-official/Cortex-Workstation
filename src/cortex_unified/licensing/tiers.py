@@ -69,15 +69,15 @@ class Feature(str, Enum):
     REPORTS = "reports"
 
     # -- Premium -------------------------------------------------------------
-    SHRED_MULTIPASS = "shred.multipass"          # DoD 5220.22-M multi-pass
-    FREE_SPACE_WIPE = "shred.free_space_wipe"    # cipher /w style wipe
+    SHRED_MULTIPASS = "shred.multipass"  # DoD 5220.22-M multi-pass
+    FREE_SPACE_WIPE = "shred.free_space_wipe"  # cipher /w style wipe
     GAMING_MODE = "boost.gaming_mode"
     MEMORY_OPTIMIZER = "boost.memory_optimizer"
     VISUALIZATION_EXPORT = "reports.visualization_export"
 
     # -- Pro -------------------------------------------------------------------
-    SENTINEL_PRO = "security.sentinel_pro"       # secrets scanner
-    NETWORK_SUITE = "network.suite"              # discovery/audit/load test
+    SENTINEL_PRO = "security.sentinel_pro"  # secrets scanner
+    NETWORK_SUITE = "network.suite"  # discovery/audit/load test
     REGISTRY_CLEANER = "system.registry_cleaner"
     TELEMETRY_BLOCKER = "privacy.telemetry_blocker"
     AUTO_CLEAN_RULES = "scheduler.auto_clean_rules"

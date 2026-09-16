@@ -27,6 +27,7 @@ IO_REPARSE_TAG_WOF = 0x80000017
 @dataclass
 class ReparseItem:
     """One NTFS reparse point (junction/symlink) with target liveness and loop flags."""
+
     path: str
     target: str
     link_type: str  # "Junction", "Symlink", "AppExecLink", "Hardlink"
@@ -38,6 +39,7 @@ class ReparseItem:
 @dataclass
 class JunctionAuditReport:
     """Counts and items from an NTFS junction/symlink audit (read-only scan)."""
+
     total_reparse_points: int = 0
     junction_count: int = 0
     symlink_count: int = 0

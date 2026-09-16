@@ -57,8 +57,8 @@ _SECS_PER_DAY = 86400
 class TempFinding:
     """Temp Finding.
 
- Dataclass holding one temp-file path, size, and source location label.
- """
+    Dataclass holding one temp-file path, size, and source location label.
+    """
 
     path: str
     size_bytes: int
@@ -69,14 +69,14 @@ class TempFinding:
 def _normalize(path: os.PathLike[str] | str) -> str:
     """Normalize helper.
 
- Returns normcase(abspath()) for reliable root-confinement comparison.
+    Returns normcase(abspath()) for reliable root-confinement comparison.
 
- Args:
- path (os.PathLike[str] | str): Filesystem path to the target file or directory.
+    Args:
+    path (os.PathLike[str] | str): Filesystem path to the target file or directory.
 
- Returns:
- str: Formatted string or path.
- """
+    Returns:
+    str: Formatted string or path.
+    """
     return os.path.normcase(os.path.abspath(os.fspath(path)))
 
 
@@ -130,9 +130,7 @@ class TempCleaner:
         self.min_age_days = max(0, int(min_age_days))
         if exclude_patterns is None:
             config = Config()
-            self.exclude_patterns = list(config.exclude_patterns) + [
-                d for d in config.exclude_dirs
-            ]
+            self.exclude_patterns = list(config.exclude_patterns) + [d for d in config.exclude_dirs]
         else:
             self.exclude_patterns = list(exclude_patterns)
         self.follow_symlinks = follow_symlinks
@@ -162,9 +160,7 @@ class TempCleaner:
                 candidates.append(("user_temp", Path(user_temp)))
             local_appdata = os.environ.get("LOCALAPPDATA")
             if local_appdata:
-                candidates.append(
-                    ("user_localappdata_temp", Path(local_appdata) / "Temp")
-                )
+                candidates.append(("user_localappdata_temp", Path(local_appdata) / "Temp"))
             system_root = os.environ.get("SystemRoot") or r"C:\Windows"
             candidates.append(("system_temp", Path(system_root) / "Temp"))
         else:
@@ -278,8 +274,7 @@ class TempCleaner:
                 entries = list(os.scandir(directory))
             except OSError as exc:
                 # Unreadable subtree (locked dir, permissions): skip quietly.
-                _LOG.debug("skipping unreadable temp directory %s: %s",
-                           directory, exc)
+                _LOG.debug("skipping unreadable temp directory %s: %s", directory, exc)
                 continue
 
             for entry in entries:
@@ -347,11 +342,11 @@ class TempCleaner:
     def total_reclaimable(self) -> int:
         """Total bytes across the most recent scan (0 before any scan).
 
- Sums size_bytes across the most recent scan findings.
+        Sums size_bytes across the most recent scan findings.
 
- Returns:
- int: Result of the operation.
- """
+        Returns:
+        int: Result of the operation.
+        """
         return sum(f.size_bytes for f in self.findings)
 
     def clean(
@@ -395,20 +390,20 @@ class TempCleaner:
         for finding in findings:
             path = Path(finding.path)
             normalized = _normalize(path)
-            if not any(
-                normalized == root or normalized.startswith(root + os.sep)
-                for root in roots
-            ):
-                errors.append({
-                    "type": "file",
-                    "path": finding.path,
-                    "error": "outside discovered temp roots; refused",
-                })
+            if not any(normalized == root or normalized.startswith(root + os.sep) for root in roots):
+                errors.append(
+                    {
+                        "type": "file",
+                        "path": finding.path,
+                        "error": "outside discovered temp roots; refused",
+                    }
+                )
                 continue
             if not self._is_old_enough(path):
                 _LOG.debug(
                     "skipping %s: modified within min_age_days=%d",
-                    path, self.min_age_days,
+                    path,
+                    self.min_age_days,
                 )
                 continue
             paths.append(path)

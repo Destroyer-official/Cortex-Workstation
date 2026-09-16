@@ -1,4 +1,5 @@
 """Filesystem tree view navigation widget."""
+
 from __future__ import annotations
 
 import sys

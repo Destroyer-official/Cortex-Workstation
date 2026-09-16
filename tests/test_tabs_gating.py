@@ -112,6 +112,7 @@ def _registry_item(tmp_path: Path) -> BrokenRegistryRef:
 # 1. File shredder gating
 # ---------------------------------------------------------------------------
 
+
 def test_free_space_checkbox_disabled_on_free_tier(app, make_tab, monkeypatch):
     """Verify free space checkbox disabled on free tier via tab.shred_free_space_checkbox.isEnabled, tab.shred_free_space_checkbox.toolTip, monkeypatch.setattr.
 
@@ -136,9 +137,7 @@ def test_free_space_checkbox_enabled_when_entitled(app, make_tab, monkeypatch):
         make_tab: The make tab parameter.
         monkeypatch: The monkeypatch parameter.
     """
-    monkeypatch.setattr(
-        file_shredder_tab, "allowed",
-        lambda feature: feature == Feature.FREE_SPACE_WIPE)
+    monkeypatch.setattr(file_shredder_tab, "allowed", lambda feature: feature == Feature.FREE_SPACE_WIPE)
     tab = make_tab(FileShredderTab)
 
     assert tab.shred_free_space_checkbox.isEnabled()
@@ -173,9 +172,7 @@ def test_multipass_allowed_keeps_full_range(app, make_tab, monkeypatch):
         make_tab: The make tab parameter.
         monkeypatch: The monkeypatch parameter.
     """
-    monkeypatch.setattr(
-        file_shredder_tab, "allowed",
-        lambda feature: feature == Feature.SHRED_MULTIPASS)
+    monkeypatch.setattr(file_shredder_tab, "allowed", lambda feature: feature == Feature.SHRED_MULTIPASS)
     tab = make_tab(FileShredderTab)
 
     assert tab.shred_passes_spinbox.maximum() == 35
@@ -184,6 +181,7 @@ def test_multipass_allowed_keeps_full_range(app, make_tab, monkeypatch):
 # ---------------------------------------------------------------------------
 # 2. Broken-link repair
 # ---------------------------------------------------------------------------
+
 
 def _make_broken_symlink(tmp_path: Path):
     """Make broken symlink using os.symlink, pytest.skip.
@@ -256,9 +254,7 @@ def test_repair_dry_run_plans_without_touching_fs(app, tmp_path, monkeypatch):
         monkeypatch: The monkeypatch parameter.
     """
     ghost = tmp_path / "ghost.link"
-    monkeypatch.setattr(
-        "cortex_unified.analyzers.broken_link_detector._is_reparse_link",
-        lambda p: Path(p) == ghost)
+    monkeypatch.setattr("cortex_unified.analyzers.broken_link_detector._is_reparse_link", lambda p: Path(p) == ghost)
 
     outcomes = repair([_link_item(ghost)], use_trash=True, dry_run=True)
 
@@ -270,8 +266,7 @@ def test_repair_dry_run_plans_without_touching_fs(app, tmp_path, monkeypatch):
     assert not ghost.exists()
 
 
-@pytest.mark.skipif(not sys.platform.startswith("win"),
-                    reason="NTFS junctions")
+@pytest.mark.skipif(not sys.platform.startswith("win"), reason="NTFS junctions")
 def test_repair_removes_dangling_junction_link_only(app, tmp_path):
     """Junctions need no admin rights; removal must take the link only.
 
@@ -349,9 +344,7 @@ def test_repair_recycles_shortcut_via_send2trash(app, tmp_path, monkeypatch):
         sent.append(p)
         os.remove(p)  # same contract as real send2trash
 
-    monkeypatch.setattr(
-        "cortex_unified.analyzers.broken_link_detector._resolve_send2trash",
-        lambda: fake_trash)
+    monkeypatch.setattr("cortex_unified.analyzers.broken_link_detector._resolve_send2trash", lambda: fake_trash)
 
     dry = repair([item], use_trash=True, dry_run=True)
     assert dry[0].ok and "planned" in dry[0].detail.lower()
@@ -386,6 +379,7 @@ def test_repair_refuses_real_directory(app, tmp_path):
 # 3. Reports scheduling gate + dialog flow
 # ---------------------------------------------------------------------------
 
+
 def _silence_message_boxes(monkeypatch, module):
     """Replace modal QMessageBox calls so headless tests never block.
 
@@ -396,6 +390,7 @@ def _silence_message_boxes(monkeypatch, module):
 
     class FakeBoxes:
         """Helper fakeboxes."""
+
         def information(self, *a, **k):
             """information.
 
@@ -442,6 +437,7 @@ def test_schedule_button_enabled_and_creates_task(app, make_tab, monkeypatch):
 
     class FakeScheduler:
         """Helper fakescheduler using calls.append."""
+
         def __init__(self, config=None):
             """__init__.
 
@@ -452,8 +448,7 @@ def test_schedule_button_enabled_and_creates_task(app, make_tab, monkeypatch):
             """
             pass
 
-        def create_scheduled_task(self, name, command, schedule_type,
-                                  schedule_params=None):
+        def create_scheduled_task(self, name, command, schedule_type, schedule_params=None):
             """Create scheduled task using calls.append.
 
             Args:
@@ -462,20 +457,19 @@ def test_schedule_button_enabled_and_creates_task(app, make_tab, monkeypatch):
                 schedule_type: The schedule type parameter.
                 schedule_params: The schedule params parameter.
             """
-            calls.append({
-                "name": name,
-                "command": command,
-                "schedule_type": schedule_type,
-                "schedule_params": schedule_params,
-            })
+            calls.append(
+                {
+                    "name": name,
+                    "command": command,
+                    "schedule_type": schedule_type,
+                    "schedule_params": schedule_params,
+                }
+            )
             return True
 
-    monkeypatch.setattr(
-        reports_tab, "allowed",
-        lambda feature: feature == Feature.AUTO_CLEAN_RULES)
+    monkeypatch.setattr(reports_tab, "allowed", lambda feature: feature == Feature.AUTO_CLEAN_RULES)
     monkeypatch.setattr(reports_tab, "TaskScheduler", FakeScheduler)
-    monkeypatch.setattr(QDialog, "exec",
-                        lambda self: QDialog.DialogCode.Accepted)
+    monkeypatch.setattr(QDialog, "exec", lambda self: QDialog.DialogCode.Accepted)
     _silence_message_boxes(monkeypatch, reports_tab)
 
     tab = make_tab(ReportsTab)
@@ -502,6 +496,7 @@ def test_schedule_dialog_cancel_creates_nothing(app, make_tab, monkeypatch):
 
     class FakeScheduler:
         """Helper fakescheduler using calls.append."""
+
         def __init__(self, config=None):
             """__init__.
 
@@ -517,12 +512,9 @@ def test_schedule_dialog_cancel_creates_nothing(app, make_tab, monkeypatch):
             calls.append(args)
             return True
 
-    monkeypatch.setattr(
-        reports_tab, "allowed",
-        lambda feature: feature == Feature.AUTO_CLEAN_RULES)
+    monkeypatch.setattr(reports_tab, "allowed", lambda feature: feature == Feature.AUTO_CLEAN_RULES)
     monkeypatch.setattr(reports_tab, "TaskScheduler", FakeScheduler)
-    monkeypatch.setattr(QDialog, "exec",
-                        lambda self: QDialog.DialogCode.Rejected)
+    monkeypatch.setattr(QDialog, "exec", lambda self: QDialog.DialogCode.Rejected)
     _silence_message_boxes(monkeypatch, reports_tab)
 
     tab = make_tab(ReportsTab)

@@ -69,6 +69,7 @@ def test_install_worker_full_lifecycle(tmp_path: Path):
 def test_installer_gui_signals_and_html(app, tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
     """Test InstallerApp response to worker progress signals and JavaScript bridge."""
     from PySide6.QtWidgets import QMessageBox
+
     monkeypatch.setattr(QMessageBox, "information", lambda *args, **kwargs: QMessageBox.StandardButton.Ok)
 
     installer = InstallerApp()

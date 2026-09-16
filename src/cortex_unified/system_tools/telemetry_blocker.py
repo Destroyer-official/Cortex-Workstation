@@ -22,7 +22,6 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Dict, List, Optional
 
-
 _BACKUP_DIR = Path.home() / ".cortex_cleaner" / "telemetry_backups"
 
 
@@ -390,7 +389,7 @@ class TelemetryBlocker:
             try:
                 key = winreg.OpenKey(rule["hkey"], rule["path"])
                 val, _ = winreg.QueryValueEx(key, rule["name"])
-                blocked = (val == rule["value"])
+                blocked = val == rule["value"]
                 winreg.CloseKey(key)
             except FileNotFoundError:
                 pass  # key doesn't exist → not blocked (OS default)

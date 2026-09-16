@@ -38,6 +38,7 @@ _IS_WINDOWS = sys.platform == "win32"
 @dataclass
 class VssWriterStatus:
     """Record holding name, writer_id, state_code, state_desc, last_error, is_healthy."""
+
     name: str
     writer_id: str
     state_code: int
@@ -64,6 +65,7 @@ class VssWriterStatus:
 @dataclass
 class VssStorageAllocation:
     """Record holding for_volume, shadow_volume, used_bytes, allocated_bytes, max_bytes."""
+
     for_volume: str
     shadow_volume: str
     used_bytes: int = 0
@@ -88,6 +90,7 @@ class VssStorageAllocation:
 @dataclass
 class VssHealthReport:
     """Record holding writers, storage_allocations, healthy_writer_count, failed_writer_count, total_shadow_used_bytes, scan_duration_ms."""
+
     writers: List[VssWriterStatus] = field(default_factory=list)
     storage_allocations: List[VssStorageAllocation] = field(default_factory=list)
     healthy_writer_count: int = 0
@@ -114,6 +117,7 @@ class VssHealthReport:
 @dataclass
 class VssResetResult:
     """Record holding success, restarted_services, message."""
+
     success: bool
     restarted_services: List[str] = field(default_factory=list)
     message: str = ""
@@ -302,6 +306,7 @@ class VssHealthAnalyzer:
         Returns:
         VssStorageAllocation: Result of the operation.
         """
+
         def _parse_bytes(s: str) -> int:
             # Format: '1.234 GB (1234567890 B)'
             """Parse bytes helper. Returns int(m.group(1)).

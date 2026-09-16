@@ -32,6 +32,7 @@ _NO_WINDOW = 0x08000000 if _IS_WINDOWS else 0
 @dataclass(slots=True)
 class WslDistro:
     """Record holding name, state, version, vhdx_path, vhdx_bytes, vhdx_on_disk_bytes."""
+
     name: str
     state: str
     version: int
@@ -123,10 +124,12 @@ class WslCleaner:
         except Exception:
             # Fallback: check wsl.exe exists and registry key
             import shutil
+
             if shutil.which("wsl"):
                 return True
             try:
                 import winreg
+
                 with winreg.OpenKey(winreg.HKEY_CURRENT_USER, r"Software\Microsoft\Windows\CurrentVersion\Lxss"):
                     return True
             except OSError:
@@ -162,14 +165,18 @@ class WslCleaner:
                 except ValueError:
                     version = 2
                 state = parts[1] if len(parts) >= 3 else "Unknown"
-                distros.append(WslDistro(name=name, state=state, version=version,
-                                         vhdx_path=None, vhdx_bytes=0, vhdx_on_disk_bytes=0))
+                distros.append(
+                    WslDistro(
+                        name=name, state=state, version=version, vhdx_path=None, vhdx_bytes=0, vhdx_on_disk_bytes=0
+                    )
+                )
         except Exception as exc:
             _LOG.debug("wsl --list failed: %s", exc)
 
         # Fallback / enrich via registry for vhdx paths
         try:
             import winreg
+
             reg_map: dict[str, Path] = {}
             try:
                 root = winreg.OpenKey(winreg.HKEY_CURRENT_USER, r"Software\Microsoft\Windows\CurrentVersion\Lxss")
@@ -202,8 +209,11 @@ class WslCleaner:
             # Merge: enrich CLI list with vhdx, or create from registry if CLI empty
             if not distros:
                 for name, vhdx in reg_map.items():
-                    distros.append(WslDistro(name=name, state="Unknown", version=2,
-                                             vhdx_path=vhdx, vhdx_bytes=0, vhdx_on_disk_bytes=0))
+                    distros.append(
+                        WslDistro(
+                            name=name, state="Unknown", version=2, vhdx_path=vhdx, vhdx_bytes=0, vhdx_on_disk_bytes=0
+                        )
+                    )
             else:
                 for d in distros:
                     if d.name in reg_map:
@@ -219,6 +229,7 @@ class WslCleaner:
                     d.vhdx_on_disk_bytes = d.vhdx_bytes
                     try:
                         from cortex_unified.engine import winattrs
+
                         measured = winattrs.on_disk_size(d.vhdx_path, d.vhdx_bytes)
                         if measured is not None and measured > 0:
                             d.vhdx_on_disk_bytes = measured
@@ -252,8 +263,7 @@ class WslCleaner:
             return False, _decode(proc.stderr).strip() or "wsl --shutdown failed."
         return True, "All WSL distributions stopped."
 
-    def compact_vhdx(self, vhdx_path: Path, timeout: int = 3600,
-                     cancel_event=None) -> dict[str, Any]:
+    def compact_vhdx(self, vhdx_path: Path, timeout: int = 3600, cancel_event=None) -> dict[str, Any]:
         """Compact a single vhdx via VhdxManager.diskpart path (read-only attach).
 
         Args:
@@ -265,6 +275,7 @@ class WslCleaner:
         dict[str, Any]: Dictionary mapping identifiers to status or values.
         """
         from cortex_unified.system_tools.vhdx_manager import VhdxManager, VirtualDisk, DiskKind
+
         mgr = VhdxManager()
         # Find existing VirtualDisk for label/path if possible; else synthesize
         disks = mgr.list_disks()
@@ -308,6 +319,7 @@ class WslCleaner:
         """
         try:
             import winreg
+
             value, _ = winreg.QueryValueEx(key, name)
             return str(value)
         except (OSError, ImportError, ValueError):
@@ -326,6 +338,7 @@ class WslCleaner:
         """
         try:
             import winreg
+
             value, _ = winreg.QueryValueEx(key, name)
             return int(value)
         except (OSError, ImportError, ValueError, TypeError):

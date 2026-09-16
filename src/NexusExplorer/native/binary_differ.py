@@ -20,6 +20,7 @@ class HexDiffChunk:
 
     Holds offset, left/right raw bytes, preformatted hex/ASCII views, and match flag for one chunk.
     """
+
     offset: int
     left_bytes: bytes
     right_bytes: bytes
@@ -36,6 +37,7 @@ class BinaryDiffReport:
 
     Stores sizes, identical flag, match percentage, differing byte count, first-difference offset, capped chunk list, and error.
     """
+
     file_a: str
     file_b: str
     size_a: int
@@ -145,16 +147,18 @@ class BinaryDiffer:
 
                     # Record chunk if different or if within sample limit
                     if not is_match and len(chunks) < max_diff_chunks:
-                        chunks.append(HexDiffChunk(
-                            offset=offset,
-                            left_bytes=chunk_a,
-                            right_bytes=chunk_b,
-                            left_hex=chunk_a.hex(" ").upper(),
-                            right_hex=chunk_b.hex(" ").upper(),
-                            left_ascii=cls._to_ascii(chunk_a),
-                            right_ascii=cls._to_ascii(chunk_b),
-                            is_match=is_match,
-                        ))
+                        chunks.append(
+                            HexDiffChunk(
+                                offset=offset,
+                                left_bytes=chunk_a,
+                                right_bytes=chunk_b,
+                                left_hex=chunk_a.hex(" ").upper(),
+                                right_hex=chunk_b.hex(" ").upper(),
+                                left_ascii=cls._to_ascii(chunk_a),
+                                right_ascii=cls._to_ascii(chunk_b),
+                                is_match=is_match,
+                            )
+                        )
 
                     offset += cls.CHUNK_SIZE
 

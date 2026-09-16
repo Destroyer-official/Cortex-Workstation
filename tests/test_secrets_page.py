@@ -13,8 +13,7 @@ def test_run_scan_detects_planted_aws_key(tmp_path):
 
     # Plant an obvious fake AWS access key id (matches the AKIA... pattern).
     (tmp_path / "config.py").write_text(
-        'AWS_ACCESS_KEY_ID = "AKIAIOSFODNN7EXAMPLE"\n'
-        'password = "hunter2supersecretvalue"\n',
+        'AWS_ACCESS_KEY_ID = "AKIAIOSFODNN7EXAMPLE"\n' 'password = "hunter2supersecretvalue"\n',
         encoding="utf-8",
     )
     (tmp_path / "clean.txt").write_text("nothing sensitive here\n", encoding="utf-8")
@@ -24,8 +23,9 @@ def test_run_scan_detects_planted_aws_key(tmp_path):
     # At least the AWS key should be found.
     rules = {getattr(f, "pattern_name", "") for f in stats.findings}
     assert stats.findings, "expected at least one finding"
-    assert any("aws" in r.lower() or "key" in r.lower() or "secret" in r.lower()
-               or "password" in r.lower() for r in rules)
+    assert any(
+        "aws" in r.lower() or "key" in r.lower() or "secret" in r.lower() or "password" in r.lower() for r in rules
+    )
 
 
 def test_worker_emits_offline(tmp_path):
@@ -35,12 +35,14 @@ def test_worker_emits_offline(tmp_path):
         tmp_path: Filesystem path to the target file or directory.
     """
     import os
+
     os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
     import pytest
+
     pytest.importorskip("PySide6")
     from cortex_unified.ui.premium.more_pages import SecretsScanWorker
 
-    (tmp_path / "s.env").write_text('API_KEY=AKIAIOSFODNN7EXAMPLE\n', encoding="utf-8")
+    (tmp_path / "s.env").write_text("API_KEY=AKIAIOSFODNN7EXAMPLE\n", encoding="utf-8")
     captured = {}
     w = SecretsScanWorker(str(tmp_path))
     w.finished.connect(lambda rows, risk: captured.update(rows=rows, risk=risk))
@@ -63,8 +65,6 @@ def test_secrets_scan_makes_no_network_calls(tmp_path, monkeypatch):
     monkeypatch.setattr(urllib.request, "urlopen", _blocked)
     monkeypatch.setattr(secrets_scanner.urllib.request, "urlopen", _blocked)
 
-    (tmp_path / "code.py").write_text(
-        'token = "ghp_1234567890abcdefghijklmnopqrstuvwx"\n', encoding="utf-8"
-    )
+    (tmp_path / "code.py").write_text('token = "ghp_1234567890abcdefghijklmnopqrstuvwx"\n', encoding="utf-8")
     stats = secrets_scanner.run_scan(str(tmp_path), quiet=True)  # must NOT raise
     assert stats.files_scanned >= 1

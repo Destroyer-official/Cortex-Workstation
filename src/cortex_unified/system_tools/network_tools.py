@@ -35,17 +35,36 @@ _NO_WINDOW = 0x08000000 if _IS_WINDOWS else 0
 
 # Common service ports for the self-audit / connectivity checks.
 COMMON_PORTS = {
-    20: "FTP-data", 21: "FTP", 22: "SSH", 23: "Telnet", 25: "SMTP",
-    53: "DNS", 80: "HTTP", 110: "POP3", 135: "RPC", 139: "NetBIOS",
-    143: "IMAP", 443: "HTTPS", 445: "SMB", 993: "IMAPS", 995: "POP3S",
-    1433: "MSSQL", 3306: "MySQL", 3389: "RDP", 5432: "PostgreSQL",
-    5900: "VNC", 6379: "Redis", 8080: "HTTP-alt", 8443: "HTTPS-alt",
+    20: "FTP-data",
+    21: "FTP",
+    22: "SSH",
+    23: "Telnet",
+    25: "SMTP",
+    53: "DNS",
+    80: "HTTP",
+    110: "POP3",
+    135: "RPC",
+    139: "NetBIOS",
+    143: "IMAP",
+    443: "HTTPS",
+    445: "SMB",
+    993: "IMAPS",
+    995: "POP3S",
+    1433: "MSSQL",
+    3306: "MySQL",
+    3389: "RDP",
+    5432: "PostgreSQL",
+    5900: "VNC",
+    6379: "Redis",
+    8080: "HTTP-alt",
+    8443: "HTTPS-alt",
 }
 
 
 @dataclass(slots=True)
 class PingResult:
     """Record holding host, reachable, sent, received, loss_percent, min_ms, avg_ms, max_ms."""
+
     host: str
     reachable: bool
     sent: int = 0
@@ -63,9 +82,14 @@ class PingResult:
         dict[str, Any]: Dictionary mapping identifiers to status or values.
         """
         return {
-            "host": self.host, "reachable": self.reachable, "sent": self.sent,
-            "received": self.received, "loss_percent": self.loss_percent,
-            "min_ms": self.min_ms, "avg_ms": self.avg_ms, "max_ms": self.max_ms,
+            "host": self.host,
+            "reachable": self.reachable,
+            "sent": self.sent,
+            "received": self.received,
+            "loss_percent": self.loss_percent,
+            "min_ms": self.min_ms,
+            "avg_ms": self.avg_ms,
+            "max_ms": self.max_ms,
             "error": self.error,
         }
 
@@ -73,6 +97,7 @@ class PingResult:
 @dataclass(slots=True)
 class Hop:
     """Record holding number, host, times_ms."""
+
     number: int
     host: str
     times_ms: list[float] = field(default_factory=list)
@@ -84,8 +109,7 @@ class Hop:
         dict[str, Any]: Dictionary mapping identifiers to status or values.
         """
         avg = round(sum(self.times_ms) / len(self.times_ms), 1) if self.times_ms else None
-        return {"number": self.number, "host": self.host,
-                "times_ms": self.times_ms, "avg_ms": avg}
+        return {"number": self.number, "host": self.host, "times_ms": self.times_ms, "avg_ms": avg}
 
 
 class NetworkTools:
@@ -309,17 +333,19 @@ class NetworkTools:
             ip = ipaddress.ip_address(address)
         except ValueError:
             return info
-        info.update({
-            "valid": True,
-            "version": ip.version,
-            "private": ip.is_private,
-            "loopback": ip.is_loopback,
-            "link_local": ip.is_link_local,
-            "multicast": ip.is_multicast,
-            "reserved": ip.is_reserved,
-            "global": ip.is_global,
-            "category": NetworkTools._category(ip),
-        })
+        info.update(
+            {
+                "valid": True,
+                "version": ip.version,
+                "private": ip.is_private,
+                "loopback": ip.is_loopback,
+                "link_local": ip.is_link_local,
+                "multicast": ip.is_multicast,
+                "reserved": ip.is_reserved,
+                "global": ip.is_global,
+                "category": NetworkTools._category(ip),
+            }
+        )
         return info
 
     @staticmethod

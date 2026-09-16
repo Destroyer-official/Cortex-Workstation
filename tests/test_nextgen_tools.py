@@ -167,9 +167,7 @@ def test_dev_package_cache_cleaner():
         (fake_store / "crate1.crate").write_bytes(b"\x00" * 512)
 
         cleaner = DevPackageCacheCleaner()
-        cleaner.get_candidate_stores = lambda: [
-            ("Test Cargo Cache", "Cargo", fake_store, "Test Cargo Store")
-        ]
+        cleaner.get_candidate_stores = lambda: [("Test Cargo Cache", "Cargo", fake_store, "Test Cargo Store")]
 
         report = cleaner.scan()
         assert report.total_packages == 1

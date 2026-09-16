@@ -24,6 +24,7 @@ desktop (192.168.0.20) at 08:00:27:11:22:33 [ether] on eth0
 
 class TestParse:
     """Group testparse tests covering empty; windows parse and filter; vendor comes from the ieee registry; sorted by ip; dedupes; type captured."""
+
     def test_empty(self):
         """Verify empty via LanScanner._parse."""
         assert LanScanner._parse(None) == []
@@ -80,10 +81,10 @@ class TestParse:
 
 class TestVendorHelper:
     """Group testvendorhelper tests covering normalizes dashes; unassigned prefix is empty not a guess; garbage input."""
+
     def test_normalizes_dashes(self):
         """Dash-separated input must resolve identically to colon-separated."""
-        assert (LanScanner._vendor_for("08-00-27-AA-BB-CC")
-                == LanScanner._vendor_for("08:00:27:aa:bb:cc"))
+        assert LanScanner._vendor_for("08-00-27-AA-BB-CC") == LanScanner._vendor_for("08:00:27:aa:bb:cc")
 
     def test_unassigned_prefix_is_empty_not_a_guess(self):
         # A locally-administered address has no IEEE vendor by definition.
@@ -98,6 +99,7 @@ class TestVendorHelper:
 
 class TestScan:
     """Group testscan tests covering scan returns list; to dict."""
+
     def test_scan_returns_list(self):
         """Verify scan returns list via LanScanner, scan."""
         result = LanScanner().scan()
@@ -108,6 +110,8 @@ class TestScan:
         """Verify to dict via LanDevice, d.to_dict."""
         d = LanDevice("192.168.1.1", "d8:eb:97:11:22:33", "dynamic", "TP-Link")
         assert d.to_dict() == {
-            "ip": "192.168.1.1", "mac": "d8:eb:97:11:22:33",
-            "kind": "dynamic", "vendor": "TP-Link",
+            "ip": "192.168.1.1",
+            "mac": "d8:eb:97:11:22:33",
+            "kind": "dynamic",
+            "vendor": "TP-Link",
         }

@@ -25,6 +25,7 @@ from cortex_unified.analyzers.perceptual_duplicate_finder import PerceptualDupli
 
 class _PerceptualWorker(QObject):
     """Background worker (_PerceptualWorker) performing PerceptualWorker. Signals finished, progress, failed report status. Configured with root, max_distance. Its run() step calls PerceptualDuplicateFinder, finder.find_perceptual_duplicates, emit, str."""
+
     finished = Signal(dict)
     progress = Signal(str)
     failed = Signal(str)
@@ -62,8 +63,7 @@ class _PerceptualWorker(QObject):
                 PerceptualDuplicateFinder,
             )
 
-            finder = PerceptualDuplicateFinder(
-                root_path=self._root, max_distance=self._dist)
+            finder = PerceptualDuplicateFinder(root_path=self._root, max_distance=self._dist)
             groups = finder.find_perceptual_duplicates(
                 progress_callback=lambda msg, *_: self.progress.emit(str(msg)),
                 cancel_event=self._cancel,
@@ -85,13 +85,18 @@ class PerceptualDuplicatesPage(_Page):
             win: Parent window or shell controller instance.
         """
         super().__init__(win)
-        self.v.addWidget(title_block(
-            "Duplicate Photos (Perceptual)",
-            "pHash / dHash / aHash (IEEE 2024) – groups photos that *look* the "
-            "same even after re-scaling or re-compression. Distance <= 10 of 64 bits.",
-        ))
+        self.v.addWidget(
+            title_block(
+                "Duplicate Photos (Perceptual)",
+                "pHash / dHash / aHash (IEEE 2024) – groups photos that *look* the "
+                "same even after re-scaling or re-compression. Distance <= 10 of 64 bits.",
+            )
+        )
         from PySide6.QtWidgets import (
-            QFileDialog, QProgressBar, QPushButton, QSpinBox,
+            QFileDialog,
+            QProgressBar,
+            QPushButton,
+            QSpinBox,
         )
 
         picker = QHBoxLayout()
@@ -184,14 +189,14 @@ class PerceptualDuplicatesPage(_Page):
         if not groups:
             self.state.show_empty(
                 "No visually-similar photos detected. Try a lower max-distance "
-                "or pick a folder with resized/re-encoded photo sets.")
+                "or pick a folder with resized/re-encoded photo sets."
+            )
             self.status.setText("No visual duplicates found.")
             self.win.statusBar().showMessage("No visual duplicates", 5000)
             return
         self.state.clear()
         rows = [
-            (str(p), gid, f"pHash dist <= {self.dist_spin.value()}")
-            for gid, paths in groups.items() for p in paths
+            (str(p), gid, f"pHash dist <= {self.dist_spin.value()}") for gid, paths in groups.items() for p in paths
         ]
         self.tbl.setRowCount(len(rows))
         for r, (path, gid, hint) in enumerate(rows):
@@ -205,8 +210,8 @@ class PerceptualDuplicatesPage(_Page):
             except OSError:
                 pass
         self.status.setText(
-            f"{len(groups)} visual-duplicate groups, {len(rows)} photos, "
-            f"{fmt_bytes(total)} if all removed.")
+            f"{len(groups)} visual-duplicate groups, {len(rows)} photos, " f"{fmt_bytes(total)} if all removed."
+        )
         self.win.statusBar().showMessage(f"{len(groups)} visual-duplicate groups", 5000)
 
     def _fail(self, msg):

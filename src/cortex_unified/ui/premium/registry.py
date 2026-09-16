@@ -73,8 +73,7 @@ class PageSpec:
         module_path, _, attr = self.factory.partition(":")
         if not module_path or not attr:
             raise ValueError(
-                f"page {self.id!r} has a malformed factory {self.factory!r}; "
-                'expected "module.path:ClassName"'
+                f"page {self.id!r} has a malformed factory {self.factory!r}; " 'expected "module.path:ClassName"'
             )
         from importlib import import_module
 
@@ -150,19 +149,11 @@ _PROC_STUDIO = "cortex_unified.ui.premium.process_studio_page"
 #: Every page, declared once. Order within a group is display order.
 PAGES: tuple[PageSpec, ...] = (
     # -- Command Center ----------------------------------------------------
-    PageSpec(
-        "dashboard", "System Overview Dashboard", "dashboard", "overview", f"{_SHELL}:DashboardPage"
-    ),
-    PageSpec(
-        "health", "PC Health Check", "health", "overview", f"{_ANALYSIS}:HealthCheckPage"
-    ),
+    PageSpec("dashboard", "System Overview Dashboard", "dashboard", "overview", f"{_SHELL}:DashboardPage"),
+    PageSpec("health", "PC Health Check", "health", "overview", f"{_ANALYSIS}:HealthCheckPage"),
     # -- Cleanup & Storage -------------------------------------------------
-    PageSpec(
-        "cleanuphub", "One-Click Cleanup Hub", "cleanuphub", "cleanup", f"{_HUB}:CleanupHubPage"
-    ),
-    PageSpec(
-        "duplicates", "Duplicate Files Finder", "duplicates", "cleanup", f"{_SHELL}:DuplicatesPage"
-    ),
+    PageSpec("cleanuphub", "One-Click Cleanup Hub", "cleanuphub", "cleanup", f"{_HUB}:CleanupHubPage"),
+    PageSpec("duplicates", "Duplicate Files Finder", "duplicates", "cleanup", f"{_SHELL}:DuplicatesPage"),
     PageSpec(
         "photos",
         "Similar & Duplicate Photos",
@@ -193,9 +184,7 @@ PAGES: tuple[PageSpec, ...] = (
         "cleanup",
         f"{_MORE}:BrokenLinksPage",
     ),
-    PageSpec(
-        "logsweep", "System & App Log Sweeper", "logsweep", "cleanup", f"{_LOG}:LogSweeperPage"
-    ),
+    PageSpec("logsweep", "System & App Log Sweeper", "logsweep", "cleanup", f"{_LOG}:LogSweeperPage"),
     PageSpec(
         "packages",
         "Developer Package Caches",
@@ -210,9 +199,7 @@ PAGES: tuple[PageSpec, ...] = (
         "cleanup",
         f"{_MORE}:ProjectCachesPage",
     ),
-    PageSpec(
-        "modelcache", "AI Model Cache Cleaner", "modelcache", "cleanup", f"{_MODEL}:ModelCachePage"
-    ),
+    PageSpec("modelcache", "AI Model Cache Cleaner", "modelcache", "cleanup", f"{_MODEL}:ModelCachePage"),
     PageSpec(
         "neardup",
         "Similar Text Documents",
@@ -241,12 +228,8 @@ PAGES: tuple[PageSpec, ...] = (
         "cleanup",
         f"{_FUZZY}:FuzzyHashPage",
     ),
-    PageSpec(
-        "audio", "Duplicate Music & Audio", "audio", "cleanup", f"{_AUDIO}:AudioDuplicatesPage"
-    ),
-    PageSpec(
-        "video", "Duplicate Video Files", "video", "cleanup", f"{_VIDEO}:VideoDuplicatesPage"
-    ),
+    PageSpec("audio", "Duplicate Music & Audio", "audio", "cleanup", f"{_AUDIO}:AudioDuplicatesPage"),
+    PageSpec("video", "Duplicate Video Files", "video", "cleanup", f"{_VIDEO}:VideoDuplicatesPage"),
     PageSpec("cdc", "Block-Level Deduplicator", "cdc", "cleanup", f"{_CDC}:CdcPage"),
     PageSpec(
         "cloud",
@@ -312,15 +295,9 @@ PAGES: tuple[PageSpec, ...] = (
         f"{_SUITE}:TempFolderCleanerPage",
     ),
     # -- Files & Explorer --------------------------------------------------
-    PageSpec(
-        "nexus", "Nexus File Explorer", "folder", "files", f"{_NEXUS}:NexusExplorerPage"
-    ),
-    PageSpec(
-        "hasher", "File Hash & Checksum Verifier", "verified", "files", f"{_POWER}:HashVerifierPage"
-    ),
-    PageSpec(
-        "renamer", "Batch File Renamer", "label", "files", f"{_POWER}:BatchRenamerPage"
-    ),
+    PageSpec("nexus", "Nexus File Explorer", "folder", "files", f"{_NEXUS}:NexusExplorerPage"),
+    PageSpec("hasher", "File Hash & Checksum Verifier", "verified", "files", f"{_POWER}:HashVerifierPage"),
+    PageSpec("renamer", "Batch File Renamer", "label", "files", f"{_POWER}:BatchRenamerPage"),
     PageSpec(
         "foldersync",
         "Folder Compare & Sync",
@@ -335,9 +312,7 @@ PAGES: tuple[PageSpec, ...] = (
         "files",
         f"{_POWER}:FileSplitterPage",
     ),
-    PageSpec(
-        "unlocker", "Locked File Unlocker", "lock", "files", f"{_POWER}:FileUnlockerPage"
-    ),
+    PageSpec("unlocker", "Locked File Unlocker", "lock", "files", f"{_POWER}:FileUnlockerPage"),
     PageSpec(
         "adsmanager",
         "NTFS Alternate Data Streams (ADS)",
@@ -394,9 +369,7 @@ PAGES: tuple[PageSpec, ...] = (
         "files",
         f"{_APEX}:UsnJournalPage",
     ),
-    PageSpec(
-        "par2", "PAR2 Archive Parity & Repair", "certificate", "files", f"{_APEX}:Par2RecoveryPage"
-    ),
+    PageSpec("par2", "PAR2 Archive Parity & Repair", "certificate", "files", f"{_APEX}:Par2RecoveryPage"),
     PageSpec(
         "slackspace",
         "NTFS Cluster Slack Analyzer",
@@ -412,16 +385,10 @@ PAGES: tuple[PageSpec, ...] = (
         "system",
         f"{_MORE}:SoftwareUpdaterPage",
     ),
-    PageSpec(
-        "drives", "Drive Optimizer (TRIM & Defrag)", "drives", "system", f"{_MORE}:DriveOptimizerPage"
-    ),
-    PageSpec(
-        "vdisks", "Virtual Hard Disks (VHD/VHDX)", "vdisks", "system", f"{_MORE}:VirtualDisksPage"
-    ),
+    PageSpec("drives", "Drive Optimizer (TRIM & Defrag)", "drives", "system", f"{_MORE}:DriveOptimizerPage"),
+    PageSpec("vdisks", "Virtual Hard Disks (VHD/VHDX)", "vdisks", "system", f"{_MORE}:VirtualDisksPage"),
     PageSpec("wsl", "Linux Subsystem (WSL) Cleaner", "wsl", "system", f"{_WSL}:WslPage"),
-    PageSpec(
-        "compactos", "CompactOS System Compression", "compactos", "system", f"{_COMPACT_OS}:CompactOsPage"
-    ),
+    PageSpec("compactos", "CompactOS System Compression", "compactos", "system", f"{_COMPACT_OS}:CompactOsPage"),
     PageSpec("s3fifo", "Cache Algorithm Benchmark (S3-FIFO)", "s3fifo", "system", f"{_S3FIFO}:S3FifoPage"),
     PageSpec(
         "diskhealth",
@@ -545,9 +512,7 @@ PAGES: tuple[PageSpec, ...] = (
     # -- Privacy & Activity ------------------------------------------------
     PageSpec("privacy", "Privacy & Tracking Shield", "privacy", "activity", f"{_SYSTEM}:PrivacyPage"),
     PageSpec("startup", "Startup Applications", "startup", "activity", f"{_SYSTEM}:StartupPage"),
-    PageSpec(
-        "processes", "Active Running Processes", "processes", "activity", f"{_SYSTEM}:ProcessesPage"
-    ),
+    PageSpec("processes", "Active Running Processes", "processes", "activity", f"{_SYSTEM}:ProcessesPage"),
     PageSpec(
         "shellbags",
         "Folder View History (Shellbags)",
@@ -577,9 +542,7 @@ PAGES: tuple[PageSpec, ...] = (
         f"{_SUITE}:EventLogMonitorPage",
     ),
     # -- Network & Defense -------------------------------------------------
-    PageSpec(
-        "network", "Active Connections Monitor", "network", "network", f"{_SYSTEM}:NetworkPage"
-    ),
+    PageSpec("network", "Active Connections Monitor", "network", "network", f"{_SYSTEM}:NetworkPage"),
     PageSpec(
         "traffic",
         "Network Throughput Monitor",
@@ -587,9 +550,7 @@ PAGES: tuple[PageSpec, ...] = (
         "network",
         f"{_NETWORK}:TrafficMonitorPage",
     ),
-    PageSpec(
-        "netmap", "Local Network Map", "netmap", "network", f"{_NETWORK}:NetworkMapPage"
-    ),
+    PageSpec("netmap", "Local Network Map", "netmap", "network", f"{_NETWORK}:NetworkMapPage"),
     PageSpec(
         "landevices",
         "Connected LAN Devices",
@@ -604,9 +565,7 @@ PAGES: tuple[PageSpec, ...] = (
         "network",
         f"{_NETWORK}:NetworkToolsPage",
     ),
-    PageSpec(
-        "loadtest", "Network Load & Ping Tester", "loadtest", "network", f"{_NETWORK}:LoadTesterPage"
-    ),
+    PageSpec("loadtest", "Network Load & Ping Tester", "loadtest", "network", f"{_NETWORK}:LoadTesterPage"),
     PageSpec("firewall", "Windows Firewall Rules", "firewall", "network", f"{_NETWORK}:FirewallPage"),
     PageSpec(
         "dnsbenchmark",
@@ -682,9 +641,7 @@ PAGES: tuple[PageSpec, ...] = (
         "apps",
         f"{_ANALYSIS}:StorageSensePage",
     ),
-    PageSpec(
-        "secrets", "API Keys & Secrets Scanner", "secrets", "apps", f"{_MORE}:SecretsScannerPage"
-    ),
+    PageSpec("secrets", "API Keys & Secrets Scanner", "secrets", "apps", f"{_MORE}:SecretsScannerPage"),
     PageSpec(
         "notifications",
         "Windows Notification Cleaner",
@@ -715,18 +672,10 @@ PAGES: tuple[PageSpec, ...] = (
         f"{_SECURE_SHREDDER}:SecureShredderPage",
     ),
     # -- Recovery & Reports ------------------------------------------------
-    PageSpec(
-        "backups", "System Restore & Backups", "backups", "recovery", f"{_REPORT}:BackupsPage"
-    ),
-    PageSpec(
-        "report", "Comprehensive Health Report", "report", "recovery", f"{_REPORT}:HealthReportPage"
-    ),
-    PageSpec(
-        "sysinfo", "Hardware & OS Specifications", "sysinfo", "recovery", f"{_MORE}:SystemInfoPage"
-    ),
-    PageSpec(
-        "license", "License & Tiers", "check", "recovery", f"{_LICENSE}:LicensePage"
-    ),
+    PageSpec("backups", "System Restore & Backups", "backups", "recovery", f"{_REPORT}:BackupsPage"),
+    PageSpec("report", "Comprehensive Health Report", "report", "recovery", f"{_REPORT}:HealthReportPage"),
+    PageSpec("sysinfo", "Hardware & OS Specifications", "sysinfo", "recovery", f"{_MORE}:SystemInfoPage"),
+    PageSpec("license", "License & Tiers", "check", "recovery", f"{_LICENSE}:LicensePage"),
     PageSpec("settings", "Settings & Preferences", "settings", "recovery", f"{_SHELL}:SettingsPage"),
     # -- Maintenance & Repair -----------------------------------------------
     PageSpec(
@@ -975,14 +924,10 @@ def _validate() -> None:
         seen.add(spec.id)
         if spec.group not in group_ids:
             raise RuntimeError(
-                f"page {spec.id!r} references unknown group {spec.group!r}; "
-                f"known groups: {sorted(group_ids)}"
+                f"page {spec.id!r} references unknown group {spec.group!r}; " f"known groups: {sorted(group_ids)}"
             )
         if ":" not in spec.factory:
-            raise RuntimeError(
-                f"page {spec.id!r} factory must be 'module:Class', "
-                f"got {spec.factory!r}"
-            )
+            raise RuntimeError(f"page {spec.id!r} factory must be 'module:Class', " f"got {spec.factory!r}")
     empty = [g.id for g in GROUPS if not any(p.group == g.id for p in PAGES)]
     if empty:
         raise RuntimeError(f"navigation groups with no pages: {empty}")

@@ -30,6 +30,7 @@ class DriverInfo:
 
     Manages DriverInfo operations and coordinates related state changes for the component.
     """
+
     device_name: str
     provider: str
     version: str
@@ -122,13 +123,15 @@ class DriverInventory:
             if key in seen:
                 continue
             seen.add(key)
-            drivers.append(DriverInfo(
-                device_name=name,
-                provider=str(d.get("DriverProviderName") or ""),
-                version=version,
-                date=DriverInventory._clean_date(d.get("DriverDate")),
-                device_class=str(d.get("DeviceClass") or ""),
-            ))
+            drivers.append(
+                DriverInfo(
+                    device_name=name,
+                    provider=str(d.get("DriverProviderName") or ""),
+                    version=version,
+                    date=DriverInventory._clean_date(d.get("DriverDate")),
+                    device_class=str(d.get("DeviceClass") or ""),
+                )
+            )
         drivers.sort(key=lambda x: (x.device_class, x.device_name))
         return drivers
 
@@ -151,6 +154,7 @@ class DriverInventory:
         if s.startswith("/Date(") and s.endswith(")/"):
             try:
                 import datetime
+
                 ms = int(s[6:-2].split("+")[0].split("-")[0])
                 return datetime.datetime.fromtimestamp(ms / 1000).strftime("%Y-%m-%d")
             except (ValueError, OverflowError, OSError):
@@ -173,7 +177,9 @@ class DriverInventory:
         try:
             proc = _proc.run(
                 ["powershell", "-NoProfile", "-NonInteractive", "-Command", script],
-                text=True, timeout=60, creationflags=_NO_WINDOW,
+                text=True,
+                timeout=60,
+                creationflags=_NO_WINDOW,
             )
             return proc.stdout if proc.returncode == 0 else None
         except (_proc.ProcessCancelled, OSError, subprocess.SubprocessError) as exc:

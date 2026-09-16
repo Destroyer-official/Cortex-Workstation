@@ -24,6 +24,7 @@ logger = logging.getLogger("cortex.system_tools.memory_compression_tuner")
 @dataclass
 class MemoryCompressionStatus:
     """Memory Compression Status data container."""
+
     is_enabled: bool
     page_combining: bool
     app_prelaunch: bool
@@ -53,6 +54,7 @@ class MemoryCompressionStatus:
 @dataclass
 class MemoryTunerReport:
     """Memory Tuner Report data container."""
+
     status: Optional[MemoryCompressionStatus] = None
     error: Optional[str] = None
 
@@ -112,6 +114,7 @@ class MemoryCompressionTuner:
         # Physical RAM metrics via GlobalMemoryStatusEx
         class MEMORYSTATUSEX(ctypes.Structure):
             """M E M O R Y S T A T U S E X."""
+
             _fields_ = [
                 ("dwLength", wintypes.DWORD),
                 ("dwMemoryLoad", wintypes.DWORD),

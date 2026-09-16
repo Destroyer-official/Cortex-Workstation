@@ -25,6 +25,7 @@ else:
 @dataclass
 class ShellbagsTarget:
     """Record holding category, target_type, path, items_count, size_bytes."""
+
     category: str
     target_type: str  # "Registry", "File Directory"
     path: str
@@ -35,6 +36,7 @@ class ShellbagsTarget:
 @dataclass
 class ShellbagsCleanResult:
     """Record holding registry_keys_cleared, files_deleted, bytes_freed, errors."""
+
     registry_keys_cleared: int
     files_deleted: int
     bytes_freed: int
@@ -121,13 +123,15 @@ class ShellbagsPrivacyCleaner:
                 cnt = cls._count_reg_keys(r_path)
                 if cnt > 0:
                     cat_name = "Shellbags Folder History" if "Bag" in r_path else "Explorer Typed MRU"
-                    targets.append(ShellbagsTarget(
-                        category=cat_name,
-                        target_type="Registry",
-                        path=f"HKCU\\{r_path}",
-                        items_count=cnt,
-                        size_bytes=cnt * 256,  # ~256 bytes per MRU entry estimate
-                    ))
+                    targets.append(
+                        ShellbagsTarget(
+                            category=cat_name,
+                            target_type="Registry",
+                            path=f"HKCU\\{r_path}",
+                            items_count=cnt,
+                            size_bytes=cnt * 256,  # ~256 bytes per MRU entry estimate
+                        )
+                    )
 
         # 2. File paths: Recent, JumpLists
         app_data = Path(os.environ.get("APPDATA", str(Path.home() / "AppData" / "Roaming")))
@@ -158,13 +162,15 @@ class ShellbagsPrivacyCleaner:
                 pass
 
             if cnt > 0:
-                targets.append(ShellbagsTarget(
-                    category=name,
-                    target_type="File Directory",
-                    path=str(p_dir),
-                    items_count=cnt,
-                    size_bytes=sz,
-                ))
+                targets.append(
+                    ShellbagsTarget(
+                        category=name,
+                        target_type="File Directory",
+                        path=str(p_dir),
+                        items_count=cnt,
+                        size_bytes=sz,
+                    )
+                )
 
         return targets
 

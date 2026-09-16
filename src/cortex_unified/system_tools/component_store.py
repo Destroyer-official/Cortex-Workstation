@@ -42,9 +42,9 @@ class LeftoverRisk(str, enum.Enum):
     Manages LeftoverRisk operations and coordinates related state changes for the component.
     """
 
-    SAFE = "safe"              # regenerable; nothing is lost
+    SAFE = "safe"  # regenerable; nothing is lost
     LOSES_ROLLBACK = "rollback"  # you can no longer go back to the old build
-    MANAGED = "managed"        # Windows owns this; never delete by hand
+    MANAGED = "managed"  # Windows owns this; never delete by hand
 
 
 @dataclass(slots=True)
@@ -56,8 +56,8 @@ class StoreAnalysis:
 
     supported: bool = True
     ok: bool = False
-    reported_size: int = 0        # what Explorer shows (double-counts hard links)
-    actual_size: int = 0         # real size on disk
+    reported_size: int = 0  # what Explorer shows (double-counts hard links)
+    actual_size: int = 0  # real size on disk
     shared_with_windows: int = 0  # cannot be reclaimed at any price
     backups_and_features: int = 0
     cache_and_temp: int = 0
@@ -262,14 +262,14 @@ class ComponentStore:
             return False
         try:
             import ctypes
+
             return bool(ctypes.windll.shell32.IsUserAnAdmin())
         except Exception:  # noqa: BLE001
             return False
 
     # -- analysis (read-only) -----------------------------------------------
 
-    def analyze(self, timeout: int = 900,
-               cancel_event: "threading.Event | None" = None) -> StoreAnalysis:
+    def analyze(self, timeout: int = 900, cancel_event: "threading.Event | None" = None) -> StoreAnalysis:
         """Analyze.
 
         Manages analyze operations and coordinates related state changes for the component.
@@ -284,13 +284,13 @@ class ComponentStore:
         if not _IS_WINDOWS:
             return StoreAnalysis(supported=False, message="Windows-only feature.")
 
-        out = self._run_dism(["/Online", "/Cleanup-Image", "/AnalyzeComponentStore"],
-                             timeout=timeout, cancel_event=cancel_event)
+        out = self._run_dism(
+            ["/Online", "/Cleanup-Image", "/AnalyzeComponentStore"], timeout=timeout, cancel_event=cancel_event
+        )
         if out is None:
             return StoreAnalysis(
                 ok=False,
-                message=("Could not run DISM. Analyzing the component store "
-                         "requires Administrator rights."),
+                message=("Could not run DISM. Analyzing the component store " "requires Administrator rights."),
             )
         return self._parse_analysis(out)
 
@@ -302,8 +302,7 @@ class ComponentStore:
         labels and degrades to "unknown" (0) rather than guessing when a label
         isn't found - a wrong number here would be worse than none.
         """
-        res = StoreAnalysis(raw_tail="\n".join(
-            line for line in out.splitlines() if line.strip())[-1200:])
+        res = StoreAnalysis(raw_tail="\n".join(line for line in out.splitlines() if line.strip())[-1200:])
         low = out.lower()
 
         def _bytes_after(label: str) -> int:
@@ -318,8 +317,7 @@ class ComponentStore:
             Returns:
                 int: Result of the operation.
             """
-            m = re.search(
-                rf"{label}\s*:\s*([\d.,]+)\s*(bytes|kb|mb|gb|tb)", low)
+            m = re.search(rf"{label}\s*:\s*([\d.,]+)\s*(bytes|kb|mb|gb|tb)", low)
             if not m:
                 return 0
             try:
@@ -327,8 +325,7 @@ class ComponentStore:
             except ValueError:
                 return 0
             unit = m.group(2)
-            factor = {"bytes": 1, "kb": 1024, "mb": 1024 ** 2,
-                      "gb": 1024 ** 3, "tb": 1024 ** 4}[unit]
+            factor = {"bytes": 1, "kb": 1024, "mb": 1024**2, "gb": 1024**3, "tb": 1024**4}[unit]
             return int(value * factor)
 
         res.reported_size = _bytes_after(r"windows explorer reported size of component store")
@@ -350,15 +347,15 @@ class ComponentStore:
         if "error" in low and "0x" in low:
             code = re.search(r"(0x[0-9a-fA-F]{8})", out)
             res.ok = False
-            res.message = (f"DISM reported error {code.group(1) if code else ''}. "
-                           "Run the component store repair first (System File Health).")
+            res.message = (
+                f"DISM reported error {code.group(1) if code else ''}. "
+                "Run the component store repair first (System File Health)."
+            )
             return res
 
-        res.ok = bool(res.actual_size or res.reclaimable_packages
-                      or "completed successfully" in low)
+        res.ok = bool(res.actual_size or res.reclaimable_packages or "completed successfully" in low)
         if not res.ok:
-            res.message = ("DISM finished but its report could not be read. "
-                           "See the raw output for details.")
+            res.message = "DISM finished but its report could not be read. " "See the raw output for details."
         elif res.cleanup_recommended:
             res.message = "Windows recommends cleaning the component store."
         else:
@@ -387,55 +384,67 @@ class ComponentStore:
         windir = Path(os.environ.get("SystemRoot", r"C:\Windows"))
 
         specs: list[tuple[Path, str, LeftoverRisk, str, str]] = [
-            (system_drive / "Windows.old",
-             "Previous Windows installation",
-             LeftoverRisk.LOSES_ROLLBACK,
-             "Your files from the build you upgraded from. Removing it frees the "
-             "most space of anything here, but you can no longer roll back to "
-             "that Windows version.",
-             ""),
-            (system_drive / "$WinREAgent",
-             "Upgrade working folder",
-             LeftoverRisk.SAFE,
-             "Temporary staging left behind by a Windows upgrade or update. "
-             "Windows recreates it when needed.",
-             ""),
-            (system_drive / "$Windows.~BT",
-             "Upgrade installation files",
-             LeftoverRisk.LOSES_ROLLBACK,
-             "Setup files from an in-place upgrade. Needed only for rollback.",
-             ""),
-            (system_drive / "$Windows.~WS",
-             "Upgrade download cache",
-             LeftoverRisk.SAFE,
-             "Downloaded setup payload from an upgrade attempt; re-downloaded "
-             "if you upgrade again.",
-             ""),
-            (windir / "SoftwareDistribution" / "Download",
-             "Windows Update download staging",
-             LeftoverRisk.SAFE,
-             "Update packages already installed. Windows re-downloads anything "
-             "it still needs.",
-             ""),
-            (windir / "Panther",
-             "Setup logs",
-             LeftoverRisk.SAFE,
-             "Logs from Windows setup. Useful only when troubleshooting a failed "
-             "upgrade.",
-             ""),
-            (windir / "Minidump",
-             "Crash minidumps",
-             LeftoverRisk.SAFE,
-             "Small crash reports. Keep them if you are still investigating a "
-             "blue screen - the Reliability page can read them.",
-             ""),
-            (windir / "Installer",
-             "Installer cache",
-             LeftoverRisk.MANAGED,
-             "Cached installer data used to repair, patch and uninstall software. "
-             "Deleting files here eventually breaks Office, Visual Studio and "
-             "other products - permanently.",
-             "Leave it alone. Uninstall software you no longer use instead."),
+            (
+                system_drive / "Windows.old",
+                "Previous Windows installation",
+                LeftoverRisk.LOSES_ROLLBACK,
+                "Your files from the build you upgraded from. Removing it frees the "
+                "most space of anything here, but you can no longer roll back to "
+                "that Windows version.",
+                "",
+            ),
+            (
+                system_drive / "$WinREAgent",
+                "Upgrade working folder",
+                LeftoverRisk.SAFE,
+                "Temporary staging left behind by a Windows upgrade or update. " "Windows recreates it when needed.",
+                "",
+            ),
+            (
+                system_drive / "$Windows.~BT",
+                "Upgrade installation files",
+                LeftoverRisk.LOSES_ROLLBACK,
+                "Setup files from an in-place upgrade. Needed only for rollback.",
+                "",
+            ),
+            (
+                system_drive / "$Windows.~WS",
+                "Upgrade download cache",
+                LeftoverRisk.SAFE,
+                "Downloaded setup payload from an upgrade attempt; re-downloaded " "if you upgrade again.",
+                "",
+            ),
+            (
+                windir / "SoftwareDistribution" / "Download",
+                "Windows Update download staging",
+                LeftoverRisk.SAFE,
+                "Update packages already installed. Windows re-downloads anything " "it still needs.",
+                "",
+            ),
+            (
+                windir / "Panther",
+                "Setup logs",
+                LeftoverRisk.SAFE,
+                "Logs from Windows setup. Useful only when troubleshooting a failed " "upgrade.",
+                "",
+            ),
+            (
+                windir / "Minidump",
+                "Crash minidumps",
+                LeftoverRisk.SAFE,
+                "Small crash reports. Keep them if you are still investigating a "
+                "blue screen - the Reliability page can read them.",
+                "",
+            ),
+            (
+                windir / "Installer",
+                "Installer cache",
+                LeftoverRisk.MANAGED,
+                "Cached installer data used to repair, patch and uninstall software. "
+                "Deleting files here eventually breaks Office, Visual Studio and "
+                "other products - permanently.",
+                "Leave it alone. Uninstall software you no longer use instead.",
+            ),
         ]
 
         out: list[Leftover] = []
@@ -444,20 +453,24 @@ class ComponentStore:
         # walking the folder (see the docstring).
         winsxs = windir / "WinSxS"
         if winsxs.is_dir() and analysis is not None and analysis.actual_size:
-            out.append(Leftover(
-                path=winsxs,
-                label="Component store (WinSxS)",
-                size_bytes=analysis.actual_size,
-                risk=LeftoverRisk.MANAGED,
-                explanation=(
-                    "Windows' own component store, as measured by Windows itself. "
-                    "Most of it is hard links shared with System32, so Explorer "
-                    "overstates the size, and deleting anything inside breaks "
-                    "Windows Update and feature repair."),
-                age_days=self._age_days(winsxs),
-                supported_removal=("Use the component store cleanup above (DISM) - "
-                                   "the only supported way to shrink it."),
-            ))
+            out.append(
+                Leftover(
+                    path=winsxs,
+                    label="Component store (WinSxS)",
+                    size_bytes=analysis.actual_size,
+                    risk=LeftoverRisk.MANAGED,
+                    explanation=(
+                        "Windows' own component store, as measured by Windows itself. "
+                        "Most of it is hard links shared with System32, so Explorer "
+                        "overstates the size, and deleting anything inside breaks "
+                        "Windows Update and feature repair."
+                    ),
+                    age_days=self._age_days(winsxs),
+                    supported_removal=(
+                        "Use the component store cleanup above (DISM) - " "the only supported way to shrink it."
+                    ),
+                )
+            )
 
         for path, label, risk, explanation, removal in specs:
             if cancel_event is not None and getattr(cancel_event, "is_set", bool)():
@@ -469,11 +482,17 @@ class ComponentStore:
             size = self._dir_size(path)
             if size <= 0:
                 continue
-            out.append(Leftover(
-                path=path, label=label, size_bytes=size, risk=risk,
-                explanation=explanation, age_days=self._age_days(path),
-                supported_removal=removal,
-            ))
+            out.append(
+                Leftover(
+                    path=path,
+                    label=label,
+                    size_bytes=size,
+                    risk=risk,
+                    explanation=explanation,
+                    age_days=self._age_days(path),
+                    supported_removal=removal,
+                )
+            )
 
         # Single large files worth naming explicitly.
         dump = windir / "MEMORY.DMP"
@@ -483,12 +502,17 @@ class ComponentStore:
             except OSError:
                 size = 0
             if size > 0:
-                out.append(Leftover(
-                    dump, "Full crash dump (MEMORY.DMP)", size, LeftoverRisk.SAFE,
-                    "A complete memory dump from a blue screen - often several "
-                    "gigabytes. Keep it only while diagnosing that crash.",
-                    age_days=self._age_days(dump),
-                ))
+                out.append(
+                    Leftover(
+                        dump,
+                        "Full crash dump (MEMORY.DMP)",
+                        size,
+                        LeftoverRisk.SAFE,
+                        "A complete memory dump from a blue screen - often several "
+                        "gigabytes. Keep it only while diagnosing that crash.",
+                        age_days=self._age_days(dump),
+                    )
+                )
 
         out.sort(key=lambda item: item.size_bytes, reverse=True)
         return out
@@ -555,9 +579,12 @@ class ComponentStore:
             return CleanupOutcome(False, reset_base, message="Windows-only feature.")
         if not self.is_elevated():
             return CleanupOutcome(
-                False, reset_base,
-                message=("Administrator rights are required. Restart Cortex as "
-                         "Administrator to clean the component store."),
+                False,
+                reset_base,
+                message=(
+                    "Administrator rights are required. Restart Cortex as "
+                    "Administrator to clean the component store."
+                ),
             )
 
         if progress is not None:
@@ -565,8 +592,9 @@ class ComponentStore:
         before = self.analyze(timeout=600, cancel_event=cancel_event)
 
         if cancel_event is not None and cancel_event.is_set():
-            return CleanupOutcome(False, reset_base, before.actual_size, before.actual_size,
-                                   message="Cancelled before cleanup started.")
+            return CleanupOutcome(
+                False, reset_base, before.actual_size, before.actual_size, message="Cancelled before cleanup started."
+            )
 
         args = ["/Online", "/Cleanup-Image", "/StartComponentCleanup"]
         if reset_base:
@@ -578,9 +606,11 @@ class ComponentStore:
         if out is None:
             cancelled = cancel_event is not None and cancel_event.is_set()
             return CleanupOutcome(
-                False, reset_base, before.actual_size, before.actual_size,
-                message=("Cancelled." if cancelled else
-                         "Could not run DISM (Administrator required)."),
+                False,
+                reset_base,
+                before.actual_size,
+                before.actual_size,
+                message=("Cancelled." if cancelled else "Could not run DISM (Administrator required)."),
             )
 
         low = out.lower()
@@ -592,12 +622,10 @@ class ComponentStore:
             if code:
                 msg += f" DISM reported {code.group(1)}."
             if "0x800f0806" in low:
-                msg += (" Windows Update is busy or a restart is pending - "
-                        "restart and try again.")
+                msg += " Windows Update is busy or a restart is pending - " "restart and try again."
             elif "another servicing" in low or "pending" in low:
                 msg += " Another servicing operation is in progress; try again later."
-            return CleanupOutcome(False, reset_base, before.actual_size,
-                                   before.actual_size, message=msg, raw_tail=tail)
+            return CleanupOutcome(False, reset_base, before.actual_size, before.actual_size, message=msg, raw_tail=tail)
 
         if progress is not None:
             progress("Measuring again\u2026")
@@ -618,9 +646,7 @@ class ComponentStore:
             removed, rm_out = self._try_remove_spurious_package(timeout=900)
             rm_low = rm_out.lower() if rm_out else ""
             if removed and "completed successfully" in rm_low:
-                spurious_note = (
-                    f" Removed spurious package {self._SPURIOUS_PKG} (≈1.2GB). "
-                )
+                spurious_note = f" Removed spurious package {self._SPURIOUS_PKG} (≈1.2GB). "
                 # Second cleanup to actually reclaim after package removal
                 if progress is not None:
                     progress("Re-running component cleanup after spurious removal …")
@@ -638,14 +664,18 @@ class ComponentStore:
                 spurious_note = " Spurious 2-package fingerprint present but RollupFix removal not applicable (already removed or not staged). "
 
         outcome = CleanupOutcome(
-            True, reset_base, before.actual_size, after.actual_size,
+            True,
+            reset_base,
+            before.actual_size,
+            after.actual_size,
             raw_tail=tail,
             needs_reboot="restart" in low and "required" in low,
         )
         if outcome.freed_bytes == 0:
             base_msg = (
                 "Cleanup completed, but the store did not shrink - there were no "
-                "superseded components left to remove.")
+                "superseded components left to remove."
+            )
             # Suppress spurious alarm: 2 reclaimables on 24H2 are by-design staged
             # checkpoints, not bloat, per Microsoft "checkpoint cumulative updates"
             # (Learn article 2025-03). We explain rather than alarm.
@@ -654,7 +684,8 @@ class ComponentStore:
                     " 2 reclaimables remain – these are staged checkpoint packages "
                     "on Windows 11 24H2 (by-design, not bloat) – see Microsoft "
                     "checkpoint cumulative updates. The RollupFix auto-fix was "
-                    f"{'attempted' if spurious_note else 'not needed'}.")
+                    f"{'attempted' if spurious_note else 'not needed'}."
+                )
             outcome.message = base_msg + spurious_note
         else:
             outcome.message = "Component store cleanup completed." + spurious_note
@@ -671,24 +702,23 @@ class ComponentStore:
             return False, "Windows-only feature."
         task = r"\Microsoft\Windows\Servicing\StartComponentCleanup"
         try:
-            proc = _proc.run(["schtasks", "/Run", "/TN", task],
-                             timeout=timeout, creationflags=_NO_WINDOW)
+            proc = _proc.run(["schtasks", "/Run", "/TN", task], timeout=timeout, creationflags=_NO_WINDOW)
         except FileNotFoundError:
             return False, "schtasks is not available on this system."
         except (OSError, subprocess.SubprocessError) as exc:
             return False, f"Could not start the servicing task: {exc}"
         text = self._decode(proc.stdout) + self._decode(proc.stderr)
         if proc.returncode == 0:
-            return True, ("Windows' component cleanup task was started. It runs in "
-                          "the background and can take up to an hour.")
+            return True, (
+                "Windows' component cleanup task was started. It runs in " "the background and can take up to an hour."
+            )
         if "access is denied" in text.lower():
             return False, "Administrator rights are required to start this task."
         return False, text.strip() or "Could not start the servicing task."
 
     # -- helpers ------------------------------------------------------------
 
-    def _run_dism(self, args: list[str], timeout: int,
-                 cancel_event: "threading.Event | None" = None) -> str | None:
+    def _run_dism(self, args: list[str], timeout: int, cancel_event: "threading.Event | None" = None) -> str | None:
         """_run_dism.
 
         Manages run dism operations and coordinates related state changes for the component.
@@ -705,8 +735,7 @@ class ComponentStore:
             # DISM can run for 10-30 minutes; poll timeout/cancel_event instead
             # of blocking uninterruptibly, and kill the whole tree on either -
             # never the calling thread (see core/proc.py).
-            proc = _proc.run(["dism", *args], timeout=timeout,
-                             cancel_event=cancel_event, creationflags=_NO_WINDOW)
+            proc = _proc.run(["dism", *args], timeout=timeout, cancel_event=cancel_event, creationflags=_NO_WINDOW)
         except FileNotFoundError:
             self.logger.debug("dism not found")
             return None

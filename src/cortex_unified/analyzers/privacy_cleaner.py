@@ -32,12 +32,12 @@ class PrivacyCleaner:
         self.appdata = os.environ.get("APPDATA", "")
 
         self.browser_paths: Dict[str, str] = {
-            "Chrome":   os.path.join(self.local_appdata, "Google", "Chrome", "User Data"),
-            "Edge":     os.path.join(self.local_appdata, "Microsoft", "Edge", "User Data"),
-            "Brave":    os.path.join(self.local_appdata, "BraveSoftware", "Brave-Browser", "User Data"),
-            "Opera":    os.path.join(self.appdata, "Opera Software", "Opera Stable"),
-            "Vivaldi":  os.path.join(self.local_appdata, "Vivaldi", "User Data"),
-            "Firefox":  os.path.join(self.appdata, "Mozilla", "Firefox", "Profiles"),
+            "Chrome": os.path.join(self.local_appdata, "Google", "Chrome", "User Data"),
+            "Edge": os.path.join(self.local_appdata, "Microsoft", "Edge", "User Data"),
+            "Brave": os.path.join(self.local_appdata, "BraveSoftware", "Brave-Browser", "User Data"),
+            "Opera": os.path.join(self.appdata, "Opera Software", "Opera Stable"),
+            "Vivaldi": os.path.join(self.local_appdata, "Vivaldi", "User Data"),
+            "Firefox": os.path.join(self.appdata, "Mozilla", "Firefox", "Profiles"),
         }
 
     # ──────────────────────────────────────────────────────────────────
@@ -168,8 +168,7 @@ class PrivacyCleaner:
         # Resolved hostnames linger in the DNS cache; flushdns needs no
         # elevation. 0x08000000 (CREATE_NO_WINDOW) suppresses the console flash.
         try:
-            subprocess.run(["ipconfig", "/flushdns"],
-                           capture_output=True, timeout=10, creationflags=0x08000000)
+            subprocess.run(["ipconfig", "/flushdns"], capture_output=True, timeout=10, creationflags=0x08000000)
         except Exception:
             pass
 
@@ -214,8 +213,7 @@ class PrivacyCleaner:
             stats (Dict[str, int]): The stats parameter.
         """
         # Cache (new Chromium stores it under Cache/Cache_Data)
-        for cache_sub in ("Cache", os.path.join("Cache", "Cache_Data"),
-                          "Code Cache", "GPUCache", "Service Worker"):
+        for cache_sub in ("Cache", os.path.join("Cache", "Cache_Data"), "Code Cache", "GPUCache", "Service Worker"):
             stats["Cache"] += self._get_dir_size(os.path.join(prof_path, cache_sub))
 
         # Cookies (moved to Network/ subdirectory in modern Chromium)

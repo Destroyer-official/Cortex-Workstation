@@ -49,6 +49,7 @@ class _FakeMenu:
     def addAction(self, text_or_action, slot=None):
         """Append an action's text and slot, unwrapping QAction if needed."""
         from PySide6.QtGui import QAction
+
         if isinstance(text_or_action, QAction):
             self.actions_list.append((text_or_action.text(), slot))
         else:
@@ -141,6 +142,7 @@ def test_context_menu_empty_selection(qapp, widget, monkeypatch):
 
 class _FakeMousePress:
     """Fake mouse press event exposing press type and button for history routing."""
+
     def __init__(self, button):
         """Store a MouseButtonPress type and the pressed button."""
         from PySide6.QtCore import QEvent
@@ -167,8 +169,7 @@ def test_mouse_side_buttons_route_history(widget, qapp, tmp_path_factory):
     target.mkdir(parents=True, exist_ok=True)
     w.navigate(str(target))
     deadline = time.time() + 5
-    while time.time() < deadline and \
-            Path(w._tab()["path"]) != target:
+    while time.time() < deadline and Path(w._tab()["path"]) != target:
         qapp.processEvents()
         time.sleep(0.01)
     assert Path(w._tab()["path"]) == target
@@ -177,8 +178,7 @@ def test_mouse_side_buttons_route_history(widget, qapp, tmp_path_factory):
     ev = _FakeMousePress(Qt.MouseButton.BackButton)
     assert w.eventFilter(w.table.viewport(), ev) is True
     deadline = time.time() + 5
-    while time.time() < deadline and \
-            Path(w._tab()["path"]) != Path(start):
+    while time.time() < deadline and Path(w._tab()["path"]) != Path(start):
         qapp.processEvents()
         time.sleep(0.01)
     assert Path(w._tab()["path"]) == Path(start)
@@ -187,8 +187,7 @@ def test_mouse_side_buttons_route_history(widget, qapp, tmp_path_factory):
     ev = _FakeMousePress(Qt.MouseButton.ForwardButton)
     assert w.eventFilter(w.table.viewport(), ev) is True
     deadline = time.time() + 5
-    while time.time() < deadline and \
-            Path(w._tab()["path"]) != target:
+    while time.time() < deadline and Path(w._tab()["path"]) != target:
         qapp.processEvents()
         time.sleep(0.01)
     assert Path(w._tab()["path"]) == target
@@ -201,6 +200,7 @@ def test_show_properties_accepts_dict_and_str(widget, monkeypatch):
 
     class _FakeDlg:
         """Fake PropertiesDialog that captures the row it was opened with."""
+
         def __init__(self, row, parent):
             """Store the row the dialog was opened with."""
             calls["row"] = row
@@ -210,8 +210,7 @@ def test_show_properties_accepts_dict_and_str(widget, monkeypatch):
             return 0
 
     monkeypatch.setattr("nexus_explorer.PropertiesDialog", _FakeDlg)
-    row = {"name": "file.txt", "path": str(widget._tab()["path"]),
-           "isDir": False}
+    row = {"name": "file.txt", "path": str(widget._tab()["path"]), "isDir": False}
     widget._show_properties(row)
     assert calls["row"]["name"] == "file.txt"
     widget._show_properties(row["path"])

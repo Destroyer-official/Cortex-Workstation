@@ -23,6 +23,7 @@ from typing import Dict, List, Optional, Tuple
 @dataclass
 class PrefetchEntry:
     """Record holding path, filename, executable_name, hash_code, size_bytes, modified_time, is_stale."""
+
     path: str
     filename: str
     executable_name: str
@@ -35,6 +36,7 @@ class PrefetchEntry:
 @dataclass
 class PrefetchStatus:
     """Record holding prefetch_dir, total_files, total_size_bytes, sysmain_status, is_admin. Requires elevation for protected targets."""
+
     prefetch_dir: str
     total_files: int
     total_size_bytes: int
@@ -45,6 +47,7 @@ class PrefetchStatus:
 @dataclass
 class PrefetchCleanResult:
     """Record holding files_deleted, bytes_freed, errors."""
+
     files_deleted: int = 0
     bytes_freed: int = 0
     errors: List[str] = None
@@ -101,6 +104,7 @@ class PrefetchAnalyzer:
         is_admin = False
         try:
             import ctypes
+
             is_admin = bool(ctypes.windll.shell32.IsUserAnAdmin())
         except Exception:
             pass
@@ -144,15 +148,17 @@ class PrefetchAnalyzer:
 
                 try:
                     st = item.stat()
-                    entries.append(PrefetchEntry(
-                        path=item.path,
-                        filename=item.name,
-                        executable_name=exe_name,
-                        hash_code=hash_val,
-                        size_bytes=st.st_size,
-                        modified_time=st.st_mtime,
-                        is_stale=False,
-                    ))
+                    entries.append(
+                        PrefetchEntry(
+                            path=item.path,
+                            filename=item.name,
+                            executable_name=exe_name,
+                            hash_code=hash_val,
+                            size_bytes=st.st_size,
+                            modified_time=st.st_mtime,
+                            is_stale=False,
+                        )
+                    )
                 except Exception:
                     pass
         except Exception:

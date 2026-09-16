@@ -73,27 +73,48 @@ from cortex_unified.core.utils import normalize_path
 
 try:
     import xxhash  # type: ignore
+
     HAS_XXHASH = True
 except ImportError:
     HAS_XXHASH = False
 
-_HASH_ALPHABET = (
-    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
-)
+_HASH_ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
 _MIN_BLOCK = 64
 _MAX_BLOCK = 4 * _MIN_BLOCK  # 256
 _WINDOW_BITS = 3
 #: File types with no exploitable redundancy are skipped.
 _FUZZY_SKIP_EXT = {
-    ".jpeg", ".jpg", ".png", ".gif", ".webp", ".avif", ".mp3", ".mp4", ".mkv",
-    ".avi", ".mov", ".flac", ".aac", ".ogg", ".zip", ".7z", ".rar", ".gz",
-    ".bz2", ".xz", ".tar", ".jar", ".whl", ".iso",
+    ".jpeg",
+    ".jpg",
+    ".png",
+    ".gif",
+    ".webp",
+    ".avif",
+    ".mp3",
+    ".mp4",
+    ".mkv",
+    ".avi",
+    ".mov",
+    ".flac",
+    ".aac",
+    ".ogg",
+    ".zip",
+    ".7z",
+    ".rar",
+    ".gz",
+    ".bz2",
+    ".xz",
+    ".tar",
+    ".jar",
+    ".whl",
+    ".iso",
 }
 
 
 # ---------------------------------------------------------------------------
 # CTPH primitives
 # ---------------------------------------------------------------------------
+
 
 def _fnv1a(data: bytes) -> int:
     """Fnv1a.
@@ -167,11 +188,11 @@ def _ctph_blocks(data: bytes, block_size: int) -> List[str]:
         if h < hmin:
             hmin = h
         if i - chunk_start >= bs * 2:
-            chunks.append(data[chunk_start : i])
+            chunks.append(data[chunk_start:i])
             chunk_start = i
             hmin = 0xFFFFFFFF
         elif i - chunk_start >= bs and h == (hmin >> _WINDOW_BITS):
-            chunks.append(data[chunk_start : i])
+            chunks.append(data[chunk_start:i])
             chunk_start = i
             hmin = 0xFFFFFFFF
         i += 1
@@ -219,6 +240,7 @@ def fuzzy_hash_file(path: Path, block_size: int = 64) -> str:
 # ---------------------------------------------------------------------------
 # Comparison
 # ---------------------------------------------------------------------------
+
 
 def _edit_distance(a: str, b: str) -> int:
     """Levenshtein distance between two signature fragments.
@@ -334,6 +356,7 @@ def _score_frag(a: str, b: str) -> int:
 # ---------------------------------------------------------------------------
 # Finder
 # ---------------------------------------------------------------------------
+
 
 class FuzzyDuplicateFinder:
     """Find near-identical *binary/content* files via CTPH similarity.
@@ -545,9 +568,7 @@ class FuzzyDuplicateFinder:
         for members in groups.values():
             if len(members) > 1:
                 members.sort()
-                gid = hashlib.blake2b(
-                    str([str(m) for m in members]).encode(), digest_size=8
-                ).hexdigest()
+                gid = hashlib.blake2b(str([str(m) for m in members]).encode(), digest_size=8).hexdigest()
                 result[gid] = members
         self.duplicates = result
         return result

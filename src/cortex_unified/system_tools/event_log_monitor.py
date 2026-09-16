@@ -21,6 +21,7 @@ from typing import Dict, List, Optional, Tuple
 @dataclass
 class LogAnomalyEvent:
     """Log Anomaly Event data container."""
+
     channel: str
     event_id: int
     level: str  # "Critical", "Error", "Warning"
@@ -33,6 +34,7 @@ class LogAnomalyEvent:
 @dataclass
 class AnomalyScanReport:
     """Anomaly Scan Report data container."""
+
     total_anomalies: int
     critical_count: int
     error_count: int
@@ -47,7 +49,12 @@ class EventLogMonitor:
 
     CRITICAL_QUERIES = [
         # (Category, Channel, Level, XPath Filter)
-        ("Hardware / Disk", "System", "Error", "*[System[(Level=1 or Level=2) and (EventID=7 or EventID=11 or EventID=55 or EventID=153)]]"),
+        (
+            "Hardware / Disk",
+            "System",
+            "Error",
+            "*[System[(Level=1 or Level=2) and (EventID=7 or EventID=11 or EventID=55 or EventID=153)]]",
+        ),
         ("Kernel Crash", "System", "Critical", "*[System[(EventID=1001 or EventID=41)]]"),
         ("Power Loss", "System", "Error", "*[System[(EventID=6008)]]"),
         ("App Crash", "Application", "Error", "*[System[(Level=2) and (EventID=1000 or EventID=1002)]]"),
@@ -63,7 +70,9 @@ class EventLogMonitor:
 
         for category, channel, default_level, xpath in cls.CRITICAL_QUERIES:
             cmd = [
-                "wevtutil.exe", "qe", channel,
+                "wevtutil.exe",
+                "qe",
+                channel,
                 f"/q:{xpath}",
                 f"/c:{max_events_per_category}",
                 "/rd:true",
@@ -73,6 +82,7 @@ class EventLogMonitor:
                 res = subprocess.run(cmd, capture_output=True, text=True, timeout=8)
                 if res.returncode == 0 and res.stdout.strip():
                     import xml.etree.ElementTree as ET
+
                     # Wrap output in a root tag to parse multiple events
                     wrapped_xml = f"<Events>{res.stdout}</Events>"
                     try:
@@ -88,7 +98,9 @@ class EventLogMonitor:
                             provider = sys_elem.find("{http://schemas.microsoft.com/win/2004/08/events/event}Provider")
                             source_name = provider.attrib.get("Name", "Unknown") if provider is not None else "Unknown"
 
-                            time_el = sys_elem.find("{http://schemas.microsoft.com/win/2004/08/events/event}TimeCreated")
+                            time_el = sys_elem.find(
+                                "{http://schemas.microsoft.com/win/2004/08/events/event}TimeCreated"
+                            )
                             time_str = time_el.attrib.get("SystemTime", "") if time_el is not None else ""
 
                             level_el = sys_elem.find("{http://schemas.microsoft.com/win/2004/08/events/event}Level")
@@ -99,21 +111,27 @@ class EventLogMonitor:
                             msg_parts = []
                             event_data = ev.find("{http://schemas.microsoft.com/win/2004/08/events/event}EventData")
                             if event_data is not None:
-                                for data_item in event_data.findall("{http://schemas.microsoft.com/win/2004/08/events/event}Data"):
+                                for data_item in event_data.findall(
+                                    "{http://schemas.microsoft.com/win/2004/08/events/event}Data"
+                                ):
                                     if data_item.text:
                                         msg_parts.append(data_item.text.strip())
 
-                            msg_summary = "; ".join(msg_parts[:3]) if msg_parts else f"Event {ev_id} reported by {source_name}"
+                            msg_summary = (
+                                "; ".join(msg_parts[:3]) if msg_parts else f"Event {ev_id} reported by {source_name}"
+                            )
 
-                            events.append(LogAnomalyEvent(
-                                channel=channel,
-                                event_id=ev_id,
-                                level=level_label,
-                                source=source_name,
-                                time_created=time_str.split(".")[0].replace("T", " "),
-                                message=msg_summary,
-                                category=category,
-                            ))
+                            events.append(
+                                LogAnomalyEvent(
+                                    channel=channel,
+                                    event_id=ev_id,
+                                    level=level_label,
+                                    source=source_name,
+                                    time_created=time_str.split(".")[0].replace("T", " "),
+                                    message=msg_summary,
+                                    category=category,
+                                )
+                            )
                     except ET.ParseError:
                         pass
             except Exception:

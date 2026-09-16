@@ -26,6 +26,7 @@ else:
 @dataclass
 class StartupAppItem:
     """Record holding name, command, executable_path, scope, registry_key, is_enabled, impact_level, file_size_bytes."""
+
     name: str
     command: str
     executable_path: str
@@ -40,6 +41,7 @@ class StartupAppItem:
 @dataclass
 class StartupImpactReport:
     """Record holding total_startup_items, enabled_count, disabled_count, high_impact_count, estimated_boot_delay_seconds, items."""
+
     total_startup_items: int
     enabled_count: int
     disabled_count: int
@@ -55,8 +57,18 @@ class StartupImpactAnalyzer:
     STARTUP_APPROVED_SYSTEM = r"SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\Run"
 
     RUN_KEYS = [
-        ("User Registry", winreg.HKEY_CURRENT_USER if winreg else None, r"Software\Microsoft\Windows\CurrentVersion\Run", STARTUP_APPROVED_USER),
-        ("System Registry", winreg.HKEY_LOCAL_MACHINE if winreg else None, r"SOFTWARE\Microsoft\Windows\CurrentVersion\Run", STARTUP_APPROVED_SYSTEM),
+        (
+            "User Registry",
+            winreg.HKEY_CURRENT_USER if winreg else None,
+            r"Software\Microsoft\Windows\CurrentVersion\Run",
+            STARTUP_APPROVED_USER,
+        ),
+        (
+            "System Registry",
+            winreg.HKEY_LOCAL_MACHINE if winreg else None,
+            r"SOFTWARE\Microsoft\Windows\CurrentVersion\Run",
+            STARTUP_APPROVED_SYSTEM,
+        ),
     ]
 
     @classmethod
@@ -116,8 +128,17 @@ class StartupImpactAnalyzer:
         """
         lower = exe_name.lower()
         # Known heavy apps (Electron, cloud clients, heavy gaming launchers)
-        heavy_names = {"discord.exe", "slack.exe", "teams.exe", "spotify.exe", "steam.exe",
-                       "epicgameslauncher.exe", "onedrive.exe", "dropbox.exe", "adobe"}
+        heavy_names = {
+            "discord.exe",
+            "slack.exe",
+            "teams.exe",
+            "spotify.exe",
+            "steam.exe",
+            "epicgameslauncher.exe",
+            "onedrive.exe",
+            "dropbox.exe",
+            "adobe",
+        }
         for h in heavy_names:
             if h in lower:
                 return "High"
@@ -156,17 +177,19 @@ class StartupImpactAnalyzer:
                                 is_en = cls._read_startup_approved_state(hive, approved_key, name)
                                 impact = cls._calculate_impact(sz, os.path.basename(exe_p)) if is_en else "None"
 
-                                items.append(StartupAppItem(
-                                    name=name,
-                                    command=cmd,
-                                    executable_path=exe_p,
-                                    scope=scope,
-                                    registry_key=f"{'HKCU' if hive == winreg.HKEY_CURRENT_USER else 'HKLM'}\\{subkey}",
-                                    is_enabled=is_en,
-                                    impact_level=impact,
-                                    file_size_bytes=sz,
-                                    executable_exists=exists,
-                                ))
+                                items.append(
+                                    StartupAppItem(
+                                        name=name,
+                                        command=cmd,
+                                        executable_path=exe_p,
+                                        scope=scope,
+                                        registry_key=f"{'HKCU' if hive == winreg.HKEY_CURRENT_USER else 'HKLM'}\\{subkey}",
+                                        is_enabled=is_en,
+                                        impact_level=impact,
+                                        file_size_bytes=sz,
+                                        executable_exists=exists,
+                                    )
+                                )
                                 idx += 1
                             except OSError:
                                 break

@@ -29,6 +29,7 @@ def _make_fake_video(path: Path, payload: bytes, size_kb: int = 128):
 
 # --- primitives ---
 
+
 def test_fingerprint_is_list(tmp_path: Path):
     """Verify fingerprint is list via _make_fake_video, compute_video_fingerprint.
 
@@ -90,6 +91,7 @@ def test_video_compare_identity():
 
 # --- finder ---
 
+
 def test_finder_groups_identical_videos(tmp_path: Path):
     """Verify finder groups identical videos via VideoDuplicateFinder, finder.find_video_duplicates, groups.values.
 
@@ -134,6 +136,7 @@ def test_finder_respects_exclude_dirs(tmp_path: Path):
     _make_fake_video(tmp_path / "ta.mp4", b"dup" * 100)
     _make_fake_video(tmp_path / "tb.mp4", b"dup" * 100)
     from cortex_unified.core.config import Config
+
     cfg = Config()
     cfg.config_data["exclude_dirs"] = ["skip"]
     finder = VideoDuplicateFinder(str(tmp_path), config=cfg)

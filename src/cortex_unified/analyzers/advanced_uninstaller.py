@@ -70,6 +70,7 @@ import subprocess
 import sys
 import threading
 import time
+
 try:
     import winreg
 except ImportError:
@@ -81,10 +82,10 @@ from typing import Callable, Dict, List, Optional, Set, Tuple, Any
 
 from cortex_unified.system_tools.restore_point import RestorePointManager
 
-
 # ---------------------------------------------------------------------------
 # Data structures
 # ---------------------------------------------------------------------------
+
 
 @dataclass(frozen=True, slots=True)
 class AppInfo:
@@ -92,6 +93,7 @@ class AppInfo:
 
     Manages AppInfo operations and coordinates related state changes for the component.
     """
+
     id: str  # unique identifier
     name: str
     version: str
@@ -118,6 +120,7 @@ class AppInfo:
             dict: Dictionary mapping identifiers to status or values.
         """
         import dataclasses
+
         return dataclasses.asdict(self)
 
 
@@ -127,6 +130,7 @@ class LeftoverScanResult:
 
     Manages LeftoverScanResult operations and coordinates related state changes for the component.
     """
+
     files: List[str]
     registry_keys: List[str]
     services: List[str]
@@ -146,6 +150,7 @@ class LeftoverScanResult:
             dict: Dictionary mapping identifiers to status or values.
         """
         import dataclasses
+
         return dataclasses.asdict(self)
 
 
@@ -155,6 +160,7 @@ class UninstallResult:
 
     Manages UninstallResult operations and coordinates related state changes for the component.
     """
+
     app_id: str
     success: bool
     leftovers: LeftoverScanResult
@@ -166,6 +172,7 @@ class UninstallResult:
 # ---------------------------------------------------------------------------
 # Source enumerators
 # ---------------------------------------------------------------------------
+
 
 def _normalize_path(path: str) -> str:
     """_normalize_path.
@@ -229,22 +236,24 @@ def _get_registry_apps() -> List[AppInfo]:
                             is_system = vals.get("SystemComponent", 0) == 1
                             is_hidden = vals.get("NoDisplay", "") == "1" or name.startswith("Windows ")
 
-                            apps.append(AppInfo(
-                                id=f"reg_{hive_name}_{subname}",
-                                name=name,
-                                version=version,
-                                publisher=publisher,
-                                install_date=install_date,
-                                install_location=_normalize_path(location),
-                                uninstall_string=uninstall,
-                                quiet_uninstall_string=quiet,
-                                source="registry",
-                                source_id=subname,
-                                is_system=is_system,
-                                is_portable=False,
-                                is_hidden=is_hidden,
-                                size_mb=size,
-                            ))
+                            apps.append(
+                                AppInfo(
+                                    id=f"reg_{hive_name}_{subname}",
+                                    name=name,
+                                    version=version,
+                                    publisher=publisher,
+                                    install_date=install_date,
+                                    install_location=_normalize_path(location),
+                                    uninstall_string=uninstall,
+                                    quiet_uninstall_string=quiet,
+                                    source="registry",
+                                    source_id=subname,
+                                    is_system=is_system,
+                                    is_portable=False,
+                                    is_hidden=is_hidden,
+                                    size_mb=size,
+                                )
+                            )
                     except OSError:
                         pass
         except OSError:
@@ -269,6 +278,7 @@ def _get_steam_apps() -> List[AppInfo]:
         ]
         try:
             import winreg
+
             for hkey, subkey, val_name in (
                 (winreg.HKEY_CURRENT_USER, r"Software\Valve\Steam", "SteamPath"),
                 (winreg.HKEY_LOCAL_MACHINE, r"SOFTWARE\WOW6432Node\Valve\Steam", "InstallPath"),
@@ -286,6 +296,7 @@ def _get_steam_apps() -> List[AppInfo]:
 
         try:
             import psutil
+
             for part in psutil.disk_partitions(all=False):
                 mp = Path(part.mountpoint)
                 steam_paths.append(mp / "Steam")
@@ -311,30 +322,35 @@ foreach ($m in $matches) {{
 }}
 $apps | ConvertTo-Json
 """
-            rc, out, _ = subprocess.run(["powershell", "-NoProfile", "-Command", script],
-                                        capture_output=True, text=True, timeout=30)
+            rc, out, _ = subprocess.run(
+                ["powershell", "-NoProfile", "-Command", script], capture_output=True, text=True, timeout=30
+            )
             if rc == 0 and out.strip():
                 try:
                     games = json.loads(out)
                     if not isinstance(games, list):
                         games = [games]
                     for g in games:
-                        apps.append(AppInfo(
-                            id=f"steam_{g.get('AppID')}",
-                            name=g.get("Name", ""),
-                            version="",
-                            publisher="Steam",
-                            install_date="",
-                            install_location=_normalize_path(str(sp / "steamapps" / "common" / g.get("InstallDir", ""))),
-                            uninstall_string=f"steam://uninstall/{g.get('AppID')}",
-                            quiet_uninstall_string=None,
-                            source="steam",
-                            source_id=g.get("AppID", ""),
-                            is_system=False,
-                            is_portable=False,
-                            is_hidden=False,
-                            size_mb=0,
-                        ))
+                        apps.append(
+                            AppInfo(
+                                id=f"steam_{g.get('AppID')}",
+                                name=g.get("Name", ""),
+                                version="",
+                                publisher="Steam",
+                                install_date="",
+                                install_location=_normalize_path(
+                                    str(sp / "steamapps" / "common" / g.get("InstallDir", ""))
+                                ),
+                                uninstall_string=f"steam://uninstall/{g.get('AppID')}",
+                                quiet_uninstall_string=None,
+                                source="steam",
+                                source_id=g.get("AppID", ""),
+                                is_system=False,
+                                is_portable=False,
+                                is_hidden=False,
+                                size_mb=0,
+                            )
+                        )
                 except Exception:
                     pass
             break
@@ -353,29 +369,35 @@ def _get_chocolatey_apps() -> List[AppInfo]:
     """
     apps = []
     try:
-        rc, out, _ = subprocess.run(["choco", "list", "--local-only", "--limit-output", "--include-programs"],
-                                    capture_output=True, text=True, timeout=60)
+        rc, out, _ = subprocess.run(
+            ["choco", "list", "--local-only", "--limit-output", "--include-programs"],
+            capture_output=True,
+            text=True,
+            timeout=60,
+        )
         if rc == 0:
             for line in out.strip().splitlines():
                 parts = line.split("|")
                 if len(parts) >= 2:
                     name, version = parts[0], parts[1]
-                    apps.append(AppInfo(
-                        id=f"choco_{name}",
-                        name=name,
-                        version=version,
-                        publisher="Chocolatey",
-                        install_date="",
-                        install_location="",
-                        uninstall_string=f"choco uninstall {name} -y",
-                        quiet_uninstall_string=f"choco uninstall {name} -y",
-                        source="chocolatey",
-                        source_id=name,
-                        is_system=False,
-                        is_portable=False,
-                        is_hidden=False,
-                        size_mb=0,
-                    ))
+                    apps.append(
+                        AppInfo(
+                            id=f"choco_{name}",
+                            name=name,
+                            version=version,
+                            publisher="Chocolatey",
+                            install_date="",
+                            install_location="",
+                            uninstall_string=f"choco uninstall {name} -y",
+                            quiet_uninstall_string=f"choco uninstall {name} -y",
+                            source="chocolatey",
+                            source_id=name,
+                            is_system=False,
+                            is_portable=False,
+                            is_hidden=False,
+                            size_mb=0,
+                        )
+                    )
     except Exception:
         pass
     return apps
@@ -391,30 +413,33 @@ def _get_winget_apps() -> List[AppInfo]:
     """
     apps = []
     try:
-        rc, out, _ = subprocess.run(["winget", "list", "--disable-interactivity"],
-                                    capture_output=True, text=True, timeout=60)
+        rc, out, _ = subprocess.run(
+            ["winget", "list", "--disable-interactivity"], capture_output=True, text=True, timeout=60
+        )
         if rc == 0:
             lines = out.strip().splitlines()
             for line in lines[3:]:  # Skip header
                 parts = re.split(r"\s{2,}", line.strip())
                 if len(parts) >= 3:
                     name, id_, version = parts[0], parts[1], parts[2]
-                    apps.append(AppInfo(
-                        id=f"winget_{id_}",
-                        name=name,
-                        version=version,
-                        publisher="Winget",
-                        install_date="",
-                        install_location="",
-                        uninstall_string=f"winget uninstall {id_} --silent",
-                        quiet_uninstall_string=f"winget uninstall {id_} --silent",
-                        source="winget",
-                        source_id=id_,
-                        is_system=False,
-                        is_portable=False,
-                        is_hidden=False,
-                        size_mb=0,
-                    ))
+                    apps.append(
+                        AppInfo(
+                            id=f"winget_{id_}",
+                            name=name,
+                            version=version,
+                            publisher="Winget",
+                            install_date="",
+                            install_location="",
+                            uninstall_string=f"winget uninstall {id_} --silent",
+                            quiet_uninstall_string=f"winget uninstall {id_} --silent",
+                            source="winget",
+                            source_id=id_,
+                            is_system=False,
+                            is_portable=False,
+                            is_hidden=False,
+                            size_mb=0,
+                        )
+                    )
     except Exception:
         pass
     return apps
@@ -430,29 +455,30 @@ def _get_scoop_apps() -> List[AppInfo]:
     """
     apps = []
     try:
-        rc, out, _ = subprocess.run(["scoop", "list"],
-                                    capture_output=True, text=True, timeout=60)
+        rc, out, _ = subprocess.run(["scoop", "list"], capture_output=True, text=True, timeout=60)
         if rc == 0:
             for line in out.strip().splitlines()[3:]:  # Skip header
                 parts = line.split()
                 if len(parts) >= 2:
                     name, version = parts[0], parts[1]
-                    apps.append(AppInfo(
-                        id=f"scoop_{name}",
-                        name=name,
-                        version=version,
-                        publisher="Scoop",
-                        install_date="",
-                        install_location="",
-                        uninstall_string=f"scoop uninstall {name}",
-                        quiet_uninstall_string=f"scoop uninstall {name}",
-                        source="scoop",
-                        source_id=name,
-                        is_system=False,
-                        is_portable=True,
-                        is_hidden=False,
-                        size_mb=0,
-                    ))
+                    apps.append(
+                        AppInfo(
+                            id=f"scoop_{name}",
+                            name=name,
+                            version=version,
+                            publisher="Scoop",
+                            install_date="",
+                            install_location="",
+                            uninstall_string=f"scoop uninstall {name}",
+                            quiet_uninstall_string=f"scoop uninstall {name}",
+                            source="scoop",
+                            source_id=name,
+                            is_system=False,
+                            is_portable=True,
+                            is_hidden=False,
+                            size_mb=0,
+                        )
+                    )
     except Exception:
         pass
     return apps
@@ -471,29 +497,32 @@ def _get_store_apps() -> List[AppInfo]:
         script = """
 Get-AppxPackage -AllUsers | Select-Object PackageFullName, Name, Version, Publisher, InstallLocation, PackageFamilyName | ConvertTo-Json -Depth 3
 """
-        rc, out, _ = subprocess.run(["powershell", "-NoProfile", "-Command", script],
-                                    capture_output=True, text=True, timeout=60)
+        rc, out, _ = subprocess.run(
+            ["powershell", "-NoProfile", "-Command", script], capture_output=True, text=True, timeout=60
+        )
         if rc == 0 and out.strip():
             pkgs = json.loads(out)
             if not isinstance(pkgs, list):
                 pkgs = [pkgs]
             for p in pkgs:
-                apps.append(AppInfo(
-                    id=f"store_{p.get('PackageFamilyName', '')}",
-                    name=p.get("Name", ""),
-                    version=p.get("Version", ""),
-                    publisher=p.get("Publisher", ""),
-                    install_date="",
-                    install_location=p.get("InstallLocation", ""),
-                    uninstall_string=f"Remove-AppxPackage -Package {p.get('PackageFullName', '')}",
-                    quiet_uninstall_string=f"Remove-AppxPackage -Package {p.get('PackageFullName', '')}",
-                    source="store",
-                    source_id=p.get("PackageFamilyName", ""),
-                    is_system=False,
-                    is_portable=False,
-                    is_hidden=False,
-                    size_mb=0,
-                ))
+                apps.append(
+                    AppInfo(
+                        id=f"store_{p.get('PackageFamilyName', '')}",
+                        name=p.get("Name", ""),
+                        version=p.get("Version", ""),
+                        publisher=p.get("Publisher", ""),
+                        install_date="",
+                        install_location=p.get("InstallLocation", ""),
+                        uninstall_string=f"Remove-AppxPackage -Package {p.get('PackageFullName', '')}",
+                        quiet_uninstall_string=f"Remove-AppxPackage -Package {p.get('PackageFullName', '')}",
+                        source="store",
+                        source_id=p.get("PackageFamilyName", ""),
+                        is_system=False,
+                        is_portable=False,
+                        is_hidden=False,
+                        size_mb=0,
+                    )
+                )
     except Exception:
         pass
     return apps
@@ -512,29 +541,32 @@ def _get_windows_features() -> List[AppInfo]:
         script = """
 Get-WindowsOptionalFeature -Online | Where-Object {$_.State -eq 'Enabled'} | Select-Object FeatureName, DisplayName, Description | ConvertTo-Json -Depth 3
 """
-        rc, out, _ = subprocess.run(["powershell", "-NoProfile", "-Command", script],
-                                    capture_output=True, text=True, timeout=60)
+        rc, out, _ = subprocess.run(
+            ["powershell", "-NoProfile", "-Command", script], capture_output=True, text=True, timeout=60
+        )
         if rc == 0 and out.strip():
             feats = json.loads(out)
             if not isinstance(feats, list):
                 feats = [feats]
             for f in feats:
-                apps.append(AppInfo(
-                    id=f"feature_{f.get('FeatureName', '')}",
-                    name=f.get("DisplayName", f.get("FeatureName", "")),
-                    version="",
-                    publisher="Microsoft",
-                    install_date="",
-                    install_location="",
-                    uninstall_string=f"Dism /Online /Disable-Feature /FeatureName:{f.get('FeatureName', '')} /NoRestart",
-                    quiet_uninstall_string=f"Dism /Online /Disable-Feature /FeatureName:{f.get('FeatureName', '')} /NoRestart /Quiet",
-                    source="windows_feature",
-                    source_id=f.get("FeatureName", ""),
-                    is_system=True,
-                    is_portable=False,
-                    is_hidden=False,
-                    size_mb=0,
-                ))
+                apps.append(
+                    AppInfo(
+                        id=f"feature_{f.get('FeatureName', '')}",
+                        name=f.get("DisplayName", f.get("FeatureName", "")),
+                        version="",
+                        publisher="Microsoft",
+                        install_date="",
+                        install_location="",
+                        uninstall_string=f"Dism /Online /Disable-Feature /FeatureName:{f.get('FeatureName', '')} /NoRestart",
+                        quiet_uninstall_string=f"Dism /Online /Disable-Feature /FeatureName:{f.get('FeatureName', '')} /NoRestart /Quiet",
+                        source="windows_feature",
+                        source_id=f.get("FeatureName", ""),
+                        is_system=True,
+                        is_portable=False,
+                        is_hidden=False,
+                        size_mb=0,
+                    )
+                )
     except Exception:
         pass
     return apps
@@ -556,6 +588,7 @@ def _get_portable_apps() -> List[AppInfo]:
     ]
     try:
         import psutil
+
         for part in psutil.disk_partitions(all=False):
             mp = Path(part.mountpoint)
             portable_roots.append(mp / "PortableApps")
@@ -569,27 +602,32 @@ def _get_portable_apps() -> List[AppInfo]:
                 try:
                     # Quick check: has version info
                     import subprocess
+
                     rc, out, _ = subprocess.run(
                         ["powershell", "-Command", f"(Get-Item '{exe}').VersionInfo"],
-                        capture_output=True, text=True, timeout=10
+                        capture_output=True,
+                        text=True,
+                        timeout=10,
                     )
                     if rc == 0:
-                        apps.append(AppInfo(
-                            id=f"portable_{hashlib.md5(str(exe).encode()).hexdigest()[:8]}",
-                            name=exe.stem,
-                            version="",
-                            publisher="Portable",
-                            install_date="",
-                            install_location=str(exe.parent),
-                            uninstall_string=f"del \"{exe}\"",
-                            quiet_uninstall_string=f"del /q \"{exe}\"",
-                            source="portable",
-                            source_id=str(exe),
-                            is_system=False,
-                            is_portable=True,
-                            is_hidden=False,
-                            size_mb=exe.stat().st_size / (1024*1024),
-                        ))
+                        apps.append(
+                            AppInfo(
+                                id=f"portable_{hashlib.md5(str(exe).encode()).hexdigest()[:8]}",
+                                name=exe.stem,
+                                version="",
+                                publisher="Portable",
+                                install_date="",
+                                install_location=str(exe.parent),
+                                uninstall_string=f'del "{exe}"',
+                                quiet_uninstall_string=f'del /q "{exe}"',
+                                source="portable",
+                                source_id=str(exe),
+                                is_system=False,
+                                is_portable=True,
+                                is_hidden=False,
+                                size_mb=exe.stat().st_size / (1024 * 1024),
+                            )
+                        )
                 except Exception:
                     pass
     return apps
@@ -598,6 +636,7 @@ def _get_portable_apps() -> List[AppInfo]:
 # ---------------------------------------------------------------------------
 # Leftover scanner
 # ---------------------------------------------------------------------------
+
 
 def _scan_leftovers(app: AppInfo, pre_snapshot: Dict[str, Set[str]]) -> LeftoverScanResult:
     """Compare pre/post snapshots to find leftovers.
@@ -637,7 +676,7 @@ def _scan_leftovers(app: AppInfo, pre_snapshot: Dict[str, Set[str]]) -> Leftover
                     try:
                         sz = f.stat().st_size
                         files.append(str(f))
-                        total_size += sz / (1024*1024)
+                        total_size += sz / (1024 * 1024)
                     except Exception:
                         pass
 
@@ -673,6 +712,7 @@ def _scan_leftovers(app: AppInfo, pre_snapshot: Dict[str, Set[str]]) -> Leftover
 # ---------------------------------------------------------------------------
 # Core uninstaller
 # ---------------------------------------------------------------------------
+
 
 class AdvancedUninstaller:
     """Advanceduninstaller.
@@ -783,14 +823,16 @@ class AdvancedUninstaller:
             if self.cancel_event.is_set():
                 break
             result = self._uninstall_one(app, force, scan_leftovers)
-            results.append(UninstallResult(
-                app_id=app.id,
-                success=result[0],
-                leftovers=result[1],
-                duration_seconds=result[2],
-                error=result[3],
-                restore_point=restore_point,
-            ))
+            results.append(
+                UninstallResult(
+                    app_id=app.id,
+                    success=result[0],
+                    leftovers=result[1],
+                    duration_seconds=result[2],
+                    error=result[3],
+                    restore_point=restore_point,
+                )
+            )
         return results
 
     def _uninstall_one(
@@ -884,11 +926,9 @@ class AdvancedUninstaller:
         msi_match = re.search(r"/[Xx]\{([0-9A-Fa-f-]{36})\}", cmd)
         if msi_match or lower.endswith(".msi"):
             product = msi_match.group(1) if msi_match else exe
-            msi_argv = ["msiexec", "/x", f"{{{product}}}",
-                        "/quiet", "/norestart"]
+            msi_argv = ["msiexec", "/x", f"{{{product}}}", "/quiet", "/norestart"]
             try:
-                proc = subprocess.run(msi_argv, capture_output=True,
-                                      text=True, timeout=1800)
+                proc = subprocess.run(msi_argv, capture_output=True, text=True, timeout=1800)
             except Exception as exc:
                 return False, str(exc)
             # msiexec: 0 = success, 3010 = success, reboot required.
@@ -900,22 +940,19 @@ class AdvancedUninstaller:
         if lower.startswith(("remove-appxpackage", "get-appxpackage")):
             try:
                 proc = subprocess.run(
-                    ["powershell", "-NoProfile", "-Command", cmd],
-                    capture_output=True, text=True, timeout=600)
+                    ["powershell", "-NoProfile", "-Command", cmd], capture_output=True, text=True, timeout=600
+                )
             except Exception as exc:
                 return False, str(exc)
-            return proc.returncode == 0, (None if proc.returncode == 0
-                                          else proc.stderr[-300:])
+            return proc.returncode == 0, (None if proc.returncode == 0 else proc.stderr[-300:])
 
         # Everything else: run argv as-is when the exe resolves, else via
         # cmd /c for strings that rely on shell resolution.
         try:
             if Path(exe).exists():
-                proc = subprocess.run(argv, capture_output=True, text=True,
-                                      timeout=1800)
+                proc = subprocess.run(argv, capture_output=True, text=True, timeout=1800)
             else:
-                proc = subprocess.run(["cmd", "/c", cmd], capture_output=True,
-                                      text=True, timeout=1800)
+                proc = subprocess.run(["cmd", "/c", cmd], capture_output=True, text=True, timeout=1800)
         except Exception as exc:
             return False, str(exc)
         if proc.returncode == 0:
@@ -941,8 +978,12 @@ class AdvancedUninstaller:
 
         leftovers = self._scan_leftovers_deep(app)
         ok = removed_dir or not (app.install_location and Path(app.install_location).exists())
-        return ok, leftovers, time.time() - t0, None if ok else \
-            f"Install directory {app.install_location} could not be removed"
+        return (
+            ok,
+            leftovers,
+            time.time() - t0,
+            None if ok else f"Install directory {app.install_location} could not be removed",
+        )
 
     def _remove_install_dir(self, app: AppInfo) -> bool:
         """Delete the app's install directory if it is safe to do so.
@@ -971,10 +1012,12 @@ class AdvancedUninstaller:
             self.progress(f"Refusing to delete user profile {path}")
             return False
 
-        for env, label in (("SystemRoot", "Windows directory"),
-                            ("ProgramFiles", "Program Files"),
-                            ("ProgramFiles(x86)", "Program Files (x86)"),
-                            ("ProgramData", "ProgramData")):
+        for env, label in (
+            ("SystemRoot", "Windows directory"),
+            ("ProgramFiles", "Program Files"),
+            ("ProgramFiles(x86)", "Program Files (x86)"),
+            ("ProgramData", "ProgramData"),
+        ):
             base = os.environ.get(env)
             if not base:
                 continue
@@ -1003,14 +1046,14 @@ class AdvancedUninstaller:
         if not name or len(name.strip()) < 3:
             return
         from cortex_unified.core.proc import is_protected_process
+
         n_clean = name.strip().lower()
         if is_protected_process(n_clean) or n_clean in ("explorer", "windows", "system", "microsoft"):
             return
         try:
             # Match exact process name or name + .exe, never unbounded wildcard
             exe_target = n_clean if n_clean.endswith(".exe") else f"{n_clean}.exe"
-            subprocess.run(["taskkill", "/F", "/IM", exe_target],
-                           capture_output=True, timeout=10)
+            subprocess.run(["taskkill", "/F", "/IM", exe_target], capture_output=True, timeout=10)
         except Exception:
             pass
 
@@ -1075,11 +1118,10 @@ class AdvancedUninstaller:
         """
         pattern = re.compile(rf"(?i)(?:^|[^a-z0-9]){re.escape(name)}(?:[^a-z0-9]|$)")
         try:
-            proc = subprocess.run(["sc", "query", "state=", "all"],
-                                  capture_output=True, text=True, timeout=60)
-            candidates = [line.split(":", 1)[1].strip()
-                          for line in proc.stdout.splitlines()
-                          if line.startswith("SERVICE_NAME:")]
+            proc = subprocess.run(["sc", "query", "state=", "all"], capture_output=True, text=True, timeout=60)
+            candidates = [
+                line.split(":", 1)[1].strip() for line in proc.stdout.splitlines() if line.startswith("SERVICE_NAME:")
+            ]
         except Exception:
             candidates = []
 
@@ -1088,12 +1130,10 @@ class AdvancedUninstaller:
             owned = False
             try:
                 with winreg.OpenKey(
-                        winreg.HKEY_LOCAL_MACHINE,
-                        rf"SYSTEM\CurrentControlSet\Services\{svc}",
-                        0, winreg.KEY_READ) as key:
+                    winreg.HKEY_LOCAL_MACHINE, rf"SYSTEM\CurrentControlSet\Services\{svc}", 0, winreg.KEY_READ
+                ) as key:
                     image, _ = winreg.QueryValueEx(key, "ImagePath")
-                if pattern.search(svc) or (isinstance(image, str)
-                                           and pattern.search(image)):
+                if pattern.search(svc) or (isinstance(image, str) and pattern.search(image)):
                     owned = True
             except OSError:
                 owned = pattern.search(svc) is not None
@@ -1102,10 +1142,11 @@ class AdvancedUninstaller:
 
         try:
             proc = subprocess.run(
-                ["schtasks", "/Query", "/FO", "CSV", "/NH"],
-                capture_output=True, text=True, timeout=120)
+                ["schtasks", "/Query", "/FO", "CSV", "/NH"], capture_output=True, text=True, timeout=120
+            )
             import csv
             import io
+
             for row in csv.reader(io.StringIO(proc.stdout)):
                 if not row:
                     continue
@@ -1113,8 +1154,7 @@ class AdvancedUninstaller:
                 if task_name.startswith("\\") or not task_name:
                     continue
                 if pattern.search(task_name):
-                    subprocess.run(["schtasks", "/Delete", "/TN", task_name,
-                                    "/F"], capture_output=True)
+                    subprocess.run(["schtasks", "/Delete", "/TN", task_name, "/F"], capture_output=True)
         except Exception:
             pass
 
@@ -1134,8 +1174,7 @@ class AdvancedUninstaller:
             return LeftoverScanResult([], [], [], [], [], [], [], [], 0.0)
 
         candidates: List[Path] = []
-        for env in ("ProgramFiles", "ProgramFiles(x86)", "LOCALAPPDATA",
-                    "APPDATA", "USERPROFILE"):
+        for env in ("ProgramFiles", "ProgramFiles(x86)", "LOCALAPPDATA", "APPDATA", "USERPROFILE"):
             base = os.environ.get(env)
             if base:
                 candidates.append(Path(base) / name)
@@ -1163,17 +1202,22 @@ class AdvancedUninstaller:
                 r"SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall",
             ):
                 try:
-                    with winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE,
-                                        rf"{root}\{app.source_id}") as _:
+                    with winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, rf"{root}\{app.source_id}") as _:
                         registry_keys.append(f"HKLM\\{root}\\{app.source_id}")
                     break
                 except OSError:
                     continue
 
         return LeftoverScanResult(
-            files=files, registry_keys=registry_keys, services=[],
-            tasks=[], startup_entries=[], drivers=[], context_menu=[],
-            browser_extensions=[], total_size_mb=total,
+            files=files,
+            registry_keys=registry_keys,
+            services=[],
+            tasks=[],
+            startup_entries=[],
+            drivers=[],
+            context_menu=[],
+            browser_extensions=[],
+            total_size_mb=total,
         )
 
 

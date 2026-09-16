@@ -38,6 +38,7 @@ class AiArtifactInfo:
     Describes a Recall/Copilot/Edge/WAL file with its size, category, and
     whether it is safe to clean.
     """
+
     name: str
     category: str  # "Recall", "Copilot Cache", "SQLite WAL", "Edge AI"
     path: str
@@ -70,6 +71,7 @@ class AiTelemetryReport:
     Totals disk usage split into WAL-journal versus cache bytes and flags
     whether Recall appears configured.
     """
+
     artifacts: List[AiArtifactInfo] = field(default_factory=list)
     total_size_bytes: int = 0
     wal_journal_bytes: int = 0
@@ -100,6 +102,7 @@ class AiCleanResult:
     Counts cleaned items, reclaimed bytes, and truncated WAL journals;
     honors dry-run (no deletions).
     """
+
     cleaned_items: int = 0
     freed_bytes: int = 0
     truncated_wal_count: int = 0
@@ -152,43 +155,53 @@ class AiTelemetryCleaner:
         if lad:
             lad_p = Path(lad)
             # Windows Recall Core AI Platform
-            candidates.append((
-                "Windows Recall Semantic Snapshot Store",
-                "Recall",
-                lad_p / "CoreAIPlatform.00" / "UKP",
-                "Local vector embeddings and captured application snapshots for Windows Recall.",
-            ))
+            candidates.append(
+                (
+                    "Windows Recall Semantic Snapshot Store",
+                    "Recall",
+                    lad_p / "CoreAIPlatform.00" / "UKP",
+                    "Local vector embeddings and captured application snapshots for Windows Recall.",
+                )
+            )
             # Windows Copilot Store App LocalCache
-            candidates.append((
-                "Copilot App Temporary Cache",
-                "Copilot Cache",
-                lad_p / "Packages" / "Microsoft.Copilot_8wekyb3d8bbwe" / "LocalCache",
-                "Transient cache and session states from the standalone Copilot UWP app.",
-            ))
+            candidates.append(
+                (
+                    "Copilot App Temporary Cache",
+                    "Copilot Cache",
+                    lad_p / "Packages" / "Microsoft.Copilot_8wekyb3d8bbwe" / "LocalCache",
+                    "Transient cache and session states from the standalone Copilot UWP app.",
+                )
+            )
             # Windows AI Provider Package Cache
-            candidates.append((
-                "Windows AI Copilot Provider Cache",
-                "Copilot Cache",
-                lad_p / "Packages" / "Microsoft.Windows.Ai.Copilot.Provider_8wekyb3d8bbwe" / "LocalCache",
-                "System background worker cache for Windows Copilot integration.",
-            ))
+            candidates.append(
+                (
+                    "Windows AI Copilot Provider Cache",
+                    "Copilot Cache",
+                    lad_p / "Packages" / "Microsoft.Windows.Ai.Copilot.Provider_8wekyb3d8bbwe" / "LocalCache",
+                    "System background worker cache for Windows Copilot integration.",
+                )
+            )
             # Microsoft Edge AI / Copilot IndexedDB
-            candidates.append((
-                "Edge Copilot Sidebar Storage",
-                "Edge AI",
-                lad_p / "Microsoft" / "Edge" / "User Data" / "Default" / "IndexedDB",
-                "Offline chat sessions and generated prompt artifacts in Edge Copilot.",
-            ))
+            candidates.append(
+                (
+                    "Edge Copilot Sidebar Storage",
+                    "Edge AI",
+                    lad_p / "Microsoft" / "Edge" / "User Data" / "Default" / "IndexedDB",
+                    "Offline chat sessions and generated prompt artifacts in Edge Copilot.",
+                )
+            )
 
         if pdata:
             pdata_p = Path(pdata)
             # Capability Access Manager database root (noted in 24H2 WAL bloat)
-            candidates.append((
-                "Capability Access Manager Store",
-                "SQLite WAL",
-                pdata_p / "Microsoft" / "Windows" / "AppReadiness",
-                "Windows capability and privacy access database logs.",
-            ))
+            candidates.append(
+                (
+                    "Capability Access Manager Store",
+                    "SQLite WAL",
+                    pdata_p / "Microsoft" / "Windows" / "AppReadiness",
+                    "Windows capability and privacy access database logs.",
+                )
+            )
 
         return candidates
 

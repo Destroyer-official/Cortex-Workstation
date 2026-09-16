@@ -24,24 +24,28 @@ T = TypeVar("T")
 
 try:
     import smbclient
+
     HAS_SMB = True
 except ImportError:
     HAS_SMB = False
 
 try:
     import paramiko
+
     HAS_PARAMIKO = True
 except ImportError:
     HAS_PARAMIKO = False
 
 try:
     import keyring
+
     HAS_KEYRING = True
 except ImportError:
     HAS_KEYRING = False
 
 try:
     from webdav3.client import Client as WebDAVClient
+
     HAS_WEBDAV = True
 except ImportError:
     HAS_WEBDAV = False
@@ -49,6 +53,7 @@ except ImportError:
 
 class NetworkProtocol(Enum):
     """Supported network file system protocols."""
+
     SMB = auto()
     FTP = auto()
     FTPS = auto()
@@ -59,6 +64,7 @@ class NetworkProtocol(Enum):
 @dataclass
 class NetworkFile:
     """Represents a file on a network share."""
+
     protocol: NetworkProtocol
     host: str
     path: str
@@ -72,6 +78,7 @@ class NetworkFile:
 @dataclass
 class NetworkConnection:
     """A cached network connection."""
+
     protocol: NetworkProtocol
     host: str
     port: int
@@ -232,15 +239,17 @@ class SMBProvider(NetworkFS):
             with self._lock:
                 for entry in smbclient.scandir(full_path):
                     stat_info = entry.stat()
-                    entries.append(NetworkFile(
-                        protocol=self.protocol,
-                        host=self._host,
-                        path=_path_join(path, entry.name),
-                        name=entry.name,
-                        is_dir=entry.is_dir(),
-                        size=stat_info.st_size if not entry.is_dir() else 0,
-                        modified_ms=int((stat_info.st_mtime or 0) * 1000),
-                    ))
+                    entries.append(
+                        NetworkFile(
+                            protocol=self.protocol,
+                            host=self._host,
+                            path=_path_join(path, entry.name),
+                            name=entry.name,
+                            is_dir=entry.is_dir(),
+                            size=stat_info.st_size if not entry.is_dir() else 0,
+                            modified_ms=int((stat_info.st_mtime or 0) * 1000),
+                        )
+                    )
             return entries
         except Exception as e:
             log.warning("SMB list failed: %s", e)
@@ -364,7 +373,7 @@ class FTPProvider(NetworkFS):
                     log.warning("FTP connection failed after %d attempts: %s", self._max_retries, e)
                     self._connected = False
                     return False
-                time.sleep(2 ** attempt)
+                time.sleep(2**attempt)
         return False
 
     def _close_conn(self) -> None:
@@ -402,7 +411,7 @@ class FTPProvider(NetworkFS):
                 if attempt == self._max_retries - 1:
                     raise
                 self._reconnect()
-                time.sleep(2 ** attempt)
+                time.sleep(2**attempt)
         raise RuntimeError("FTP operation failed after retries")
 
     def list_files(self, path: str = "/") -> list[NetworkFile]:
@@ -410,6 +419,7 @@ class FTPProvider(NetworkFS):
         if not self.is_connected():
             return []
         try:
+
             def _list(ftp: ftplib.FTP) -> list[NetworkFile]:
                 """cwd into the path and convert MLSD facts into
                 NetworkFile rows (skipping '.'/'..')."""
@@ -419,15 +429,18 @@ class FTPProvider(NetworkFS):
                     if name in (".", ".."):
                         continue
                     is_dir = facts.get("type", "") == "dir"
-                    entries.append(NetworkFile(
-                        protocol=self.protocol,
-                        host=self._host,
-                        path=_path_join(path, name),
-                        name=name,
-                    is_dir=is_dir,
-                    size=int(facts.get("size", 0)),
-                ))
+                    entries.append(
+                        NetworkFile(
+                            protocol=self.protocol,
+                            host=self._host,
+                            path=_path_join(path, name),
+                            name=name,
+                            is_dir=is_dir,
+                            size=int(facts.get("size", 0)),
+                        )
+                    )
                 return entries
+
             return self._safe_operation(_list)
         except Exception as e:
             log.warning("FTP list failed: %s", e)
@@ -439,11 +452,13 @@ class FTPProvider(NetworkFS):
             return False
         try:
             tmp_path = local_path + ".tmp"
+
             def _download(ftp: ftplib.FTP) -> None:
                 """Stream RETR into the .tmp file with f.write as the
                 block callback."""
                 with open(tmp_path, "wb") as f:
                     ftp.retrbinary(f"RETR {remote_path}", f.write)
+
             self._safe_operation(_download)
             os.replace(tmp_path, local_path)
             return True
@@ -456,10 +471,12 @@ class FTPProvider(NetworkFS):
         if not self.is_connected():
             return False
         try:
+
             def _upload(ftp: ftplib.FTP) -> None:
                 """Stream the local file out via STOR."""
                 with open(local_path, "rb") as f:
                     ftp.storbinary(f"STOR {remote_path}", f)
+
             self._safe_operation(_upload)
             return True
         except Exception as e:
@@ -556,7 +573,7 @@ class SFTPProvider(NetworkFS):
                     log.warning("SFTP connection failed after %d attempts: %s", self._max_retries, e)
                     self._connected = False
                     return False
-                time.sleep(2 ** attempt)
+                time.sleep(2**attempt)
         return False
 
     def _close_both(self) -> None:
@@ -596,7 +613,7 @@ class SFTPProvider(NetworkFS):
                 if attempt == self._max_retries - 1:
                     raise
                 self._reconnect()
-                time.sleep(2 ** attempt)
+                time.sleep(2**attempt)
         raise RuntimeError("SFTP operation failed after retries")
 
     def list_files(self, path: str = ".") -> list[NetworkFile]:
@@ -604,21 +621,25 @@ class SFTPProvider(NetworkFS):
         if not self.is_connected():
             return []
         try:
+
             def _list(sftp: paramiko.SFTPClient) -> list[NetworkFile]:
                 """Convert listdir_attr results into NetworkFile rows
                 (dir detection via stat.S_ISDIR)."""
                 entries: list[NetworkFile] = []
                 for attr in sftp.listdir_attr(path):
-                    entries.append(NetworkFile(
-                        protocol=self.protocol,
-                        host=self._host,
-                        path=_path_join(path, attr.filename),
-                        name=attr.filename,
-                        is_dir=stat.S_ISDIR(attr.st_mode),
-                        size=attr.st_size or 0,
-                        modified_ms=int((attr.st_mtime or 0) * 1000),
-                    ))
+                    entries.append(
+                        NetworkFile(
+                            protocol=self.protocol,
+                            host=self._host,
+                            path=_path_join(path, attr.filename),
+                            name=attr.filename,
+                            is_dir=stat.S_ISDIR(attr.st_mode),
+                            size=attr.st_size or 0,
+                            modified_ms=int((attr.st_mtime or 0) * 1000),
+                        )
+                    )
                 return entries
+
             return self._safe_operation(_list)
         except Exception as e:
             log.warning("SFTP list failed: %s", e)
@@ -694,8 +715,9 @@ class WebDAVProvider(NetworkFS):
         """Return WebDAV as this provider's protocol."""
         return NetworkProtocol.WEBDAV
 
-    def connect(self, host: str, port: int = 443, username: str = "", password: str = "",
-                use_tls: bool | None = None) -> bool:
+    def connect(
+        self, host: str, port: int = 443, username: str = "", password: str = "", use_tls: bool | None = None
+    ) -> bool:
         """Build a WebDAV client for the given host."""
         if not HAS_WEBDAV:
             log.warning("webdavclient3 not installed; WebDAV unavailable")
@@ -745,14 +767,16 @@ class WebDAVProvider(NetworkFS):
                 if name in (".", "..", ""):
                     continue
                 is_dir = item.get("is_dir", False)
-                entries.append(NetworkFile(
-                    protocol=self.protocol,
-                    host=self._host,
-                    path=_path_join(path, name),
-                    name=name,
-                    is_dir=is_dir,
-                    size=int(item.get("size", 0)) if not is_dir else 0,
-                ))
+                entries.append(
+                    NetworkFile(
+                        protocol=self.protocol,
+                        host=self._host,
+                        path=_path_join(path, name),
+                        name=name,
+                        is_dir=is_dir,
+                        size=int(item.get("size", 0)) if not is_dir else 0,
+                    )
+                )
             return entries
         except Exception as e:
             log.warning("WebDAV list failed: %s", e)
@@ -930,8 +954,9 @@ class NetworkManager(QObject):
         """Return the active provider for a protocol."""
         return self._active.get(protocol)
 
-    def connect(self, protocol: NetworkProtocol, host: str, port: int = 0,
-                username: str = "", password: str = "") -> bool:
+    def connect(
+        self, protocol: NetworkProtocol, host: str, port: int = 0, username: str = "", password: str = ""
+    ) -> bool:
         """Connect via pool cache or a new provider instance."""
         if port == 0:
             port = self._default_port(protocol)
@@ -951,15 +976,20 @@ class NetworkManager(QObject):
         if success:
             self._active[protocol] = provider
             self._pool.put(protocol, host, provider)
-            self._recent = [c for c in self._recent
-                            if not (c.protocol == protocol and c.host == host)]
-            self._recent.append(NetworkConnection(
-                protocol=protocol, host=host, port=port,
-                username=username, is_connected=True,
-                last_used=time.time(), conn=provider,
-            ))
+            self._recent = [c for c in self._recent if not (c.protocol == protocol and c.host == host)]
+            self._recent.append(
+                NetworkConnection(
+                    protocol=protocol,
+                    host=host,
+                    port=port,
+                    username=username,
+                    is_connected=True,
+                    last_used=time.time(),
+                    conn=provider,
+                )
+            )
             if len(self._recent) > self._MAX_RECENT:
-                self._recent = self._recent[-self._MAX_RECENT:]
+                self._recent = self._recent[-self._MAX_RECENT :]
 
         self.connection_changed.emit(host, success)
         return success
@@ -988,12 +1018,10 @@ class NetworkManager(QObject):
         self._recent = [c for c in self._recent if c.is_connected]
         return verified
 
-    def store_credentials(self, protocol: NetworkProtocol, host: str,
-                          username: str, password: str) -> None:
+    def store_credentials(self, protocol: NetworkProtocol, host: str, username: str, password: str) -> None:
         """Store credentials for a protocol host."""
         store_credential(f"{protocol.name}_{host}", username, password)
 
-    def get_credentials(self, protocol: NetworkProtocol, host: str,
-                        username: str) -> str:
+    def get_credentials(self, protocol: NetworkProtocol, host: str, username: str) -> str:
         """Retrieve stored credentials for a protocol host."""
         return get_credential(f"{protocol.name}_{host}", username)

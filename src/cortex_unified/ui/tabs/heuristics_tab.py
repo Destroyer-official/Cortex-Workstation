@@ -8,12 +8,33 @@ from pathlib import Path
 from typing import List, Dict, Any, Optional, Union
 
 from PySide6.QtWidgets import (
-    QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLabel,
-    QLineEdit, QCheckBox, QTableWidget, QTableWidgetItem,
-    QProgressBar, QGroupBox, QFormLayout, QFileDialog,
-    QMessageBox, QHeaderView, QListWidget, QRadioButton,
-    QComboBox, QSplitter, QTreeWidget, QTreeWidgetItem, QTextEdit,
-    QSpinBox, QTabWidget, QAbstractItemView, QSizePolicy, QListWidgetItem
+    QWidget,
+    QVBoxLayout,
+    QHBoxLayout,
+    QPushButton,
+    QLabel,
+    QLineEdit,
+    QCheckBox,
+    QTableWidget,
+    QTableWidgetItem,
+    QProgressBar,
+    QGroupBox,
+    QFormLayout,
+    QFileDialog,
+    QMessageBox,
+    QHeaderView,
+    QListWidget,
+    QRadioButton,
+    QComboBox,
+    QSplitter,
+    QTreeWidget,
+    QTreeWidgetItem,
+    QTextEdit,
+    QSpinBox,
+    QTabWidget,
+    QAbstractItemView,
+    QSizePolicy,
+    QListWidgetItem,
 )
 from PySide6.QtCore import QThread, Signal, Qt, QObject, QTimer
 from PySide6.QtGui import QIcon, QFont, QTextCursor
@@ -28,8 +49,9 @@ from cortex_unified.analyzers.czkawka_tools import BadExtensionFinder, BadNamesF
 class BadFilesWorker(QThread):
     """QThread worker finding magic-byte extension mismatches via BadExtensionFinder and illegal names via BadNamesFinder.
 
-        Emits finished with result dicts and error on failure.
+    Emits finished with result dicts and error on failure.
     """
+
     finished = Signal(list)
     error = Signal(str)
 
@@ -54,21 +76,25 @@ class BadFilesWorker(QThread):
             # 1. Bad extensions
             ext_finder = BadExtensionFinder(root=self.root_path)
             for item in ext_finder.find():
-                results.append({
-                    "item": str(item.path),
-                    "type": "Extension Mismatch",
-                    "confidence": "High (Magic bytes)",
-                    "detail": f"Actual {item.actual} vs claimed {item.claimed}",
-                })
+                results.append(
+                    {
+                        "item": str(item.path),
+                        "type": "Extension Mismatch",
+                        "confidence": "High (Magic bytes)",
+                        "detail": f"Actual {item.actual} vs claimed {item.claimed}",
+                    }
+                )
             # 2. Bad names
             name_finder = BadNamesFinder(root=self.root_path)
             for path in name_finder.find():
-                results.append({
-                    "item": str(path),
-                    "type": "Invalid Name",
-                    "confidence": "100%",
-                    "detail": "Reserved/illegal characters or length",
-                })
+                results.append(
+                    {
+                        "item": str(path),
+                        "type": "Invalid Name",
+                        "confidence": "100%",
+                        "detail": "Reserved/illegal characters or length",
+                    }
+                )
             self.finished.emit(results)
         except Exception as exc:
             self.error.emit(str(exc))
@@ -77,8 +103,9 @@ class BadFilesWorker(QThread):
 class HeuristicsScanWorker(QThread):
     """QThread worker scanning orphaned leftovers via LeftoverDetector with a temp/cache-dir fallback scan.
 
-        Emits finished with result dicts and error on failure.
+    Emits finished with result dicts and error on failure.
     """
+
     finished = Signal(list)
     error = Signal(str)
 
@@ -108,27 +135,32 @@ class HeuristicsScanWorker(QThread):
             results = []
             try:
                 from cortex_unified.analyzers.leftover_detector import LeftoverDetector
+
                 detector = LeftoverDetector()
                 leftovers = detector.scan(Path(self.path))
                 for item in leftovers:
-                    results.append({
-                        "item": str(getattr(item, 'path', item)),
-                        "type": getattr(item, 'kind', 'Orphaned Leftover'),
-                        "confidence": f"{getattr(item, 'confidence', self.confidence)}%",
-                        "detail": f"{getattr(item, 'size', 0):,} bytes",
-                    })
+                    results.append(
+                        {
+                            "item": str(getattr(item, "path", item)),
+                            "type": getattr(item, "kind", "Orphaned Leftover"),
+                            "confidence": f"{getattr(item, 'confidence', self.confidence)}%",
+                            "detail": f"{getattr(item, 'size', 0):,} bytes",
+                        }
+                    )
             except Exception:
                 # Fallback scan for common orphan patterns
                 p = Path(self.path)
                 if p.exists():
                     for entry in p.iterdir():
-                        if entry.is_dir() and entry.name.lower().startswith(('temp', 'cache', 'old_', 'backup_')):
-                            results.append({
-                                "item": str(entry),
-                                "type": "Suspected Orphan",
-                                "confidence": f"{self.confidence}%",
-                                "detail": "Directory",
-                            })
+                        if entry.is_dir() and entry.name.lower().startswith(("temp", "cache", "old_", "backup_")):
+                            results.append(
+                                {
+                                    "item": str(entry),
+                                    "type": "Suspected Orphan",
+                                    "confidence": f"{self.confidence}%",
+                                    "detail": "Directory",
+                                }
+                            )
             self.finished.emit(results)
         except Exception as exc:
             self.error.emit(str(exc))
@@ -137,7 +169,7 @@ class HeuristicsScanWorker(QThread):
 class HeuristicsTab(BaseTab):
     """Heuristics tab with confidence/ML/registry/dry-run options, scan-path picker, and detected-items table.
 
-        Leftover and bad-file scans run HeuristicsScanWorker and BadFilesWorker threads; cleanup deletes local paths.
+    Leftover and bad-file scans run HeuristicsScanWorker and BadFilesWorker threads; cleanup deletes local paths.
     """
 
     def __init__(self, config, logger, safety_manager):
@@ -154,52 +186,47 @@ class HeuristicsTab(BaseTab):
         self._current_results: list[dict] = []
 
         layout = QVBoxLayout(self)
-        options_group = QGroupBox('Detection Options')
+        options_group = QGroupBox("Detection Options")
         options_layout = QFormLayout(options_group)
         self.heuristics_confidence_spinbox = QSpinBox()
         self.heuristics_confidence_spinbox.setRange(1, 100)
         self.heuristics_confidence_spinbox.setValue(70)
-        self.heuristics_confidence_spinbox.setSuffix('%')
-        options_layout.addRow('Confidence Threshold:',
-                              self.heuristics_confidence_spinbox)
-        self.heuristics_ml_checkbox = QCheckBox(
-            'Use Machine Learning Patterns')
+        self.heuristics_confidence_spinbox.setSuffix("%")
+        options_layout.addRow("Confidence Threshold:", self.heuristics_confidence_spinbox)
+        self.heuristics_ml_checkbox = QCheckBox("Use Machine Learning Patterns")
         self.heuristics_ml_checkbox.setChecked(True)
         options_layout.addRow(self.heuristics_ml_checkbox)
-        self.heuristics_registry_checkbox = QCheckBox(
-            'Include Registry Analysis (Windows)')
-        if os.name != 'nt':
+        self.heuristics_registry_checkbox = QCheckBox("Include Registry Analysis (Windows)")
+        if os.name != "nt":
             self.heuristics_registry_checkbox.setEnabled(False)
         options_layout.addRow(self.heuristics_registry_checkbox)
-        self.heuristics_dry_run_checkbox = QCheckBox('Dry Run (Preview Only)')
+        self.heuristics_dry_run_checkbox = QCheckBox("Dry Run (Preview Only)")
         self.heuristics_dry_run_checkbox.setChecked(True)
         options_layout.addRow(self.heuristics_dry_run_checkbox)
         layout.addWidget(options_group)
 
-        path_group = QGroupBox('Scan Path')
+        path_group = QGroupBox("Scan Path")
         path_layout = QHBoxLayout(path_group)
         self.heuristics_path_edit = QLineEdit()
         self.heuristics_path_edit.setText(str(Path.home()))
         path_layout.addWidget(self.heuristics_path_edit)
-        self.heuristics_browse_button = QPushButton('Browse...')
-        self.heuristics_browse_button.clicked.connect(
-            self.browse_heuristics_path)
+        self.heuristics_browse_button = QPushButton("Browse...")
+        self.heuristics_browse_button.clicked.connect(self.browse_heuristics_path)
         path_layout.addWidget(self.heuristics_browse_button)
         layout.addWidget(path_group)
 
         button_layout = QHBoxLayout()
-        self.heuristics_scan_button = QPushButton('Scan for Leftovers')
+        self.heuristics_scan_button = QPushButton("Scan for Leftovers")
         self.heuristics_scan_button.clicked.connect(self.start_heuristics_scan)
         button_layout.addWidget(self.heuristics_scan_button)
 
         # Czkawka bad extensions / bad names integration
-        self.bad_files_scan_button = QPushButton('Scan Bad Extensions / Names (Czkawka)')
+        self.bad_files_scan_button = QPushButton("Scan Bad Extensions / Names (Czkawka)")
         self.bad_files_scan_button.clicked.connect(self.start_bad_files_scan)
         button_layout.addWidget(self.bad_files_scan_button)
 
-        self.heuristics_cleanup_button = QPushButton('Clean Up Leftovers')
-        self.heuristics_cleanup_button.clicked.connect(
-            self.start_heuristics_cleanup)
+        self.heuristics_cleanup_button = QPushButton("Clean Up Leftovers")
+        self.heuristics_cleanup_button.clicked.connect(self.start_heuristics_cleanup)
         self.heuristics_cleanup_button.setEnabled(False)
         button_layout.addWidget(self.heuristics_cleanup_button)
         layout.addLayout(button_layout)
@@ -208,31 +235,27 @@ class HeuristicsTab(BaseTab):
         self.heuristics_progress_bar.setVisible(False)
         layout.addWidget(self.heuristics_progress_bar)
 
-        results_group = QGroupBox('Detected Items')
+        results_group = QGroupBox("Detected Items")
         results_layout = QVBoxLayout(results_group)
-        self.heuristics_summary_label = QLabel('No scan performed yet')
+        self.heuristics_summary_label = QLabel("No scan performed yet")
         results_layout.addWidget(self.heuristics_summary_label)
 
         self.heuristics_table = QTableWidget()
         self.heuristics_table.setColumnCount(4)
-        self.heuristics_table.setHorizontalHeaderLabels(
-            ['Item', 'Type', 'Confidence', 'Details'])
+        self.heuristics_table.setHorizontalHeaderLabels(["Item", "Type", "Confidence", "Details"])
         self.heuristics_table.horizontalHeader().setStretchLastSection(True)
-        self.heuristics_table.setSelectionBehavior(
-            QTableWidget.SelectionBehavior.SelectRows)
+        self.heuristics_table.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectRows)
         results_layout.addWidget(self.heuristics_table)
         layout.addWidget(results_group)
 
     def browse_heuristics_path(self):
-        """Open directory dialog to pick a custom target scan path.
-        """
+        """Open directory dialog to pick a custom target scan path."""
         target = QFileDialog.getExistingDirectory(self, "Select Directory to Scan", self.heuristics_path_edit.text())
         if target:
             self.heuristics_path_edit.setText(target)
 
     def start_heuristics_scan(self):
-        """Start background heuristics scan on the target path.
-        """
+        """Start background heuristics scan on the target path."""
         p = self.heuristics_path_edit.text().strip()
         if not p or not Path(p).exists():
             QMessageBox.warning(self, "Invalid Path", "Please provide an existing folder path.")
@@ -248,7 +271,7 @@ class HeuristicsTab(BaseTab):
             path=p,
             confidence=self.heuristics_confidence_spinbox.value(),
             use_ml=self.heuristics_ml_checkbox.isChecked(),
-            check_registry=self.heuristics_registry_checkbox.isChecked() and os.name == 'nt',
+            check_registry=self.heuristics_registry_checkbox.isChecked() and os.name == "nt",
         )
         self.add_worker_thread(worker)
         worker.finished.connect(self._on_scan_finished)
@@ -258,8 +281,7 @@ class HeuristicsTab(BaseTab):
         worker.start()
 
     def start_bad_files_scan(self):
-        """Scan directory for bad extensions (magic-byte mismatch) and invalid filenames.
-        """
+        """Scan directory for bad extensions (magic-byte mismatch) and invalid filenames."""
         p = self.heuristics_path_edit.text().strip()
         if not p or not Path(p).exists():
             QMessageBox.warning(self, "Invalid Path", "Please provide an existing folder path.")
@@ -323,19 +345,20 @@ class HeuristicsTab(BaseTab):
         QMessageBox.critical(self, "Scan Failed", f"Heuristics scan error: {err_msg}")
 
     def start_heuristics_cleanup(self):
-        """Clean up selected leftovers if dry-run is disabled.
-        """
+        """Clean up selected leftovers if dry-run is disabled."""
         if self.heuristics_dry_run_checkbox.isChecked():
             QMessageBox.information(
-                self, "Dry Run Active",
-                f"Dry run enabled. {len(self._current_results)} items identified. Uncheck 'Dry Run' to delete."
+                self,
+                "Dry Run Active",
+                f"Dry run enabled. {len(self._current_results)} items identified. Uncheck 'Dry Run' to delete.",
             )
             return
 
         reply = QMessageBox.question(
-            self, "Confirm Cleanup",
+            self,
+            "Confirm Cleanup",
             f"Are you sure you want to clean up {len(self._current_results)} detected items?",
-            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
         )
         if reply != QMessageBox.StandardButton.Yes:
             return
@@ -349,6 +372,7 @@ class HeuristicsTab(BaseTab):
                     deleted_count += 1
                 elif target.is_dir():
                     import shutil
+
                     shutil.rmtree(target, ignore_errors=True)
                     deleted_count += 1
             except Exception:

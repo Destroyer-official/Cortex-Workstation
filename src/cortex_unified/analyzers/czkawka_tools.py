@@ -51,6 +51,7 @@ from cortex_unified.core.utils import normalize_path
 # Optional deps
 try:
     from PIL import Image, ExifTags  # type: ignore
+
     HAS_PIL = True
 except ImportError:
     HAS_PIL = False
@@ -58,6 +59,7 @@ except ImportError:
 # ---------------------------------------------------------------------------
 # Helpers — dynamic temp locations, no hardcoded C:\Users\...
 # ---------------------------------------------------------------------------
+
 
 def _temp_dirs() -> List[Path]:
     """Enumerate standard operating system and user temporary directories.
@@ -74,14 +76,14 @@ def _temp_dirs() -> List[Path]:
             dirs.append(Path(v))
     try:
         import platformdirs  # type: ignore
+
         dirs.append(Path(platformdirs.user_cache_dir()))
         dirs.append(Path(platformdirs.user_data_dir()))
     except ImportError:
         pass
     # Common junk locations, discovered dynamically
     home = Path.home()
-    for p in [home / "AppData" / "Local" / "Temp",
-              home / ".cache", Path("/tmp")]:
+    for p in [home / "AppData" / "Local" / "Temp", home / ".cache", Path("/tmp")]:
         if p.exists():
             dirs.append(p)
     # dedup
@@ -94,24 +96,26 @@ def _temp_dirs() -> List[Path]:
             out.append(d)
     return out
 
+
 _MAGIC_HEADERS: Dict[bytes, str] = {
-    b"\xFF\xD8\xFF": ".jpg",
+    b"\xff\xd8\xff": ".jpg",
     b"\x89PNG": ".png",
     b"GIF87a": ".gif",
     b"GIF89a": ".gif",
     b"%PDF": ".pdf",
     b"PK\x03\x04": ".zip",
     b"Rar!": ".rar",
-    b"\x1F\x8B": ".gz",
+    b"\x1f\x8b": ".gz",
     b"BZ": ".bz2",
     b"\x00\x00\x01\x00": ".ico",
     b"ID3": ".mp3",
-    b"\xFF\xFB": ".mp3",
+    b"\xff\xfb": ".mp3",
     b"OggS": ".ogg",
     b"RIFF": ".wav",
     b"\x89PNG\r\n\x1a\n": ".png",
     b"BM": ".bmp",
 }
+
 
 def _sniff_extension(path: Path) -> Optional[str]:
     """Infer the expected file extension from binary magic bytes.
@@ -138,9 +142,11 @@ def _sniff_extension(path: Path) -> Optional[str]:
         pass
     return None
 
+
 # ---------------------------------------------------------------------------
 # Empty finder
 # ---------------------------------------------------------------------------
+
 
 @dataclass(slots=True)
 class EmptyResult:
@@ -148,16 +154,19 @@ class EmptyResult:
 
     Manages EmptyResult operations and coordinates related state changes for the component.
     """
+
     empty_files: List[Path]
     empty_folders: List[Path]
     scanned: int
     duration: float
+
 
 class EmptyFinder:
     """Emptyfinder.
 
     Manages EmptyFinder operations and coordinates related state changes for the component.
     """
+
     def __init__(self, root: str | os.PathLike, config: Config | None = None):
         """__init__.
 
@@ -171,8 +180,7 @@ class EmptyFinder:
         self.config = config or Config()
         self.exclude_dirs = set(self.config.exclude_dirs)
 
-    def find(self, cancel: threading.Event | None = None,
-             progress: Callable[[str], None] | None = None) -> EmptyResult:
+    def find(self, cancel: threading.Event | None = None, progress: Callable[[str], None] | None = None) -> EmptyResult:
         """Search and locate items matching specific criteria.
 
         Traverses filesystem directories or cached registries to find resources that satisfy the specified filters.
@@ -218,9 +226,11 @@ class EmptyFinder:
                 continue
         return EmptyResult(empty_files, empty_folders, scanned, time.time() - t0)
 
+
 # ---------------------------------------------------------------------------
 # Invalid symlink finder
 # ---------------------------------------------------------------------------
+
 
 @dataclass(slots=True)
 class SymlinkResult:
@@ -228,15 +238,18 @@ class SymlinkResult:
 
     Manages SymlinkResult operations and coordinates related state changes for the component.
     """
+
     broken: List[Tuple[Path, Path]]  # (link, target)
     scanned: int
     duration: float
+
 
 class InvalidSymlinkFinder:
     """Invalidsymlinkfinder.
 
     Manages InvalidSymlinkFinder operations and coordinates related state changes for the component.
     """
+
     def __init__(self, root: str | os.PathLike, config: Config | None = None):
         """__init__.
 
@@ -250,8 +263,9 @@ class InvalidSymlinkFinder:
         self.config = config or Config()
         self.exclude_dirs = set(self.config.exclude_dirs)
 
-    def find(self, cancel: threading.Event | None = None,
-             progress: Callable[[str], None] | None = None) -> SymlinkResult:
+    def find(
+        self, cancel: threading.Event | None = None, progress: Callable[[str], None] | None = None
+    ) -> SymlinkResult:
         """Search and locate items matching specific criteria.
 
         Traverses filesystem directories or cached registries to find resources that satisfy the specified filters.
@@ -285,15 +299,18 @@ class InvalidSymlinkFinder:
                     continue
         return SymlinkResult(broken, scanned, time.time() - t0)
 
+
 # ---------------------------------------------------------------------------
 # Broken file finder (invalid/corrupted)
 # ---------------------------------------------------------------------------
+
 
 class BrokenFileFinder:
     """Brokenfilefinder.
 
     Manages BrokenFileFinder operations and coordinates related state changes for the component.
     """
+
     def __init__(self, root: str | os.PathLike, config: Config | None = None):
         """__init__.
 
@@ -332,6 +349,7 @@ class BrokenFileFinder:
         # zip
         if p.suffix.lower() in {".zip", ".jar", ".apk"}:
             import zipfile
+
             try:
                 with zipfile.ZipFile(p) as z:
                     z.testzip()
@@ -347,8 +365,9 @@ class BrokenFileFinder:
                 return True
         return False
 
-    def find(self, threads: int = 0, cancel: threading.Event | None = None,
-             progress: Callable[[str], None] | None = None) -> List[Path]:
+    def find(
+        self, threads: int = 0, cancel: threading.Event | None = None, progress: Callable[[str], None] | None = None
+    ) -> List[Path]:
         """Search and locate items matching specific criteria.
 
         Traverses filesystem directories or cached registries to find resources that satisfy the specified filters.
@@ -372,6 +391,7 @@ class BrokenFileFinder:
             threads = min(16, (os.cpu_count() or 4) + 4)
         broken: List[Path] = []
         lock = threading.Lock()
+
         def check(p: Path) -> Path | None:
             """Check.
 
@@ -384,6 +404,7 @@ class BrokenFileFinder:
                 Path | None: Result of the operation.
             """
             return p if self._is_broken(p) else None
+
         with ThreadPoolExecutor(max_workers=threads) as ex:
             futs = {ex.submit(check, p): p for p in files}
             for fut in as_completed(futs):
@@ -397,9 +418,11 @@ class BrokenFileFinder:
                     progress(f"Checked {len(broken)} broken")
         return broken
 
+
 # ---------------------------------------------------------------------------
 # Bad extension finder
 # ---------------------------------------------------------------------------
+
 
 @dataclass(slots=True)
 class BadExtResult:
@@ -407,15 +430,18 @@ class BadExtResult:
 
     Manages BadExtResult operations and coordinates related state changes for the component.
     """
+
     path: Path
     actual: str
     claimed: str
+
 
 class BadExtensionFinder:
     """Badextensionfinder.
 
     Manages BadExtensionFinder operations and coordinates related state changes for the component.
     """
+
     def __init__(self, root: str | os.PathLike, config: Config | None = None):
         """__init__.
 
@@ -429,8 +455,9 @@ class BadExtensionFinder:
         self.config = config or Config()
         self.exclude_dirs = set(self.config.exclude_dirs)
 
-    def find(self, cancel: threading.Event | None = None,
-             progress: Callable[[str], None] | None = None) -> List[BadExtResult]:
+    def find(
+        self, cancel: threading.Event | None = None, progress: Callable[[str], None] | None = None
+    ) -> List[BadExtResult]:
         """Search and locate items matching specific criteria.
 
         Traverses filesystem directories or cached registries to find resources that satisfy the specified filters.
@@ -462,6 +489,7 @@ class BadExtensionFinder:
                     progress(f"Found {len(results)} bad extensions")
         return results
 
+
 # ---------------------------------------------------------------------------
 # Bad names finder
 # ---------------------------------------------------------------------------
@@ -475,11 +503,13 @@ _BAD_PATTERNS = [
     re.compile(r".{260,}"),  # too long
 ]
 
+
 class BadNamesFinder:
     """Badnamesfinder.
 
     Manages BadNamesFinder operations and coordinates related state changes for the component.
     """
+
     def __init__(self, root: str | os.PathLike, config: Config | None = None):
         """__init__.
 
@@ -514,15 +544,18 @@ class BadNamesFinder:
                     bad.append(Path(dirpath) / fn)
         return bad
 
+
 # ---------------------------------------------------------------------------
 # Exif cleaner
 # ---------------------------------------------------------------------------
+
 
 class ExifCleaner:
     """Exifcleaner.
 
     Manages ExifCleaner operations and coordinates related state changes for the component.
     """
+
     def __init__(self, root: str | os.PathLike, config: Config | None = None):
         """__init__.
 
@@ -566,6 +599,7 @@ class ExifCleaner:
                         rc = subprocess.run(["exiftool", "-j", str(p)], capture_output=True, text=True, timeout=5)
                         if rc.returncode == 0 and rc.stdout.strip() != "[]":
                             import json
+
                             data = json.loads(rc.stdout)
                             if data and len(data[0]) > 1:
                                 results.append((p, data[0]))
@@ -595,28 +629,42 @@ class ExifCleaner:
                         im2.save(p)
                     out[p] = True
                 else:
-                    rc = subprocess.run(["exiftool", "-all=", "-overwrite_original", str(p)],
-                                        capture_output=True, timeout=10)
+                    rc = subprocess.run(
+                        ["exiftool", "-all=", "-overwrite_original", str(p)], capture_output=True, timeout=10
+                    )
                     out[p] = rc.returncode == 0
             except Exception:
                 out[p] = False
         return out
+
 
 # ---------------------------------------------------------------------------
 # Temporary file finder (dynamic)
 # ---------------------------------------------------------------------------
 
 _TEMP_PATTERNS = [
-    "*.tmp", "*.temp", "*.log", "*.bak", "*.old", "*.dmp",
-    "Thumbs.db", ".DS_Store", "desktop.ini",
-    "*.swp", "*.swo", "*~", ".~lock.*",
+    "*.tmp",
+    "*.temp",
+    "*.log",
+    "*.bak",
+    "*.old",
+    "*.dmp",
+    "Thumbs.db",
+    ".DS_Store",
+    "desktop.ini",
+    "*.swp",
+    "*.swo",
+    "*~",
+    ".~lock.*",
 ]
+
 
 class TempFileFinder:
     """Tempfilefinder.
 
     Manages TempFileFinder operations and coordinates related state changes for the component.
     """
+
     def __init__(self, root: str | os.PathLike | None = None, config: Config | None = None):
         """__init__.
 
@@ -661,9 +709,11 @@ class TempFileFinder:
                         results.append(Path(dirpath) / fn)
         return results
 
+
 # ---------------------------------------------------------------------------
 # Video optimizer (ffprobe static detection + re-encode)
 # ---------------------------------------------------------------------------
+
 
 @dataclass(slots=True)
 class VideoInfo:
@@ -671,6 +721,7 @@ class VideoInfo:
 
     Manages VideoInfo operations and coordinates related state changes for the component.
     """
+
     path: Path
     width: int
     height: int
@@ -680,11 +731,13 @@ class VideoInfo:
     has_static_borders: bool = False
     border_pixels: int = 0
 
+
 class VideoOptimizer:
     """Videooptimizer.
 
     Manages VideoOptimizer operations and coordinates related state changes for the component.
     """
+
     def find_static_borders(self, video: Path) -> Optional[VideoInfo]:
         """find_static_borders.
 
@@ -698,14 +751,26 @@ class VideoOptimizer:
         """
         try:
             rc = subprocess.run(
-                ["ffprobe", "-v", "error", "-select_streams", "v:0",
-                 "-show_entries", "stream=width,height,codec_name,bit_rate,duration",
-                 "-of", "json", str(video)],
-                capture_output=True, text=True, timeout=15
+                [
+                    "ffprobe",
+                    "-v",
+                    "error",
+                    "-select_streams",
+                    "v:0",
+                    "-show_entries",
+                    "stream=width,height,codec_name,bit_rate,duration",
+                    "-of",
+                    "json",
+                    str(video),
+                ],
+                capture_output=True,
+                text=True,
+                timeout=15,
             )
             if rc.returncode != 0:
                 return None
             import json
+
             data = json.loads(rc.stdout)
             s = data["streams"][0]
             return VideoInfo(
@@ -720,8 +785,7 @@ class VideoOptimizer:
         except Exception:
             return None
 
-    def optimize(self, video: Path, out: Path | None = None,
-                 crf: int = 28, preset: str = "fast") -> bool:
+    def optimize(self, video: Path, out: Path | None = None, crf: int = 28, preset: str = "fast") -> bool:
         """Optimize.
 
         Manages optimize operations and coordinates related state changes for the component.
@@ -741,7 +805,9 @@ class VideoOptimizer:
         try:
             rc = subprocess.run(
                 ["ffmpeg", "-i", str(video), "-vf", "cropdetect=24:16:0", "-frames:v", "60", "-f", "null", "-"],
-                capture_output=True, text=True, timeout=60
+                capture_output=True,
+                text=True,
+                timeout=60,
             )
             crops = re.findall(r"crop=(\d+:\d+:\d+:\d+)", rc.stderr)
             crop = max(set(crops), key=crops.count) if crops else None  # most common
@@ -749,27 +815,64 @@ class VideoOptimizer:
             crop = None
         vf = f"crop={crop}," if crop else ""
         # build ffmpeg cmd
-        cmd = ["ffmpeg", "-y", "-i", str(video), "-vf", vf.rstrip(","), "-c:v", "libx264",
-               "-crf", str(crf), "-preset", preset, "-c:a", "aac", "-b:a", "128k", str(out)]
+        cmd = [
+            "ffmpeg",
+            "-y",
+            "-i",
+            str(video),
+            "-vf",
+            vf.rstrip(","),
+            "-c:v",
+            "libx264",
+            "-crf",
+            str(crf),
+            "-preset",
+            preset,
+            "-c:a",
+            "aac",
+            "-b:a",
+            "128k",
+            str(out),
+        ]
         # remove empty -vf if no crop
         if not crop:
             cmd = [c for c in cmd if c != "-vf"]  # remove -vf and its arg
             # actually need to rebuild without vf
-            cmd = ["ffmpeg", "-y", "-i", str(video), "-c:v", "libx264",
-                   "-crf", str(crf), "-preset", preset, "-c:a", "aac", "-b:a", "128k", str(out)]
+            cmd = [
+                "ffmpeg",
+                "-y",
+                "-i",
+                str(video),
+                "-c:v",
+                "libx264",
+                "-crf",
+                str(crf),
+                "-preset",
+                preset,
+                "-c:a",
+                "aac",
+                "-b:a",
+                "128k",
+                str(out),
+            ]
         try:
             rc = subprocess.run(cmd, capture_output=True, timeout=1800)
             return rc.returncode == 0 and out.exists() and out.stat().st_size > 0
         except Exception:
             return False
 
+
 __all__ = [
-    "EmptyFinder", "EmptyResult",
-    "InvalidSymlinkFinder", "SymlinkResult",
+    "EmptyFinder",
+    "EmptyResult",
+    "InvalidSymlinkFinder",
+    "SymlinkResult",
     "BrokenFileFinder",
-    "BadExtensionFinder", "BadExtResult",
+    "BadExtensionFinder",
+    "BadExtResult",
     "BadNamesFinder",
     "ExifCleaner",
     "TempFileFinder",
-    "VideoOptimizer", "VideoInfo",
+    "VideoOptimizer",
+    "VideoInfo",
 ]

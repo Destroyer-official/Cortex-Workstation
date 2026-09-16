@@ -35,6 +35,7 @@ from .window import _Page, fmt_bytes
 
 class _MftScrubWorker(QObject):
     """Background worker (_MftScrubWorker) performing MftScrubWorker. Signals finished, scrub_finished report status. Configured with scrubber."""
+
     finished = Signal(object)
     scrub_finished = Signal(object)
 

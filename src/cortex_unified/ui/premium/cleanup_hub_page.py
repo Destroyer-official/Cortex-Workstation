@@ -45,12 +45,14 @@ IS_WINDOWS = sys.platform == "win32"
 # Workers
 # ---------------------------------------------------------------------------
 
+
 class HubScanWorker(QObject):
     """Scans all cleanup categories via CleanerService.
 
     Emits ``finished`` with a CleanupReport, ``progress`` with status text,
     or ``failed`` with an error message.
     """
+
     finished = Signal(object)  # CleanupReport
     progress = Signal(str)
     failed = Signal(str)
@@ -75,6 +77,7 @@ class HubScanWorker(QObject):
         self._include_disabled = include_disabled
         self._custom_roots = custom_roots
         import threading
+
         self._cancel = threading.Event()
 
     def cancel(self):
@@ -115,6 +118,7 @@ class TempScanWorker(QObject):
     Emits ``finished`` with a list of TempFinding, ``progress`` with status
     text, or ``failed`` with an error message.
     """
+
     finished = Signal(object)  # list[TempFinding]
     progress = Signal(str)
     failed = Signal(str)
@@ -130,6 +134,7 @@ class TempScanWorker(QObject):
         super().__init__()
         self._min_age_days = min_age_days
         import threading
+
         self._cancel = threading.Event()
 
     def cancel(self):
@@ -146,6 +151,7 @@ class TempScanWorker(QObject):
         """
         try:
             from cortex_unified.core.temp_cleaner import TempCleaner
+
             self.progress.emit("Scanning stale temp files…")
             findings = TempCleaner(min_age_days=self._min_age_days).scan()
             if self._cancel.is_set():
@@ -207,12 +213,14 @@ class CleanupHubPage(_Page):
             win: Parent window or shell controller instance.
         """
         super().__init__(win)
-        self.v.addWidget(title_block(
-            "Cleanup Hub",
-            "Unified storage optimizer for system temp, browser caches, developer "
-            "runtimes, application caches, and storage sense categories with "
-            "live safety indicators and reclaim estimates."
-        ))
+        self.v.addWidget(
+            title_block(
+                "Cleanup Hub",
+                "Unified storage optimizer for system temp, browser caches, developer "
+                "runtimes, application caches, and storage sense categories with "
+                "live safety indicators and reclaim estimates.",
+            )
+        )
 
         # --- top controls ---------------------------------------------------
         ctrl = QHBoxLayout()
@@ -332,8 +340,9 @@ class CleanupHubPage(_Page):
         self.clean_btn.clicked.connect(self._clean)
         action_row.addWidget(self.clean_btn)
         action_row.addStretch(1)
-        hint = QLabel("LOW = regenerable • MEDIUM = re-download • HIGH = confirm. "
-                      "Reversible = safe undo (Recycle Bin / pull).")
+        hint = QLabel(
+            "LOW = regenerable • MEDIUM = re-download • HIGH = confirm. " "Reversible = safe undo (Recycle Bin / pull)."
+        )
         hint.setObjectName("Muted")
         hint.setWordWrap(True)
         action_row.addWidget(hint, 1)
@@ -418,14 +427,10 @@ class CleanupHubPage(_Page):
         cols = 2
         if not report.scans or report.total_files == 0:
             target_desc = (
-                ", ".join(str(r) for r in self._custom_roots)
-                if self._custom_roots
-                else "the scanned system categories"
+                ", ".join(str(r) for r in self._custom_roots) if self._custom_roots else "the scanned system categories"
             )
             self.state.show_empty(f"No reclaimable files found under:\n{target_desc}\n\nThis target location is clean!")
-            self.win.statusBar().showMessage(
-                "Scan complete: 0 files found, 0 B reclaimable", 5000
-            )
+            self.win.statusBar().showMessage("Scan complete: 0 files found, 0 B reclaimable", 5000)
             self._update_clean_enabled()
             return
 
@@ -481,14 +486,22 @@ class CleanupHubPage(_Page):
         title_row.addStretch(1)
         # Risk badge
         risk_txt, risk_col = _risk_label(cat.risk), _risk_color(cat.risk)
-        risk_lbl = QLabel(f"<span style='background:{risk_col}; color:#111; padding:2px 6px; border-radius:6px; font-size:11px'><b>{risk_txt}</b></span>")
+        risk_lbl = QLabel(
+            f"<span style='background:{risk_col}; color:#111; padding:2px 6px; border-radius:6px; font-size:11px'><b>{risk_txt}</b></span>"
+        )
         risk_lbl.setTextFormat(Qt.TextFormat.RichText)
         risk_lbl.setToolTip(f"Risk: {cat.risk.value} — {cat.description}")
         title_row.addWidget(risk_lbl)
         # Reversible badge
-        rev = QLabel(f"<span style='border:1px solid #6b7280; padding:1px 6px; border-radius:6px; font-size:11px'>{'↩ Reversible' if cat.reversible else 'Irreversible'}</span>")
+        rev = QLabel(
+            f"<span style='border:1px solid #6b7280; padding:1px 6px; border-radius:6px; font-size:11px'>{'↩ Reversible' if cat.reversible else 'Irreversible'}</span>"
+        )
         rev.setTextFormat(Qt.TextFormat.RichText)
-        rev.setToolTip("Reversible = safe to undo (cache regenerates or goes to Recycle Bin)" if cat.reversible else "Irreversible = manual re-download / reinstall")
+        rev.setToolTip(
+            "Reversible = safe to undo (cache regenerates or goes to Recycle Bin)"
+            if cat.reversible
+            else "Irreversible = manual re-download / reinstall"
+        )
         title_row.addWidget(rev)
         lay.addLayout(title_row)
 
@@ -515,7 +528,13 @@ class CleanupHubPage(_Page):
 
         # Estimate
         est_row = QHBoxLayout()
-        est_row.addWidget(QLabel(f"<b>{fmt_bytes(est_bytes)}</b> &middot; {est_files:,} file(s)" if est_bytes or est_files else "<span style='color:#888'>No files found</span>"))
+        est_row.addWidget(
+            QLabel(
+                f"<b>{fmt_bytes(est_bytes)}</b> &middot; {est_files:,} file(s)"
+                if est_bytes or est_files
+                else "<span style='color:#888'>No files found</span>"
+            )
+        )
         est_row.addStretch(1)
         chk = QCheckBox("Select")
         chk.setCursor(Qt.CursorShape.PointingHandCursor)
@@ -533,6 +552,7 @@ class CleanupHubPage(_Page):
             """
             self._selected[_cid] = checked
             self._update_clean_enabled()
+
         chk.toggled.connect(_on_toggled)
         est_row.addWidget(chk)
         lay.addLayout(est_row)
@@ -595,7 +615,9 @@ class CleanupHubPage(_Page):
         msg = f"Stale temp: {count:,} file(s), {fmt_bytes(total)} reclaimable (age > 1 day)"
         self.win.statusBar().showMessage(msg, 6000)
         self.scan_status.setText(msg)
-        QMessageBox.information(self, "Stale Temp Scan", msg + "\n\nClean via Deep Cleaner / CLI clean-temp (trash-safe).")
+        QMessageBox.information(
+            self, "Stale Temp Scan", msg + "\n\nClean via Deep Cleaner / CLI clean-temp (trash-safe)."
+        )
 
     def _on_temp_failed(self, msg: str):
         """Re-enable the temp button and surface the scan failure.
@@ -660,13 +682,15 @@ class CleanupHubPage(_Page):
             return
         # Filter report to selected categories only
         from cortex_unified.engine.service import CleanupReport
+
         filtered = CleanupReport(
             scans=[s for s in self._report.scans if s.category.id in selected_ids],
             duration_seconds=self._report.duration_seconds,
         )
         total = filtered.total_reclaimable_bytes
         confirm = QMessageBox.question(
-            self, "Confirm cleanup",
+            self,
+            "Confirm cleanup",
             f"Clean {len(filtered.scans)} category(ies), {filtered.total_files:,} file(s), "
             f"{fmt_bytes(total)}?\n\nFiles go to the Recycle Bin where possible (reversible). "
             "HIGH-risk items are excluded unless you included them.",
@@ -676,10 +700,12 @@ class CleanupHubPage(_Page):
         if confirm != QMessageBox.StandardButton.Yes:
             return
         from cortex_unified.engine import DeletionMethod
+
         self.clean_btn.setEnabled(False)
         self.progress.setVisible(True)
         self.scan_status.setText("Cleaning selected categories…")
         from .workers import CleanWorker
+
         # Use DELETE (goes to recycle via SecureDeleter probe) for safety; user can pick SHRED elsewhere
         w = CleanWorker(filtered, DeletionMethod.DELETE.value)
         self.win.run_worker(w, self._on_cleaned, self._fail, on_progress=self._on_progress)

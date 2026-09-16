@@ -255,18 +255,10 @@ class WinUpdateRepairPage(_Page):
         self._tbl.setHorizontalHeaderLabels(["Phase", "Status", "Duration", "Details"])
         self._tbl.setMinimumHeight(self.LIST_MIN_HEIGHT)
         self.attach_single_scroll(self._tbl)
-        self._tbl.horizontalHeader().setSectionResizeMode(
-            0, QHeaderView.ResizeMode.ResizeToContents
-        )
-        self._tbl.horizontalHeader().setSectionResizeMode(
-            1, QHeaderView.ResizeMode.ResizeToContents
-        )
-        self._tbl.horizontalHeader().setSectionResizeMode(
-            2, QHeaderView.ResizeMode.ResizeToContents
-        )
-        self._tbl.horizontalHeader().setSectionResizeMode(
-            3, QHeaderView.ResizeMode.Stretch
-        )
+        self._tbl.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.ResizeToContents)
+        self._tbl.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeMode.ResizeToContents)
+        self._tbl.horizontalHeader().setSectionResizeMode(2, QHeaderView.ResizeMode.ResizeToContents)
+        self._tbl.horizontalHeader().setSectionResizeMode(3, QHeaderView.ResizeMode.Stretch)
         self._tbl.verticalHeader().setVisible(False)
         self._tbl.setAlternatingRowColors(True)
         self._tbl.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
@@ -306,17 +298,13 @@ class WinUpdateRepairPage(_Page):
 
         services = data.get("services", {})
         svc_parts = [f"{s}: {st}" for s, st in services.items()]
-        self._svc_label.setText(
-            "Services: " + (", ".join(svc_parts) if svc_parts else "\u2014")
-        )
+        self._svc_label.setText("Services: " + (", ".join(svc_parts) if svc_parts else "\u2014"))
 
         disk_gb = data.get("disk_free_gb", 0.0)
         self._disk_label.setText(f"Disk free: {disk_gb:.1f} GB")
 
         conn = data.get("connectivity", False)
-        self._net_label.setText(
-            "Network: " + ("Connected" if conn else "No connectivity")
-        )
+        self._net_label.setText("Network: " + ("Connected" if conn else "No connectivity"))
 
         dism = data.get("dism_health", "\u2014")
         self._dism_label.setText(f"DISM: {dism}")
@@ -352,9 +340,7 @@ class WinUpdateRepairPage(_Page):
         """Validate the current selection and ask the user to confirm via a message box showing 'No phases'."""
         phases = [k for k, cb in self._checkboxes.items() if cb.isChecked()]
         if not phases:
-            QMessageBox.information(
-                self, "No phases", "Select at least one repair phase."
-            )
+            QMessageBox.information(self, "No phases", "Select at least one repair phase.")
             return
 
         confirm = QMessageBox.question(
@@ -378,9 +364,7 @@ class WinUpdateRepairPage(_Page):
 
         w = _RepairWorker(phases)
         self._worker = w
-        self.win.run_worker(
-            w, self._on_done, self._on_fail, on_progress=self._on_progress
-        )
+        self.win.run_worker(w, self._on_done, self._on_fail, on_progress=self._on_progress)
 
     def _on_progress(self, msg: str):
         """_on_progress.

@@ -2,14 +2,21 @@
 
 from typing import List, Dict
 from PySide6.QtWidgets import (
-    QWidget, QVBoxLayout, QHBoxLayout, QPushButton,
-    QProgressBar, QTableWidget, QTableWidgetItem,
-    QHeaderView, QMessageBox
+    QWidget,
+    QVBoxLayout,
+    QHBoxLayout,
+    QPushButton,
+    QProgressBar,
+    QTableWidget,
+    QTableWidgetItem,
+    QHeaderView,
+    QMessageBox,
 )
 from PySide6.QtCore import QThread, Signal, Qt
 
 from .base_tab import BaseTab
 from cortex_unified.system_tools.startup_manager import StartupManager
+
 
 class StartupScanWorker(QThread):
     """Worker that enumerates startup items off the UI thread.
@@ -17,6 +24,7 @@ class StartupScanWorker(QThread):
     Emits ``finished(list)`` with StartupManager.list_startup_items()
     results, or ``error(str)`` on failure.
     """
+
     finished = Signal(list)
     error = Signal(str)
 
@@ -32,6 +40,7 @@ class StartupScanWorker(QThread):
             self.finished.emit(items)
         except Exception as e:
             self.error.emit(str(e))
+
 
 class StartupManagerTab(BaseTab):
     """Tab for startup manager tab functionality."""
@@ -51,31 +60,31 @@ class StartupManagerTab(BaseTab):
         """
         layout = QVBoxLayout(self)
         layout.setSpacing(10)
-        
+
         buttons_layout = QHBoxLayout()
         buttons_layout.setSpacing(10)
-        self.refresh_startup_button = QPushButton('Refresh Startup Items')
+        self.refresh_startup_button = QPushButton("Refresh Startup Items")
         self.refresh_startup_button.clicked.connect(self.refresh_startup_items)
         self.refresh_startup_button.setMinimumHeight(35)
         buttons_layout.addWidget(self.refresh_startup_button)
-        
-        self.disable_startup_button = QPushButton('Disable Selected Item')
+
+        self.disable_startup_button = QPushButton("Disable Selected Item")
         self.disable_startup_button.clicked.connect(self.disable_selected_startup_items)
         self.disable_startup_button.setEnabled(False)
         self.disable_startup_button.setMinimumHeight(35)
         buttons_layout.addWidget(self.disable_startup_button)
         buttons_layout.addStretch()
         layout.addLayout(buttons_layout)
-        
+
         self.startup_progress_bar = QProgressBar()
         self.startup_progress_bar.setVisible(False)
         self.startup_progress_bar.setRange(0, 0)
         self.startup_progress_bar.setMinimumHeight(25)
         layout.addWidget(self.startup_progress_bar)
-        
+
         self.startup_table = QTableWidget()
         self.startup_table.setColumnCount(4)
-        self.startup_table.setHorizontalHeaderLabels(['Name', 'Location', 'Status', 'Type'])
+        self.startup_table.setHorizontalHeaderLabels(["Name", "Location", "Status", "Type"])
         self.startup_table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
         self.startup_table.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectRows)
         self.startup_table.itemSelectionChanged.connect(self._on_selection)
@@ -93,12 +102,12 @@ class StartupManagerTab(BaseTab):
         """
         if self.worker and self.worker.isRunning():
             return
-            
+
         self.startup_progress_bar.setVisible(True)
         self.refresh_startup_button.setEnabled(False)
         self.disable_startup_button.setEnabled(False)
         self.startup_table.setRowCount(0)
-        
+
         self.worker = StartupScanWorker(self.config)
         self.worker.finished.connect(self._on_scan_finished)
         self.worker.error.connect(self._on_scan_error)
@@ -112,7 +121,7 @@ class StartupManagerTab(BaseTab):
         """
         self.startup_progress_bar.setVisible(False)
         self.refresh_startup_button.setEnabled(True)
-        
+
         self.startup_table.setRowCount(len(items))
         for row, item in enumerate(items):
             self.startup_table.setItem(row, 0, QTableWidgetItem(item.get("name", "")))
@@ -134,14 +143,14 @@ class StartupManagerTab(BaseTab):
         refreshes the list on success or reports an elevation failure.
         """
         row = self.startup_table.currentRow()
-        if row < 0: return
-        
+        if row < 0:
+            return
+
         name = self.startup_table.item(row, 0).text()
         type_ = self.startup_table.item(row, 3).text()
-        
+
         reply = QMessageBox.question(
-            self, "Confirm Disable", 
-            f"Are you sure you want to disable startup app '{name}' from loading on boot?"
+            self, "Confirm Disable", f"Are you sure you want to disable startup app '{name}' from loading on boot?"
         )
         if reply == QMessageBox.StandardButton.Yes:
             success = self.manager.disable_startup_item(name, type_)
@@ -149,4 +158,6 @@ class StartupManagerTab(BaseTab):
                 QMessageBox.information(self, "Success", f"Disabled '{name}'.")
                 self.refresh_startup_items()
             else:
-                QMessageBox.critical(self, "Failed", "Could not modify registry/folder access directly. Elevate privileges.")
+                QMessageBox.critical(
+                    self, "Failed", "Could not modify registry/folder access directly. Elevate privileges."
+                )

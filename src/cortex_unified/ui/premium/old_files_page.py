@@ -33,6 +33,7 @@ from .window import _Page, fmt_bytes
 
 class _OldFilesScanWorker(QObject):
     """Background worker (_OldFilesScanWorker) performing OldFilesScanWorker. Signals finished, failed report status. Configured with root_path, min_age_days. Its run() step calls OldFileCleaner, cleaner.find_old_files, cleaner.get_stats, str."""
+
     finished = Signal(list, dict)  # old_files list, stats dict
     failed = Signal(str)
 
@@ -56,6 +57,7 @@ class _OldFilesScanWorker(QObject):
         """
         try:
             from cortex_unified.analyzers.old_file_cleaner import OldFileCleaner
+
             cleaner = OldFileCleaner(root_path=self._root)
             files = cleaner.find_old_files(min_age_days=self._age)
             stats = cleaner.get_stats()
@@ -78,12 +80,14 @@ class OldFilesPage(_Page):
             win: Parent window or shell controller instance.
         """
         super().__init__(win)
-        self.v.addWidget(title_block(
-            "Old & Inactive Files Finder",
-            "Identifies files that have not been modified or accessed for extended periods "
-            "(30 to 365+ days). Results surface oldest-first so you can safely identify forgotten "
-            "downloads, obsolete installers, and stale project caches.",
-        ))
+        self.v.addWidget(
+            title_block(
+                "Old & Inactive Files Finder",
+                "Identifies files that have not been modified or accessed for extended periods "
+                "(30 to 365+ days). Results surface oldest-first so you can safely identify forgotten "
+                "downloads, obsolete installers, and stale project caches.",
+            )
+        )
 
         self._folder = str(Path.home() / "Downloads")
         self._files = []
@@ -237,6 +241,7 @@ class OldFilesPage(_Page):
             return
 
         from cortex_unified.engine.secure_delete import recycle_path
+
         deleted = 0
         for p in paths:
             try:

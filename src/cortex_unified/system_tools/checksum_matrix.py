@@ -36,6 +36,7 @@ _CHUNK_SIZE = 65536  # 64 KB streaming buffer
 @dataclass
 class FileChecksumResult:
     """Calculated cryptographic and cyclic redundancy hashes for a file."""
+
     path: str
     size_bytes: int
     crc32: str = ""
@@ -62,6 +63,7 @@ class FileChecksumResult:
 @dataclass
 class ManifestVerifyItem:
     """Individual verification status of a file against its manifest entry."""
+
     file_path: str
     expected_hash: str
     actual_hash: str
@@ -82,6 +84,7 @@ class ManifestVerifyItem:
 @dataclass
 class ManifestVerificationReport:
     """Consolidated outcome of verifying a manifest file against on-disk files."""
+
     manifest_path: str
     algorithm: str
     total_files: int = 0

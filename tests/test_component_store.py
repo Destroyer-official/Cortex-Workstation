@@ -86,14 +86,15 @@ The source files could not be found.
 # Analysis parsing
 # ---------------------------------------------------------------------------
 
+
 def test_parses_windows_own_figures():
     """Verify parses windows own figures via ComponentStore._parse_analysis, a.last_cleanup.startswith, pytest.approx."""
     a = ComponentStore._parse_analysis(_ANALYZE_OK)
     assert a.ok is True
-    assert a.actual_size == pytest.approx(int(9.73 * 1024 ** 3))
-    assert a.reported_size == pytest.approx(int(10.44 * 1024 ** 3))
-    assert a.shared_with_windows == pytest.approx(int(4.30 * 1024 ** 3))
-    assert a.backups_and_features == pytest.approx(int(5.42 * 1024 ** 3))
+    assert a.actual_size == pytest.approx(int(9.73 * 1024**3))
+    assert a.reported_size == pytest.approx(int(10.44 * 1024**3))
+    assert a.shared_with_windows == pytest.approx(int(4.30 * 1024**3))
+    assert a.backups_and_features == pytest.approx(int(5.42 * 1024**3))
     assert a.cache_and_temp == 0
     assert a.reclaimable_packages == 4
     assert a.cleanup_recommended is True
@@ -145,8 +146,8 @@ def test_unreadable_report_yields_zero_not_a_guess():
 def test_analysis_to_dict_is_json_ready():
     """Verify analysis to dict is json ready via ComponentStore._parse_analysis, json.loads, json.dumps."""
     import json
-    payload = json.loads(json.dumps(
-        ComponentStore._parse_analysis(_ANALYZE_OK).to_dict()))
+
+    payload = json.loads(json.dumps(ComponentStore._parse_analysis(_ANALYZE_OK).to_dict()))
     assert payload["reclaimable_packages"] == 4
     assert payload["cleanup_recommended"] is True
 
@@ -158,6 +159,7 @@ def test_unsupported_platform_is_reported(monkeypatch):
         monkeypatch: The monkeypatch parameter.
     """
     import cortex_unified.system_tools.component_store as mod
+
     monkeypatch.setattr(mod, "_IS_WINDOWS", False)
     a = ComponentStore().analyze()
     assert a.supported is False
@@ -169,16 +171,19 @@ def test_unsupported_platform_is_reported(monkeypatch):
 # Leftover policy
 # ---------------------------------------------------------------------------
 
+
 def test_windows_managed_items_are_never_removable_here(tmp_path):
     """Verify windows managed items are never removable here via Leftover.
 
     Args:
         tmp_path: Filesystem path to the target file or directory.
     """
-    winsxs = Leftover(tmp_path, "Component store (WinSxS)", 1, LeftoverRisk.MANAGED,
-                      "hard links", supported_removal="Use DISM.")
-    installer = Leftover(tmp_path, "Installer cache", 1, LeftoverRisk.MANAGED,
-                         "needed for repair", supported_removal="Leave it alone.")
+    winsxs = Leftover(
+        tmp_path, "Component store (WinSxS)", 1, LeftoverRisk.MANAGED, "hard links", supported_removal="Use DISM."
+    )
+    installer = Leftover(
+        tmp_path, "Installer cache", 1, LeftoverRisk.MANAGED, "needed for repair", supported_removal="Leave it alone."
+    )
     assert winsxs.removable_here is False
     assert installer.removable_here is False
     # And each one names the supported alternative.
@@ -192,8 +197,7 @@ def test_safe_and_rollback_items_are_removable(tmp_path):
         tmp_path: Filesystem path to the target file or directory.
     """
     assert Leftover(tmp_path, "Setup logs", 1, LeftoverRisk.SAFE, "logs").removable_here
-    assert Leftover(tmp_path, "Windows.old", 1, LeftoverRisk.LOSES_ROLLBACK,
-                    "rollback").removable_here
+    assert Leftover(tmp_path, "Windows.old", 1, LeftoverRisk.LOSES_ROLLBACK, "rollback").removable_here
 
 
 def test_rollback_window_is_computed_from_age(tmp_path):
@@ -202,15 +206,12 @@ def test_rollback_window_is_computed_from_age(tmp_path):
     Args:
         tmp_path: Filesystem path to the target file or directory.
     """
-    fresh = Leftover(tmp_path, "Windows.old", 1, LeftoverRisk.LOSES_ROLLBACK,
-                     "rollback", age_days=3.0)
-    stale = Leftover(tmp_path, "Windows.old", 1, LeftoverRisk.LOSES_ROLLBACK,
-                     "rollback", age_days=45.0)
-    unknown = Leftover(tmp_path, "Windows.old", 1, LeftoverRisk.LOSES_ROLLBACK,
-                       "rollback")
+    fresh = Leftover(tmp_path, "Windows.old", 1, LeftoverRisk.LOSES_ROLLBACK, "rollback", age_days=3.0)
+    stale = Leftover(tmp_path, "Windows.old", 1, LeftoverRisk.LOSES_ROLLBACK, "rollback", age_days=45.0)
+    unknown = Leftover(tmp_path, "Windows.old", 1, LeftoverRisk.LOSES_ROLLBACK, "rollback")
     assert fresh.rollback_expired is False
     assert stale.rollback_expired is True
-    assert unknown.rollback_expired is False   # unknown age: never claim expired
+    assert unknown.rollback_expired is False  # unknown age: never claim expired
 
 
 @pytest.mark.skipif(not IS_WINDOWS, reason="Windows leftovers only")
@@ -241,8 +242,7 @@ def test_winsxs_size_comes_from_dism_not_a_folder_walk():
     assert winsxs.removable_here is False
 
     # Without an analysis there is no defensible number, so it isn't listed at all.
-    assert all("WinSxS" not in i.label
-               for i in ComponentStore().find_leftovers())
+    assert all("WinSxS" not in i.label for i in ComponentStore().find_leftovers())
 
 
 @pytest.mark.skipif(not IS_WINDOWS, reason="Windows leftovers only")
@@ -262,6 +262,7 @@ def test_leftover_scan_is_cancellable(tmp_path, monkeypatch):
         monkeypatch: The monkeypatch parameter.
     """
     import threading
+
     event = threading.Event()
     event.set()
     items = ComponentStore().find_leftovers(cancel_event=event)
@@ -271,6 +272,7 @@ def test_leftover_scan_is_cancellable(tmp_path, monkeypatch):
 # ---------------------------------------------------------------------------
 # Cleanup safety
 # ---------------------------------------------------------------------------
+
 
 @pytest.mark.skipif(not IS_WINDOWS, reason="DISM cleanup is Windows-only")
 def test_cleanup_refuses_without_administrator(monkeypatch):
@@ -371,9 +373,13 @@ def test_cleanup_is_honest_when_nothing_shrank(monkeypatch):
     """
     store = ComponentStore()
     monkeypatch.setattr(ComponentStore, "is_elevated", staticmethod(lambda: True))
-    monkeypatch.setattr(store, "_run_dism", lambda args, timeout, cancel_event=None: (
-        _ANALYZE_OK if "/AnalyzeComponentStore" in args
-        else "The operation completed successfully."))
+    monkeypatch.setattr(
+        store,
+        "_run_dism",
+        lambda args, timeout, cancel_event=None: (
+            _ANALYZE_OK if "/AnalyzeComponentStore" in args else "The operation completed successfully."
+        ),
+    )
 
     outcome = store.cleanup()
     assert outcome.success is True
@@ -390,9 +396,15 @@ def test_cleanup_failure_explains_pending_servicing(monkeypatch):
     """
     store = ComponentStore()
     monkeypatch.setattr(ComponentStore, "is_elevated", staticmethod(lambda: True))
-    monkeypatch.setattr(store, "_run_dism", lambda args, timeout, cancel_event=None: (
-        _ANALYZE_OK if "/AnalyzeComponentStore" in args
-        else "Error: 0x800f0806 - the operation could not be completed."))
+    monkeypatch.setattr(
+        store,
+        "_run_dism",
+        lambda args, timeout, cancel_event=None: (
+            _ANALYZE_OK
+            if "/AnalyzeComponentStore" in args
+            else "Error: 0x800f0806 - the operation could not be completed."
+        ),
+    )
 
     outcome = store.cleanup()
     assert outcome.success is False

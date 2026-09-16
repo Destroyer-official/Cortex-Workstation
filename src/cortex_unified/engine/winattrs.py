@@ -42,25 +42,16 @@ FILE_ATTRIBUTE_RECALL_ON_DATA_ACCESS = 0x00400000
 #: Any of these means "the bytes may not be here"; opening the file can block
 #: on a network fetch. ``OFFLINE`` is included because legacy HSM filters and
 #: some sync clients still use it to mark stubbed content.
-DEHYDRATED_MASK = (
-    FILE_ATTRIBUTE_RECALL_ON_OPEN
-    | FILE_ATTRIBUTE_RECALL_ON_DATA_ACCESS
-    | FILE_ATTRIBUTE_OFFLINE
-)
+DEHYDRATED_MASK = FILE_ATTRIBUTE_RECALL_ON_OPEN | FILE_ATTRIBUTE_RECALL_ON_DATA_ACCESS | FILE_ATTRIBUTE_OFFLINE
 
 #: Attributes that make ``st_size`` a poor proxy for space actually consumed.
-SIZE_LIES_MASK = (
-    FILE_ATTRIBUTE_SPARSE_FILE
-    | FILE_ATTRIBUTE_COMPRESSED
-    | FILE_ATTRIBUTE_REPARSE_POINT
-    | DEHYDRATED_MASK
-)
+SIZE_LIES_MASK = FILE_ATTRIBUTE_SPARSE_FILE | FILE_ATTRIBUTE_COMPRESSED | FILE_ATTRIBUTE_REPARSE_POINT | DEHYDRATED_MASK
 
 # -- Reparse tags (ntifs.h) ------------------------------------------------
 
-IO_REPARSE_TAG_MOUNT_POINT = 0xA0000003   # junction / volume mount point
+IO_REPARSE_TAG_MOUNT_POINT = 0xA0000003  # junction / volume mount point
 IO_REPARSE_TAG_SYMLINK = 0xA000000C
-IO_REPARSE_TAG_CLOUD = 0x9000001A         # OneDrive & friends (base tag)
+IO_REPARSE_TAG_CLOUD = 0x9000001A  # OneDrive & friends (base tag)
 
 #: The cloud filter reserves a family of tags ``0x9000?01A`` (CLOUD,
 #: CLOUD_1 .. CLOUD_F). Masking out the provider nibble matches them all.
@@ -68,6 +59,7 @@ _CLOUD_TAG_MASK = 0xFFFF00FF
 
 
 # -- capture helpers -------------------------------------------------------
+
 
 def attrs_of(st: Any) -> int:
     """Return ``st_file_attributes`` from a stat result (0 when unavailable)."""
@@ -88,6 +80,7 @@ tag_of = reparse_tag_of
 
 
 # -- predicates ------------------------------------------------------------
+
 
 def is_reparse_point(attrs: int) -> bool:
     """True when the entry is a reparse point of any kind."""
@@ -157,6 +150,7 @@ def describe(attrs: int, tag: int = 0) -> str:
 
 # -- allocated size --------------------------------------------------------
 
+
 def on_disk_size(
     path: str | os.PathLike[str],
     logical_size: int | None = None,
@@ -179,9 +173,7 @@ def on_disk_size(
             from ctypes import wintypes
 
             kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
-            kernel32.GetCompressedFileSizeW.argtypes = [
-                wintypes.LPCWSTR, ctypes.POINTER(wintypes.DWORD)
-            ]
+            kernel32.GetCompressedFileSizeW.argtypes = [wintypes.LPCWSTR, ctypes.POINTER(wintypes.DWORD)]
             kernel32.GetCompressedFileSizeW.restype = wintypes.DWORD
             high = wintypes.DWORD(0)
             ctypes.set_last_error(0)

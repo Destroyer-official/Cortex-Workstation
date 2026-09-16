@@ -72,6 +72,7 @@ from typing import Any, Deque, Dict, Hashable, Optional, Tuple
 @dataclass(slots=True)
 class _Entry:
     """Record holding key, value, freq."""
+
     key: Hashable
     value: Any
     freq: int = 0  # 0..3 (2 bits)
@@ -80,6 +81,7 @@ class _Entry:
 @dataclass
 class S3FIFOStats:
     """Record holding hits, misses, ghost_hits, evictions, small_evictions_to_main, small_evictions_to_ghost, main_reinsertions."""
+
     hits: int = 0
     misses: int = 0
     ghost_hits: int = 0

@@ -26,6 +26,7 @@ class DevCacheItem:
 
     Manages DevCacheItem operations and coordinates related state changes for the component.
     """
+
     ecosystem: str  # "Docker", "Python", "Node.js", "Rust/Cargo", "Java/Gradle", "Go", ".NET"
     name: str
     path: str
@@ -41,6 +42,7 @@ class DevCleanResult:
 
     Manages DevCleanResult operations and coordinates related state changes for the component.
     """
+
     items_cleaned: int
     bytes_freed: int
     errors: List[str] = None
@@ -174,20 +176,24 @@ class DevCleaner:
 
         # 7. Docker (if available)
         try:
-            res = subprocess.run(["docker", "system", "df", "--format", "{{.Type}}:{{.Size}}"], capture_output=True, text=True, timeout=5)
+            res = subprocess.run(
+                ["docker", "system", "df", "--format", "{{.Type}}:{{.Size}}"], capture_output=True, text=True, timeout=5
+            )
             if res.returncode == 0:
                 for line in res.stdout.splitlines():
                     if ":" in line:
                         t_name, size_str = line.split(":", 1)
-                        items.append(DevCacheItem(
-                            ecosystem="Docker",
-                            name=f"Docker {t_name.strip()}",
-                            path="docker://daemon",
-                            size_bytes=0,
-                            file_count=1,
-                            is_safe_to_clean=True,
-                            description=f"Docker {t_name.strip()} storage ({size_str.strip()})",
-                        ))
+                        items.append(
+                            DevCacheItem(
+                                ecosystem="Docker",
+                                name=f"Docker {t_name.strip()}",
+                                path="docker://daemon",
+                                size_bytes=0,
+                                file_count=1,
+                                is_safe_to_clean=True,
+                                description=f"Docker {t_name.strip()} storage ({size_str.strip()})",
+                            )
+                        )
         except Exception:
             pass
 

@@ -37,9 +37,7 @@ class _PrivacyWorker(QObject):
     progress = Signal(str)
     failed = Signal(str)
 
-    def __init__(
-        self, mode: str, profile: str | None = None, tweak_ids: list[str] | None = None
-    ):
+    def __init__(self, mode: str, profile: str | None = None, tweak_ids: list[str] | None = None):
         """Initialize worker.
 
         Initializes the instance and configures internal state.
@@ -213,9 +211,7 @@ class PrivacyBlockerPage(_Page):
 
         # -- Results table --------------------------------------------------
         self.tbl = QTableWidget(0, 4)
-        self.tbl.setHorizontalHeaderLabels(
-            ["Tweak Name", "Category", "Status", "Description"]
-        )
+        self.tbl.setHorizontalHeaderLabels(["Tweak Name", "Category", "Status", "Description"])
         self.tbl.horizontalHeader().setStretchLastSection(True)
         self.tbl.verticalHeader().setVisible(False)
         self.tbl.setAlternatingRowColors(True)
@@ -253,11 +249,7 @@ class PrivacyBlockerPage(_Page):
 
         profile_key = _PROFILE_MAP.get(self.profile_combo.currentText(), "privacy")
         checked = {cat for cat, cb in self._cat_checks.items() if cb.isChecked()}
-        return [
-            t.id
-            for t in TELEMETRY_TWEAKS
-            if profile_key in t.profiles and t.category in checked
-        ]
+        return [t.id for t in TELEMETRY_TWEAKS if profile_key in t.profiles and t.category in checked]
 
     # -- apply / revert ----------------------------------------------------
 
@@ -267,8 +259,7 @@ class PrivacyBlockerPage(_Page):
         ids = self._selected_tweak_ids()
         if not ids:
             self.state.show_empty(
-                "No tweaks match the selected profile and categories. "
-                "Adjust the profile or check more categories."
+                "No tweaks match the selected profile and categories. " "Adjust the profile or check more categories."
             )
             return
         self._set_busy(True)
@@ -324,8 +315,7 @@ class PrivacyBlockerPage(_Page):
         self._set_busy(False)
         if not rows:
             self.state.show_empty(
-                "No tweaks were modified. Check that the selected profile "
-                "has matching categories."
+                "No tweaks were modified. Check that the selected profile " "has matching categories."
             )
             self.status.setText("No changes applied.")
             self.win.statusBar().showMessage("No privacy changes", 5000)

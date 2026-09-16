@@ -18,6 +18,7 @@ def tm():
 
 class TestSnapshot:
     """Group testsnapshot tests covering snapshot shape; cpu block; processes have fields; processes sorted by memory desc; idle process excluded; total cpu in range."""
+
     def test_snapshot_shape(self, tm):
         """Verify snapshot shape via tm.snapshot.
 
@@ -52,6 +53,7 @@ class TestSnapshot:
         assert set(p) >= {"pid", "name", "cpu", "rss", "threads", "user", "status"}
         # This test process itself must be present.
         import os
+
         assert any(pr["pid"] == os.getpid() for pr in procs)
 
     def test_processes_sorted_by_memory_desc(self, tm):
@@ -72,8 +74,7 @@ class TestSnapshot:
         """
         procs = tm.snapshot()["processes"]
         assert all(p["pid"] != 0 for p in procs)
-        assert all(p["name"].lower() not in {"system idle process", "idle"}
-                   for p in procs)
+        assert all(p["name"].lower() not in {"system idle process", "idle"} for p in procs)
 
     def test_total_cpu_in_range(self, tm):
         """Verify total cpu in range via tm.snapshot.
@@ -99,6 +100,7 @@ class TestSnapshot:
 
 class TestMemoryReconciliation:
     """Group testmemoryreconciliation tests covering core fields present; used is total minus available; no false equation; hardware reserved consistent if present."""
+
     def test_core_fields_present(self, tm):
         """Verify core fields present via tm.snapshot.
 
@@ -106,8 +108,7 @@ class TestMemoryReconciliation:
             tm: The tm parameter.
         """
         mem = tm.snapshot()["memory"]
-        for key in ("total", "available", "used", "percent",
-                    "sum_process_ws", "ws_overlaps"):
+        for key in ("total", "available", "used", "percent", "sum_process_ws", "ws_overlaps"):
             assert key in mem
 
     def test_used_is_total_minus_available(self, tm):
@@ -143,6 +144,7 @@ class TestMemoryReconciliation:
 
 class TestEndProcess:
     """Group testendprocess tests covering end nonexistent pid; end returns tuple."""
+
     def test_end_nonexistent_pid(self, tm):
         # PID 0 / a very high unlikely PID -> graceful failure, never raises.
         """Verify end nonexistent pid via tm.end_process.

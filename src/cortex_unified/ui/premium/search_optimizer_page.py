@@ -32,6 +32,7 @@ from .window import _Page, fmt_bytes
 
 class _SearchWorker(QObject):
     """Background worker (_SearchWorker) performing SearchWorker. Signals status_ready, op_finished report status."""
+
     status_ready = Signal(object)
     op_finished = Signal(object)
 
@@ -97,7 +98,9 @@ class SearchIndexOptimizerPage(_Page):
         ctrl_lay.addWidget(self.btn_compact)
 
         self.btn_rebuild = QPushButton("Rebuild Index Catalog")
-        self.btn_rebuild.setToolTip("Deletes corrupted catalog database to trigger complete clean background re-indexing.")
+        self.btn_rebuild.setToolTip(
+            "Deletes corrupted catalog database to trigger complete clean background re-indexing."
+        )
         self.btn_rebuild.clicked.connect(self._start_rebuild)
         ctrl_lay.addWidget(self.btn_rebuild)
 

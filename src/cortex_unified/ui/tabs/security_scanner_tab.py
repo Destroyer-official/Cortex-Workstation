@@ -5,10 +5,24 @@ import logging
 from pathlib import Path
 
 from PySide6.QtWidgets import (
-    QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLabel,
-    QLineEdit, QCheckBox, QTableWidget, QTableWidgetItem,
-    QProgressBar, QGroupBox, QFormLayout, QFileDialog,
-    QMessageBox, QHeaderView, QSpinBox, QTextEdit, QSplitter
+    QWidget,
+    QVBoxLayout,
+    QHBoxLayout,
+    QPushButton,
+    QLabel,
+    QLineEdit,
+    QCheckBox,
+    QTableWidget,
+    QTableWidgetItem,
+    QProgressBar,
+    QGroupBox,
+    QFormLayout,
+    QFileDialog,
+    QMessageBox,
+    QHeaderView,
+    QSpinBox,
+    QTextEdit,
+    QSplitter,
 )
 from PySide6.QtCore import QThread, Signal, Qt, QUrl
 from PySide6.QtGui import QColor, QFont, QDesktopServices
@@ -19,12 +33,12 @@ from cortex_unified.core.config import Config
 
 class SentinelScanWorker(QThread):
     """Background worker for Sentinel Pro security scanning."""
+
     finished = Signal(object)  # ScanStats
     error = Signal(str)
     progress = Signal(str)
 
-    def __init__(self, directory: str, scan_archives: bool = False,
-                 scan_git: bool = False, max_workers: int = 8):
+    def __init__(self, directory: str, scan_archives: bool = False, scan_git: bool = False, max_workers: int = 8):
         """Store the scan target, archive/git options, and thread budget."""
         super().__init__()
         self.directory = directory
@@ -41,9 +55,8 @@ class SentinelScanWorker(QThread):
         ScanStats, or ``error`` with the failure message.
         """
         try:
-            from cortex_unified.system_tools.secrets_scanner import (
-                run_scan, scan_archives, scan_git_history
-            )
+            from cortex_unified.system_tools.secrets_scanner import run_scan, scan_archives, scan_git_history
+
             self.progress.emit(f"Scanning {self.directory}...")
             stats = run_scan(self.directory, max_workers=self.max_workers, quiet=True)
 
@@ -68,6 +81,7 @@ class SentinelScanWorker(QThread):
 
 class VerifyWorker(QThread):
     """Background worker for live credential verification against provider APIs."""
+
     progress = Signal(str)
     finished = Signal(dict)
     error = Signal(str)
@@ -81,6 +95,7 @@ class VerifyWorker(QThread):
         """Execute credential verification off the main UI thread."""
         try:
             from cortex_unified.system_tools.secrets_scanner import verify_all_findings
+
             self.progress.emit("Verifying credentials against provider APIs...")
             results = verify_all_findings(self.findings, quiet=True)
             self.finished.emit(results)
@@ -90,6 +105,7 @@ class VerifyWorker(QThread):
 
 class BaselineWorker(QThread):
     """Background worker for baseline save and delta calculation."""
+
     finished = Signal(str, object)  # (action, result)
     error = Signal(str)
 
@@ -105,10 +121,12 @@ class BaselineWorker(QThread):
         try:
             if self.action == "save":
                 from cortex_unified.system_tools.secrets_scanner import save_baseline
+
                 path = save_baseline(self.findings, self.directory)
                 self.finished.emit("save", path)
             elif self.action == "diff":
                 from cortex_unified.system_tools.secrets_scanner import load_baseline, compute_delta
+
                 base = load_baseline(self.directory)
                 if not base:
                     self.finished.emit("diff", None)
@@ -121,6 +139,7 @@ class BaselineWorker(QThread):
 
 class ExportWorker(QThread):
     """Background worker for SARIF, CSV, JSON, and HTML report export."""
+
     finished = Signal(str, str)  # (format, file_path)
     error = Signal(str)
 
@@ -136,15 +155,19 @@ class ExportWorker(QThread):
         try:
             if self.fmt == "sarif":
                 from cortex_unified.system_tools.secrets_scanner import export_sarif
+
                 export_sarif(self.stats, self.file_path)
             elif self.fmt == "csv":
                 from cortex_unified.system_tools.secrets_scanner import export_csv
+
                 export_csv(self.stats, self.file_path)
             elif self.fmt == "html":
                 from cortex_unified.system_tools.secrets_scanner import generate_html_report
+
                 generate_html_report(self.stats, self.file_path)
             elif self.fmt == "json":
                 import json
+
                 with open(self.file_path, "w", encoding="utf-8") as fp:
                     json.dump(self.stats.to_dict(), fp, indent=2, default=str)
             self.finished.emit(self.fmt, self.file_path)
@@ -154,6 +177,7 @@ class ExportWorker(QThread):
 
 class DashboardWorker(QThread):
     """Background worker to generate live web dashboard report."""
+
     finished = Signal(str)  # output file path
     error = Signal(str)
 
@@ -167,6 +191,7 @@ class DashboardWorker(QThread):
         """Generate dashboard HTML file off the UI thread."""
         try:
             from cortex_unified.system_tools.secrets_scanner import generate_html_report
+
             generate_html_report(self.stats, self.output_path)
             self.finished.emit(self.output_path)
         except Exception as exc:
@@ -258,8 +283,8 @@ class SecurityScannerTab(BaseTab):
         verify_layout = QHBoxLayout()
         self.verify_button = QPushButton("⚡ Verify Live Credentials (network)")
         self.verify_button.setToolTip(
-            "Check verifiable findings against provider APIs. "
-            "Makes network requests — click to consent.")
+            "Check verifiable findings against provider APIs. " "Makes network requests — click to consent."
+        )
         self.verify_button.setEnabled(False)
         self.verify_button.clicked.connect(self._verify_live)
         verify_layout.addWidget(self.verify_button)
@@ -339,9 +364,9 @@ class SecurityScannerTab(BaseTab):
         findings_layout = QVBoxLayout(findings_group)
         self.findings_table = QTableWidget()
         self.findings_table.setColumnCount(7)
-        self.findings_table.setHorizontalHeaderLabels([
-            "Severity", "Category", "Pattern", "File", "Line", "Confidence", "Compliance"
-        ])
+        self.findings_table.setHorizontalHeaderLabels(
+            ["Severity", "Category", "Pattern", "File", "Line", "Confidence", "Compliance"]
+        )
         self.findings_table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Interactive)
         self.findings_table.horizontalHeader().setStretchLastSection(True)
         self.findings_table.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectRows)
@@ -398,7 +423,7 @@ class SecurityScannerTab(BaseTab):
             directory=path,
             scan_archives=self.archive_checkbox.isChecked(),
             scan_git=self.git_checkbox.isChecked(),
-            max_workers=self.threads_spinbox.value()
+            max_workers=self.threads_spinbox.value(),
         )
         self.add_worker_thread(worker)
         worker.finished.connect(self._scan_complete)
@@ -548,11 +573,13 @@ class SecurityScannerTab(BaseTab):
         if not self.scan_stats or not self.scan_stats.findings:
             return
         reply = QMessageBox.question(
-            self, "Verify Live Credentials",
+            self,
+            "Verify Live Credentials",
             "This will send targeted, read-only authentication probes to live cloud services "
             "(AWS, GitHub, Slack, Stripe, OpenAI, npm) to determine whether discovered tokens are active.\n\n"
             "Proceed with live verification?",
-            QMessageBox.Yes | QMessageBox.No, QMessageBox.No
+            QMessageBox.Yes | QMessageBox.No,
+            QMessageBox.No,
         )
         if reply != QMessageBox.Yes:
             return
@@ -575,11 +602,11 @@ class SecurityScannerTab(BaseTab):
             self.progress_label.setText("")
             self.remove_worker_thread(worker)
             worker.deleteLater()
-            live_count = sum(1 for r in results.values() if getattr(r, 'verified', False) is True)
+            live_count = sum(1 for r in results.values() if getattr(r, "verified", False) is True)
             QMessageBox.information(
-                self, "Verification Complete",
-                f"Verified {len(results)} potential credentials.\n"
-                f"Active / Live credentials found: {live_count}"
+                self,
+                "Verification Complete",
+                f"Verified {len(results)} potential credentials.\n" f"Active / Live credentials found: {live_count}",
             )
             self._scan_complete(self.scan_stats)
 
@@ -616,7 +643,9 @@ class SecurityScannerTab(BaseTab):
             self.progress_label.setText("")
             self.remove_worker_thread(worker)
             worker.deleteLater()
-            QMessageBox.information(self, "Baseline Saved", f"Saved baseline with {len(self.scan_stats.findings)} findings to:\n{path}")
+            QMessageBox.information(
+                self, "Baseline Saved", f"Saved baseline with {len(self.scan_stats.findings)} findings to:\n{path}"
+            )
 
         def on_err(msg):
             """Handle baseline save failure."""
@@ -651,14 +680,17 @@ class SecurityScannerTab(BaseTab):
             self.remove_worker_thread(worker)
             worker.deleteLater()
             if res is None:
-                QMessageBox.warning(self, "No Baseline", "No baseline found for this directory. Click 'Save Baseline' first.")
+                QMessageBox.warning(
+                    self, "No Baseline", "No baseline found for this directory. Click 'Save Baseline' first."
+                )
             else:
                 new_findings, known_count = res
                 QMessageBox.information(
-                    self, "Baseline Delta",
+                    self,
+                    "Baseline Delta",
                     f"Baseline comparison:\n"
                     f"• Known (previously seen) findings: {known_count}\n"
-                    f"• New findings: {len(new_findings)}"
+                    f"• New findings: {len(new_findings)}",
                 )
 
         def on_err(msg):
@@ -683,6 +715,7 @@ class SecurityScannerTab(BaseTab):
         f = self.scan_stats.findings[row]
         try:
             from cortex_unified.system_tools.secrets_scanner import add_fp
+
             p = self.scan_path_input.text().strip() or os.getcwd()
             add_fp(f.fingerprint, p, reason="User suppressed via GUI")
             QMessageBox.information(self, "Suppressed", f"Added finding '{f.pattern_name}' to false positive database.")
@@ -696,6 +729,7 @@ class SecurityScannerTab(BaseTab):
             return
         try:
             from cortex_unified.system_tools.secrets_scanner import apply_fp_filter
+
             p = self.scan_path_input.text().strip() or os.getcwd()
             filtered, suppressed = apply_fp_filter(self.scan_stats.findings, p)
             self.scan_stats.findings = filtered
@@ -811,6 +845,7 @@ class SecurityScannerTab(BaseTab):
         if not self.scan_stats:
             return
         import tempfile
+
         temp_dir = tempfile.gettempdir()
         out_file = os.path.join(temp_dir, "sentinel_live_dashboard.html")
         self.progress_bar.setVisible(True)
@@ -838,4 +873,3 @@ class SecurityScannerTab(BaseTab):
         worker.finished.connect(on_done)
         worker.error.connect(on_err)
         worker.start()
-

@@ -72,11 +72,7 @@ class Card(QFrame):
         # visible fill/border/top-highlight are applied by the elevation-aware
         # QSS selectors (#Card / #HeroCard / #Glass) - no blurring graphics
         # effect is used, so the card and its text render crisply on any display.
-        level = (
-            Elevation.RAISED
-            if object_name in ("HeroCard", "Glass")
-            else Elevation.SURFACE
-        )
+        level = Elevation.RAISED if object_name in ("HeroCard", "Glass") else Elevation.SURFACE
         self._elevation = elevation_style(palette, level)
 
 
@@ -115,6 +111,7 @@ class StatCard(Card):
         """
         try:
             from PySide6.QtWidgets import QGraphicsOpacityEffect
+
             eff = QGraphicsOpacityEffect(self._value)
             self._value.setGraphicsEffect(eff)
             anim = QPropertyAnimation(eff, b"opacity", self)
@@ -369,12 +366,10 @@ class CoreBars(QWidget):
             # fill
             fill_h = usable_h * pct / 100.0
             painter.setBrush(self._bar_color(pct))
-            painter.drawRoundedRect(
-                QRectF(x, top_pad + (usable_h - fill_h), bar_w, fill_h), 4, 4)
+            painter.drawRoundedRect(QRectF(x, top_pad + (usable_h - fill_h), bar_w, fill_h), 4, 4)
             # label
             painter.setPen(QColor(self._p.text_muted))
-            painter.drawText(QRectF(x, h - bottom_pad, bar_w, bottom_pad),
-                             Qt.AlignmentFlag.AlignCenter, str(i))
+            painter.drawText(QRectF(x, h - bottom_pad, bar_w, bottom_pad), Qt.AlignmentFlag.AlignCenter, str(i))
         painter.end()
 
 
@@ -444,6 +439,7 @@ class TrafficGraph(QWidget):
             if len(series) < 2:
                 return
             from PySide6.QtGui import QPainterPath
+
             n = len(series)
             step = (w - 2 * pad) / max(1, self._cap - 1)
             x0 = w - pad - (n - 1) * step
@@ -542,6 +538,7 @@ def icon_for_exe(exe_path: str):
     try:
         from PySide6.QtCore import QFileInfo
         from PySide6.QtWidgets import QFileIconProvider
+
         if _ICON_PROVIDER is None:
             _ICON_PROVIDER = QFileIconProvider()
         info = QFileInfo(exe_path)
@@ -581,6 +578,7 @@ def placeholder_icon(palette: Palette | None = None, size: int = 32) -> QIcon:
     dpr = 1.0
     try:
         from PySide6.QtGui import QGuiApplication
+
         _app = QGuiApplication.instance()
         val = float(_app.devicePixelRatio()) if _app is not None else 1.0
         if val and val > 0:
@@ -742,15 +740,14 @@ def require_feature(page_or_parent, feature) -> bool:
     required = FEATURE_MIN_TIER.get(feature, Tier.FREE)
     _LOG.info(
         "gated action blocked: %s needs %s, machine is on %s",
-        feature.value, required.value, state.tier.value,
+        feature.value,
+        required.value,
+        state.tier.value,
     )
     box = QMessageBox(page_or_parent)
     box.setWindowTitle("Upgrade required")
     box.setIcon(QMessageBox.Icon.Information)
-    box.setText(
-        f"{feature.value.replace('.', ' ').title()} requires the "
-        f"{required.value.title()} edition."
-    )
+    box.setText(f"{feature.value.replace('.', ' ').title()} requires the " f"{required.value.title()} edition.")
     box.setInformativeText(f"Your current tier: {state.tier.value.title()}.")
 
     # The trial is available until first used - mirror start_trial()'s own

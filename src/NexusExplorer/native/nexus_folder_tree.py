@@ -14,6 +14,7 @@ from pathlib import Path
 from PySide6.QtCore import QModelIndex, Qt, Signal
 from PySide6.QtGui import QStandardItem, QStandardItemModel
 from PySide6.QtWidgets import QFileIconProvider, QTreeView, QVBoxLayout, QWidget
+
 try:
     from nexus_icons import folder_icon as _material_folder_icon
 except ImportError:
@@ -91,9 +92,7 @@ class FolderTreeModel(QStandardItemModel):
                 if Path(drive).exists():
                     try:
                         buf = ctypes.create_unicode_buffer(261)
-                        ok = ctypes.windll.kernel32.GetVolumeInformationW(
-                            drive, buf, 261, None, None, None, None, 0
-                        )
+                        ok = ctypes.windll.kernel32.GetVolumeInformationW(drive, buf, 261, None, None, None, None, 0)
                         label = buf.value if ok else ""
                     except Exception:
                         label = ""

@@ -32,6 +32,7 @@ IS_WINDOWS = platform.system() == "Windows"
 # Pure classification (runs on every platform)
 # ---------------------------------------------------------------------------
 
+
 def test_recall_attributes_mean_dehydrated():
     """Verify recall attributes mean dehydrated via wa.is_dehydrated."""
     assert wa.is_dehydrated(wa.FILE_ATTRIBUTE_RECALL_ON_DATA_ACCESS)
@@ -62,8 +63,7 @@ def test_junction_detected_by_tag_only():
 def test_describe_explains_each_special_case():
     """Verify describe explains each special case via wa.describe."""
     assert "not stored on this disk" in wa.describe(wa.FILE_ATTRIBUTE_OFFLINE)
-    assert "junction" in wa.describe(
-        wa.FILE_ATTRIBUTE_REPARSE_POINT, wa.IO_REPARSE_TAG_MOUNT_POINT)
+    assert "junction" in wa.describe(wa.FILE_ATTRIBUTE_REPARSE_POINT, wa.IO_REPARSE_TAG_MOUNT_POINT)
     assert "sparse" in wa.describe(wa.FILE_ATTRIBUTE_SPARSE_FILE)
     # Nothing special -> no note, so the UI stays quiet for ordinary files.
     assert wa.describe(0, 0) == ""
@@ -71,8 +71,10 @@ def test_describe_explains_each_special_case():
 
 def test_pure_helpers_never_raise_on_missing_attributes():
     """Non-Windows stat results have no attribute fields; that must be fine."""
+
     class Bare:
         """Helper bare."""
+
         pass
 
     assert wa.attrs_of(Bare()) == 0
@@ -82,6 +84,7 @@ def test_pure_helpers_never_raise_on_missing_attributes():
 # ---------------------------------------------------------------------------
 # Walker behaviour (Windows reparse points)
 # ---------------------------------------------------------------------------
+
 
 def _mark_offline(path) -> bool:
     """Flag *path* with FILE_ATTRIBUTE_OFFLINE; False if the OS refused.
@@ -116,8 +119,7 @@ def cloud_tree(tmp_path):
         pytest.skip("could not set FILE_ATTRIBUTE_OFFLINE on this filesystem")
 
     link = tmp_path / "link"
-    proc = subprocess.run(["cmd", "/c", "mklink", "/J", str(link), str(real)],
-                          capture_output=True)
+    proc = subprocess.run(["cmd", "/c", "mklink", "/J", str(link), str(real)], capture_output=True)
     if proc.returncode != 0 or not link.exists():
         pytest.skip("could not create a junction on this filesystem")
     return tmp_path, stub
@@ -199,8 +201,7 @@ def test_shredder_refuses_cloud_placeholder(cloud_tree):
     _, stub = cloud_tree
     # force_overwrite_on_flash=True proves the refusal is about the placeholder,
     # not about the storage medium being unsuitable for overwriting.
-    result = SecureDeleter().delete(
-        stub, method=DeletionMethod.OVERWRITE, force_overwrite_on_flash=True)
+    result = SecureDeleter().delete(stub, method=DeletionMethod.OVERWRITE, force_overwrite_on_flash=True)
 
     assert result.outcome == DeletionOutcome.SKIPPED_UNSAFE
     assert "cloud" in result.reason.lower()
@@ -210,6 +211,7 @@ def test_shredder_refuses_cloud_placeholder(cloud_tree):
 # ---------------------------------------------------------------------------
 # Allocated size
 # ---------------------------------------------------------------------------
+
 
 def test_on_disk_size_matches_a_plain_file(tmp_path):
     """Verify on disk size matches a plain file via wa.on_disk_size.

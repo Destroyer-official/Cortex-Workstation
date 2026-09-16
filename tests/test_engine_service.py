@@ -21,6 +21,7 @@ from cortex_unified.engine.service import CategoryScan
 
 class TestCategories:
     """Group testcategories tests covering default registry nonempty and typed; ids unique; risk ranking."""
+
     def test_default_registry_nonempty_and_typed(self):
         """Verify default registry nonempty and typed via default_categories."""
         cats = default_categories()
@@ -40,6 +41,7 @@ class TestCategories:
 
 class TestDeepDiscovery:
     """Group testdeepdiscovery tests covering discovers nested cache dirs; does not recurse into matched cache; discovery is cached."""
+
     def test_discovers_nested_cache_dirs(self, tmp_path, monkeypatch):
         # Build a deep app-data-like tree with caches at varying depths.
         """Verify discovers nested cache dirs via cat_mod._APP_CACHE_CACHE.clear, cat_mod._discover_app_caches, p.endswith.
@@ -49,6 +51,7 @@ class TestDeepDiscovery:
             monkeypatch: The monkeypatch parameter.
         """
         from cortex_unified.engine import categories as cat_mod
+
         (tmp_path / "AppA" / "Cache").mkdir(parents=True)
         (tmp_path / "AppB" / "User Data" / "Default" / "Code Cache").mkdir(parents=True)
         (tmp_path / "AppC" / "node_modules" / "pkg" / "Cache").mkdir(parents=True)  # skipped
@@ -57,8 +60,8 @@ class TestDeepDiscovery:
         found = cat_mod._discover_app_caches([tmp_path])
         names = {str(p) for p in found}
         assert any(p.endswith("Cache") and "AppA" in p for p in names)
-        assert any(p.endswith("Code Cache") for p in names)          # found deep
-        assert not any("node_modules" in p for p in names)           # skipped huge dir
+        assert any(p.endswith("Code Cache") for p in names)  # found deep
+        assert not any("node_modules" in p for p in names)  # skipped huge dir
 
     def test_does_not_recurse_into_matched_cache(self, tmp_path):
         """Verify does not recurse into matched cache via cat_mod._APP_CACHE_CACHE.clear, cat_mod._discover_app_caches, sum.
@@ -67,6 +70,7 @@ class TestDeepDiscovery:
             tmp_path: Filesystem path to the target file or directory.
         """
         from cortex_unified.engine import categories as cat_mod
+
         (tmp_path / "App" / "Cache" / "Cache_Data").mkdir(parents=True)
         cat_mod._APP_CACHE_CACHE.clear()
         found = cat_mod._discover_app_caches([tmp_path])
@@ -80,6 +84,7 @@ class TestDeepDiscovery:
             tmp_path: Filesystem path to the target file or directory.
         """
         from cortex_unified.engine import categories as cat_mod
+
         (tmp_path / "App" / "Cache").mkdir(parents=True)
         cat_mod._APP_CACHE_CACHE.clear()
         a = cat_mod._discover_app_caches([tmp_path])
@@ -89,6 +94,7 @@ class TestDeepDiscovery:
 
 class TestBreakdown:
     """Group testbreakdown tests covering groups files into top folders; limit respected; empty."""
+
     def test_groups_files_into_top_folders(self, tmp_path):
         """Verify groups files into top folders via scan.breakdown, CleanupCategory, CategoryScan.
 
@@ -96,9 +102,9 @@ class TestBreakdown:
             tmp_path: Filesystem path to the target file or directory.
         """
         from cortex_unified.engine.models import FileEntry
+
         root = tmp_path / "cache"
-        cat = CleanupCategory(id="c", label="C", description="", risk=RiskLevel.LOW,
-                              paths=(root,))
+        cat = CleanupCategory(id="c", label="C", description="", risk=RiskLevel.LOW, paths=(root,))
         scan = CategoryScan(category=cat)
         # Two folders under the root with different sizes.
         scan.entries = [
@@ -121,22 +127,22 @@ class TestBreakdown:
             tmp_path: Filesystem path to the target file or directory.
         """
         from cortex_unified.engine.models import FileEntry
+
         root = tmp_path / "c"
-        cat = CleanupCategory(id="c", label="C", description="", risk=RiskLevel.LOW,
-                              paths=(root,))
+        cat = CleanupCategory(id="c", label="C", description="", risk=RiskLevel.LOW, paths=(root,))
         scan = CategoryScan(category=cat)
         scan.entries = [FileEntry(root / f"d{i}" / "f", 10, 0.0) for i in range(50)]
         assert len(scan.breakdown(limit=10)) == 10
 
     def test_empty(self):
         """Verify empty via CleanupCategory, Path, CategoryScan."""
-        cat = CleanupCategory(id="c", label="C", description="", risk=RiskLevel.LOW,
-                              paths=(Path("x"),))
+        cat = CleanupCategory(id="c", label="C", description="", risk=RiskLevel.LOW, paths=(Path("x"),))
         assert CategoryScan(category=cat).breakdown() == []
 
 
 class TestCleanerServiceCategories:
     """Group testcleanerservicecategories tests covering scan and clean dry run then real; scan categories respects max risk; report to dict."""
+
     def _make_category(self, tmp_path: Path) -> CleanupCategory:
         """Make category using CleanupCategory.
 
@@ -217,6 +223,7 @@ class TestScanProgressAndCancel:
 
     Updates progress bar widgets, percentage counters, and status indicators with streaming status updates from the running worker.
     """
+
     def test_progress_callback_fires(self, tmp_path):
         # build a category tree
         """test_progress_callback_fires.
@@ -228,12 +235,17 @@ class TestScanProgressAndCancel:
         """
         from cortex_unified.engine.categories import CleanupCategory
         from cortex_unified.engine import PathGuard
+
         d = tmp_path / "c"
         d.mkdir()
         for i in range(5):
             (d / f"f{i}.tmp").write_bytes(b"x" * 100)
         cat = CleanupCategory(
-            id="t", label="T", description="", risk=RiskLevel.LOW, paths=(d,),
+            id="t",
+            label="T",
+            description="",
+            risk=RiskLevel.LOW,
+            paths=(d,),
         )
         svc = CleanerService(guard=PathGuard(sandbox=tmp_path))
         msgs = []
@@ -245,6 +257,7 @@ class TestScanProgressAndCancel:
     def test_cancel_event_stops_scan(self):
         """Verify cancel event stops scan via threading.Event, ev.set, CleanerService."""
         import threading
+
         ev = threading.Event()
         ev.set()
         report = CleanerService().scan_categories(cancel_event=ev)
@@ -267,6 +280,7 @@ class TestScanProgressAndCancel:
 
 class TestCleanerServiceAnalysis:
     """Group testcleanerserviceanalysis tests covering find duplicates; find large files; find empty."""
+
     @pytest.fixture
     def tree(self, tmp_path: Path) -> Path:
         """Provide tree fixture that creates an isolated directory.
@@ -278,7 +292,7 @@ class TestCleanerServiceAnalysis:
             Path: Result of the operation.
         """
         (tmp_path / "a.txt").write_text("dup-content")
-        (tmp_path / "b.txt").write_text("dup-content")   # duplicate
+        (tmp_path / "b.txt").write_text("dup-content")  # duplicate
         (tmp_path / "big.bin").write_bytes(b"Z" * (2 * 1024 * 1024))  # 2 MiB
         (tmp_path / "empty.txt").touch()
         (tmp_path / "empty_dir").mkdir()

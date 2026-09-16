@@ -23,11 +23,11 @@ log = logging.getLogger("nexus.undo")
 import string
 
 _UNSAFE_RMTREE_ROOTS = frozenset(
-    [f"{c}:\\" for c in string.ascii_uppercase] +
-    [f"{c}:/" for c in string.ascii_uppercase] +
-    [f"{c}:\\" for c in string.ascii_lowercase] +
-    [f"{c}:/" for c in string.ascii_lowercase] +
-    ['/', '/home', '/root', '/etc', '/var', '/usr', '/bin', '/sbin', '/tmp']
+    [f"{c}:\\" for c in string.ascii_uppercase]
+    + [f"{c}:/" for c in string.ascii_uppercase]
+    + [f"{c}:\\" for c in string.ascii_lowercase]
+    + [f"{c}:/" for c in string.ascii_lowercase]
+    + ["/", "/home", "/root", "/etc", "/var", "/usr", "/bin", "/sbin", "/tmp"]
 )
 
 
@@ -42,10 +42,11 @@ def _safe_rmtree(path: str) -> None:
 
 class OpKind(Enum):
     """Operation categories recorded on the undo stack."""
+
     RENAME = auto()
     MOVE = auto()
-    COPY = auto()       # records the copy so undo = delete the copy
-    DELETE = auto()     # records original path + temp backup so undo = restore
+    COPY = auto()  # records the copy so undo = delete the copy
+    DELETE = auto()  # records original path + temp backup so undo = restore
     MKDIR = auto()
     CREATE_FILE = auto()
     BATCH_CREATE = auto()
@@ -55,8 +56,7 @@ class OpKind(Enum):
 class UndoEntry(ABC):
     """Base class for undo/redo entries using the command pattern."""
 
-    def __init__(self, kind: OpKind, original: str, resulting: str,
-                 is_dir: bool = False):
+    def __init__(self, kind: OpKind, original: str, resulting: str, is_dir: bool = False):
         """Store the operation kind, the original path, the resulting
         path, and whether the subject is a directory."""
         self.kind = kind
@@ -76,13 +76,13 @@ class UndoEntry(ABC):
 
     def __repr__(self) -> str:
         """Debug representation: <Class KIND: original -> resulting>."""
-        return (f"<{self.__class__.__name__} {self.kind.name}: "
-                f"{self.original} -> {self.resulting}>")
+        return f"<{self.__class__.__name__} {self.kind.name}: " f"{self.original} -> {self.resulting}>"
 
 
 class RenameEntry(UndoEntry):
     """Undo entry for a rename: undo/redo move the item between the old
     and new paths (recreating the parent as needed)."""
+
     def __init__(self, original: str, resulting: str, is_dir: bool = False):
         """Record a rename from original to resulting."""
         super().__init__(OpKind.RENAME, original, resulting, is_dir)
@@ -97,6 +97,7 @@ class RenameEntry(UndoEntry):
         """Re-apply the rename (creating the target parent as needed)."""
         Path(self.resulting).parent.mkdir(parents=True, exist_ok=True)
         shutil.move(self.original, self.resulting)
+
     """Undo entry for a rename: undo/redo move the item between the old
     and new paths (recreating the parent as needed)."""
 
@@ -104,6 +105,7 @@ class RenameEntry(UndoEntry):
 class MoveEntry(UndoEntry):
     """Undo entry for a move: undo/redo shuttle the item between source
     and destination, each step guarded by an existence check."""
+
     def __init__(self, original: str, resulting: str, is_dir: bool = False):
         """Record a move from original to resulting."""
         super().__init__(OpKind.MOVE, original, resulting, is_dir)
@@ -119,6 +121,7 @@ class MoveEntry(UndoEntry):
         if Path(self.original).exists():
             Path(self.resulting).parent.mkdir(parents=True, exist_ok=True)
             shutil.move(self.original, self.resulting)
+
     """Undo entry for a move: undo/redo shuttle the item between source
     and destination, each step guarded by an existence check."""
 
@@ -126,6 +129,7 @@ class MoveEntry(UndoEntry):
 class CopyEntry(UndoEntry):
     """Undo entry for a copy: undo deletes the copy (safely for trees),
     redo re-copies from the original source."""
+
     def __init__(self, original: str, resulting: str, is_dir: bool = False):
         """Record a copy of original to resulting."""
         super().__init__(OpKind.COPY, original, resulting, is_dir)
@@ -145,6 +149,7 @@ class CopyEntry(UndoEntry):
             shutil.copytree(self.original, self.resulting)
         else:
             shutil.copy2(self.original, self.resulting)
+
     """Undo entry for a copy: undo deletes the copy (safely for trees),
     redo re-copies from the original source."""
 
@@ -152,6 +157,7 @@ class CopyEntry(UndoEntry):
 class DeleteEntry(UndoEntry):
     """Undo entry for a delete: undo restores from the recorded backup
     (when present); redo deletes again (safe rmtree for trees)."""
+
     def __init__(self, original: str, resulting: str, is_dir: bool = False):
         """Record a deletion of original with optional backup in resulting."""
         super().__init__(OpKind.DELETE, original, resulting, is_dir)
@@ -160,8 +166,7 @@ class DeleteEntry(UndoEntry):
         """Restore the item from its backup; warn and skip when the backup
         is missing or has disappeared."""
         if not self.resulting or not Path(self.resulting).exists():
-            log.warning("Delete undo skipped: backup missing or gone for %s",
-                        self.original)
+            log.warning("Delete undo skipped: backup missing or gone for %s", self.original)
             return
         Path(self.original).parent.mkdir(parents=True, exist_ok=True)
         shutil.move(self.resulting, self.original)
@@ -172,6 +177,7 @@ class DeleteEntry(UndoEntry):
             _safe_rmtree(self.original)
         else:
             Path(self.original).unlink(missing_ok=True)
+
     """Undo entry for a delete: undo restores from the recorded backup
     (when present); redo deletes again (safe rmtree for trees)."""
 
@@ -179,6 +185,7 @@ class DeleteEntry(UndoEntry):
 class MkdirEntry(UndoEntry):
     """Undo entry for mkdir: undo removes the directory plus any now-empty
     intermediate parents that were created alongside it; redo recreates it."""
+
     def __init__(self, original: str, created_parents: list[str] | None = None):
         """Record a directory creation and the missing parents it created."""
         super().__init__(OpKind.MKDIR, original, original, is_dir=True)
@@ -202,6 +209,7 @@ class MkdirEntry(UndoEntry):
     def redo(self) -> None:
         """Recreate the directory (including parents)."""
         Path(self.original).mkdir(parents=True, exist_ok=True)
+
     """Undo entry for mkdir: undo removes the directory plus any now-empty
     intermediate parents that were created alongside it; redo recreates it."""
 
@@ -209,6 +217,7 @@ class MkdirEntry(UndoEntry):
 class CreateFileEntry(UndoEntry):
     """Undo entry for file creation: undo removes the file (and prunes
     created parents); redo rewrites the recorded content."""
+
     def __init__(self, original: str, content: str = "", created_parents: list[str] | None = None):
         """Record a file creation with its content and created parents."""
         super().__init__(OpKind.CREATE_FILE, original, original, is_dir=False)
@@ -234,6 +243,7 @@ class CreateFileEntry(UndoEntry):
         p = Path(self.original)
         p.parent.mkdir(parents=True, exist_ok=True)
         p.write_text(self.content, encoding="utf-8")
+
     """Undo entry for file creation: undo removes the file (and prunes
     created parents); redo rewrites the recorded content."""
 
@@ -241,6 +251,7 @@ class CreateFileEntry(UndoEntry):
 class BatchCreateEntry(UndoEntry):
     """Composite undo entry: groups several creation entries so a single
     undo/redo replays the children (undo in reverse order)."""
+
     def __init__(self, entries: list[UndoEntry], label: str = "Batch creation"):
         """Wrap a list of child entries under a display label."""
         super().__init__(OpKind.BATCH_CREATE, label, f"{len(entries)} items", is_dir=True)
@@ -262,6 +273,7 @@ class BatchCreateEntry(UndoEntry):
                 entry.redo()
             except Exception as e:
                 log.warning("Batch redo step failed: %s", e)
+
     """Composite undo entry: groups several creation entries so a single
     undo/redo replays the children (undo in reverse order)."""
 
@@ -414,8 +426,7 @@ class UndoStack:
             if not self._undo:
                 return None
             e = self._undo[-1]
-        return (f"Undo {e.kind.name.lower()}: "
-                f"{Path(e.original).name} -> {Path(e.resulting).name}")
+        return f"Undo {e.kind.name.lower()}: " f"{Path(e.original).name} -> {Path(e.resulting).name}"
 
     def redo_description(self) -> str | None:
         """Return a human description of the next redo ('Redo kind: a -> b')
@@ -424,8 +435,7 @@ class UndoStack:
             if not self._redo:
                 return None
             e = self._redo[-1]
-        return (f"Redo {e.kind.name.lower()}: "
-                f"{Path(e.original).name} -> {Path(e.resulting).name}")
+        return f"Redo {e.kind.name.lower()}: " f"{Path(e.original).name} -> {Path(e.resulting).name}"
 
     # ------------------------------------------------------------------
     # Internal

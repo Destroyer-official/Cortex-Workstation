@@ -25,6 +25,7 @@ else:
 @dataclass
 class PathEntry:
     """Path Entry data container."""
+
     directory: str
     scope: str  # "User" or "System"
     exists: bool
@@ -35,6 +36,7 @@ class PathEntry:
 @dataclass
 class EnvVariable:
     """Env Variable data container."""
+
     name: str
     value: str
     scope: str  # "User" or "System"
@@ -44,6 +46,7 @@ class EnvVariable:
 @dataclass
 class PathAnalysisReport:
     """Path Analysis Report data container."""
+
     total_entries: int
     valid_entries: int
     dead_links: int
@@ -55,6 +58,7 @@ class PathAnalysisReport:
 @dataclass
 class CleanupResult:
     """Cleanup Result data container."""
+
     entries_removed: int
     duplicates_removed: int
     dead_links_removed: int
@@ -109,9 +113,14 @@ class EnvironmentVariableManager:
                     try:
                         name, val, reg_type = winreg.EnumValue(key, idx)
                         type_name = "REG_EXPAND_SZ" if reg_type == winreg.REG_EXPAND_SZ else "REG_SZ"
-                        variables.append(EnvVariable(
-                            name=name, value=str(val), scope=scope, var_type=type_name,
-                        ))
+                        variables.append(
+                            EnvVariable(
+                                name=name,
+                                value=str(val),
+                                scope=scope,
+                                var_type=type_name,
+                            )
+                        )
                         idx += 1
                     except OSError:
                         break
@@ -140,10 +149,15 @@ class EnvironmentVariableManager:
             for part in raw_path.split(";"):
                 stripped = part.strip()
                 if not stripped:
-                    entries.append(PathEntry(
-                        directory="(empty)", scope=scope, exists=False,
-                        is_duplicate=False, is_empty=True,
-                    ))
+                    entries.append(
+                        PathEntry(
+                            directory="(empty)",
+                            scope=scope,
+                            exists=False,
+                            is_duplicate=False,
+                            is_empty=True,
+                        )
+                    )
                     continue
 
                 expanded = os.path.expandvars(stripped)
@@ -153,10 +167,15 @@ class EnvironmentVariableManager:
                 if not is_dup:
                     seen_lower[lower] = scope
 
-                entries.append(PathEntry(
-                    directory=stripped, scope=scope, exists=exists,
-                    is_duplicate=is_dup, is_empty=False,
-                ))
+                entries.append(
+                    PathEntry(
+                        directory=stripped,
+                        scope=scope,
+                        exists=exists,
+                        is_duplicate=is_dup,
+                        is_empty=False,
+                    )
+                )
 
         dead = sum(1 for e in entries if not e.exists and not e.is_empty)
         dups = sum(1 for e in entries if e.is_duplicate)
@@ -173,8 +192,9 @@ class EnvironmentVariableManager:
         )
 
     @classmethod
-    def clean_path(cls, scope: str = "User", remove_dead: bool = True,
-                   remove_duplicates: bool = True, remove_empty: bool = True) -> CleanupResult:
+    def clean_path(
+        cls, scope: str = "User", remove_dead: bool = True, remove_duplicates: bool = True, remove_empty: bool = True
+    ) -> CleanupResult:
         """Clean PATH variable by removing dead links, duplicates, and empty entries."""
         if winreg is None:
             return CleanupResult(0, 0, 0, 0, "")

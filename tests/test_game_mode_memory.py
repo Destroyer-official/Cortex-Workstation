@@ -28,11 +28,10 @@ IS_WINDOWS = sys.platform == "win32"
 
 class TestGameModeLogic:
     """Group testgamemodelogic tests covering protected never in candidates; boost report serializes; unsupported reports cleanly; stop without start is safe."""
+
     def test_protected_never_in_candidates(self):
         """Verify protected never in candidates via set."""
-        assert not (
-            _PROTECTED & set(_DEFAULT_SUSPEND_CANDIDATES)
-        ), "a suspend candidate must never also be protected"
+        assert not (_PROTECTED & set(_DEFAULT_SUSPEND_CANDIDATES)), "a suspend candidate must never also be protected"
 
     def test_boost_report_serializes(self):
         """Verify boost report serializes via BoostReport, report.suspended.append, report.to_dict."""
@@ -67,11 +66,10 @@ class TestGameModeLogic:
         assert report.phase == "stop"
 
 
-@pytest.mark.skipif(
-    not IS_WINDOWS, reason="power plan + process suspension are Windows-only"
-)
+@pytest.mark.skipif(not IS_WINDOWS, reason="power plan + process suspension are Windows-only")
 class TestGameModeWindows:
     """Group testgamemodewindows tests covering preview is read only; dry run changes nothing; pick prefers high performance; candidates exclude protected and self."""
+
     def test_preview_is_read_only(self):
         """Verify preview is read only via GameMode, preview."""
         preview = GameMode().preview()
@@ -80,9 +78,7 @@ class TestGameModeWindows:
 
     def test_dry_run_changes_nothing(self):
         """Verify dry run changes nothing via GameMode, game.start, game.stop."""
-        game = GameMode(
-            extra_suspend=("nonexistent_noise_process_xyz.exe",), dry_run=True
-        )
+        game = GameMode(extra_suspend=("nonexistent_noise_process_xyz.exe",), dry_run=True)
         report = game.start()
         assert report.ok
         assert not game._suspended_pids  # nothing actually suspended
@@ -119,6 +115,7 @@ class TestGameModeWindows:
 
 class TestMemoryOptimizer:
     """Group testmemoryoptimizer tests covering stats shape; optimize returns result; optimize off platform no crash."""
+
     def test_stats_shape(self):
         """Verify stats shape via MemoryOptimizer, optimizer.get_system_ram_metrics."""
         optimizer = MemoryOptimizer()

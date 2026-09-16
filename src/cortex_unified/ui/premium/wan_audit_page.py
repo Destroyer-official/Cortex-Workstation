@@ -31,6 +31,7 @@ from .window import _Page
 
 class _WanAuditWorker(QObject):
     """Background worker (_WanAuditWorker) performing WanAuditWorker. Signals finished, progress, failed report status. Its run() step calls WanAuditor, auditor.audit, emit, str."""
+
     finished = Signal(object)  # WanStatus
     progress = Signal(str)
     failed = Signal(str)
@@ -57,6 +58,7 @@ class _WanAuditWorker(QObject):
         """
         try:
             from cortex_unified.system_tools.wan_audit import WanAuditor
+
             auditor = WanAuditor()
             status = auditor.audit(
                 include_upnp=True,
@@ -80,13 +82,15 @@ class WanAuditPage(_Page):
             win: Parent window or shell controller instance.
         """
         super().__init__(win)
-        self.v.addWidget(title_block(
-            "WAN & UPnP Gateway Auditor",
-            "Discovers Internet Gateway Devices (IGD) on your local network using SSDP/UPnP. "
-            "Inspects your router's external WAN interface, classifications (Public vs CGNAT), "
-            "and lists active port forwarding mappings. Completely read-only and local: "
-            "never contacts external internet servers.",
-        ))
+        self.v.addWidget(
+            title_block(
+                "WAN & UPnP Gateway Auditor",
+                "Discovers Internet Gateway Devices (IGD) on your local network using SSDP/UPnP. "
+                "Inspects your router's external WAN interface, classifications (Public vs CGNAT), "
+                "and lists active port forwarding mappings. Completely read-only and local: "
+                "never contacts external internet servers.",
+            )
+        )
 
         self._last_status = None
 
@@ -132,9 +136,9 @@ class WanAuditPage(_Page):
         self.v.addWidget(table_hdr)
 
         self.tbl = QTableWidget(0, 6)
-        self.tbl.setHorizontalHeaderLabels([
-            "External Port", "Protocol", "Internal Client", "Internal Port", "Description", "Status"
-        ])
+        self.tbl.setHorizontalHeaderLabels(
+            ["External Port", "Protocol", "Internal Client", "Internal Port", "Description", "Status"]
+        )
         self.tbl.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.ResizeToContents)
         self.tbl.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeMode.ResizeToContents)
         self.tbl.horizontalHeader().setSectionResizeMode(2, QHeaderView.ResizeMode.Stretch)
@@ -209,7 +213,9 @@ class WanAuditPage(_Page):
 
         if not mappings:
             if not status.igd_found:
-                self.state.show_empty("No UPnP IGD router discovered on local subnets (UPnP may be disabled on router).")
+                self.state.show_empty(
+                    "No UPnP IGD router discovered on local subnets (UPnP may be disabled on router)."
+                )
             else:
                 self.state.show_empty("Gateway discovered! No active external port mappings found (secure posture).")
         else:
@@ -223,7 +229,9 @@ class WanAuditPage(_Page):
         """Prompt the user with a file dialog (QFileDialog.getSaveFileName) and apply the chosen path to the page state."""
         if not self._last_status:
             return
-        path, _ = QFileDialog.getSaveFileName(self, "Export WAN Audit Report", "wan_audit_report.json", "JSON Files (*.json)")
+        path, _ = QFileDialog.getSaveFileName(
+            self, "Export WAN Audit Report", "wan_audit_report.json", "JSON Files (*.json)"
+        )
         if path:
             report_data = {
                 "external_ip": self._last_status.external_ip,

@@ -14,8 +14,8 @@ from cortex_unified.analyzers.content_defined_chunker import (
     jaccard,
 )
 
-
 # --- chunker primitives ---
+
 
 def test_gear_chunk_deterministic():
     """Verify gear chunk deterministic via gear_chunk."""
@@ -30,6 +30,7 @@ def test_gear_chunk_deterministic():
 def test_gear_chunk_shift_resistant():
     """Verify gear chunk shift resistant via random.Random, rnd.getrandbits, bytes."""
     import random
+
     rnd = random.Random(0xC0FFEE)
     base = bytes(rnd.getrandbits(8) for _ in range(50000))
     # Insert one byte near the start – CDC should keep most chunks stable
@@ -57,7 +58,7 @@ def test_jaccard_basic():
     assert jaccard([], []) == 1.0
     assert jaccard([1, 2], []) == 0.0
     assert jaccard([1, 2, 3], [1, 2, 3]) == 1.0
-    assert jaccard([1, 2], [2, 3]) == pytest.approx(1/3)
+    assert jaccard([1, 2], [2, 3]) == pytest.approx(1 / 3)
 
 
 def test_chunk_similarity_identical_is_one():
@@ -98,6 +99,7 @@ def test_file_chunks_missing_raises(tmp_path: Path):
 
 # --- finder ---
 
+
 def test_finder_groups_shifted_duplicates(tmp_path: Path):
     """Verify finder groups shifted duplicates via random.Random, finder.find_cdc_duplicates, ContentDefinedChunker.
 
@@ -105,6 +107,7 @@ def test_finder_groups_shifted_duplicates(tmp_path: Path):
         tmp_path (Path): Filesystem path to the target file or directory.
     """
     import random
+
     rnd = random.Random(1)
     base = bytes(rnd.getrandbits(8) for _ in range(60000))
     # File A: base, File B: base with 1-byte insertion (shift-resistant)
@@ -150,6 +153,7 @@ def test_finder_respects_exclude_dirs(tmp_path: Path):
     (tmp_path / "ta.bin").write_bytes(base)
     (tmp_path / "tb.bin").write_bytes(base)
     from cortex_unified.core.config import Config
+
     cfg = Config()
     cfg.config_data["exclude_dirs"] = ["skip"]
     finder = ContentDefinedChunker(str(tmp_path), config=cfg)
@@ -178,6 +182,7 @@ def test_finder_stats(tmp_path: Path):
 def test_vector_cdc_chunk_produces_valid_chunks():
     """Verify vector cdc chunk produces valid chunks via vector_cdc_chunk, sum."""
     from cortex_unified.analyzers.content_defined_chunker import vector_cdc_chunk
+
     data = b"VectorCDC fast test data stream " * 1000
     chunks = vector_cdc_chunk(data, avg_size=4096, min_size=1024, max_size=16384)
     assert len(chunks) > 0
@@ -189,6 +194,7 @@ def test_idea_inverted_index():
     """Verify idea inverted index via random.Random, Path, IdeaInvertedIndex."""
     import random
     from cortex_unified.analyzers.content_defined_chunker import IdeaInvertedIndex, vector_cdc_chunk
+
     rnd = random.Random(42)
     base = bytes(rnd.getrandbits(8) for _ in range(80000))
     data1 = base + b" unique tail 1"

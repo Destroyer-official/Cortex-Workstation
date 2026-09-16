@@ -40,6 +40,7 @@ from cortex_unified.analyzers.portable_manager import PortableManager
 
 class _PortableWorker(QObject):
     """Background worker (_PortableWorker) performing PortableWorker. Signals finished, progress, failed report status. Configured with roots, target_apps. Its run() step calls PortableManager, mgr.scan_portable_roots, lower, t.lower."""
+
     finished = Signal(list)
     progress = Signal(str)
     failed = Signal(str)
@@ -77,11 +78,7 @@ class _PortableWorker(QObject):
             )
             apps = mgr.scan_portable_roots(roots=self._roots if self._roots else None)
             if self._target_apps:
-                apps = [
-                    a
-                    for a in apps
-                    if a.name.lower() in [t.lower() for t in self._target_apps]
-                ]
+                apps = [a for a in apps if a.name.lower() in [t.lower() for t in self._target_apps]]
             mgr.check_updates(apps)
             self.finished.emit(apps)
         except Exception as exc:
@@ -90,6 +87,7 @@ class _PortableWorker(QObject):
 
 class _UpdateWorker(QObject):
     """Background worker (_UpdateWorker) performing UpdateWorker. Signals finished, progress, failed report status. Configured with apps. Its run() step calls PortableManager, is_set, emit, mgr.update_app."""
+
     finished = Signal(list)
     progress = Signal(str)
     failed = Signal(str)
@@ -172,12 +170,8 @@ class PortableManagerPage(_Page):
         roots_row.setSpacing(6)
         roots_row.addWidget(QLabel("Scan Roots:"))
         self.roots_entry = QLineEdit()
-        self.roots_entry.setPlaceholderText(
-            "Auto-detect (removable drives, PortableApps, LiberKey)"
-        )
-        self.roots_entry.setToolTip(
-            "Comma-separated paths to scan. Leave empty for auto-detection."
-        )
+        self.roots_entry.setPlaceholderText("Auto-detect (removable drives, PortableApps, LiberKey)")
+        self.roots_entry.setToolTip("Comma-separated paths to scan. Leave empty for auto-detection.")
         self.add_root_btn = QPushButton("Add Root")
         self.add_root_btn.clicked.connect(self._add_root)
         roots_row.addWidget(self.roots_entry, 1)
@@ -195,9 +189,7 @@ class PortableManagerPage(_Page):
         filter_row.addWidget(self.app_combo, 1)
 
         self.auto_update_cb = QCheckBox("Auto-update on scan")
-        self.auto_update_cb.setToolTip(
-            "Automatically update apps when updates are found"
-        )
+        self.auto_update_cb.setToolTip("Automatically update apps when updates are found")
         filter_row.addWidget(self.auto_update_cb)
 
         self.scan_btn = QPushButton("Scan")
@@ -218,9 +210,7 @@ class PortableManagerPage(_Page):
         self.v.addWidget(self.status)
 
         self.tbl = QTableWidget(0, 5)
-        self.tbl.setHorizontalHeaderLabels(
-            ["App Name", "Version", "Installed", "Latest", "Update Available"]
-        )
+        self.tbl.setHorizontalHeaderLabels(["App Name", "Version", "Installed", "Latest", "Update Available"])
         self.tbl.horizontalHeader().setStretchLastSection(True)
         self.tbl.verticalHeader().setVisible(False)
         self.tbl.setAlternatingRowColors(True)
@@ -328,12 +318,8 @@ class PortableManagerPage(_Page):
             self.tbl.setItem(r, 4, update_item)
 
         updates_available = sum(1 for a in apps if a.update_available)
-        self.status.setText(
-            f"{len(apps)} portable apps found, {updates_available} updates available"
-        )
-        self.win.statusBar().showMessage(
-            f"{len(apps)} portable apps, {updates_available} updates", 5000
-        )
+        self.status.setText(f"{len(apps)} portable apps found, {updates_available} updates available")
+        self.win.statusBar().showMessage(f"{len(apps)} portable apps, {updates_available} updates", 5000)
 
         if self.auto_update_cb.isChecked() and updates_available:
             self._auto_update(apps)
@@ -353,8 +339,7 @@ class PortableManagerPage(_Page):
         reply = QMessageBox.question(
             self,
             "Auto-Update",
-            f"Found {len(to_update)} app(s) with updates available.\n\n"
-            "Do you want to update them now?",
+            f"Found {len(to_update)} app(s) with updates available.\n\n" "Do you want to update them now?",
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
         )
         if reply == QMessageBox.StandardButton.Yes:

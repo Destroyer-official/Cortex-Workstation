@@ -15,6 +15,7 @@ IS_WINDOWS = platform.system() == "Windows"
 
 class TestParse:
     """Group testparse tests covering empty; parses boots and issues; single object not list; nameless issue skipped; bad numbers coerce zero."""
+
     def test_empty(self):
         """Verify empty via BootPerformanceMonitor._parse."""
         boots, issues = BootPerformanceMonitor._parse(None)
@@ -44,8 +45,10 @@ class TestParse:
     def test_single_object_not_list(self):
         # ConvertTo-Json emits a bare object when there's exactly one item.
         """Verify single object not list via BootPerformanceMonitor._parse."""
-        payload = ('{"boots":{"Time":"t","BootTime":"50000","MainPath":"40000"},'
-                   '"issues":{"Id":"102","Name":"nvlddmkm","TotalTime":"3000","Time":"t"}}')
+        payload = (
+            '{"boots":{"Time":"t","BootTime":"50000","MainPath":"40000"},'
+            '"issues":{"Id":"102","Name":"nvlddmkm","TotalTime":"3000","Time":"t"}}'
+        )
         boots, issues = BootPerformanceMonitor._parse(payload)
         assert len(boots) == 1 and boots[0].boot_ms == 50000
         assert len(issues) == 1 and issues[0].kind == "Driver"
@@ -65,6 +68,7 @@ class TestParse:
 
 class TestDataclasses:
     """Group testdataclasses tests covering boot seconds; issue to dict."""
+
     def test_boot_seconds(self):
         """Verify boot seconds via BootRecord."""
         assert BootRecord("t", 42000, 30000).boot_seconds == 42.0
@@ -78,6 +82,7 @@ class TestDataclasses:
 
 class TestSupport:
     """Group testsupport tests covering is supported matches platform; analyze shape."""
+
     def test_is_supported_matches_platform(self):
         """Verify is supported matches platform via BootPerformanceMonitor.is_supported."""
         assert BootPerformanceMonitor.is_supported() == IS_WINDOWS

@@ -29,8 +29,8 @@ _VERSION = 1
 #: stored values, so a key added in a future release is always present even when
 #: reading a file written by an older build.
 _DEFAULTS: dict[str, Any] = {
-    "theme": "dark",          # "dark" | "light"
-    "close_to_tray": False,   # minimise to tray on window close instead of quit
+    "theme": "dark",  # "dark" | "light"
+    "close_to_tray": False,  # minimise to tray on window close instead of quit
     "reduced_motion": False,  # suppress non-essential animation (accessibility)
     # Opt-in ONLY (consent research: phoning home without asking is not
     # acceptable for a cleaner that knows the user's software inventory).
@@ -105,8 +105,7 @@ class SettingsStore:
         self._data["reduced_motion"] = bool(self._data.get("reduced_motion", False))
         self._data["update_check"] = bool(self._data.get("update_check", False))
         # Default ON: a restore checkpoint before deletions is the safe choice.
-        self._data["leftover_restore_point"] = bool(
-            self._data.get("leftover_restore_point", True))
+        self._data["leftover_restore_point"] = bool(self._data.get("leftover_restore_point", True))
 
     def save(self) -> bool:
         """Save configuration settings or analysis reports to persistent storage.

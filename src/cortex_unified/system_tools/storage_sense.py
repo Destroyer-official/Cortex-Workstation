@@ -61,6 +61,7 @@ class StorageSense:
         values: dict[str, int] = {}
         try:
             import winreg
+
             with winreg.OpenKey(winreg.HKEY_CURRENT_USER, _KEY_PATH) as key:
                 i = 0
                 while True:
@@ -120,6 +121,7 @@ class StorageSense:
             return False
         try:
             import winreg
+
             with winreg.CreateKey(winreg.HKEY_CURRENT_USER, _KEY_PATH) as key:
                 winreg.SetValueEx(key, name, 0, winreg.REG_DWORD, int(value))
             return True
@@ -155,8 +157,7 @@ class StorageSense:
         if days not in _CADENCE:
             return False, "Invalid schedule."
         ok = self._write("2048", days)
-        return ok, (f"Schedule set to '{_CADENCE[days]}'." if ok
-                    else "Could not update the schedule.")
+        return ok, (f"Schedule set to '{_CADENCE[days]}'." if ok else "Could not update the schedule.")
 
     def set_recycle_bin_days(self, days: int) -> tuple[bool, str]:
         """Set recycle bin days.
@@ -171,5 +172,6 @@ class StorageSense:
             return False, "Invalid retention period."
         ok1 = self._write("08", 1 if days else 0)
         ok2 = self._write("256", days)
-        return (ok1 and ok2), ("Recycle Bin cleanup updated." if (ok1 and ok2)
-                               else "Could not update Recycle Bin cleanup.")
+        return (ok1 and ok2), (
+            "Recycle Bin cleanup updated." if (ok1 and ok2) else "Could not update Recycle Bin cleanup."
+        )

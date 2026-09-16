@@ -15,6 +15,7 @@ class FingerprintEvidence:
 
     Manages FingerprintEvidence operations and coordinates related state changes for the component.
     """
+
     source: str
     value: str
     strength: str = "weak"
@@ -44,6 +45,7 @@ class DeviceFingerprint:
 
     Manages DeviceFingerprint operations and coordinates related state changes for the component.
     """
+
     os_family: str = "unknown"
     device_type: str = "unknown"
     confidence: float = 0.0
@@ -154,9 +156,11 @@ def _add(
     """
     text = str(value or "").strip()
     if text:
-        evidence.append(FingerprintEvidence(
-            source=source[:200], value=text[:512], strength=strength,
-            weight=weight, detail=detail[:512]))
+        evidence.append(
+            FingerprintEvidence(
+                source=source[:200], value=text[:512], strength=strength, weight=weight, detail=detail[:512]
+            )
+        )
 
 
 def _collect(device: Any, observations: list[ServiceObservation]) -> list[FingerprintEvidence]:
@@ -172,35 +176,42 @@ def _collect(device: Any, observations: list[ServiceObservation]) -> list[Finger
         list[FingerprintEvidence]: List of processed items or identifiers.
     """
     evidence: list[FingerprintEvidence] = []
-    _add(evidence, "vendor", _get(device, "vendor", ""), "medium", 0.5,
-         "Vendor was resolved or reported by discovery")
-    _add(evidence, "hostname", _get(device, "hostname", ""), "weak", 0.2,
-         "Hostnames can be user-controlled")
+    _add(evidence, "vendor", _get(device, "vendor", ""), "medium", 0.5, "Vendor was resolved or reported by discovery")
+    _add(evidence, "hostname", _get(device, "hostname", ""), "weak", 0.2, "Hostnames can be user-controlled")
     services = _get(device, "services", {})
     if isinstance(services, Mapping):
         for key, value in sorted(services.items(), key=lambda item: str(item[0])):
-            _add(evidence, f"advertised service {key}", f"{key} {value}".strip(),
-                 "medium", 0.55, "Service was advertised by the device")
+            _add(
+                evidence,
+                f"advertised service {key}",
+                f"{key} {value}".strip(),
+                "medium",
+                0.55,
+                "Service was advertised by the device",
+            )
     for observation in observations:
         prefix = f"{observation.transport}/{observation.port}"
         if observation.banner:
-            _add(evidence, f"{prefix} banner", observation.banner, "strong", 0.75,
-                 "Protocol peer supplied a bounded banner")
+            _add(
+                evidence,
+                f"{prefix} banner",
+                observation.banner,
+                "strong",
+                0.75,
+                "Protocol peer supplied a bounded banner",
+            )
         if observation.product:
             value = f"{observation.product} {observation.version}".strip()
-            _add(evidence, f"{prefix} product", value, "strong", 0.85,
-                 "Protocol metadata identified a product")
+            _add(evidence, f"{prefix} product", value, "strong", 0.85, "Protocol metadata identified a product")
         http = observation.metadata.get("http")
         if isinstance(http, Mapping):
             headers = http.get("headers", {})
             server = headers.get("server", "") if isinstance(headers, Mapping) else ""
-            _add(evidence, f"{prefix} HTTP Server", server, "medium", 0.5,
-                 "Self-reported HTTP Server header")
+            _add(evidence, f"{prefix} HTTP Server", server, "medium", 0.5, "Self-reported HTTP Server header")
         advertised = observation.metadata.get("services", ())
         if isinstance(advertised, (list, tuple, set)):
             for item in advertised:
-                _add(evidence, f"{prefix} advertisement", item, "medium", 0.6,
-                     "Service advertisement was observed")
+                _add(evidence, f"{prefix} advertisement", item, "medium", 0.6, "Service advertisement was observed")
     return evidence
 
 
@@ -244,9 +255,8 @@ def _product_version(evidence: Iterable[FingerprintEvidence]) -> tuple[str, str]
     for item in candidates:
         match = _VERSION_RE.search(item.value)
         if match:
-            product = item.value[:match.start()].strip(" /_-")
-            product = re.sub(r"^(SSH-[\d.]+-|220\s*)", "", product,
-                             flags=re.IGNORECASE).strip()
+            product = item.value[: match.start()].strip(" /_-")
+            product = re.sub(r"^(SSH-[\d.]+-|220\s*)", "", product, flags=re.IGNORECASE).strip()
             if product:
                 return product[:200], match.group(1)[:100]
     return "", ""
@@ -275,8 +285,14 @@ def fingerprint_device(device: Any) -> DeviceFingerprint:
     weak_type = ""
     if _get(device, "is_gateway", False):
         weak_type = "router / gateway"
-        _add(evidence, "discovery role", "default gateway", "strong", 0.9,
-             "Discovery identified this address as the default gateway")
+        _add(
+            evidence,
+            "discovery role",
+            "default gateway",
+            "strong",
+            0.9,
+            "Discovery identified this address as the default gateway",
+        )
         type_rank = [(weak_type, 0.9)] + [item for item in type_rank if item[0] != weak_type]
     elif {631, 9100} & open_ports:
         weak_type = "printer"

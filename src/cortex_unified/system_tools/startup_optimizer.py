@@ -57,6 +57,7 @@ import subprocess
 import threading
 import time
 from dataclasses import dataclass, field, asdict
+
 try:
     import winreg
 except ImportError:
@@ -70,6 +71,7 @@ import psutil  # type: ignore
 # Data structures
 # ---------------------------------------------------------------------------
 
+
 class AppType(enum.Enum):
     """Startup app category: GUI-heavy, network-bound, service, or background."""
 
@@ -82,6 +84,7 @@ class AppType(enum.Enum):
 @dataclass(slots=True)
 class StartupEntry:
     """Record holding id, name, command, location, category, enabled, impact, publisher."""
+
     id: str
     name: str
     command: str
@@ -104,6 +107,7 @@ class StartupEntry:
         """
         return asdict(self)
 
+
 # ---------------------------------------------------------------------------
 # Enumeration — dynamic discovery
 # ---------------------------------------------------------------------------
@@ -121,6 +125,7 @@ _STARTUP_LOCATIONS = [
     (r"HKLM\System\CurrentControlSet\Services", "service"),
     (r"HKLM\Software\Microsoft\Windows\CurrentVersion\Explorer\Browser Helper Objects", "ie"),
 ]
+
 
 def _enumerate_registry() -> List[StartupEntry]:
     """Enumerate registry helper (reads Windows registry). Returns entries.
@@ -152,19 +157,22 @@ def _enumerate_registry() -> List[StartupEntry]:
                         # skip empty
                         if not cmd:
                             continue
-                        entries.append(StartupEntry(
-                            id=f"reg_{hash(reg_path + name) & 0xFFFFFFFF:x}",
-                            name=name,
-                            command=cmd,
-                            location=reg_path,
-                            category=category,
-                            enabled=True,
-                        ))
+                        entries.append(
+                            StartupEntry(
+                                id=f"reg_{hash(reg_path + name) & 0xFFFFFFFF:x}",
+                                name=name,
+                                command=cmd,
+                                location=reg_path,
+                                category=category,
+                                enabled=True,
+                            )
+                        )
                     except OSError:
                         break
         except OSError:
             continue
     return entries
+
 
 def _enumerate_startup_folders() -> List[StartupEntry]:
     """Enumerate startup folders helper. Returns entries.
@@ -177,22 +185,24 @@ def _enumerate_startup_folders() -> List[StartupEntry]:
         base = os.environ.get(env_key)
         if not base:
             continue
-        for sub in [r"Microsoft\Windows\Start Menu\Programs\Startup",
-                    r"Microsoft\Windows\Start Menu\Programs\StartUp"]:
+        for sub in [r"Microsoft\Windows\Start Menu\Programs\Startup", r"Microsoft\Windows\Start Menu\Programs\StartUp"]:
             folder = Path(base) / sub
             if not folder.exists():
                 continue
             for p in folder.iterdir():
                 if p.is_file():
-                    entries.append(StartupEntry(
-                        id=f"folder_{hash(str(p)) & 0xFFFFFFFF:x}",
-                        name=p.stem,
-                        command=str(p),
-                        location=str(folder),
-                        category="logon",
-                        enabled=True,
-                    ))
+                    entries.append(
+                        StartupEntry(
+                            id=f"folder_{hash(str(p)) & 0xFFFFFFFF:x}",
+                            name=p.stem,
+                            command=str(p),
+                            location=str(folder),
+                            category="logon",
+                            enabled=True,
+                        )
+                    )
     return entries
+
 
 def _enumerate_scheduled_tasks() -> List[StartupEntry]:
     """Enumerate scheduled tasks helper (runs `["schtasks", "/Query", "/FO", "CSV", "/V"]`). Returns entries.
@@ -202,8 +212,7 @@ def _enumerate_scheduled_tasks() -> List[StartupEntry]:
     """
     entries: List[StartupEntry] = []
     try:
-        rc = subprocess.run(["schtasks", "/Query", "/FO", "CSV", "/V"],
-                            capture_output=True, text=True, timeout=30)
+        rc = subprocess.run(["schtasks", "/Query", "/FO", "CSV", "/V"], capture_output=True, text=True, timeout=30)
         if rc.returncode == 0:
             for line in rc.stdout.splitlines()[1:]:
                 parts = [p.strip('"') for p in line.split('","')]
@@ -212,17 +221,20 @@ def _enumerate_scheduled_tasks() -> List[StartupEntry]:
                 name = parts[0].strip('"')
                 # task triggers on logon / boot
                 if "Logon" in line or "Boot" in line or "At log on" in line:
-                    entries.append(StartupEntry(
-                        id=f"task_{hash(name) & 0xFFFFFFFF:x}",
-                        name=name.split("\\")[-1],
-                        command=name,
-                        location=name,
-                        category="task",
-                        enabled="Enabled" in line,
-                    ))
+                    entries.append(
+                        StartupEntry(
+                            id=f"task_{hash(name) & 0xFFFFFFFF:x}",
+                            name=name.split("\\")[-1],
+                            command=name,
+                            location=name,
+                            category="task",
+                            enabled="Enabled" in line,
+                        )
+                    )
     except Exception:
         pass
     return entries
+
 
 def _classify_entry(entry: StartupEntry) -> StartupEntry:
     # PE header sniff for GUI/network/service hints
@@ -251,9 +263,11 @@ def _classify_entry(entry: StartupEntry) -> StartupEntry:
         pass
     return entry
 
+
 # ---------------------------------------------------------------------------
 # Persistence
 # ---------------------------------------------------------------------------
+
 
 def _config_path() -> Path:
     """Config path helper (mutates filesystem state). Returns d / "startup_delays.json".
@@ -266,14 +280,16 @@ def _config_path() -> Path:
     d.mkdir(parents=True, exist_ok=True)
     return d / "startup_delays.json"
 
+
 # ---------------------------------------------------------------------------
 # Core optimizer
 # ---------------------------------------------------------------------------
 
+
 class StartupOptimizer:
     """Groups related helpers: init, enumerate, load delays, save delays, set delay, remove delay, launch delayed, jitter."""
-    def __init__(self, progress: Callable[[str], None] | None = None,
-                 cancel: threading.Event | None = None):
+
+    def __init__(self, progress: Callable[[str], None] | None = None, cancel: threading.Event | None = None):
         """Initialize Startup Optimizer.
 
         Initializes the instance and configures internal state.
@@ -343,8 +359,7 @@ class StartupOptimizer:
         p = _config_path()
         p.write_text(json.dumps(delays, indent=2), encoding="utf-8")
 
-    def set_delay(self, entry_id: str, delay_seconds: int,
-                  conditions: Dict[str, object] | None = None) -> None:
+    def set_delay(self, entry_id: str, delay_seconds: int, conditions: Dict[str, object] | None = None) -> None:
         """Set delay helper.
 
         Args:
@@ -353,8 +368,7 @@ class StartupOptimizer:
         conditions (Dict[str, object] | None): The conditions parameter.
         """
         delays = self._load_delays()
-        delays[entry_id] = {"delay": max(0, min(120, delay_seconds)),
-                            "conditions": conditions or {}}
+        delays[entry_id] = {"delay": max(0, min(120, delay_seconds)), "conditions": conditions or {}}
         self._save_delays(delays)
 
     def remove_delay(self, entry_id: str) -> None:
@@ -427,12 +441,14 @@ class StartupOptimizer:
                 if cond.get("require_internet"):
                     # quick check
                     import socket
+
                     try:
                         socket.create_connection(("8.8.8.8", 53), timeout=2).close()
                     except OSError:
                         self.progress(f"Skip {e.name}: no internet")
                         continue
                 import shlex
+
                 if isinstance(e.command, list):
                     launch_cmd = e.command
                 elif sys.platform == "win32":
@@ -450,6 +466,7 @@ class StartupOptimizer:
         float: Result of the operation.
         """
         import random
+
         return random.uniform(-1.5, 1.5)
 
     def backup(self) -> Path:
@@ -474,5 +491,6 @@ class StartupOptimizer:
         """
         p = _config_path()
         p.write_bytes(backup.read_bytes())
+
 
 __all__ = ["AppType", "StartupOptimizer", "StartupEntry"]

@@ -19,6 +19,7 @@ from typing import Callable, Dict, List, Optional, Tuple
 @dataclass
 class EventLogChannel:
     """Event Log Channel data container."""
+
     name: str
     file_path: str
     record_count: int
@@ -30,6 +31,7 @@ class EventLogChannel:
 @dataclass
 class EventLogCleanResult:
     """Event Log Clean Result data container."""
+
     channel: str
     records_cleared: int
     bytes_freed: int
@@ -82,14 +84,16 @@ class EventLogCleaner:
                             ch_name = raw_name.replace("%4", "/")
                             # Estimate record count from evtx size (header ~4KB, avg record ~500B)
                             approx_records = max(0, (stat.st_size - 4096) // 512) if stat.st_size > 4096 else 0
-                            channels.append(EventLogChannel(
-                                name=ch_name,
-                                file_path=entry.path,
-                                record_count=approx_records,
-                                size_bytes=stat.st_size,
-                                is_enabled=True,
-                                last_modified=stat.st_mtime,
-                            ))
+                            channels.append(
+                                EventLogChannel(
+                                    name=ch_name,
+                                    file_path=entry.path,
+                                    record_count=approx_records,
+                                    size_bytes=stat.st_size,
+                                    is_enabled=True,
+                                    last_modified=stat.st_mtime,
+                                )
+                            )
                         except Exception:
                             pass
             except Exception:

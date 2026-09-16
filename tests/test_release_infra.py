@@ -15,15 +15,16 @@ import pytest
 
 class TestParseVersion:
     """Group testparseversion tests covering plain and v prefixed; unparseable tags return none."""
+
     def test_plain_and_v_prefixed(self):
         """Verify plain and v prefixed via parse_version."""
         from cortex_unified.system_tools.update_checker import parse_version
+
         assert parse_version("1.2.3") == (1, 2, 3)
         assert parse_version("v1.2.3") == (1, 2, 3)
         assert parse_version("  v10.0.13 ") == (10, 0, 13)
 
-    @pytest.mark.parametrize("bad", ["", "abc", "1.2", "v1.2.3.4",
-                                     "release-42"])
+    @pytest.mark.parametrize("bad", ["", "abc", "1.2", "v1.2.3.4", "release-42"])
     def test_unparseable_tags_return_none(self, bad):
         """Verify unparseable tags return none via pytest.mark.parametrize, parse_version.
 
@@ -31,11 +32,13 @@ class TestParseVersion:
             bad: The bad parameter.
         """
         from cortex_unified.system_tools.update_checker import parse_version
+
         assert parse_version(bad) is None
 
 
 class TestCheckForUpdate:
     """Group testcheckforupdate tests covering update available when latest is newer; up to date when equal or older; offline reports unknown never raises; unparseable remote tag is unknown."""
+
     def _patch_fetch(self, monkeypatch, tag):
         """Patch fetch using monkeypatch.setattr.
 
@@ -44,8 +47,8 @@ class TestCheckForUpdate:
             tag: The tag parameter.
         """
         from cortex_unified.system_tools import update_checker as uc
-        monkeypatch.setattr(uc, "fetch_latest_tag",
-                            lambda *a, **k: tag)
+
+        monkeypatch.setattr(uc, "fetch_latest_tag", lambda *a, **k: tag)
 
     def test_update_available_when_latest_is_newer(self, monkeypatch):
         """Verify update available when latest is newer via self._patch_fetch, check_for_update.
@@ -54,6 +57,7 @@ class TestCheckForUpdate:
             monkeypatch: The monkeypatch parameter.
         """
         from cortex_unified.system_tools.update_checker import check_for_update
+
         self._patch_fetch(monkeypatch, "v9.9.9")
         result = check_for_update(installed="1.0.0")
         assert result["status"] == "update_available"
@@ -67,6 +71,7 @@ class TestCheckForUpdate:
             monkeypatch: The monkeypatch parameter.
         """
         from cortex_unified.system_tools.update_checker import check_for_update
+
         self._patch_fetch(monkeypatch, "v1.0.0")
         assert check_for_update(installed="1.0.0")["status"] == "up_to_date"
         self._patch_fetch(monkeypatch, "v0.9.1")
@@ -79,6 +84,7 @@ class TestCheckForUpdate:
             monkeypatch: The monkeypatch parameter.
         """
         from cortex_unified.system_tools.update_checker import check_for_update
+
         self._patch_fetch(monkeypatch, None)
         result = check_for_update(installed="1.0.0")
         assert result["status"] == "unknown"
@@ -90,12 +96,14 @@ class TestCheckForUpdate:
             monkeypatch: The monkeypatch parameter.
         """
         from cortex_unified.system_tools.update_checker import check_for_update
+
         self._patch_fetch(monkeypatch, "not-a-version")
         assert check_for_update(installed="1.0.0")["status"] == "unknown"
 
 
 class TestCrashReport:
     """Group testcrashreport tests covering excepthook writes crash file."""
+
     def test_excepthook_writes_crash_file(self, tmp_path, monkeypatch):
         """The excepthook persists a redact-flagged crash report file.
 
@@ -107,8 +115,7 @@ class TestCrashReport:
 
         monkeypatch.setattr(app_mod, "log_dir", lambda: tmp_path / "logs")
         captured = []
-        monkeypatch.setattr(sys, "__excepthook__",
-                            lambda *a: captured.append(a))
+        monkeypatch.setattr(sys, "__excepthook__", lambda *a: captured.append(a))
 
         app_mod._install_excepthook()
         try:
@@ -121,5 +128,5 @@ class TestCrashReport:
         assert len(reports) == 1
         text = reports[0].read_text(encoding="utf-8")
         assert "boom-for-test" in text
-        assert "personal filenames" in text   # privacy flag present
-        assert len(captured) == 1             # default hook still chained
+        assert "personal filenames" in text  # privacy flag present
+        assert len(captured) == 1  # default hook still chained

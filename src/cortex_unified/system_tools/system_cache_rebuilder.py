@@ -21,6 +21,7 @@ from typing import List, Tuple
 @dataclass
 class CacheRebuildReport:
     """Record holding icon_cache_rebuilt, thumb_cache_rebuilt, font_cache_rebuilt, shell_notified, files_deleted, bytes_freed, errors."""
+
     icon_cache_rebuilt: bool = False
     thumb_cache_rebuilt: bool = False
     font_cache_rebuilt: bool = False
@@ -173,6 +174,7 @@ class SystemCacheRebuilder:
             # Check if explorer is still running; only force kill if stuck
             try:
                 import psutil
+
                 explorer_alive = any((p.name() or "").lower() == "explorer.exe" for p in psutil.process_iter(["name"]))
             except Exception:
                 explorer_alive = False
@@ -245,4 +247,3 @@ class SystemCacheRebuilder:
             cls.restart_explorer()
 
         return report
-

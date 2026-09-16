@@ -33,6 +33,7 @@ def app():
 
 # --- asset coverage --------------------------------------------------------
 
+
 def test_every_page_has_its_own_icon_asset():
     """Verify every page has its own icon asset via icons.has_icon."""
     missing = [s.id for s in registry.PAGES if not icons.has_icon(s.icon)]
@@ -56,12 +57,22 @@ def test_registry_icons_are_asset_names_not_glyphs():
 
 def test_window_chrome_and_status_icons_are_shipped():
     """Verify window chrome and status icons are shipped via icons.has_icon."""
-    for name in ("brand", "win-minimize", "win-maximize", "win-restore",
-                 "win-close", "info", "warning", "success", "error"):
+    for name in (
+        "brand",
+        "win-minimize",
+        "win-maximize",
+        "win-restore",
+        "win-close",
+        "info",
+        "warning",
+        "success",
+        "error",
+    ):
         assert icons.has_icon(name), name
 
 
 # --- rendering quality -----------------------------------------------------
+
 
 def test_every_shipped_icon_renders(app):
     """Verify every shipped icon renders via isNull, icons.available, icons.pixmap.
@@ -69,13 +80,11 @@ def test_every_shipped_icon_renders(app):
     Args:
         app: The app parameter.
     """
-    failed = [n for n in sorted(icons.available())
-              if icons.pixmap(n, 18, "#DCE3F0").isNull()]
+    failed = [n for n in sorted(icons.available()) if icons.pixmap(n, 18, "#DCE3F0").isNull()]
     assert failed == [], f"icons that failed to render: {failed}"
 
 
-@pytest.mark.parametrize("dpr_x100,expected", [(100, 18), (125, 22),
-                                               (150, 27), (200, 36)])
+@pytest.mark.parametrize("dpr_x100,expected", [(100, 18), (125, 22), (150, 27), (200, 36)])
 def test_rasterises_at_device_resolution(app, dpr_x100, expected):
     """Physical pixels must scale with DPI while logical size stays fixed.
 
@@ -120,6 +129,7 @@ def test_icon_exposes_a_larger_variant_so_qt_never_upscales(app):
 
 # --- robustness ------------------------------------------------------------
 
+
 def test_missing_icon_degrades_to_empty_without_raising(app):
     """A missing decoration must never stop a tool from opening.
 
@@ -145,6 +155,7 @@ def test_clear_cache_allows_retinting(app):
 
 # --- integration with the shell -------------------------------------------
 
+
 def test_navigation_uses_real_icons_and_clean_labels(app):
     """Verify navigation uses real icons and clean labels via PremiumMainWindow, buttons.items, win.close.
 
@@ -166,6 +177,8 @@ def test_navigation_uses_real_icons_and_clean_labels(app):
             assert button.text().strip() == registry.BY_ID[pid].title
     finally:
         win.close()
+        win.deleteLater()
+        app.processEvents()
 
 
 def test_theme_switch_retints_navigation_icons(app):
@@ -181,13 +194,13 @@ def test_theme_switch_retints_navigation_icons(app):
     win = PremiumMainWindow("dark")
     try:
         win.set_theme("light")
-        assert all(not b.icon().isNull()
-                   for b in win._nav_buttons_by_page.values())
+        assert all(not b.icon().isNull() for b in win._nav_buttons_by_page.values())
         win.set_theme("dark")
-        assert all(not b.icon().isNull()
-                   for b in win._nav_buttons_by_page.values())
+        assert all(not b.icon().isNull() for b in win._nav_buttons_by_page.values())
     finally:
         win.close()
+        win.deleteLater()
+        app.processEvents()
 
 
 def test_title_bar_controls_have_icons_and_accessible_names(app):
@@ -204,14 +217,14 @@ def test_title_bar_controls_have_icons_and_accessible_names(app):
     try:
         bar = win._titlebar
         assert not bar._brand.pixmap().isNull()
-        for button, name in ((bar._min, "Minimize"),
-                             (bar._max, "Maximize"),
-                             (bar._close, "Close")):
+        for button, name in ((bar._min, "Minimize"), (bar._max, "Maximize"), (bar._close, "Close")):
             assert not button.icon().isNull(), name
             assert button.text() == "", "chrome must not carry glyph text"
             assert button.accessibleName() == name
     finally:
         win.close()
+        win.deleteLater()
+        app.processEvents()
 
 
 def test_no_symbol_glyphs_remain_in_the_premium_ui():
@@ -244,11 +257,9 @@ def test_no_symbol_glyphs_remain_in_the_premium_ui():
                 continue
             for m in pattern.finditer(line):
                 code = int(m.group(1), 16)
-                in_symbol_block = (0x2000 <= code <= 0x2BFF
-                                   or 0x1F000 <= code <= 0x1FAFF)
+                in_symbol_block = 0x2000 <= code <= 0x2BFF or 0x1F000 <= code <= 0x1FAFF
                 if in_symbol_block and chr(code) not in allowed:
-                    offenders.append(
-                        f"{path.name}:{lineno} U+{code:04X} -> {line.strip()[:70]}")
+                    offenders.append(f"{path.name}:{lineno} U+{code:04X} -> {line.strip()[:70]}")
 
     assert offenders == [], (
         "symbol glyphs used as icons; add an SVG to resources/icons and use "

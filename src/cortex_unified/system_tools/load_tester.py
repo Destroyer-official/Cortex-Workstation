@@ -48,11 +48,13 @@ _WARNING_BANNER = (
 #  Target authorization (the safeguard)
 # =====================================================================
 
+
 @dataclass(slots=True)
 class Authorization:
     """Whether a load-test target is allowed, with category, IP, and reason."""
+
     authorized: bool
-    category: str            # loopback / private / link-local / owned-public / denied
+    category: str  # loopback / private / link-local / owned-public / denied
     host: str
     resolved_ip: str = ""
     reason: str = ""
@@ -64,8 +66,11 @@ class Authorization:
             dict[str, Any]: Dictionary mapping identifiers to status or values.
         """
         return {
-            "authorized": self.authorized, "category": self.category,
-            "host": self.host, "resolved_ip": self.resolved_ip, "reason": self.reason,
+            "authorized": self.authorized,
+            "category": self.category,
+            "host": self.host,
+            "resolved_ip": self.resolved_ip,
+            "reason": self.reason,
         }
 
 
@@ -100,8 +105,7 @@ class TargetAuthorizer:
             return "private", ip
         return "public", ip
 
-    def authorize(self, host: str, ownership_token: str | None = None,
-                  verify_public: bool = True) -> Authorization:
+    def authorize(self, host: str, ownership_token: str | None = None, verify_public: bool = True) -> Authorization:
         """Decide if host is testable; public hosts need a matching token file.
 
         Args:
@@ -114,23 +118,24 @@ class TargetAuthorizer:
         """
         category, ip = self.classify(host)
         if category in ("loopback", "private", "link-local"):
-            return Authorization(True, category, host, ip,
-                                 "Private/own environment - inherently authorized.")
+            return Authorization(True, category, host, ip, "Private/own environment - inherently authorized.")
         if category == "unresolvable":
-            return Authorization(False, "denied", host, "",
-                                 "Host could not be resolved.")
+            return Authorization(False, "denied", host, "", "Host could not be resolved.")
         if category == "public":
             if ownership_token and verify_public:
                 if self._verify_ownership(host, ownership_token):
-                    return Authorization(True, "owned-public", host, ip,
-                                         "Ownership verified via token file.")
-                return Authorization(False, "denied", host, ip,
-                                     "Ownership token not found or did not match at "
-                                     f"{_TOKEN_PATH}.")
+                    return Authorization(True, "owned-public", host, ip, "Ownership verified via token file.")
+                return Authorization(
+                    False, "denied", host, ip, "Ownership token not found or did not match at " f"{_TOKEN_PATH}."
+                )
             return Authorization(
-                False, "denied", host, ip,
+                False,
+                "denied",
+                host,
+                ip,
                 "Public host requires ownership proof: host a file at "
-                f"{_TOKEN_PATH} containing your token, then supply the token.")
+                f"{_TOKEN_PATH} containing your token, then supply the token.",
+            )
         return Authorization(False, "denied", host, ip, "Target not permitted.")
 
     @staticmethod
@@ -145,6 +150,7 @@ class TargetAuthorizer:
             bool: True if the operation succeeded, False otherwise.
         """
         import urllib.request
+
         h = host if "://" in host else f"http://{host}"
         url = h.rstrip("/") + _TOKEN_PATH
         try:
@@ -164,6 +170,7 @@ class TargetAuthorizer:
             str: Formatted string or path.
         """
         import secrets
+
         return "cortex-" + secrets.token_hex(16)
 
 
@@ -171,21 +178,24 @@ class TargetAuthorizer:
 #  Config + results
 # =====================================================================
 
+
 @dataclass(slots=True)
 class HttpLoadConfig:
     """HTTP load-test parameters: URL, concurrency/duration caps, rate limit."""
+
     url: str
     method: str = "GET"
     concurrency: int = 10
     duration_s: int = 15
     timeout_s: float = 10.0
     ramp_s: int = 0
-    rate_cap_rps: int = 0        # 0 = unlimited (bounded by concurrency)
+    rate_cap_rps: int = 0  # 0 = unlimited (bounded by concurrency)
 
 
 @dataclass(slots=True)
 class TcpLoadConfig:
     """TCP-connect load-test parameters: host, port, concurrency/duration caps."""
+
     host: str
     port: int
     concurrency: int = 10
@@ -196,6 +206,7 @@ class TcpLoadConfig:
 @dataclass(slots=True)
 class LoadResult:
     """Thread-safe counters plus latencies for one load run; derives RPS/percentiles."""
+
     kind: str
     target: str
     total: int = 0
@@ -246,16 +257,21 @@ class LoadResult:
             dict[str, Any]: Dictionary mapping identifiers to status or values.
         """
         return {
-            "kind": self.kind, "target": self.target, "total": self.total,
-            "succeeded": self.succeeded, "failed": self.failed,
-            "duration_s": round(self.duration_s, 2), "rps": self.rps,
+            "kind": self.kind,
+            "target": self.target,
+            "total": self.total,
+            "succeeded": self.succeeded,
+            "failed": self.failed,
+            "duration_s": round(self.duration_s, 2),
+            "rps": self.rps,
             "error_rate": self.error_rate,
-            "p50_ms": self.percentile(50), "p90_ms": self.percentile(90),
-            "p95_ms": self.percentile(95), "p99_ms": self.percentile(99),
+            "p50_ms": self.percentile(50),
+            "p90_ms": self.percentile(90),
+            "p95_ms": self.percentile(95),
+            "p99_ms": self.percentile(99),
             "min_ms": round(min(self.latencies_ms), 1) if self.latencies_ms else 0.0,
             "max_ms": round(max(self.latencies_ms), 1) if self.latencies_ms else 0.0,
-            "avg_ms": round(sum(self.latencies_ms) / len(self.latencies_ms), 1)
-            if self.latencies_ms else 0.0,
+            "avg_ms": round(sum(self.latencies_ms) / len(self.latencies_ms), 1) if self.latencies_ms else 0.0,
             "status_counts": dict(self.status_counts),
             "error_counts": dict(self.error_counts),
         }
@@ -267,6 +283,7 @@ ProgressCB = Callable[[dict], None]
 # =====================================================================
 #  The tester
 # =====================================================================
+
 
 class LoadTester:
     """Authorized-only HTTP/TCP load tester with caps, confirm flag, and audit log."""
@@ -280,11 +297,15 @@ class LoadTester:
 
     # -- HTTP (L7) ----------------------------------------------------------
 
-    def run_http(self, cfg: HttpLoadConfig, auth: Authorization,
-                 progress: ProgressCB | None = None,
-                 cancel_event: threading.Event | None = None,
-                 confirm: bool = False,
-                 safe_mode: bool = False) -> LoadResult:
+    def run_http(
+        self,
+        cfg: HttpLoadConfig,
+        auth: Authorization,
+        progress: ProgressCB | None = None,
+        cancel_event: threading.Event | None = None,
+        confirm: bool = False,
+        safe_mode: bool = False,
+    ) -> LoadResult:
         """Flood own URL with threaded GETs; requires authorized auth + confirm=True.
 
         Side effects: generates real network traffic against your infrastructure
@@ -306,10 +327,10 @@ class LoadTester:
         if not confirm:
             raise PermissionError(
                 "Load test not confirmed. Pass confirm=True to acknowledge "
-                "that you are testing your own authorized infrastructure.")
+                "that you are testing your own authorized infrastructure."
+            )
         print(_WARNING_BANNER % _AUDIT_LOG, flush=True)
-        conc = max(1, min(cfg.concurrency,
-                          MAX_CONCURRENCY if not safe_mode else min(MAX_CONCURRENCY, 10)))
+        conc = max(1, min(cfg.concurrency, MAX_CONCURRENCY if not safe_mode else min(MAX_CONCURRENCY, 10)))
         dur = max(1, min(cfg.duration_s, MAX_DURATION_S))
         result = LoadResult(kind="http", target=cfg.url)
         self._audit("http", cfg.url, auth, conc, dur)
@@ -327,6 +348,7 @@ class LoadTester:
                 idx (int): The idx parameter.
             """
             import urllib.request
+
             if cfg.ramp_s > 0:
                 time.sleep(cfg.ramp_s * idx / conc)
             while time.monotonic() < deadline and not cancel.is_set():
@@ -336,8 +358,8 @@ class LoadTester:
                 err = ""
                 try:
                     req = urllib.request.Request(
-                        cfg.url, method=cfg.method.upper(),
-                        headers={"User-Agent": _USER_AGENT})
+                        cfg.url, method=cfg.method.upper(), headers={"User-Agent": _USER_AGENT}
+                    )
                     with urllib.request.urlopen(req, timeout=cfg.timeout_s) as resp:  # noqa: S310
                         resp.read()
                         status = str(resp.status)
@@ -371,11 +393,15 @@ class LoadTester:
 
     # -- TCP connect (L4) ---------------------------------------------------
 
-    def run_tcp(self, cfg: TcpLoadConfig, auth: Authorization,
-                progress: ProgressCB | None = None,
-                cancel_event: threading.Event | None = None,
-                confirm: bool = False,
-                safe_mode: bool = False) -> LoadResult:
+    def run_tcp(
+        self,
+        cfg: TcpLoadConfig,
+        auth: Authorization,
+        progress: ProgressCB | None = None,
+        cancel_event: threading.Event | None = None,
+        confirm: bool = False,
+        safe_mode: bool = False,
+    ) -> LoadResult:
         """Open repeated TCP connections to own host:port; requires authorized auth + confirm.
 
         Side effects: generates real connection load and appends to the audit log.
@@ -396,10 +422,10 @@ class LoadTester:
         if not confirm:
             raise PermissionError(
                 "Load test not confirmed. Pass confirm=True to acknowledge "
-                "that you are testing your own authorized infrastructure.")
+                "that you are testing your own authorized infrastructure."
+            )
         print(_WARNING_BANNER % _AUDIT_LOG, flush=True)
-        conc = max(1, min(cfg.concurrency,
-                          MAX_CONCURRENCY if not safe_mode else min(MAX_CONCURRENCY, 10)))
+        conc = max(1, min(cfg.concurrency, MAX_CONCURRENCY if not safe_mode else min(MAX_CONCURRENCY, 10)))
         dur = max(1, min(cfg.duration_s, MAX_DURATION_S))
         result = LoadResult(kind="tcp", target=f"{cfg.host}:{cfg.port}")
         self._audit("tcp", f"{cfg.host}:{cfg.port}", auth, conc, dur)
@@ -430,8 +456,7 @@ class LoadTester:
                     result.latencies_ms.append(dt)
                     if ok:
                         result.succeeded += 1
-                        result.status_counts["connected"] = \
-                            result.status_counts.get("connected", 0) + 1
+                        result.status_counts["connected"] = result.status_counts.get("connected", 0) + 1
                     else:
                         result.failed += 1
                         result.error_counts[err] = result.error_counts.get(err, 0) + 1
@@ -459,8 +484,7 @@ class LoadTester:
             result: Collection or dictionary holding operation results.
             start: The start parameter.
         """
-        threads = [threading.Thread(target=worker, args=(i,), daemon=True)
-                   for i in range(conc)]
+        threads = [threading.Thread(target=worker, args=(i,), daemon=True) for i in range(conc)]
         for t in threads:
             t.start()
         while any(t.is_alive() for t in threads):
@@ -511,7 +535,9 @@ class LoadTester:
             _AUDIT_LOG.parent.mkdir(parents=True, exist_ok=True)
             ts = time.strftime("%Y-%m-%d %H:%M:%S")
             with open(_AUDIT_LOG, "a", encoding="utf-8") as fh:
-                fh.write(f"{ts}\t{kind}\ttarget={target}\tcategory={auth.category}"
-                         f"\tip={auth.resolved_ip}\tconc={conc}\tdur={dur}s\n")
+                fh.write(
+                    f"{ts}\t{kind}\ttarget={target}\tcategory={auth.category}"
+                    f"\tip={auth.resolved_ip}\tconc={conc}\tdur={dur}s\n"
+                )
         except OSError:
             pass

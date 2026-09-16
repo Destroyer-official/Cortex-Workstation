@@ -118,6 +118,7 @@ class DirectStorageOptimizer:
             return ["C:"]
         try:
             import ctypes
+
             bitmask = ctypes.windll.kernel32.GetLogicalDrives()
             for letter in "ABCDEFGHIJKLMNOPQRSTUVWXYZ":
                 if bitmask & 1:

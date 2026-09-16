@@ -1,4 +1,5 @@
 """Tests for the Interactive Staging Shelf & Clipboard Dock in NexusExplorer."""
+
 from __future__ import annotations
 
 import os
@@ -222,6 +223,7 @@ def test_python_transfer_fallback_copy_and_move(qapp):
         # Fake engine without FFI and without CLI
         class _DummyEngine:
             """Helper dummyengine."""
+
             ffi = None
             cli = ""
 
@@ -294,6 +296,7 @@ def test_python_transfer_locked_file_handling(qapp):
 
         class _DummyEngine:
             """Helper dummyengine."""
+
             ffi = None
             cli = ""
 
@@ -342,8 +345,10 @@ def test_preview_pane_transfer_dock_integration(qapp):
 
     preview = PreviewPane()
     preview.show()
+
     class _DummyEngine:
         """Helper dummyengine."""
+
         ffi = None
         cli = ""
 
@@ -391,6 +396,7 @@ def test_read_only_delete_retry(qapp):
 
         class _DummyEngine:
             """Helper dummyengine."""
+
             ffi = None
             cli = ""
 
@@ -418,8 +424,10 @@ def test_transfer_queue_is_busy_property(qapp):
         qapp: The qapp parameter.
     """
     from cortex_unified.explorer.transfers import TransferQueue
+
     class _DummyEngine:
         """Helper dummyengine."""
+
         ffi = None
         cli = ""
 
@@ -501,4 +509,3 @@ def test_file_checksum_dialog(qapp):
 
         dlg.deleteLater()
         qapp.processEvents()
-

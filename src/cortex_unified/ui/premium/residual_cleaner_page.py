@@ -32,6 +32,7 @@ from .window import _Page, fmt_bytes
 
 class _ResidualScanWorker(QObject):
     """Background worker (_ResidualScanWorker) performing ResidualScanWorker. Signals finished, failed report status. Configured with query. Its run() step calls ResidualCleaner, strip, cleaner.scan_for_app, any."""
+
     finished = Signal(list)  # list of dicts
     failed = Signal(str)
 
@@ -53,6 +54,7 @@ class _ResidualScanWorker(QObject):
         """
         try:
             from cortex_unified.analyzers.residual_cleaner import ResidualCleaner
+
             cleaner = ResidualCleaner()
             if self._query.strip():
                 # Specific app scan
@@ -61,9 +63,24 @@ class _ResidualScanWorker(QObject):
                 # General leftover scan across common uninstalled keywords
                 results = []
                 common_checks = [
-                    "zoom", "skype", "slack", "discord", "teamviewer", "anydesk",
-                    "utorrent", "bittorrent", "vlc", "spotify", "epic games", "origin",
-                    "battle.net", "steam", "blender", "gimp", "audacity", "handbrake"
+                    "zoom",
+                    "skype",
+                    "slack",
+                    "discord",
+                    "teamviewer",
+                    "anydesk",
+                    "utorrent",
+                    "bittorrent",
+                    "vlc",
+                    "spotify",
+                    "epic games",
+                    "origin",
+                    "battle.net",
+                    "steam",
+                    "blender",
+                    "gimp",
+                    "audacity",
+                    "handbrake",
                 ]
                 for kw in common_checks:
                     found = cleaner.scan_for_app(kw)
@@ -87,12 +104,14 @@ class ResidualCleanerPage(_Page):
             win: Parent window or shell controller instance.
         """
         super().__init__(win)
-        self.v.addWidget(title_block(
-            "Uninstalled Software Residual Hunter",
-            "When software is uninstalled, Windows standard uninstallers routinely leave behind "
-            "gigabytes of user data, cache files, and logs in AppData and ProgramData. "
-            "Residual Hunter identifies and purges these orphaned folders safely.",
-        ))
+        self.v.addWidget(
+            title_block(
+                "Uninstalled Software Residual Hunter",
+                "When software is uninstalled, Windows standard uninstallers routinely leave behind "
+                "gigabytes of user data, cache files, and logs in AppData and ProgramData. "
+                "Residual Hunter identifies and purges these orphaned folders safely.",
+            )
+        )
 
         # Search / Control Card
         search_card = Card(self.p)
@@ -101,7 +120,9 @@ class ResidualCleanerPage(_Page):
         search_layout.setSpacing(10)
 
         self._input = QLineEdit()
-        self._input.setPlaceholderText("Enter uninstalled app name (e.g. Zoom, Slack, Steam, Norton) or leave blank for common scan...")
+        self._input.setPlaceholderText(
+            "Enter uninstalled app name (e.g. Zoom, Slack, Steam, Norton) or leave blank for common scan..."
+        )
         self._input.returnPressed.connect(self._scan)
         search_layout.addWidget(self._input, 1)
 
@@ -188,7 +209,11 @@ class ResidualCleanerPage(_Page):
             item_path.setData(Qt.ItemDataRole.UserRole, path_str)
             self.tbl.setItem(r, 0, item_path)
 
-            category = "LocalAppData" if "local" in path_str.lower() else ("Roaming" if "roaming" in path_str.lower() else "ProgramData")
+            category = (
+                "LocalAppData"
+                if "local" in path_str.lower()
+                else ("Roaming" if "roaming" in path_str.lower() else "ProgramData")
+            )
             self.tbl.setItem(r, 1, QTableWidgetItem(category))
             self.tbl.setItem(r, 2, QTableWidgetItem(fmt_bytes(size_b)))
             self.tbl.setItem(r, 3, QTableWidgetItem("Safe (Orphaned)"))
@@ -225,6 +250,7 @@ class ResidualCleanerPage(_Page):
             return
 
         from cortex_unified.engine.secure_delete import recycle_path
+
         purged = 0
         for p in paths:
             try:

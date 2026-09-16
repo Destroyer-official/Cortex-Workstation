@@ -83,8 +83,22 @@ from cortex_unified.core.utils import normalize_path
 # ---------------------------------------------------------------------------
 
 _VIDEO_SUFFIXES = {
-    ".mp4", ".avi", ".mkv", ".mov", ".wmv", ".flv", ".webm", ".m4v",
-    ".mpg", ".mpeg", ".3gp", ".3g2", ".mts", ".m2ts", ".ogv", ".asf",
+    ".mp4",
+    ".avi",
+    ".mkv",
+    ".mov",
+    ".wmv",
+    ".flv",
+    ".webm",
+    ".m4v",
+    ".mpg",
+    ".mpeg",
+    ".3gp",
+    ".3g2",
+    ".mts",
+    ".m2ts",
+    ".ogv",
+    ".asf",
 }
 
 # Sampling: 1 fps, capped at 30 s (30 frames). Keeps cost bounded.
@@ -105,6 +119,7 @@ try:
 except ImportError:
     _HAS_PIL = False
 
+
 def _cos_table(n: int) -> List[List[float]]:
     """_cos_table.
 
@@ -119,7 +134,9 @@ def _cos_table(n: int) -> List[List[float]]:
     pi = math.pi
     return [[math.cos((2 * x + 1) * u * pi / (2 * n)) for x in range(n)] for u in range(n)]
 
+
 _COS_32 = _cos_table(32) if _HAS_PIL else None
+
 
 def _dct2d(rows: List[List[float]], cos: List[List[float]], size: int) -> List[List[float]]:
     """Dct2d.
@@ -151,6 +168,7 @@ def _dct2d(rows: List[List[float]], cos: List[List[float]], size: int) -> List[L
             out_u[v] = acc
     return out
 
+
 def _phash_image(img) -> int:  # img is PIL.Image.Image
     """_phash_image.
 
@@ -164,7 +182,7 @@ def _phash_image(img) -> int:  # img is PIL.Image.Image
     """
     gray = img.convert("L").resize((32, 32), Image.Resampling.LANCZOS)
     data = list(gray.tobytes())
-    rows = [data[i * 32:(i + 1) * 32] for i in range(32)]
+    rows = [data[i * 32 : (i + 1) * 32] for i in range(32)]
     dct = _dct2d(rows, _COS_32, 32)  # type: ignore[arg-type]
     flat: List[float] = []
     for i in range(8):
@@ -178,6 +196,7 @@ def _phash_image(img) -> int:  # img is PIL.Image.Image
         if v > mean:
             bits |= 1 << i
     return bits
+
 
 def _hamming(a: int, b: int) -> int:
     """Hamming.
@@ -193,9 +212,11 @@ def _hamming(a: int, b: int) -> int:
     """
     return bin(a ^ b).count("1")
 
+
 # ---------------------------------------------------------------------------
 # Keyframe extraction
 # ---------------------------------------------------------------------------
+
 
 def _extract_frames_cv2(path: Path, max_frames: int = _MAX_FRAMES) -> List[int]:
     """Extract frame pHashes via cv2 (returns list of 64-bit ints).
@@ -235,6 +256,7 @@ def _extract_frames_cv2(path: Path, max_frames: int = _MAX_FRAMES) -> List[int]:
             # BGR -> RGB -> PIL
             try:
                 import numpy as np  # type: ignore
+
                 frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
                 pil = Image.fromarray(frame_rgb)  # type: ignore[attr-defined]
             except Exception:
@@ -243,6 +265,7 @@ def _extract_frames_cv2(path: Path, max_frames: int = _MAX_FRAMES) -> List[int]:
                 # frame is numpy array shape (h, w, 3) BGR
                 try:
                     import numpy as np2  # type: ignore
+
                     frame_rgb2 = frame[:, :, ::-1]
                     pil = Image.fromarray(frame_rgb2)
                 except Exception:
@@ -255,6 +278,7 @@ def _extract_frames_cv2(path: Path, max_frames: int = _MAX_FRAMES) -> List[int]:
             break
     cap.release()
     return hashes
+
 
 def _extract_frames_imageio(path: Path, max_frames: int = _MAX_FRAMES) -> List[int]:
     """Fallback via imageio (ffmpeg).
@@ -273,6 +297,7 @@ def _extract_frames_imageio(path: Path, max_frames: int = _MAX_FRAMES) -> List[i
     except ImportError:
         try:
             import imageio as iio2  # type: ignore
+
             # imageio v2 API
             reader = iio2.get_reader(str(path))
             meta = reader.get_meta_data()
@@ -319,6 +344,7 @@ def _extract_frames_imageio(path: Path, max_frames: int = _MAX_FRAMES) -> List[i
         raise OSError(f"imageio iter failed for {path}: {exc}") from exc
     return hashes
 
+
 def _fallback_raw_video_fp(path: Path) -> List[int]:
     """Byte-level surrogate for hosts without cv2/imageio: chunk hashes.
 
@@ -340,7 +366,7 @@ def _fallback_raw_video_fp(path: Path) -> List[int]:
     hashes: List[int] = []
     step = 64 * 1024
     for off in range(0, len(data), step):
-        chunk = data[off: off + step]
+        chunk = data[off : off + step]
         if len(chunk) < 1024:
             break
         h = int.from_bytes(hashlib.blake2b(chunk, digest_size=8).digest(), "little")
@@ -348,6 +374,7 @@ def _fallback_raw_video_fp(path: Path) -> List[int]:
         if len(hashes) >= _MAX_FRAMES:
             break
     return hashes
+
 
 def compute_video_fingerprint(path: Path | str, max_frames: int = _MAX_FRAMES) -> List[int]:
     """Sequence fingerprint (list of 64-bit pHashes) for a video file.
@@ -375,9 +402,11 @@ def compute_video_fingerprint(path: Path | str, max_frames: int = _MAX_FRAMES) -
             continue
     return _fallback_raw_video_fp(p)
 
+
 # ---------------------------------------------------------------------------
 # Comparison with temporal consistence re-ranking (TCSVT 2024)
 # ---------------------------------------------------------------------------
+
 
 def video_compare(
     fp_a: List[int],
@@ -468,9 +497,11 @@ def video_compare(
         score = min(1.0, score * 1.15)
     return max(0.0, min(1.0, score))
 
+
 # ---------------------------------------------------------------------------
 # Finder
 # ---------------------------------------------------------------------------
+
 
 class VideoDuplicateFinder:
     """Find temporally-similar video groups (re-encodes, trims, watermarks).
@@ -640,10 +671,7 @@ class VideoDuplicateFinder:
         n = len(items)
         # Pair generation: exhaustive for modest sets, windowed for large
         if n <= 500:
-            pairs = [
-                (items[i][0], items[j][0])
-                for i in range(n) for j in range(i + 1, n)
-            ]
+            pairs = [(items[i][0], items[j][0]) for i in range(n) for j in range(i + 1, n)]
         else:
             # Heuristic: bucket by first frame hash
             items.sort(key=lambda kv: kv[1][0] if kv[1] else 0)

@@ -26,7 +26,12 @@ def _make_wav(path: Path, freq: float = 440.0, duration: float = 1.0, sr: int = 
         sr (int): The sr parameter.
     """
     n = int(sr * duration)
-    with wave.open(str(path, ), "w") as wf:
+    with wave.open(
+        str(
+            path,
+        ),
+        "w",
+    ) as wf:
         wf.setnchannels(1)
         wf.setsampwidth(2)
         wf.setframerate(sr)
@@ -46,6 +51,7 @@ def _make_noise_wav(path: Path, duration: float = 1.0, sr: int = 11025):
         sr (int): The sr parameter.
     """
     import random
+
     rnd = random.Random(12345)
     n = int(sr * duration)
     with wave.open(str(path), "w") as wf:
@@ -57,6 +63,7 @@ def _make_noise_wav(path: Path, duration: float = 1.0, sr: int = 11025):
 
 
 # --- fingerprint primitives ---
+
 
 def test_fingerprint_is_list_of_ints(tmp_path: Path):
     """Verify fingerprint is list of ints via _make_wav, compute_audio_fingerprint.
@@ -115,6 +122,7 @@ def test_audio_compare_empty():
 
 # --- finder ---
 
+
 def test_finder_groups_identical_audio(tmp_path: Path):
     """Verify finder groups identical audio via AudioDuplicateFinder, finder.find_audio_duplicates, groups.items.
 
@@ -163,6 +171,7 @@ def test_finder_respects_exclude_dirs(tmp_path: Path):
     _make_wav(tmp_path / "ta.wav", freq=440)
     _make_wav(tmp_path / "tb.wav", freq=440)
     from cortex_unified.core.config import Config
+
     cfg = Config()
     cfg.config_data["exclude_dirs"] = ["skip"]
     finder = AudioDuplicateFinder(str(tmp_path), config=cfg)

@@ -23,6 +23,7 @@ logger = logging.getLogger("cortex.system_tools.smb_share_auditor")
 @dataclass
 class SmbShareInfo:
     """Smb Share Info data container."""
+
     name: str
     path: str
     share_type: str  # "Disk Drive", "Special/Admin", "IPC", "Printer"
@@ -35,6 +36,7 @@ class SmbShareInfo:
 @dataclass
 class SmbSecurityReport:
     """Smb Security Report data container."""
+
     shares: list[SmbShareInfo] = field(default_factory=list)
     smbv1_enabled: bool = False
     smb_signing_required: bool = False
@@ -70,9 +72,7 @@ class SmbShareAuditor:
 
         for s in shares:
             if not s.is_administrative and s.is_accessible_to_everyone:
-                warnings.append(
-                    f"Warning: Share '{s.name}' ({s.path}) may allow unauthenticated or Everyone access."
-                )
+                warnings.append(f"Warning: Share '{s.name}' ({s.path}) may allow unauthenticated or Everyone access.")
 
         return SmbSecurityReport(
             shares=shares,

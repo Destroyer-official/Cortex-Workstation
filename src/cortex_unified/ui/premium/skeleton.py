@@ -22,6 +22,7 @@ from . import motion
 from .theme import Palette
 from .tokens import Radius
 
+
 class ShimmerSkeleton(QWidget):
     """Animated placeholder bars used as a loading state.
 
@@ -30,8 +31,7 @@ class ShimmerSkeleton(QWidget):
     :meth:`stop` when it ends (typically paired with ``setVisible``).
     """
 
-    def __init__(self, palette: Palette, rows: int = 5, row_height: int = 20,
-                 parent: QWidget | None = None):
+    def __init__(self, palette: Palette, rows: int = 5, row_height: int = 20, parent: QWidget | None = None):
         """Initialize skeleton.
 
         Initializes the instance and configures internal state.

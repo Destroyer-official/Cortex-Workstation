@@ -35,14 +35,40 @@ _PROTO = {
 
 # Well-known ports -> service name, so users recognize what a port is for.
 _SERVICES = {
-    20: "FTP-data", 21: "FTP", 22: "SSH", 23: "Telnet", 25: "SMTP",
-    53: "DNS", 67: "DHCP", 68: "DHCP", 80: "HTTP", 110: "POP3",
-    123: "NTP", 135: "RPC", 137: "NetBIOS", 138: "NetBIOS", 139: "NetBIOS",
-    143: "IMAP", 161: "SNMP", 389: "LDAP", 443: "HTTPS", 445: "SMB",
-    465: "SMTPS", 587: "SMTP", 993: "IMAPS", 995: "POP3S",
-    1433: "MSSQL", 1521: "Oracle", 3306: "MySQL", 3389: "RDP",
-    5432: "PostgreSQL", 5900: "VNC", 6379: "Redis", 8080: "HTTP-alt",
-    8443: "HTTPS-alt", 27017: "MongoDB",
+    20: "FTP-data",
+    21: "FTP",
+    22: "SSH",
+    23: "Telnet",
+    25: "SMTP",
+    53: "DNS",
+    67: "DHCP",
+    68: "DHCP",
+    80: "HTTP",
+    110: "POP3",
+    123: "NTP",
+    135: "RPC",
+    137: "NetBIOS",
+    138: "NetBIOS",
+    139: "NetBIOS",
+    143: "IMAP",
+    161: "SNMP",
+    389: "LDAP",
+    443: "HTTPS",
+    445: "SMB",
+    465: "SMTPS",
+    587: "SMTP",
+    993: "IMAPS",
+    995: "POP3S",
+    1433: "MSSQL",
+    1521: "Oracle",
+    3306: "MySQL",
+    3389: "RDP",
+    5432: "PostgreSQL",
+    5900: "VNC",
+    6379: "Redis",
+    8080: "HTTP-alt",
+    8443: "HTTPS-alt",
+    27017: "MongoDB",
 }
 
 
@@ -52,6 +78,7 @@ class Connection:
 
     Manages Connection operations and coordinates related state changes for the component.
     """
+
     protocol: str
     local_addr: str
     local_port: int
@@ -73,8 +100,7 @@ class Connection:
         Returns:
             bool: True if the operation succeeded, False otherwise.
         """
-        return (self.status == "LISTEN"
-                and self.local_addr in ("0.0.0.0", "::"))
+        return self.status == "LISTEN" and self.local_addr in ("0.0.0.0", "::")
 
     @property
     def remote_external(self) -> bool:
@@ -100,8 +126,7 @@ class Connection:
         return {
             "protocol": self.protocol,
             "local": f"{self.local_addr}:{self.local_port}" if self.local_port else self.local_addr,
-            "remote": (f"{self.remote_addr}:{self.remote_port}"
-                       if self.remote_addr else ""),
+            "remote": (f"{self.remote_addr}:{self.remote_port}" if self.remote_addr else ""),
             "status": self.status,
             "pid": self.pid,
             "process": self.process,
@@ -150,7 +175,7 @@ class NetworkMonitor:
         except ImportError:
             return []
 
-        meta: dict[int, tuple[str, str, str]] = {}   # pid -> (name, exe, desc)
+        meta: dict[int, tuple[str, str, str]] = {}  # pid -> (name, exe, desc)
         conns: list[Connection] = []
         try:
             raw = psutil.net_connections(kind="inet")
@@ -170,23 +195,25 @@ class NetworkMonitor:
             pid = c.pid
             if pid is not None and pid not in meta:
                 meta[pid] = self._meta_for(psutil, pid)
-            name, exe, desc = meta.get(pid, ("System", "", "")) if pid is not None \
-                else ("System", "", "")
+            name, exe, desc = meta.get(pid, ("System", "", "")) if pid is not None else ("System", "", "")
             service = _SERVICES.get(lport) or _SERVICES.get(rport) or ""
-            conns.append(Connection(
-                protocol=proto,
-                local_addr=laddr, local_port=lport,
-                remote_addr=raddr, remote_port=rport,
-                status=c.status or "",
-                pid=pid,
-                process=name,
-                service=service,
-                process_exe=exe,
-                process_desc=desc,
-            ))
+            conns.append(
+                Connection(
+                    protocol=proto,
+                    local_addr=laddr,
+                    local_port=lport,
+                    remote_addr=raddr,
+                    remote_port=rport,
+                    status=c.status or "",
+                    pid=pid,
+                    process=name,
+                    service=service,
+                    process_exe=exe,
+                    process_desc=desc,
+                )
+            )
         # Most interesting first: external established, then public listeners.
-        conns.sort(key=lambda x: (not x.remote_external, not x.listening_public,
-                                  x.process.lower()))
+        conns.sort(key=lambda x: (not x.remote_external, not x.listening_public, x.process.lower()))
         return conns
 
     @staticmethod
@@ -214,6 +241,7 @@ class NetworkMonitor:
             return "?", "", ""
         try:
             from cortex_unified.system_tools.process_meta import describe
+
             desc = describe(name, exe)
         except Exception:  # noqa: BLE001
             desc = ""

@@ -22,6 +22,7 @@ V = TypeVar("V")
 
 class SieveNode(Generic[K, V]):
     """Groups related helpers: init, repr."""
+
     __slots__ = ("key", "value", "visited", "prev", "next")
 
     def __init__(self, key: K, value: V) -> None:

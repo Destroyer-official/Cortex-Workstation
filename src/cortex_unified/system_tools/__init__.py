@@ -51,6 +51,7 @@ except ImportError:
 # RegistryCleaner is Windows-only; import conditionally
 try:
     from .registry_cleaner import RegistryCleaner
+
     _HAS_REGISTRY = True
 except ImportError:
     _HAS_REGISTRY = False

@@ -44,10 +44,8 @@ def _windows_ids() -> list[str]:
         import winreg
 
         key_paths = [
-            (winreg.HKEY_LOCAL_MACHINE, r"SOFTWARE\Microsoft\Cryptography",
-             "MachineGuid"),
-            (winreg.HKEY_LOCAL_MACHINE,
-             r"SOFTWARE\Microsoft\Windows NT\CurrentVersion", "ProductId"),
+            (winreg.HKEY_LOCAL_MACHINE, r"SOFTWARE\Microsoft\Cryptography", "MachineGuid"),
+            (winreg.HKEY_LOCAL_MACHINE, r"SOFTWARE\Microsoft\Windows NT\CurrentVersion", "ProductId"),
         ]
         for hive, path, value_name in key_paths:
             try:
@@ -75,7 +73,9 @@ def _macos_ids() -> list[str]:
 
         out = subprocess.run(
             ["ioreg", "-rd1", "-c", "IOPlatformExpertDevice"],
-            capture_output=True, text=True, timeout=10,
+            capture_output=True,
+            text=True,
+            timeout=10,
         )
         for line in out.stdout.splitlines():
             line = line.strip()
@@ -158,8 +158,6 @@ def get_fingerprint() -> str:
 
 
 def reset_cache() -> None:
-    """Forget the memoised digest (used by tests and diagnostics).
-
-    """
+    """Forget the memoised digest (used by tests and diagnostics)."""
     global _FINGERPRINT
     _FINGERPRINT = None

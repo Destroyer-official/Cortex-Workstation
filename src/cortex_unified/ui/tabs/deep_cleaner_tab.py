@@ -7,9 +7,20 @@ from pathlib import Path
 from typing import List, Dict, Any, Optional
 
 from PySide6.QtWidgets import (
-    QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLabel,
-    QProgressBar, QGroupBox, QFormLayout, QMessageBox,
-    QTreeWidget, QTreeWidgetItem, QHeaderView, QCheckBox, QFileDialog
+    QWidget,
+    QVBoxLayout,
+    QHBoxLayout,
+    QPushButton,
+    QLabel,
+    QProgressBar,
+    QGroupBox,
+    QFormLayout,
+    QMessageBox,
+    QTreeWidget,
+    QTreeWidgetItem,
+    QHeaderView,
+    QCheckBox,
+    QFileDialog,
 )
 from PySide6.QtCore import QThread, Signal, Qt
 from PySide6.QtGui import QFont, QColor
@@ -23,8 +34,9 @@ from cortex_unified.analyzers.deep_cleaner import DeepCleaner
 class VideoOptimizeWorker(QThread):
     """QThread worker optimizing a video via czkawka VideoOptimizer.
 
-        Emits status text while analyzing and finished with the (success, message) outcome.
+    Emits status text while analyzing and finished with the (success, message) outcome.
     """
+
     finished = Signal(bool, str)
     status = Signal(str)
 
@@ -47,6 +59,7 @@ class VideoOptimizeWorker(QThread):
         try:
             self.status.emit("Analyzing video stream and cropping borders...")
             from cortex_unified.analyzers.czkawka_tools import VideoOptimizer
+
             opt = VideoOptimizer()
             p = Path(self.video_path)
             out = p.with_name(f"{p.stem}_optimized.mp4")
@@ -59,8 +72,9 @@ class VideoOptimizeWorker(QThread):
 class DeepCleanerWorker(QThread):
     """QThread worker finding junk via DeepCleaner with czkawka TempFileFinder coverage.
 
-        Emits status_updated and progress_updated during the scan, then finished_scan or error_occurred.
+    Emits status_updated and progress_updated during the scan, then finished_scan or error_occurred.
     """
+
     finished_scan = Signal(list)
     error_occurred = Signal(str)
     status_updated = Signal(str)
@@ -88,7 +102,7 @@ class DeepCleanerWorker(QThread):
         try:
             self.status_updated.emit("Deep scanning disk...")
             cleaner = DeepCleaner(self.config)
-            
+
             def poll_progress():
                 """Pulse the indeterminate progress bar every 0.1s while scanning.
 
@@ -100,7 +114,7 @@ class DeepCleanerWorker(QThread):
 
             t = threading.Thread(target=poll_progress, daemon=True)
             t.start()
-            
+
             def update_status(msg):
                 """Relay the cleaner's status text via status_updated.
 
@@ -109,7 +123,7 @@ class DeepCleanerWorker(QThread):
                     msg: Informational or progress status message.
                 """
                 self.status_updated.emit(msg)
-                
+
             items = cleaner.find_junk(progress_callback=update_status)
             stats = cleaner.get_stats()
 
@@ -117,34 +131,38 @@ class DeepCleanerWorker(QThread):
                 try:
                     update_status("Scanning Czkawka temp patterns...")
                     from cortex_unified.analyzers.czkawka_tools import TempFileFinder
+
                     finder = TempFileFinder(config=self.config)
                     cz_files = finder.find()
                     for f in cz_files:
                         try:
                             sz = f.stat().st_size
-                            items.append({
-                                "category": "Czkawka Temp Patterns",
-                                "path": str(f),
-                                "size": sz,
-                                "description": f"Temporary/Backup file ({f.name})",
-                                "is_orphan": False,
-                                "action": "delete",
-                            })
+                            items.append(
+                                {
+                                    "category": "Czkawka Temp Patterns",
+                                    "path": str(f),
+                                    "size": sz,
+                                    "description": f"Temporary/Backup file ({f.name})",
+                                    "is_orphan": False,
+                                    "action": "delete",
+                                }
+                            )
                         except OSError:
                             pass
                 except Exception as e:
                     update_status(f"Czkawka temp scan error: {e}")
-            
+
             self._is_running = False
             self.finished_scan.emit([items, stats])
         except Exception as e:
             self._is_running = False
             self.error_occurred.emit(str(e))
 
+
 class DeepCleanerTab(BaseTab):
     """Deep-cleaner tab with target-area options, junk tree, progress bar, and status label.
 
-        Scan, clean, select-all, and video-optimize actions run DeepCleanerWorker and VideoOptimizeWorker threads.
+    Scan, clean, select-all, and video-optimize actions run DeepCleanerWorker and VideoOptimizeWorker threads.
     """
 
     def __init__(self, config, logger, safety_manager):
@@ -160,20 +178,19 @@ class DeepCleanerTab(BaseTab):
         super().__init__(config, logger, safety_manager)
 
     def setup_ui(self):
-        """Build the tab: action buttons, progress bar, and the 4-column junk tree.
-        """
+        """Build the tab: action buttons, progress bar, and the 4-column junk tree."""
         layout = QVBoxLayout(self)
-        
-        title = QLabel('🧹 Deep Disk Cleaner')
-        title.setStyleSheet('font-size: 18px; font-weight: bold; margin: 10px;')
+
+        title = QLabel("🧹 Deep Disk Cleaner")
+        title.setStyleSheet("font-size: 18px; font-weight: bold; margin: 10px;")
         layout.addWidget(title)
-        
-        desc = QLabel('Safely remove temporary files, cache & orphaned application data.')
-        desc.setStyleSheet('color: gray; margin-bottom: 5px;')
+
+        desc = QLabel("Safely remove temporary files, cache & orphaned application data.")
+        desc.setStyleSheet("color: gray; margin-bottom: 5px;")
         layout.addWidget(desc)
-        
+
         # Options
-        options_group = QGroupBox('Target Areas & Options')
+        options_group = QGroupBox("Target Areas & Options")
         options_layout = QHBoxLayout(options_group)
         self.lbl_status = QLabel("Ready to scan")
         options_layout.addWidget(self.lbl_status)
@@ -181,50 +198,52 @@ class DeepCleanerTab(BaseTab):
         self.chk_czkawka_temp.setChecked(True)
         options_layout.addWidget(self.chk_czkawka_temp)
         layout.addWidget(options_group)
-        
+
         # Actions
         buttons_layout = QHBoxLayout()
         buttons_layout.setSpacing(10)
-        
-        self.scan_btn = QPushButton('🔍 Start Deep Scan')
+
+        self.scan_btn = QPushButton("🔍 Start Deep Scan")
         self.scan_btn.clicked.connect(self.start_scan)
         self.scan_btn.setMinimumHeight(35)
-        self.scan_btn.setStyleSheet('QPushButton { font-weight: bold; padding: 5px 20px; font-size: 13px; }')
+        self.scan_btn.setStyleSheet("QPushButton { font-weight: bold; padding: 5px 20px; font-size: 13px; }")
         buttons_layout.addWidget(self.scan_btn)
 
-        self.btn_optimize_video = QPushButton('🎬 Optimize Video (Czkawka)')
+        self.btn_optimize_video = QPushButton("🎬 Optimize Video (Czkawka)")
         self.btn_optimize_video.clicked.connect(self.optimize_video)
         self.btn_optimize_video.setMinimumHeight(35)
         buttons_layout.addWidget(self.btn_optimize_video)
-        
-        self.select_all_btn = QPushButton('☑ Check All')
+
+        self.select_all_btn = QPushButton("☑ Check All")
         self.select_all_btn.clicked.connect(self.select_all)
         self.select_all_btn.setMinimumHeight(35)
         buttons_layout.addWidget(self.select_all_btn)
 
-        self.deselect_all_btn = QPushButton('☐ Uncheck All')
+        self.deselect_all_btn = QPushButton("☐ Uncheck All")
         self.deselect_all_btn.clicked.connect(self.deselect_all)
         self.deselect_all_btn.setMinimumHeight(35)
         buttons_layout.addWidget(self.deselect_all_btn)
 
-        self.clean_btn = QPushButton('🗑️ Clean Selected')
+        self.clean_btn = QPushButton("🗑️ Clean Selected")
         self.clean_btn.clicked.connect(self.start_clean)
         self.clean_btn.setEnabled(False)
         self.clean_btn.setMinimumHeight(35)
-        self.clean_btn.setStyleSheet('QPushButton { font-weight: bold; padding: 5px 20px; font-size: 13px; background-color: #8B0000; color: white; }')
+        self.clean_btn.setStyleSheet(
+            "QPushButton { font-weight: bold; padding: 5px 20px; font-size: 13px; background-color: #8B0000; color: white; }"
+        )
         buttons_layout.addWidget(self.clean_btn)
         layout.addLayout(buttons_layout)
-        
+
         self.progress_bar = QProgressBar()
         self.progress_bar.setVisible(False)
         self.progress_bar.setMinimumHeight(10)
         self.progress_bar.setTextVisible(False)
         layout.addWidget(self.progress_bar)
-        
+
         # Results Tree
         self.tree = QTreeWidget()
         self.tree.setColumnCount(4)
-        self.tree.setHeaderLabels(['Category / Items', 'Type', 'Path', 'Size'])
+        self.tree.setHeaderLabels(["Category / Items", "Type", "Path", "Size"])
         header = self.tree.header()
         header.setSectionResizeMode(0, QHeaderView.ResizeMode.ResizeToContents)
         header.setSectionResizeMode(1, QHeaderView.ResizeMode.ResizeToContents)
@@ -233,23 +252,22 @@ class DeepCleanerTab(BaseTab):
         self.tree.setSelectionMode(QTreeWidget.SelectionMode.NoSelection)
         self.tree.itemChanged.connect(self._on_item_changed)
         layout.addWidget(self.tree)
-        
-        self.summary_lbl = QLabel('')
+
+        self.summary_lbl = QLabel("")
         self.summary_lbl.setStyleSheet("font-weight: bold;")
         layout.addWidget(self.summary_lbl)
 
     def start_scan(self):
-        """Disable actions and launch the DeepCleanerWorker.
-        """
+        """Disable actions and launch the DeepCleanerWorker."""
         self.scan_btn.setEnabled(False)
         self.clean_btn.setEnabled(False)
         self.progress_bar.setVisible(True)
         self.progress_bar.setRange(0, 0)
         self.tree.clear()
-        
+
         worker = DeepCleanerWorker(self.config, scan_czkawka_temp=self.chk_czkawka_temp.isChecked())
         self.add_worker_thread(worker)
-        
+
         worker.status_updated.connect(self.lbl_status.setText)
         worker.progress_updated.connect(lambda: None)
         worker.finished_scan.connect(self.scan_finished)
@@ -268,7 +286,7 @@ class DeepCleanerTab(BaseTab):
         Returns:
             str: Formatted string or path.
         """
-        for unit in ['B', 'KB', 'MB', 'GB', 'TB']:
+        for unit in ["B", "KB", "MB", "GB", "TB"]:
             if bytes_count < 1024.0:
                 return f"{bytes_count:.1f} {unit}"
             bytes_count /= 1024.0
@@ -284,7 +302,7 @@ class DeepCleanerTab(BaseTab):
         """
         items, stats = result
         self.tree.blockSignals(True)
-        
+
         # Group by category
         categories = {}
         for item in items:
@@ -292,7 +310,7 @@ class DeepCleanerTab(BaseTab):
             if cat not in categories:
                 categories[cat] = []
             categories[cat].append(item)
-            
+
         for cat, cat_items in categories.items():
             cat_size = sum(i["size"] for i in cat_items)
             cat_node = QTreeWidgetItem(self.tree)
@@ -300,7 +318,7 @@ class DeepCleanerTab(BaseTab):
             cat_node.setText(3, self.format_bytes(cat_size))
             cat_node.setFlags(cat_node.flags() | Qt.ItemFlag.ItemIsUserCheckable)
             cat_node.setCheckState(0, Qt.CheckState.Checked)
-            
+
             for item in cat_items:
                 child = QTreeWidgetItem(cat_node)
                 path = item["path"]
@@ -316,16 +334,16 @@ class DeepCleanerTab(BaseTab):
                 child.setCheckState(0, Qt.CheckState.Checked)
                 # Store path inside user data
                 child.setData(0, Qt.ItemDataRole.UserRole, path)
-                
+
             cat_node.setExpanded(True)
-            
+
         self.tree.blockSignals(False)
-        
-        total_size = stats.get('total_size_human', '0 B')
-        file_count = stats.get('items_found', 0)
-        
-        self.summary_lbl.setText(f'Found {file_count} junk items, totaling {total_size}')
-        self.lbl_status.setText('Scan completed ✅')
+
+        total_size = stats.get("total_size_human", "0 B")
+        file_count = stats.get("items_found", 0)
+
+        self.summary_lbl.setText(f"Found {file_count} junk items, totaling {total_size}")
+        self.lbl_status.setText("Scan completed ✅")
         self.clean_btn.setEnabled(file_count > 0)
         self.update_selection_summary()
 
@@ -340,7 +358,7 @@ class DeepCleanerTab(BaseTab):
         if column == 0:
             self.tree.blockSignals(True)
             state = item.checkState(0)
-            
+
             # If parent, check all children
             if item.childCount() > 0:
                 for i in range(item.childCount()):
@@ -356,23 +374,22 @@ class DeepCleanerTab(BaseTab):
                             any_checked = True
                         else:
                             all_checked = False
-                    
+
                     if all_checked:
                         parent.setCheckState(0, Qt.CheckState.Checked)
                     elif any_checked:
                         parent.setCheckState(0, Qt.CheckState.PartiallyChecked)
                     else:
                         parent.setCheckState(0, Qt.CheckState.Unchecked)
-                        
+
             self.tree.blockSignals(False)
             self.update_selection_summary()
 
     def update_selection_summary(self):
-        """Update the Clean button label with the checked item count.
-        """
+        """Update the Clean button label with the checked item count."""
         checked_count = 0
         total_size = 0
-        
+
         root = self.tree.invisibleRootItem()
         for i in range(root.childCount()):
             parent = root.child(i)
@@ -380,8 +397,8 @@ class DeepCleanerTab(BaseTab):
                 child = parent.child(j)
                 if child.checkState(0) == Qt.CheckState.Checked:
                     checked_count += 1
-                    
-        self.clean_btn.setText(f'🗑️ Clean Selected ({checked_count})')
+
+        self.clean_btn.setText(f"🗑️ Clean Selected ({checked_count})")
 
     def scan_error(self, error):
         """Show the scan error in the status label and a dialog.
@@ -391,14 +408,13 @@ class DeepCleanerTab(BaseTab):
         Args:
             error: Error message string or exception instance.
         """
-        self.lbl_status.setText(f'Error: {error}')
-        QMessageBox.critical(self, 'Scan Error', f'An error occurred:\\n{error}')
+        self.lbl_status.setText(f"Error: {error}")
+        QMessageBox.critical(self, "Scan Error", f"An error occurred:\\n{error}")
 
     def start_clean(self):
-        """Confirm, then recycle the checked items via Deleter and rescan.
-        """
+        """Confirm, then recycle the checked items via Deleter and rescan."""
         selected_paths = []
-        
+
         root = self.tree.invisibleRootItem()
         for i in range(root.childCount()):
             parent = root.child(i)
@@ -408,56 +424,55 @@ class DeepCleanerTab(BaseTab):
                     path = child.data(0, Qt.ItemDataRole.UserRole)
                     if path:
                         selected_paths.append(path)
-                        
+
         if not selected_paths:
-            QMessageBox.warning(self, 'No Selection', 'Please select items to clean.')
+            QMessageBox.warning(self, "No Selection", "Please select items to clean.")
             return
-            
+
         reply = QMessageBox.question(
-            self, 'Confirm Deep Clean', 
-            f'Permanently delete {len(selected_paths)} items?\\nThis action clears caches and orphaned app data.',
-            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
+            self,
+            "Confirm Deep Clean",
+            f"Permanently delete {len(selected_paths)} items?\\nThis action clears caches and orphaned app data.",
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
         )
         if reply != QMessageBox.StandardButton.Yes:
             return
-            
+
         self.scan_btn.setEnabled(False)
         self.clean_btn.setEnabled(False)
         self.progress_bar.setVisible(True)
         self.progress_bar.setRange(0, 0)
         self.lbl_status.setText("Cleaning items...")
-        
+
         try:
             deleter = Deleter(dry_run=False, use_trash=True)
             # Separate files from dirs conceptually (deleter handles it usually, but we need to pass correctly)
             files_to_del = [p for p in selected_paths if p.is_file()]
             dirs_to_del = [p for p in selected_paths if p.is_dir()]
-            
+
             result = deleter.delete(files_to_del, dirs_to_del)
-            files_deleted = result.get('files_deleted', 0)
-            dirs_deleted = result.get('dirs_deleted', 0)
-            errors = result.get('errors', [])
-            
-            msg = f'Successfully cleaned {files_deleted} files and {dirs_deleted} directories.'
+            files_deleted = result.get("files_deleted", 0)
+            dirs_deleted = result.get("dirs_deleted", 0)
+            errors = result.get("errors", [])
+
+            msg = f"Successfully cleaned {files_deleted} files and {dirs_deleted} directories."
             if errors:
-                msg += f'\\n{len(errors)} errors occurred.'
-                
-            QMessageBox.information(self, 'Cleaning Complete', msg)
-            self.logger.info(f'Deep cleaned {files_deleted+dirs_deleted} items')
-            
+                msg += f"\\n{len(errors)} errors occurred."
+
+            QMessageBox.information(self, "Cleaning Complete", msg)
+            self.logger.info(f"Deep cleaned {files_deleted+dirs_deleted} items")
+
         except Exception as e:
-            QMessageBox.critical(self, 'Cleaning Error', f'An error occurred:\\n{str(e)}')
-            
+            QMessageBox.critical(self, "Cleaning Error", f"An error occurred:\\n{str(e)}")
+
         self.start_scan()
 
     def select_all(self):
-        """Check every item in the tree.
-        """
+        """Check every item in the tree."""
         self._toggle_checkboxes(Qt.CheckState.Checked)
 
     def deselect_all(self):
-        """Uncheck every item in the tree.
-        """
+        """Uncheck every item in the tree."""
         self._toggle_checkboxes(Qt.CheckState.Unchecked)
 
     def _toggle_checkboxes(self, state):
@@ -491,11 +506,12 @@ class DeepCleanerTab(BaseTab):
         worker.deleteLater()
 
     def optimize_video(self):
-        """Open file dialog and optimize chosen video via Czkawka VideoOptimizer.
-        """
+        """Open file dialog and optimize chosen video via Czkawka VideoOptimizer."""
         vpath, _ = QFileDialog.getOpenFileName(
-            self, "Select Video to Optimize (Crop & Re-Encode)",
-            str(Path.home()), "Videos (*.mp4 *.mkv *.avi *.mov *.flv *.webm);;All Files (*.*)"
+            self,
+            "Select Video to Optimize (Crop & Re-Encode)",
+            str(Path.home()),
+            "Videos (*.mp4 *.mkv *.avi *.mov *.flv *.webm);;All Files (*.*)",
         )
         if not vpath:
             return

@@ -77,7 +77,9 @@ def test_par2_recovery(tmp_path):
     magic = b"PAR2\x00PKT"
     body = b"\x00" * 32
     pkt_len = 64 + len(body)
-    packet_hdr = magic + pkt_len.to_bytes(8, "little") + b"\x00" * 16 + b"\x11" * 16 + b"PAR 2.0\x00Main\x00\x00\x00\x00"
+    packet_hdr = (
+        magic + pkt_len.to_bytes(8, "little") + b"\x00" * 16 + b"\x11" * 16 + b"PAR 2.0\x00Main\x00\x00\x00\x00"
+    )
     par2_file.write_bytes(packet_hdr + body)
 
     rep = Par2RecoveryEngine.inspect_par2_file(par2_file)
@@ -141,9 +143,7 @@ def test_hosts_file_manager(tmp_path):
     """
     mock_hosts = tmp_path / "mock_hosts"
     mock_hosts.write_text(
-        "127.0.0.1 localhost\n"
-        "# 192.168.1.50 testserver\n"
-        "0.0.0.0 telemetry.microsoft.com # Anti-Telemetry\n",
+        "127.0.0.1 localhost\n" "# 192.168.1.50 testserver\n" "0.0.0.0 telemetry.microsoft.com # Anti-Telemetry\n",
         encoding="utf-8",
     )
 

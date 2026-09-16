@@ -21,6 +21,7 @@ from typing import Dict, List, Optional, Tuple
 @dataclass
 class SearchIndexStatus:
     """Record holding database_path, database_size_bytes, service_status, is_admin, is_bloated, indexed_items_estimate. Requires elevation for protected targets."""
+
     database_path: str
     database_size_bytes: int
     service_status: str  # "Running", "Stopped", "Disabled", "Unknown"
@@ -32,6 +33,7 @@ class SearchIndexStatus:
 @dataclass
 class SearchIndexOperationResult:
     """Record holding success, message, bytes_freed, new_size_bytes, errors."""
+
     success: bool
     message: str
     bytes_freed: int = 0
@@ -82,6 +84,7 @@ class SearchIndexOptimizer:
         is_admin = False
         try:
             import ctypes
+
             is_admin = bool(ctypes.windll.shell32.IsUserAnAdmin())
         except Exception:
             pass
@@ -149,7 +152,11 @@ class SearchIndexOptimizer:
             pass
 
         bytes_freed = max(0, initial_size - new_size)
-        msg = f"Database compacted successfully. Freed {bytes_freed / (1024 * 1024):.1f} MB." if compact_ok else "Compaction encountered issues."
+        msg = (
+            f"Database compacted successfully. Freed {bytes_freed / (1024 * 1024):.1f} MB."
+            if compact_ok
+            else "Compaction encountered issues."
+        )
 
         return SearchIndexOperationResult(
             success=compact_ok,
@@ -183,6 +190,8 @@ class SearchIndexOptimizer:
                 edb_path.unlink()
 
             subprocess.run(["net", "start", "WSearch"], capture_output=True, timeout=15)
-            return SearchIndexOperationResult(True, "Search index rebuild initiated. Windows is re-indexing in the background.", freed, 0)
+            return SearchIndexOperationResult(
+                True, "Search index rebuild initiated. Windows is re-indexing in the background.", freed, 0
+            )
         except Exception as exc:
             return SearchIndexOperationResult(False, f"Rebuild failed: {exc}", 0, 0, [str(exc)])

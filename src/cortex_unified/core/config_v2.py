@@ -79,6 +79,7 @@ def _read_yaml_file(path: Path) -> dict:
             return data if isinstance(data, dict) else {}
     except Exception as e:
         import warnings
+
         warnings.warn(f"Failed to load config from {path}: {e}")
         return {}
 
@@ -139,36 +140,31 @@ class ScanConfig(BaseModel):
 
     exclude_patterns: List[str] = Field(
         default_factory=lambda: list(_DEFAULTS["exclude_patterns"]),
-        description="Glob patterns for files/folders to exclude"
+        description="Glob patterns for files/folders to exclude",
     )
 
     exclude_dirs: List[str] = Field(
-        default_factory=lambda: list(_DEFAULTS["exclude_dirs"]),
-        description="Directory names to always exclude"
+        default_factory=lambda: list(_DEFAULTS["exclude_dirs"]), description="Directory names to always exclude"
     )
 
     exclude_regex_patterns: List[str] = Field(
-        default_factory=lambda: list(_DEFAULTS["exclude_regex_patterns"]),
-        description="Regex patterns for exclusion"
+        default_factory=lambda: list(_DEFAULTS["exclude_regex_patterns"]), description="Regex patterns for exclusion"
     )
 
     follow_symlinks: bool = Field(
         default_factory=lambda: bool(_DEFAULTS["follow_symlinks"]),
-        description="Whether to follow symbolic links during scanning"
+        description="Whether to follow symbolic links during scanning",
     )
 
     min_age_days: int = Field(
         default_factory=lambda: int(_DEFAULTS["min_age_days"]),
         ge=0,
         le=3650,
-        description="Minimum age in days for files to be considered for deletion"
+        description="Minimum age in days for files to be considered for deletion",
     )
-    
+
     max_depth: Optional[int] = Field(
-        default=None,
-        ge=1,
-        le=100,
-        description="Maximum directory depth to scan (None = unlimited)"
+        default=None, ge=1, le=100, description="Maximum directory depth to scan (None = unlimited)"
     )
 
 
@@ -183,30 +179,14 @@ class PerformanceConfig(BaseModel):
     # "0 = auto-detect" never gets resolved to a real CPU count.
     model_config = ConfigDict(validate_default=True)
 
-    threads: int = Field(
-        default=0,
-        ge=0,
-        le=256,
-        description="Number of threads (0 = auto-detect)"
-    )
-    
-    enable_checkpoints: bool = Field(
-        default=True,
-        description="Enable scan checkpointing for resume capability"
-    )
-    
-    enable_throttling: bool = Field(
-        default=True,
-        description="Enable resource throttling to prevent system overload"
-    )
-    
-    chunk_size: int = Field(
-        default=65536,
-        ge=4096,
-        le=1048576,
-        description="Chunk size for file operations in bytes"
-    )
-    
+    threads: int = Field(default=0, ge=0, le=256, description="Number of threads (0 = auto-detect)")
+
+    enable_checkpoints: bool = Field(default=True, description="Enable scan checkpointing for resume capability")
+
+    enable_throttling: bool = Field(default=True, description="Enable resource throttling to prevent system overload")
+
+    chunk_size: int = Field(default=65536, ge=4096, le=1048576, description="Chunk size for file operations in bytes")
+
     @field_validator("threads")
     @classmethod
     def clamp_threads(cls, v: int) -> int:
@@ -230,40 +210,20 @@ class SecurityConfig(BaseModel):
 
     Overwrites file contents for the configured passes before unlinking.
     """
-    
+
     default_action: Literal["dry_run", "trash", "delete", "shred"] = Field(
-        default="dry_run",
-        description="Default action for file deletion"
+        default="dry_run", description="Default action for file deletion"
     )
-    
-    require_confirmation: bool = Field(
-        default=True,
-        description="Require user confirmation before deletion"
-    )
-    
-    enable_quarantine: bool = Field(
-        default=True,
-        description="Move files to quarantine before permanent deletion"
-    )
-    
-    quarantine_days: int = Field(
-        default=30,
-        ge=1,
-        le=365,
-        description="Days to keep files in quarantine"
-    )
-    
-    allow_system_paths: bool = Field(
-        default=False,
-        description="Allow operations on system directories (dangerous!)"
-    )
-    
-    shred_passes: int = Field(
-        default=3,
-        ge=1,
-        le=35,
-        description="Number of overwrite passes for secure deletion"
-    )
+
+    require_confirmation: bool = Field(default=True, description="Require user confirmation before deletion")
+
+    enable_quarantine: bool = Field(default=True, description="Move files to quarantine before permanent deletion")
+
+    quarantine_days: int = Field(default=30, ge=1, le=365, description="Days to keep files in quarantine")
+
+    allow_system_paths: bool = Field(default=False, description="Allow operations on system directories (dangerous!)")
+
+    shred_passes: int = Field(default=3, ge=1, le=35, description="Number of overwrite passes for secure deletion")
 
 
 class LoggingConfig(BaseModel):
@@ -271,26 +231,16 @@ class LoggingConfig(BaseModel):
 
     Handles logging config for config_v2.py. config_v2.py.
     """
-    
+
     log_level: Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"] = Field(
-        default="INFO",
-        description="Logging level"
+        default="INFO", description="Logging level"
     )
-    
-    log_file: Optional[Path] = Field(
-        default=None,
-        description="Path to log file (None = console only)"
-    )
-    
-    json_logging: bool = Field(
-        default=False,
-        description="Use JSON format for logs (for production)"
-    )
-    
-    enable_file_logging: bool = Field(
-        default=True,
-        description="Enable logging to file"
-    )
+
+    log_file: Optional[Path] = Field(default=None, description="Path to log file (None = console only)")
+
+    json_logging: bool = Field(default=False, description="Use JSON format for logs (for production)")
+
+    enable_file_logging: bool = Field(default=True, description="Enable logging to file")
 
 
 class DatabaseConfig(BaseModel):
@@ -298,27 +248,19 @@ class DatabaseConfig(BaseModel):
 
     Handles database config for config_v2.py. config_v2.py.
     """
-    
+
     db_path: Path = Field(
-        default_factory=lambda: Path.home() / ".cortex_cleaner" / "history.db",
-        description="Path to SQLite database"
+        default_factory=lambda: Path.home() / ".cortex_cleaner" / "history.db", description="Path to SQLite database"
     )
-    
+
     backup_dir: Path = Field(
-        default_factory=lambda: Path.home() / ".cortex_cleaner" / "backups",
-        description="Directory for backup files"
+        default_factory=lambda: Path.home() / ".cortex_cleaner" / "backups", description="Directory for backup files"
     )
-    
-    enable_history: bool = Field(
-        default=True,
-        description="Enable scan history tracking"
-    )
-    
+
+    enable_history: bool = Field(default=True, description="Enable scan history tracking")
+
     max_history_entries: int = Field(
-        default=1000,
-        ge=10,
-        le=100000,
-        description="Maximum number of history entries to keep"
+        default=1000, ge=10, le=100000, description="Maximum number of history entries to keep"
     )
 
 
@@ -327,49 +269,37 @@ class UIConfig(BaseModel):
 
     Handles uiconfig for config_v2.py. config_v2.py.
     """
-    
-    theme: Literal["auto", "light", "dark"] = Field(
-        default="auto",
-        description="UI theme (auto = follow system)"
-    )
-    
-    language: str = Field(
-        default="en",
-        description="UI language code"
-    )
-    
-    show_onboarding: bool = Field(
-        default=True,
-        description="Show onboarding wizard on first launch"
-    )
-    
-    enable_notifications: bool = Field(
-        default=True,
-        description="Enable system notifications"
-    )
+
+    theme: Literal["auto", "light", "dark"] = Field(default="auto", description="UI theme (auto = follow system)")
+
+    language: str = Field(default="en", description="UI language code")
+
+    show_onboarding: bool = Field(default=True, description="Show onboarding wizard on first launch")
+
+    enable_notifications: bool = Field(default=True, description="Enable system notifications")
 
 
 class Config(BaseSettings):
     """
     Main configuration class for Cortex Cleaner.
-    
+
     Supports loading from:
     1. YAML config file
     2. Environment variables (prefix: CORTEX_)
     3. Direct parameter overrides
-    
+
     Example:
         # Load from default location
         config = Config()
-        
+
         # Load from specific file
         config = Config(config_file="~/.cortex_cleaner.yaml")
-        
+
         # Override via environment
         # CORTEX_SCAN__MIN_AGE_DAYS=7
         # CORTEX_LOGGING__LOG_LEVEL=DEBUG
     """
-    
+
     model_config = SettingsConfigDict(
         env_prefix="CORTEX_",
         env_nested_delimiter="__",
@@ -381,7 +311,7 @@ class Config(BaseSettings):
         # runtime default instead of the intended CPU-count auto-detection.
         validate_default=True,
     )
-    
+
     # Configuration sections
     scan: ScanConfig = Field(default_factory=ScanConfig)
     performance: PerformanceConfig = Field(default_factory=PerformanceConfig)
@@ -389,14 +319,10 @@ class Config(BaseSettings):
     logging: LoggingConfig = Field(default_factory=LoggingConfig)
     database: DatabaseConfig = Field(default_factory=DatabaseConfig)
     ui: UIConfig = Field(default_factory=UIConfig)
-    
+
     # Config file path (not loaded from env)
-    config_file: Optional[Path] = Field(
-        default=None,
-        description="Path to YAML config file",
-        exclude=True
-    )
-    
+    config_file: Optional[Path] = Field(default=None, description="Path to YAML config file", exclude=True)
+
     def __init__(self, **data):
         """Initialize config, resolving the YAML file path (if any).
 
@@ -439,7 +365,7 @@ class Config(BaseSettings):
         """Load configuration from YAML file. Kept as a public-ish helper for
         backward compatibility with any external callers/tests."""
         return _read_yaml_file(path)
-    
+
     def save_to_yaml(self, path: Optional[Path] = None) -> None:
         """Save current configuration to YAML file.
 
@@ -450,7 +376,7 @@ class Config(BaseSettings):
         """
         if path is None:
             path = self.config_file or (Path.home() / ".cortex_cleaner.yaml")
-        
+
         path = Path(path)
         path.parent.mkdir(parents=True, exist_ok=True)
 
@@ -464,27 +390,27 @@ class Config(BaseSettings):
 
         with open(path, "w", encoding="utf-8") as f:
             yaml.dump(data, f, default_flow_style=False, sort_keys=False)
-    
+
     def matches_exclude_patterns(self, path: str) -> bool:
         """
         Check if a path matches any exclude patterns (glob or regex).
-        
+
         This method maintains backward compatibility with the old Config class.
         """
         from fnmatch import fnmatch
         import re
-        
+
         path_obj = Path(path)
-        
+
         # Check glob patterns
         for pattern in self.scan.exclude_patterns:
             if fnmatch(path, pattern) or fnmatch(path_obj.name, pattern):
                 return True
-        
+
         # Check directory exclusions
         if path_obj.name in self.scan.exclude_dirs:
             return True
-        
+
         # Check regex patterns
         for regex_pattern in self.scan.exclude_regex_patterns:
             try:
@@ -492,9 +418,9 @@ class Config(BaseSettings):
                     return True
             except re.error:
                 continue
-        
+
         return False
-    
+
     # Backward compatibility properties
     @property
     def exclude_patterns(self) -> List[str]:
@@ -506,7 +432,7 @@ class Config(BaseSettings):
             List[str]: List of processed items or identifiers.
         """
         return self.scan.exclude_patterns
-    
+
     @property
     def exclude_dirs(self) -> List[str]:
         """Backward compatibility: get exclude directories.
@@ -517,7 +443,7 @@ class Config(BaseSettings):
             List[str]: List of processed items or identifiers.
         """
         return self.scan.exclude_dirs
-    
+
     @property
     def exclude_regex_patterns(self) -> List[str]:
         """Backward compatibility: get exclude regex patterns.
@@ -528,7 +454,7 @@ class Config(BaseSettings):
             List[str]: List of processed items or identifiers.
         """
         return self.scan.exclude_regex_patterns
-    
+
     @property
     def min_age_days(self) -> int:
         """Backward compatibility: get minimum age in days.
@@ -539,7 +465,7 @@ class Config(BaseSettings):
             int: Result of the operation.
         """
         return self.scan.min_age_days
-    
+
     @property
     def default_action(self) -> str:
         """Backward compatibility: get default action.
@@ -550,7 +476,7 @@ class Config(BaseSettings):
             str: Formatted string or path.
         """
         return self.security.default_action
-    
+
     @property
     def log_file(self) -> Optional[str]:
         """Backward compatibility: get log file path.
@@ -561,7 +487,7 @@ class Config(BaseSettings):
             Optional[str]: Formatted string or path.
         """
         return str(self.logging.log_file) if self.logging.log_file else None
-    
+
     @property
     def json_logging(self) -> bool:
         """Backward compatibility: get JSON logging flag.
@@ -572,7 +498,7 @@ class Config(BaseSettings):
             bool: True if the operation succeeded, False otherwise.
         """
         return self.logging.json_logging
-    
+
     @property
     def threads(self) -> int:
         """Threads helper.
@@ -583,7 +509,7 @@ class Config(BaseSettings):
             int: Result of the operation.
         """
         return self.performance.threads
-    
+
     @property
     def follow_symlinks(self) -> bool:
         """Backward compatibility: get follow symlinks flag.
@@ -676,13 +602,13 @@ def create_default_config(path: Optional[Path] = None) -> Config:
     """
     if path is None:
         path = Path.home() / ".cortex_cleaner.yaml"
-    
+
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
-    
+
     with open(path, "w", encoding="utf-8") as f:
         f.write(EXAMPLE_CONFIG_YAML)
-    
+
     return Config(config_file=path)
 
 
@@ -695,13 +621,13 @@ if __name__ == "__main__":
     print(f"  - Log level: {config.logging.log_level}")
     print(f"  - Default action: {config.security.default_action}")
     print(f"  - DB path: {config.database.db_path}")
-    
+
     # Test validation
     try:
         bad_config = Config(scan={"min_age_days": 5000})  # Should fail
     except Exception as e:
         print(f"✓ Validation working: {e}")
-    
+
     # Test environment variable override
     os.environ["CORTEX_LOGGING__LOG_LEVEL"] = "DEBUG"
     config2 = Config()

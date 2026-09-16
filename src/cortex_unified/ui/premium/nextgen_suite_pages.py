@@ -43,7 +43,11 @@ from cortex_unified.system_tools.ai_telemetry_cleaner import AiTelemetryCleaner,
 from cortex_unified.system_tools.ssd_trim_optimizer import SsdTrimOptimizer, TrimAuditReport, TrimExecutionResult
 from cortex_unified.system_tools.restart_manager_unlocker import RestartManagerUnlocker, FileLockReport, UnlockResult
 from cortex_unified.system_tools.vss_health_analyzer import VssHealthAnalyzer, VssHealthReport, VssResetResult
-from cortex_unified.system_tools.dev_package_cache_cleaner import DevPackageCacheCleaner, DevPackageReport, DevPackageCleanResult
+from cortex_unified.system_tools.dev_package_cache_cleaner import (
+    DevPackageCacheCleaner,
+    DevPackageReport,
+    DevPackageCleanResult,
+)
 from cortex_unified.system_tools.checksum_matrix import ChecksumMatrix, FileChecksumResult, ManifestVerificationReport
 
 
@@ -103,13 +107,13 @@ def _SecondaryButton(text: str) -> QPushButton:
 def _run_task(win, work_fn, done_fn, err_fn=None):
     """Run work_fn on the window's worker runtime, or inline as a fallback, dispatching to done_fn / err_fn.
 
-        Operates on this page widgets as implemented in the method body below.
+    Operates on this page widgets as implemented in the method body below.
 
-            Args:
-                win: Parent window or shell controller instance.
-                work_fn: The work fn parameter.
-                done_fn: The done fn parameter.
-                err_fn: Error message string or exception instance.
+        Args:
+            win: Parent window or shell controller instance.
+            work_fn: The work fn parameter.
+            done_fn: The done fn parameter.
+            err_fn: Error message string or exception instance.
 
     """
     if hasattr(win, "worker_runtime") and getattr(win, "worker_runtime", None) is not None:
@@ -127,11 +131,13 @@ def _run_task(win, work_fn, done_fn, err_fn=None):
 # 1. GPU & DIRECTX SHADER CACHE CLEANER PAGE
 # ===========================================================================
 
+
 class ShaderCachePage(_Page):
     """Shader Cache page with scan/clean buttons, a min-age spinner, and a table.
 
-        Backed by ShaderCacheCleaner, QMessageBox; builds tables, buttons, and dialogs for the actions below.
+    Backed by ShaderCacheCleaner, QMessageBox; builds tables, buttons, and dialogs for the actions below.
     """
+
     def __init__(self, win: PremiumMainWindow):
         """Build the Shader Cache page with scan/clean buttons, a min-age spinner, and a table.
 
@@ -141,10 +147,12 @@ class ShaderCachePage(_Page):
             win (PremiumMainWindow): Parent window or shell controller instance.
         """
         super().__init__(win)
-        self.v.addWidget(title_block(
-            "GPU & DirectX Shader Cache Cleaner",
-            "Audit and reclaim orphaned compiled shader binaries across DirectX D3DSCache, NVIDIA, AMD, and Intel drivers."
-        ))
+        self.v.addWidget(
+            title_block(
+                "GPU & DirectX Shader Cache Cleaner",
+                "Audit and reclaim orphaned compiled shader binaries across DirectX D3DSCache, NVIDIA, AMD, and Intel drivers.",
+            )
+        )
 
         card = Card(self.p)
         cl = QVBoxLayout(card)
@@ -188,7 +196,7 @@ class ShaderCachePage(_Page):
     def _on_scan(self):
         """Scan shader cache locations with the configured minimum age.
 
-            Updates self.summary_label, self.age_spin, self.cleaner.
+        Updates self.summary_label, self.age_spin, self.cleaner.
         """
         self.summary_label.setText("Scanning shader cache stores...")
         age = self.age_spin.value()
@@ -228,7 +236,7 @@ class ShaderCachePage(_Page):
     def _on_clean(self):
         """Purge shader binaries older than the minimum age.
 
-            Uses QMessageBox; updates self.age_spin, self.summary_label, self.cleaner.
+        Uses QMessageBox; updates self.age_spin, self.summary_label, self.cleaner.
         """
         age = self.age_spin.value()
         self.summary_label.setText("Purging stale shader binaries...")
@@ -262,11 +270,13 @@ class ShaderCachePage(_Page):
 # 2. WINDOWS 11 AI & RECALL TELEMETRY CLEANER PAGE
 # ===========================================================================
 
+
 class AiTelemetryCleanerPage(_Page):
     """AI Telemetry page with scan/clean buttons and an artifacts table.
 
-        Backed by AiTelemetryCleaner, QMessageBox; builds tables, buttons, and dialogs for the actions below.
+    Backed by AiTelemetryCleaner, QMessageBox; builds tables, buttons, and dialogs for the actions below.
     """
+
     def __init__(self, win: PremiumMainWindow):
         """Build the AI Telemetry page with scan/clean buttons and an artifacts table.
 
@@ -276,10 +286,12 @@ class AiTelemetryCleanerPage(_Page):
             win (PremiumMainWindow): Parent window or shell controller instance.
         """
         super().__init__(win)
-        self.v.addWidget(title_block(
-            "Windows 11 AI & Recall Telemetry Cleaner",
-            "Audit Windows Copilot offline caches, Recall semantic vector databases, and truncate bloated SQLite WAL logs."
-        ))
+        self.v.addWidget(
+            title_block(
+                "Windows 11 AI & Recall Telemetry Cleaner",
+                "Audit Windows Copilot offline caches, Recall semantic vector databases, and truncate bloated SQLite WAL logs.",
+            )
+        )
 
         card = Card(self.p)
         cl = QVBoxLayout(card)
@@ -316,7 +328,7 @@ class AiTelemetryCleanerPage(_Page):
     def _on_scan(self):
         """Scan local AI and Recall stores in the background.
 
-            Updates self.summary_label, self.cleaner, self.table.
+        Updates self.summary_label, self.cleaner, self.table.
         """
         self.summary_label.setText("Analyzing AI and Recall stores...")
 
@@ -354,7 +366,7 @@ class AiTelemetryCleanerPage(_Page):
     def _on_clean(self):
         """Clean transient AI caches and checkpoint WAL databases.
 
-            Uses QMessageBox; updates self.summary_label, self.cleaner, self.win.
+        Uses QMessageBox; updates self.summary_label, self.cleaner, self.win.
         """
         self.summary_label.setText("Optimizing AI stores and truncating WAL logs...")
 
@@ -388,11 +400,13 @@ class AiTelemetryCleanerPage(_Page):
 # 3. SSD NVME TRIM & WEAR-LEVELING OPTIMIZER PAGE
 # ===========================================================================
 
+
 class SsdTrimOptimizerPage(_Page):
     """SSD TRIM page with audit/trim buttons and a volumes table.
 
-        Backed by SsdTrimOptimizer, QMessageBox; builds tables, buttons, and dialogs for the actions below.
+    Backed by SsdTrimOptimizer, QMessageBox; builds tables, buttons, and dialogs for the actions below.
     """
+
     def __init__(self, win: PremiumMainWindow):
         """Build the SSD TRIM page with audit/trim buttons and a volumes table.
 
@@ -402,10 +416,12 @@ class SsdTrimOptimizerPage(_Page):
             win (PremiumMainWindow): Parent window or shell controller instance.
         """
         super().__init__(win)
-        self.v.addWidget(title_block(
-            "SSD NVMe TRIM & Wear-Leveling Optimizer",
-            "Audit physical flash media types, inspect NTFS/ReFS DisableDeleteNotify, and trigger live NVMe block deallocation."
-        ))
+        self.v.addWidget(
+            title_block(
+                "SSD NVMe TRIM & Wear-Leveling Optimizer",
+                "Audit physical flash media types, inspect NTFS/ReFS DisableDeleteNotify, and trigger live NVMe block deallocation.",
+            )
+        )
 
         card = Card(self.p)
         cl = QVBoxLayout(card)
@@ -428,7 +444,9 @@ class SsdTrimOptimizerPage(_Page):
         cl.addWidget(self.summary_label)
 
         self.table = QTableWidget(0, 6)
-        self.table.setHorizontalHeaderLabels(["Drive", "Media Type", "Filesystem", "TRIM Status", "Free Space", "Total Capacity"])
+        self.table.setHorizontalHeaderLabels(
+            ["Drive", "Media Type", "Filesystem", "TRIM Status", "Free Space", "Total Capacity"]
+        )
         self.table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
         cl.addWidget(self.table)
 
@@ -439,7 +457,7 @@ class SsdTrimOptimizerPage(_Page):
     def _on_audit(self):
         """Audit volumes and filesystem TRIM status in the background.
 
-            Updates self.summary_label, self.optimizer, self.table.
+        Updates self.summary_label, self.optimizer, self.table.
         """
         self.summary_label.setText("Querying physical disk controller and filesystem status...")
 
@@ -480,11 +498,13 @@ class SsdTrimOptimizerPage(_Page):
     def _on_trim(self):
         """ReTrim the drive selected in the table.
 
-            Uses QMessageBox; updates self.table, self.win, self.summary_label.
+        Uses QMessageBox; updates self.table, self.win, self.summary_label.
         """
         row = self.table.currentRow()
         if row < 0:
-            QMessageBox.warning(self.win, "Selection Required", "Please select a drive volume from the table to execute TRIM.")
+            QMessageBox.warning(
+                self.win, "Selection Required", "Please select a drive volume from the table to execute TRIM."
+            )
             return
 
         drive_item = self.table.item(row, 0)
@@ -521,11 +541,13 @@ class SsdTrimOptimizerPage(_Page):
 # 4. WINDOWS RESTART MANAGER FILE UNLOCKER PAGE
 # ===========================================================================
 
+
 class RestartManagerUnlockerPage(_Page):
     """Unlocker page with path input, inspect/unlock buttons, and a processes table.
 
-        Backed by RestartManagerUnlocker, QMessageBox, QFileDialog; builds tables, buttons, and dialogs for the actions below.
+    Backed by RestartManagerUnlocker, QMessageBox, QFileDialog; builds tables, buttons, and dialogs for the actions below.
     """
+
     def __init__(self, win: PremiumMainWindow):
         """Build the Unlocker page with path input, inspect/unlock buttons, and a processes table.
 
@@ -535,10 +557,12 @@ class RestartManagerUnlockerPage(_Page):
             win (PremiumMainWindow): Parent window or shell controller instance.
         """
         super().__init__(win)
-        self.v.addWidget(title_block(
-            "Windows Restart Manager File Unlocker",
-            "Identify and terminate processes locking files using native Windows Restart Manager (rstrtmgr.dll) APIs."
-        ))
+        self.v.addWidget(
+            title_block(
+                "Windows Restart Manager File Unlocker",
+                "Identify and terminate processes locking files using native Windows Restart Manager (rstrtmgr.dll) APIs.",
+            )
+        )
 
         card = Card(self.p)
         cl = QVBoxLayout(card)
@@ -578,7 +602,7 @@ class RestartManagerUnlockerPage(_Page):
     def _on_browse(self):
         """Pick a file, fill the path input, and inspect it immediately.
 
-            Uses QFileDialog; updates self.win, self.path_input, self._on_inspect.
+        Uses QFileDialog; updates self.win, self.path_input, self._on_inspect.
         """
         f, _ = QFileDialog.getOpenFileName(self.win, "Select File to Inspect Locks")
         if f:
@@ -588,7 +612,7 @@ class RestartManagerUnlockerPage(_Page):
     def _on_inspect(self):
         """Query Restart Manager for processes locking the entered path.
 
-            Updates self.path_input, self.summary_label, self.unlocker.
+        Updates self.path_input, self.summary_label, self.unlocker.
         """
         p = self.path_input.text().strip()
         if not p:
@@ -634,7 +658,7 @@ class RestartManagerUnlockerPage(_Page):
     def _on_unlock(self):
         """Force-terminate the processes locking the entered file.
 
-            Uses QMessageBox; updates self.path_input, self.unlocker, self.summary_label.
+        Uses QMessageBox; updates self.path_input, self.unlocker, self.summary_label.
         """
         p = self.path_input.text().strip()
         if not p:
@@ -666,11 +690,13 @@ class RestartManagerUnlockerPage(_Page):
 # 5. VSS WRITER & SHADOW STORAGE ANALYZER PAGE
 # ===========================================================================
 
+
 class VssHealthAnalyzerPage(_Page):
     """VSS Health page with scan/reset buttons and a writers table.
 
-        Backed by VssHealthAnalyzer, QMessageBox; builds tables, buttons, and dialogs for the actions below.
+    Backed by VssHealthAnalyzer, QMessageBox; builds tables, buttons, and dialogs for the actions below.
     """
+
     def __init__(self, win: PremiumMainWindow):
         """Build the VSS Health page with scan/reset buttons and a writers table.
 
@@ -680,10 +706,12 @@ class VssHealthAnalyzerPage(_Page):
             win (PremiumMainWindow): Parent window or shell controller instance.
         """
         super().__init__(win)
-        self.v.addWidget(title_block(
-            "VSS Writer Health & Shadow Storage Analyzer",
-            "Diagnose Volume Shadow Copy (VSS) writers for stalled or failed states and inspect shadow copy storage bounds."
-        ))
+        self.v.addWidget(
+            title_block(
+                "VSS Writer Health & Shadow Storage Analyzer",
+                "Diagnose Volume Shadow Copy (VSS) writers for stalled or failed states and inspect shadow copy storage bounds.",
+            )
+        )
 
         card = Card(self.p)
         cl = QVBoxLayout(card)
@@ -720,7 +748,7 @@ class VssHealthAnalyzerPage(_Page):
     def _on_scan(self):
         """Inspect VSS writers and shadow storage in the background.
 
-            Updates self.summary_label, self.analyzer, self.table.
+        Updates self.summary_label, self.analyzer, self.table.
         """
         self.summary_label.setText("Querying vssadmin writers and shadow storage...")
 
@@ -760,7 +788,7 @@ class VssHealthAnalyzerPage(_Page):
     def _on_reset(self):
         """Restart VSS services to clear stalled writer states.
 
-            Uses QMessageBox; updates self.summary_label, self.analyzer, self.win.
+        Uses QMessageBox; updates self.summary_label, self.analyzer, self.win.
         """
         self.summary_label.setText("Restarting VSS services and clearing stalled writer states...")
 
@@ -790,11 +818,13 @@ class VssHealthAnalyzerPage(_Page):
 # 6. DEVELOPER PACKAGE CACHES CLEANER PAGE
 # ===========================================================================
 
+
 class DevPackageCachePage(_Page):
     """Dev Package Cache page with scan/clean buttons and a stores table.
 
-        Backed by DevPackageCacheCleaner, QMessageBox; builds tables, buttons, and dialogs for the actions below.
+    Backed by DevPackageCacheCleaner, QMessageBox; builds tables, buttons, and dialogs for the actions below.
     """
+
     def __init__(self, win: PremiumMainWindow):
         """Build the Dev Package Cache page with scan/clean buttons and a stores table.
 
@@ -804,10 +834,12 @@ class DevPackageCachePage(_Page):
             win (PremiumMainWindow): Parent window or shell controller instance.
         """
         super().__init__(win)
-        self.v.addWidget(title_block(
-            "Developer Package Caches Cleaner",
-            "Audit and reclaim gigabytes of cached package downloads across Winget, Rust Cargo, C++ vcpkg, .NET NuGet, and Pip."
-        ))
+        self.v.addWidget(
+            title_block(
+                "Developer Package Caches Cleaner",
+                "Audit and reclaim gigabytes of cached package downloads across Winget, Rust Cargo, C++ vcpkg, .NET NuGet, and Pip.",
+            )
+        )
 
         card = Card(self.p)
         cl = QVBoxLayout(card)
@@ -845,7 +877,7 @@ class DevPackageCachePage(_Page):
     def _on_scan(self):
         """Scan developer package stores in the background.
 
-            Updates self.summary_label, self.cleaner, self.table.
+        Updates self.summary_label, self.cleaner, self.table.
         """
         self.summary_label.setText("Analyzing developer toolchain directories...")
 
@@ -884,7 +916,7 @@ class DevPackageCachePage(_Page):
     def _on_clean(self):
         """Purge all discovered developer package stores.
 
-            Uses QMessageBox; updates self.summary_label, self.cleaner, self.win.
+        Uses QMessageBox; updates self.summary_label, self.cleaner, self.win.
         """
         self.summary_label.setText("Purging developer package stores...")
 
@@ -915,11 +947,13 @@ class DevPackageCachePage(_Page):
 # 7. FORENSIC CHECKSUM MATRIX & MANIFEST VERIFIER PAGE
 # ===========================================================================
 
+
 class ChecksumMatrixPage(_Page):
     """Checksum Matrix page with target input, hash/manifest buttons, and a digests table.
 
-        Backed by ChecksumMatrix, QMessageBox, QFileDialog; builds tables, buttons, and dialogs for the actions below.
+    Backed by ChecksumMatrix, QMessageBox, QFileDialog; builds tables, buttons, and dialogs for the actions below.
     """
+
     def __init__(self, win: PremiumMainWindow):
         """Build the Checksum Matrix page with target input, hash/manifest buttons, and a digests table.
 
@@ -929,10 +963,12 @@ class ChecksumMatrixPage(_Page):
             win (PremiumMainWindow): Parent window or shell controller instance.
         """
         super().__init__(win)
-        self.v.addWidget(title_block(
-            "Forensic Checksum Matrix & Manifest Verifier",
-            "Batch compute CRC32, MD5, SHA-1, and SHA-256 hashes, generate standard manifests (.sha256, .sfv), and verify trees."
-        ))
+        self.v.addWidget(
+            title_block(
+                "Forensic Checksum Matrix & Manifest Verifier",
+                "Batch compute CRC32, MD5, SHA-1, and SHA-256 hashes, generate standard manifests (.sha256, .sfv), and verify trees.",
+            )
+        )
 
         card = Card(self.p)
         cl = QVBoxLayout(card)
@@ -978,7 +1014,7 @@ class ChecksumMatrixPage(_Page):
     def _on_browse_file(self):
         """Pick a file, fill the target input, and hash it immediately.
 
-            Uses QFileDialog; updates self.win, self.target_input, self._on_hash.
+        Uses QFileDialog; updates self.win, self.target_input, self._on_hash.
         """
         f, _ = QFileDialog.getOpenFileName(self.win, "Select File to Hash")
         if f:
@@ -988,7 +1024,7 @@ class ChecksumMatrixPage(_Page):
     def _on_browse_dir(self):
         """Pick a directory to use for manifest generation.
 
-            Uses QFileDialog; updates self.win, self.target_input.
+        Uses QFileDialog; updates self.win, self.target_input.
         """
         d = QFileDialog.getExistingDirectory(self.win, "Select Folder for Manifest")
         if d:
@@ -997,7 +1033,7 @@ class ChecksumMatrixPage(_Page):
     def _on_hash(self):
         """Compute CRC32, MD5, SHA-1, SHA-256, and SHA-512 for the chosen file.
 
-            Uses QMessageBox; updates self.target_input, self.win, self.summary_label.
+        Uses QMessageBox; updates self.target_input, self.win, self.summary_label.
         """
         p = Path(self.target_input.text().strip())
         if not p.is_file():
@@ -1045,11 +1081,13 @@ class ChecksumMatrixPage(_Page):
     def _on_generate_manifest(self):
         """Write a checksums.sha256 manifest for the chosen directory.
 
-            Uses QMessageBox; updates self.target_input, self.win, self.summary_label.
+        Uses QMessageBox; updates self.target_input, self.win, self.summary_label.
         """
         p = Path(self.target_input.text().strip())
         if not p.is_dir():
-            QMessageBox.warning(self.win, "Directory Required", "Please select a valid directory to generate a manifest.")
+            QMessageBox.warning(
+                self.win, "Directory Required", "Please select a valid directory to generate a manifest."
+            )
             return
 
         out_file = p / "checksums.sha256"

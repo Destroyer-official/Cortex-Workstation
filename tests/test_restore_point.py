@@ -20,6 +20,7 @@ IS_WINDOWS = platform.system() == "Windows"
 
 class TestResultSemantics:
     """Group testresultsemantics tests covering created flags; throttled is ok to proceed; disabled and not elevated block proceed; to dict."""
+
     def test_created_flags(self):
         """Verify created flags via RestorePointResult."""
         r = RestorePointResult(RestoreStatus.CREATED)
@@ -47,6 +48,7 @@ class TestResultSemantics:
 
 class TestOutputParsing:
     """Group testoutputparsing tests covering parse created; parse throttled; parse protection disabled; parse failed with message; parse empty is failed; parse garbage is failed."""
+
     def test_parse_created(self):
         """Verify parse created via RestorePointManager._parse_create_output."""
         r = RestorePointManager._parse_create_output("STATUS=CREATED\n")
@@ -86,6 +88,7 @@ class TestOutputParsing:
 
 class TestWmiTimeParsing:
     """Group testwmitimeparsing tests covering wmi datetime; empty; passthrough non wmi."""
+
     def test_wmi_datetime(self):
         """Verify wmi datetime via RestorePointManager._parse_wmi_time."""
         assert RestorePointManager._parse_wmi_time("20240115093000.000000-000") == "2024-01-15 09:30:00"
@@ -102,6 +105,7 @@ class TestWmiTimeParsing:
 
 class TestCapabilities:
     """Group testcapabilities tests covering is supported matches platform; is elevated returns bool; list points returns list; create non windows is not supported; create without admin reports not elevated."""
+
     def test_is_supported_matches_platform(self):
         """Verify is supported matches platform via RestorePointManager.is_supported."""
         assert RestorePointManager.is_supported() == IS_WINDOWS
@@ -119,6 +123,7 @@ class TestCapabilities:
         """Verify create non windows is not supported via pytest.skip, RestorePointManager, create."""
         if IS_WINDOWS:
             import pytest
+
             pytest.skip("covered by the elevation path on Windows")
         r = RestorePointManager().create("test")
         assert r.status is RestoreStatus.NOT_SUPPORTED
@@ -128,6 +133,7 @@ class TestCapabilities:
         mgr = RestorePointManager()
         if not IS_WINDOWS or mgr.is_elevated():
             import pytest
+
             pytest.skip("only meaningful on Windows when NOT elevated")
         # Non-admin: must refuse honestly, never claim success, no side effects.
         r = mgr.create("Cortex test")

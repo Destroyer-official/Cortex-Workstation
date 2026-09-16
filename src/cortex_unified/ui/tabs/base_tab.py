@@ -47,40 +47,40 @@ class BaseTab(QWidget):
 
     def __getattr__(self, name):
         """Proxy missing logic methods to the main window."""
-        if name.startswith('_') or name == '_in_getattr':
+        if name.startswith("_") or name == "_in_getattr":
             raise AttributeError(f"'{self.__class__.__name__}' object has no attribute '{name}'")
-        if getattr(self, '_in_getattr', False):
+        if getattr(self, "_in_getattr", False):
             raise AttributeError(name)
-            
+
         self._in_getattr = True
         try:
             top_window = self.window()
             if not hasattr(top_window, name):
                 raise AttributeError(f"'{self.__class__.__name__}' object has no attribute '{name}'")
-                
+
             def lazy_call(*args, **kwargs):
                 """Defer the proxied call to the main window attribute, logging any failure."""
                 try:
                     return getattr(top_window, name)(*args, **kwargs)
                 except Exception as e:
                     self.logger.error(f"Error in lazy proxy {name}: {e}")
+
             return lazy_call
         finally:
             self._in_getattr = False
 
     def set_status(self, text: str):
         """Update the main window's status bar text safely.
-        
+
         This avoids the __getattr__ proxy issue where status_bar
         resolves to a callable wrapper instead of the QLabel.
         """
         try:
             top_window = self.window()
-            if hasattr(top_window, 'status_bar') and hasattr(top_window.status_bar, 'setText'):
+            if hasattr(top_window, "status_bar") and hasattr(top_window.status_bar, "setText"):
                 top_window.status_bar.setText(text)
         except Exception:
             pass
-
 
     def _initialize_tab(self):
         """Initialize the tab with proper setup sequence."""
@@ -92,8 +92,7 @@ class BaseTab(QWidget):
             self._is_initialized = True
             self.logger.debug(f"Initialized tab: {self.__class__.__name__}")
         except Exception as e:
-            self.logger.error(
-                f"Failed to initialize tab {self.__class__.__name__}: {e}")
+            self.logger.error(f"Failed to initialize tab {self.__class__.__name__}: {e}")
             raise
 
     @abstractmethod
@@ -126,8 +125,9 @@ class BaseTab(QWidget):
         """
         return self.translator.translate(key, **kwargs)
 
-    def request_operation(self, operation_type: OperationType, paths: List[Path],
-                          description: str = "", **parameters) -> Operation:
+    def request_operation(
+        self, operation_type: OperationType, paths: List[Path], description: str = "", **parameters
+    ) -> Operation:
         """Request an operation through the safety layer.
 
         Args:
@@ -141,10 +141,7 @@ class BaseTab(QWidget):
         """
         try:
             operation = self.safety_manager.create_operation(
-                operation_type=operation_type,
-                paths=paths,
-                description=description,
-                **parameters
+                operation_type=operation_type, paths=paths, description=description, **parameters
             )
 
             # Store current operation
@@ -156,8 +153,7 @@ class BaseTab(QWidget):
 
         except Exception as e:
             self.logger.error(f"Failed to create operation: {e}")
-            self.status_changed.emit(
-                self.tr("error.operation_creation_failed", error=str(e)))
+            self.status_changed.emit(self.tr("error.operation_creation_failed", error=str(e)))
             raise
 
     def can_delete(self, path: Union[str, Path]) -> tuple[bool, str]:
@@ -183,8 +179,7 @@ class BaseTab(QWidget):
             self.logger.info(f"Handling operation request: {operation.id}")
 
             # Validate operation
-            validation_result = self.safety_manager.validate_operation(
-                operation)
+            validation_result = self.safety_manager.validate_operation(operation)
 
             if validation_result == ValidationResult.REJECTED:
                 denials = operation.parameters.get("guard_denials", [])
@@ -195,7 +190,12 @@ class BaseTab(QWidget):
                 self.validation_failed.emit(error_msg, validation_result)
                 try:
                     from PySide6.QtWidgets import QMessageBox
-                    QMessageBox.critical(self, "Safety Guard Denial", f"Operation blocked by Cortex PathGuard safety rules:\n\n{error_msg}")
+
+                    QMessageBox.critical(
+                        self,
+                        "Safety Guard Denial",
+                        f"Operation blocked by Cortex PathGuard safety rules:\n\n{error_msg}",
+                    )
                 except Exception:
                     pass
                 return
@@ -206,10 +206,7 @@ class BaseTab(QWidget):
                 msg = self.tr("warning.operation_requires_confirmation")
                 if denials:
                     msg += f"\nNote: {len(denials)} protected item(s) were excluded by PathGuard."
-                self.validation_failed.emit(
-                    msg,
-                    validation_result
-                )
+                self.validation_failed.emit(msg, validation_result)
                 return
 
             if validation_result == ValidationResult.APPROVED:
@@ -217,8 +214,7 @@ class BaseTab(QWidget):
 
         except Exception as e:
             self.logger.error(f"Error handling operation request: {e}")
-            self.status_changed.emit(
-                self.tr("error.operation_handling_failed", error=str(e)))
+            self.status_changed.emit(self.tr("error.operation_handling_failed", error=str(e)))
 
     def _execute_operation(self, operation: Operation):
         """Execute validated operation.
@@ -227,24 +223,24 @@ class BaseTab(QWidget):
             operation: Operation to execute
         """
         try:
-            self.status_changed.emit(self.tr("status.executing_operation",
-                                             operation_type=operation.type.value))
+            self.status_changed.emit(self.tr("status.executing_operation", operation_type=operation.type.value))
 
             result = self.safety_manager.execute_safe_operation(operation)
 
             self.operation_completed.emit(result)
 
             if result.success:
-                self.status_changed.emit(self.tr("status.operation_completed_successfully",
-                                                 processed_items=result.processed_items))
+                self.status_changed.emit(
+                    self.tr("status.operation_completed_successfully", processed_items=result.processed_items)
+                )
             else:
-                self.status_changed.emit(self.tr("status.operation_completed_with_errors",
-                                                 error_count=len(result.errors)))
+                self.status_changed.emit(
+                    self.tr("status.operation_completed_with_errors", error_count=len(result.errors))
+                )
 
         except Exception as e:
             self.logger.error(f"Error executing operation: {e}")
-            self.status_changed.emit(
-                self.tr("error.operation_execution_failed", error=str(e)))
+            self.status_changed.emit(self.tr("error.operation_execution_failed", error=str(e)))
 
     def confirm_and_execute_operation(self, operation: Operation):
         """Confirm and execute an operation that requires user confirmation.
@@ -257,21 +253,18 @@ class BaseTab(QWidget):
             operation.user_confirmed = True
 
             # Re-validate and execute
-            validation_result = self.safety_manager.validate_operation(
-                operation)
+            validation_result = self.safety_manager.validate_operation(operation)
 
             if validation_result == ValidationResult.APPROVED:
                 self._execute_operation(operation)
             else:
                 self.validation_failed.emit(
-                    self.tr("error.operation_still_rejected_after_confirmation"),
-                    validation_result
+                    self.tr("error.operation_still_rejected_after_confirmation"), validation_result
                 )
 
         except Exception as e:
             self.logger.error(f"Error confirming operation: {e}")
-            self.status_changed.emit(
-                self.tr("error.operation_confirmation_failed", error=str(e)))
+            self.status_changed.emit(self.tr("error.operation_confirmation_failed", error=str(e)))
 
     def get_current_operation(self) -> Optional[Operation]:
         """Get the current operation being processed.
@@ -288,8 +281,7 @@ class BaseTab(QWidget):
 
             # Cancel current operation if any
             if self._current_operation:
-                self.safety_manager.cancel_operation(
-                    self._current_operation.id)
+                self.safety_manager.cancel_operation(self._current_operation.id)
                 self._current_operation = None
 
             # Stop all worker threads (never use QThread.terminate — it
@@ -308,13 +300,13 @@ class BaseTab(QWidget):
 
             if stuck:
                 self.logger.warning(
-                    "%d worker thread(s) did not stop within grace period; "
-                    "detaching to avoid process corruption", len(stuck))
+                    "%d worker thread(s) did not stop within grace period; " "detaching to avoid process corruption",
+                    len(stuck),
+                )
 
             self.worker_threads.clear()
 
-            self.logger.debug(
-                f"Tab cleanup completed: {self.__class__.__name__}")
+            self.logger.debug(f"Tab cleanup completed: {self.__class__.__name__}")
 
         except Exception as e:
             self.logger.error(f"Error during tab cleanup: {e}")
@@ -326,8 +318,7 @@ class BaseTab(QWidget):
             thread: QThread instance to manage
         """
         self.worker_threads.append(thread)
-        self.logger.debug(
-            f"Added worker thread to tab: {self.__class__.__name__}")
+        self.logger.debug(f"Added worker thread to tab: {self.__class__.__name__}")
 
     def remove_worker_thread(self, thread: QThread):
         """Remove a worker thread from management.
@@ -337,8 +328,7 @@ class BaseTab(QWidget):
         """
         if thread in self.worker_threads:
             self.worker_threads.remove(thread)
-            self.logger.debug(
-                f"Removed worker thread from tab: {self.__class__.__name__}")
+            self.logger.debug(f"Removed worker thread from tab: {self.__class__.__name__}")
 
     def format_bytes(self, bytes_value: int) -> str:
         """Format bytes to human readable format.
@@ -352,7 +342,7 @@ class BaseTab(QWidget):
         if bytes_value == 0:
             return "0 B"
 
-        for unit in ['B', 'KB', 'MB', 'GB', 'TB']:
+        for unit in ["B", "KB", "MB", "GB", "TB"]:
             if bytes_value < 1024.0:
                 return f"{bytes_value:.1f} {unit}"
             bytes_value /= 1024.0
@@ -369,7 +359,7 @@ class BaseTab(QWidget):
             "is_initialized": self._is_initialized,
             "worker_threads": len(self.worker_threads),
             "current_operation": self._current_operation.id if self._current_operation else None,
-            "safety_manager_available": self.safety_manager is not None
+            "safety_manager_available": self.safety_manager is not None,
         }
 
     def validate_paths(self, paths: List[Path]) -> List[Path]:

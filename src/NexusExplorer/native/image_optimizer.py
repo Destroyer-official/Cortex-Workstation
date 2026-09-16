@@ -23,6 +23,7 @@ class ImageOptimizeResult:
 
     Records source/output paths, original/compressed sizes, bytes saved, ratio, success, and error.
     """
+
     source_path: str
     output_path: str
     original_size_bytes: int
@@ -39,6 +40,7 @@ class BatchOptimizeSummary:
 
     Tallies total/successful counts, byte totals, freed bytes, and per-image results.
     """
+
     total_images: int
     successful_count: int
     total_original_bytes: int
@@ -89,7 +91,9 @@ class ImageOptimizer:
         try:
             img = QImage(str(src_p))
             if img.isNull():
-                return ImageOptimizeResult(str(src_p), str(out_p), orig_size, 0, 0, 0.0, False, "Failed to decode image data")
+                return ImageOptimizeResult(
+                    str(src_p), str(out_p), orig_size, 0, 0, 0.0, False, "Failed to decode image data"
+                )
 
             writer = QImageWriter(str(out_p), fmt.encode("ascii"))
             writer.setQuality(quality)
@@ -99,7 +103,9 @@ class ImageOptimizer:
 
             ok = writer.write(img)
             if not ok:
-                return ImageOptimizeResult(str(src_p), str(out_p), orig_size, 0, 0, 0.0, False, writer.errorString() or "Write failed")
+                return ImageOptimizeResult(
+                    str(src_p), str(out_p), orig_size, 0, 0, 0.0, False, writer.errorString() or "Write failed"
+                )
 
             new_size = out_p.stat().st_size
             freed = max(0, orig_size - new_size)

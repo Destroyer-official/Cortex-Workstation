@@ -34,8 +34,10 @@ IS_WINDOWS = sys.platform == "win32"
 
 class _WslListWorker(QObject):
     """Background worker (_WslListWorker) performing WslListWorker. Signals finished, failed report status. Its run() step calls emit, list_distros, WslCleaner, str."""
+
     finished = Signal(list)
     failed = Signal(str)
+
     def run(self):
         """run.
 
@@ -43,6 +45,7 @@ class _WslListWorker(QObject):
         """
         try:
             from cortex_unified.system_tools.wsl_cleaner import WslCleaner
+
             self.finished.emit([d for d in WslCleaner().list_distros()])
         except Exception as exc:  # noqa: BLE001
             self.failed.emit(str(exc))
@@ -50,8 +53,10 @@ class _WslListWorker(QObject):
 
 class _WslShutdownWorker(QObject):
     """Background worker (_WslShutdownWorker) performing WslShutdownWorker. Signals finished, failed report status. Its run() step calls shutdown, WslCleaner, emit, str."""
+
     finished = Signal(bool, str)
     failed = Signal(str)
+
     def run(self):
         """run.
 
@@ -59,6 +64,7 @@ class _WslShutdownWorker(QObject):
         """
         try:
             from cortex_unified.system_tools.wsl_cleaner import WslCleaner
+
             ok, msg = WslCleaner().shutdown()
             self.finished.emit(ok, msg)
         except Exception as exc:  # noqa: BLE001
@@ -77,12 +83,14 @@ class WslPage(_Page):
             win: Parent window or shell controller instance.
         """
         super().__init__(win)
-        self.v.addWidget(title_block(
-            "WSL Cleaner",
-            "WSL2 distros keep an ext4.vhdx that never shrinks on its own "
-            "(1.37GB hit). Stop WSL, then compact the disk — Windows will "
-            "return the freed blocks to the host."
-        ))
+        self.v.addWidget(
+            title_block(
+                "WSL Cleaner",
+                "WSL2 distros keep an ext4.vhdx that never shrinks on its own "
+                "(1.37GB hit). Stop WSL, then compact the disk — Windows will "
+                "return the freed blocks to the host.",
+            )
+        )
         if not IS_WINDOWS:
             self.v.addWidget(status_note(self.p, "info", "WSL is only available on Windows."))
             self.v.addStretch(1)
@@ -141,6 +149,7 @@ class WslPage(_Page):
         self.refresh_btn.setEnabled(False)
         self.state.show_loading("Listing WSL distros…")
         from cortex_unified.system_tools.wsl_cleaner import WslCleaner
+
         if not WslCleaner().is_wsl_available():
             self.refresh_btn.setEnabled(True)
             self.state.show_empty("WSL not installed on this PC (no distros found).")
@@ -162,8 +171,10 @@ class WslPage(_Page):
             self.state.clear()
             total = sum(getattr(d, "vhdx_on_disk_bytes", 0) for d in distros)
             total_logical = sum(getattr(d, "vhdx_bytes", 0) for d in distros)
-            self.info.setText(f"{len(distros)} distro(s), {fmt_bytes(total)} on disk ({fmt_bytes(total_logical)} logical). "
-                              "Stop WSL before compacting - compacting an attached disk risks corruption.")
+            self.info.setText(
+                f"{len(distros)} distro(s), {fmt_bytes(total)} on disk ({fmt_bytes(total_logical)} logical). "
+                "Stop WSL before compacting - compacting an attached disk risks corruption."
+            )
         self.tbl.setRowCount(len(distros))
         for r, d in enumerate(distros):
             # d may be WslDistro or already dict from test
@@ -190,7 +201,8 @@ class WslPage(_Page):
     def _shutdown(self):
         """Validate the current selection and ask the user to confirm via a message box showing 'Stop WSL?'."""
         confirm = QMessageBox.question(
-            self, "Stop WSL?",
+            self,
+            "Stop WSL?",
             "This stops ALL WSL distros and Docker Desktop's WSL backend.\n\n"
             "Unsaved work inside a distro will be lost (like a hard stop). Continue?",
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
@@ -237,7 +249,8 @@ class WslPage(_Page):
             return
         names = ", ".join(p.name for p in paths)
         confirm = QMessageBox.question(
-            self, "Compact vhdx?",
+            self,
+            "Compact vhdx?",
             f"Compact {len(paths)} disk(s): {names}\n\n"
             "This compacts the virtual disk read-only (diskpart). "
             "It can take several minutes for large disks. Proceed?",
@@ -254,8 +267,10 @@ class WslPage(_Page):
 
         class _Compact(QObject):
             """Background worker (_Compact) performing Compact. Signals finished, failed report status. Configured with paths. Its run() step calls results.append, compact_vhdx, WslCleaner, emit."""
+
             finished = Signal(list)
             failed = Signal(str)
+
             def __init__(self, paths):
                 """__init__.
 
@@ -266,6 +281,7 @@ class WslPage(_Page):
                 """
                 super().__init__()
                 self._paths = paths
+
             def run(self):
                 """run.
 
@@ -273,12 +289,14 @@ class WslPage(_Page):
                 """
                 try:
                     from cortex_unified.system_tools.wsl_cleaner import WslCleaner
+
                     results = []
                     for vp in self._paths:
                         results.append(WslCleaner().compact_vhdx(vp))
                     self.finished.emit(results)
                 except Exception as exc:  # noqa: BLE001
                     self.failed.emit(str(exc))
+
         w = _Compact(paths)
         self.win.run_worker(w, self._on_compact, self._fail)
 
@@ -295,8 +313,9 @@ class WslPage(_Page):
         freed = sum(r.get("freed_bytes", 0) for r in results)
         ok = sum(1 for r in results if r.get("success"))
         msgs = "\n".join(f"{Path(r.get('detail','')).name or 'disk'}: {r.get('message','')}" for r in results)
-        QMessageBox.information(self, "Compaction done",
-                                f"Compacted {ok}/{len(results)} disk(s), freed {fmt_bytes(freed)}.\n\n{msgs}")
+        QMessageBox.information(
+            self, "Compaction done", f"Compacted {ok}/{len(results)} disk(s), freed {fmt_bytes(freed)}.\n\n{msgs}"
+        )
         self.win.statusBar().showMessage(f"Compacted {ok}/{len(results)}, freed {fmt_bytes(freed)}", 6000)
         self._load()
 

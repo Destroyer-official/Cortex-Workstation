@@ -20,10 +20,8 @@ def _parser() -> argparse.ArgumentParser:
     Returns:
     argparse.ArgumentParser: Result of the operation.
     """
-    parser = argparse.ArgumentParser(
-        description="Run a bounded Cortex private-LAN inventory scan")
-    parser.add_argument(
-        "--profile", choices=("targeted", "advanced"), default="targeted")
+    parser = argparse.ArgumentParser(description="Run a bounded Cortex private-LAN inventory scan")
+    parser.add_argument("--profile", choices=("targeted", "advanced"), default="targeted")
     parser.add_argument("--scope", action="append", default=[])
     parser.add_argument("--ports", default="")
     parser.add_argument("--output", default="")
@@ -41,9 +39,7 @@ def _write_atomic(path: str, payload: dict) -> None:
     target.parent.mkdir(parents=True, exist_ok=True)
     temporary = target.with_name(target.name + f".{os.getpid()}.tmp")
     try:
-        temporary.write_text(
-            json.dumps(payload, indent=2, ensure_ascii=False),
-            encoding="utf-8")
+        temporary.write_text(json.dumps(payload, indent=2, ensure_ascii=False), encoding="utf-8")
         temporary.replace(target)
     finally:
         try:

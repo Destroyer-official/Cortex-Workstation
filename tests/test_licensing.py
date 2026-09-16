@@ -52,6 +52,7 @@ def manager(tmp_path: Path) -> LicenseManager:
 
 class TestFingerprint:
     """Group testfingerprint tests covering stable across calls; memoised matches direct; shape; identifiers never empty."""
+
     def test_stable_across_calls(self):
         """Verify stable across calls via compute_fingerprint."""
         assert compute_fingerprint() == compute_fingerprint()
@@ -78,6 +79,7 @@ class TestFingerprint:
 
 class TestTiers:
     """Group testtiers tests covering rank ordering; includes is cumulative; parse defaults to free on garbage; feature matrix cumulative."""
+
     def test_rank_ordering(self):
         """Verify rank ordering via sorted."""
         order = [Tier.FREE, Tier.PREMIUM, Tier.PRO, Tier.SUPER, Tier.ENTERPRISE]
@@ -113,6 +115,7 @@ class TestTiers:
 
 class TestLicenseLifecycle:
     """Group testlicenselifecycle tests covering fresh machine is free; activate and validate; key masked in status; signature tamper rejected; payload tamper rejected; corrupt file degrades to free."""
+
     def test_fresh_machine_is_free(self, manager: LicenseManager):
         """Verify fresh machine is free via manager.validate.
 
@@ -193,10 +196,14 @@ class TestLicenseLifecycle:
         manager.activate("K", Tier.PRO)
         doc = json.loads(manager._path.read_text(encoding="utf-8"))
         doc["payload"]["fingerprint"] = "f" * 64  # another machine's digest
-        doc["signature"] = __import__(
-            "cortex_unified.licensing.license_manager",
-            fromlist=["LicensePayload"],
-        ).LicensePayload.from_dict(doc["payload"]).sign()
+        doc["signature"] = (
+            __import__(
+                "cortex_unified.licensing.license_manager",
+                fromlist=["LicensePayload"],
+            )
+            .LicensePayload.from_dict(doc["payload"])
+            .sign()
+        )
         manager._path.write_text(json.dumps(doc), encoding="utf-8")
         state = manager.validate()
         assert state.tier is Tier.FREE
@@ -215,7 +222,10 @@ class TestLicenseLifecycle:
         from cortex_unified.licensing.license_manager import LicensePayload
 
         payload = LicensePayload(
-            key=state.key, tier=Tier.PRO, name="", email="",
+            key=state.key,
+            tier=Tier.PRO,
+            name="",
+            email="",
             issued=(date.today() - timedelta(days=GRACE_DAYS + 5)).isoformat(),
             expiry=(date.today() - timedelta(days=GRACE_DAYS + 2)).isoformat(),
             fingerprint=get_fingerprint(),
@@ -242,7 +252,8 @@ class TestLicenseLifecycle:
         from cortex_unified.licensing.license_manager import LicensePayload
 
         payload = LicensePayload(
-            key="K", tier=Tier.PRO,
+            key="K",
+            tier=Tier.PRO,
             issued=date.today().isoformat(),
             expiry=(date.today() - timedelta(days=1)).isoformat(),  # yesterday
             fingerprint=get_fingerprint(),
@@ -320,6 +331,7 @@ class TestLicenseLifecycle:
 
 class TestGating:
     """Group testgating tests covering current tier and features; allowed and require; entitlement error details; gate decorator blocks and passes."""
+
     @pytest.fixture(autouse=True)
     def _licensed_pro(self, monkeypatch, tmp_path):
         """Point the singleton at a temp PRO license for every test here.
@@ -346,18 +358,14 @@ class TestGating:
     def test_allowed_and_require(self):
         """Verify allowed and require via pytest.raises, allowed, require."""
         assert allowed(Feature.SENTINEL_PRO)
-        require = __import__(
-            "cortex_unified.licensing.gating", fromlist=["require"]
-        ).require
+        require = __import__("cortex_unified.licensing.gating", fromlist=["require"]).require
         require(Feature.SENTINEL_PRO)  # no raise
         with pytest.raises(EntitlementError):
             require(Feature.POLICY_FILES)
 
     def test_entitlement_error_details(self):
         """Verify entitlement error details via pytest.raises, __import__, require."""
-        require = __import__(
-            "cortex_unified.licensing.gating", fromlist=["require"]
-        ).require
+        require = __import__("cortex_unified.licensing.gating", fromlist=["require"]).require
         with pytest.raises(EntitlementError) as excinfo:
             require(Feature.AUDIT_EXPORT)
         assert excinfo.value.required is Tier.ENTERPRISE
@@ -365,6 +373,7 @@ class TestGating:
 
     def test_gate_decorator_blocks_and_passes(self):
         """Verify gate decorator blocks and passes via pytest.raises, gate, pro_tool."""
+
         @gate(Feature.SENTINEL_PRO)
         def pro_tool():
             """Pro tool using gate."""

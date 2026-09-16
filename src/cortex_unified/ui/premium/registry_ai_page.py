@@ -38,6 +38,7 @@ from cortex_unified.analyzers.registry_cleaner_ai import AIRegistryCleaner, Scan
 
 class _RegistryWorker(QObject):
     """Background worker (_RegistryWorker) performing RegistryWorker. Signals finished, progress, failed report status. Configured with root, categories, risk_threshold, create_restore_point. Its run() step calls AIRegistryCleaner, cleaner.scan, emit, str."""
+
     finished = Signal(object)
     progress = Signal(str)
     failed = Signal(str)
@@ -86,11 +87,7 @@ class _RegistryWorker(QObject):
             )
             result: ScanResult = cleaner.scan(categories=self._categories)
             # Filter by risk threshold for display
-            filtered = [
-                i
-                for i in result.issues
-                if i.risk_score < self._risk_threshold or i.recommendation != "keep"
-            ]
+            filtered = [i for i in result.issues if i.risk_score < self._risk_threshold or i.recommendation != "keep"]
             self.finished.emit(
                 {
                     "issues": filtered,
@@ -143,9 +140,7 @@ class RegistryAICleanerPage(_Page):
         self.risk_spin.setRange(0.0, 1.0)
         self.risk_spin.setSingleStep(0.05)
         self.risk_spin.setValue(0.3)
-        self.risk_spin.setToolTip(
-            "Risk threshold: <0.3 = remove, 0.3-0.6 = review, >=0.6 = keep"
-        )
+        self.risk_spin.setToolTip("Risk threshold: <0.3 = remove, 0.3-0.6 = review, >=0.6 = keep")
         self.cat_combo = QComboBox()
         self.cat_combo.addItems(
             [
@@ -180,9 +175,7 @@ class RegistryAICleanerPage(_Page):
         self.v.addWidget(self.status)
 
         self.tbl = QTableWidget(0, 5)
-        self.tbl.setHorizontalHeaderLabels(
-            ["Key Path", "Value Name", "Category", "Risk Score", "Recommendation"]
-        )
+        self.tbl.setHorizontalHeaderLabels(["Key Path", "Value Name", "Category", "Risk Score", "Recommendation"])
         self.tbl.horizontalHeader().setStretchLastSection(True)
         self.tbl.verticalHeader().setVisible(False)
         self.tbl.setAlternatingRowColors(True)
@@ -269,8 +262,7 @@ class RegistryAICleanerPage(_Page):
         all_issues = data.get("all_issues", [])
         if not issues:
             self.state.show_empty(
-                "No registry issues above the risk threshold. "
-                "Lower the threshold or scan more categories."
+                "No registry issues above the risk threshold. " "Lower the threshold or scan more categories."
             )
             self.status.setText("No issues found above threshold.")
             self.win.statusBar().showMessage("No registry issues found", 5000)
@@ -299,9 +291,7 @@ class RegistryAICleanerPage(_Page):
             f"{len(issues)} issues to review ({len(all_issues)} total scanned), "
             f"{fmt_bytes(total)} potential reclaim"
         )
-        self.win.statusBar().showMessage(
-            f"{len(issues)} registry issues ({len(all_issues)} scanned)", 5000
-        )
+        self.win.statusBar().showMessage(f"{len(issues)} registry issues ({len(all_issues)} scanned)", 5000)
 
     def _fail(self, msg):
         """Handle an operation failure and notify the user.

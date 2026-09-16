@@ -47,7 +47,11 @@ from cortex_unified.system_tools.memory_compression_tuner import MemoryCompressi
 from cortex_unified.system_tools.sandbox_cleaner import SandboxCleaner, SandboxCleanReport
 from cortex_unified.system_tools.smb_share_auditor import SmbShareAuditor, SmbSecurityReport
 from cortex_unified.system_tools.process_token_auditor import ProcessTokenAuditor, ProcessTokenAuditReport
-from cortex_unified.system_tools.storage_growth_tracker import StorageGrowthTracker, SnapshotSummary, StorageGrowthDiffReport
+from cortex_unified.system_tools.storage_growth_tracker import (
+    StorageGrowthTracker,
+    SnapshotSummary,
+    StorageGrowthDiffReport,
+)
 
 
 def _fmt_bytes(b: int) -> str:
@@ -108,13 +112,13 @@ def _SecondaryButton(text: str, parent=None) -> QPushButton:
 def _run_task(win: PremiumMainWindow, work_fn, done_fn, err_fn=None):
     """Run work_fn on the window's worker runtime, or inline as a fallback, dispatching to done_fn / err_fn.
 
-        Operates on this page widgets as implemented in the method body below.
+    Operates on this page widgets as implemented in the method body below.
 
-            Args:
-                win (PremiumMainWindow): Parent window or shell controller instance.
-                work_fn: The work fn parameter.
-                done_fn: The done fn parameter.
-                err_fn: Error message string or exception instance.
+        Args:
+            win (PremiumMainWindow): Parent window or shell controller instance.
+            work_fn: The work fn parameter.
+            done_fn: The done fn parameter.
+            err_fn: Error message string or exception instance.
 
     """
     if hasattr(win, "worker_runtime") and getattr(win, "worker_runtime", None) is not None:
@@ -132,11 +136,13 @@ def _run_task(win: PremiumMainWindow, work_fn, done_fn, err_fn=None):
 # 1. VOLUME SHADOW COPY (VSS) MANAGER PAGE
 # ===========================================================================
 
+
 class VssManagerPage(_Page):
     """VSS page with audit/create/purge buttons, summary label, and shadows table.
 
-        Backed by VssManager; builds tables, buttons, and dialogs for the actions below.
+    Backed by VssManager; builds tables, buttons, and dialogs for the actions below.
     """
+
     def __init__(self, win: PremiumMainWindow):
         """Build the VSS page with audit/create/purge buttons, summary label, and shadows table.
 
@@ -146,7 +152,12 @@ class VssManagerPage(_Page):
             win (PremiumMainWindow): Parent window or shell controller instance.
         """
         super().__init__(win)
-        self.v.addWidget(title_block("Volume Shadow Copy (VSS) Manager", "Audit VSS snapshots, monitor shadow storage usage, create recovery snapshots, and reclaim space."))
+        self.v.addWidget(
+            title_block(
+                "Volume Shadow Copy (VSS) Manager",
+                "Audit VSS snapshots, monitor shadow storage usage, create recovery snapshots, and reclaim space.",
+            )
+        )
 
         card = Card(self.p)
         cl = QVBoxLayout(card)
@@ -186,7 +197,7 @@ class VssManagerPage(_Page):
     def _on_audit(self):
         """Start an asynchronous VSS audit and show a busy message in the summary label.
 
-            Updates self.summary_label, self.win, self._mgr.
+        Updates self.summary_label, self.win, self._mgr.
         """
         self.summary_label.setText("Querying vssadmin and WMI shadow copies…")
         _run_task(self.win, self._mgr.audit, self._on_audit_done, self._on_err)
@@ -216,7 +227,7 @@ class VssManagerPage(_Page):
     def _on_create(self):
         """Kick off creation of a recovery shadow copy on C: in the background.
 
-            Updates self.summary_label, self.win, self._mgr.
+        Updates self.summary_label, self.win, self._mgr.
         """
         self.summary_label.setText("Creating recovery snapshot on C:…")
         _run_task(self.win, lambda: self._mgr.create_shadow_copy("C:"), self._on_action_done, self._on_err)
@@ -224,7 +235,7 @@ class VssManagerPage(_Page):
     def _on_purge(self):
         """Kick off deletion of the oldest shadow copy on C: in the background.
 
-            Updates self.summary_label, self.win, self._mgr.
+        Updates self.summary_label, self.win, self._mgr.
         """
         self.summary_label.setText("Purging oldest shadow on C:…")
         _run_task(self.win, lambda: self._mgr.delete_oldest_shadow("C:"), self._on_action_done, self._on_err)
@@ -256,11 +267,13 @@ class VssManagerPage(_Page):
 # 2. REFS DEV DRIVE & BLOCK-CLONING OPTIMIZER PAGE
 # ===========================================================================
 
+
 class DevDriveOptimizerPage(_Page):
     """Dev Drive page with an audit button, summary label, and drives table.
 
-        Backed by DevDriveOptimizer; builds tables, buttons, and dialogs for the actions below.
+    Backed by DevDriveOptimizer; builds tables, buttons, and dialogs for the actions below.
     """
+
     def __init__(self, win: PremiumMainWindow):
         """Build the Dev Drive page with an audit button, summary label, and drives table.
 
@@ -270,7 +283,12 @@ class DevDriveOptimizerPage(_Page):
             win (PremiumMainWindow): Parent window or shell controller instance.
         """
         super().__init__(win)
-        self.v.addWidget(title_block("ReFS Dev Drive & Block-Cloning Optimizer", "Detect ReFS Dev Drives, test Copy-on-Write block cloning, and inspect Defender Performance Mode."))
+        self.v.addWidget(
+            title_block(
+                "ReFS Dev Drive & Block-Cloning Optimizer",
+                "Detect ReFS Dev Drives, test Copy-on-Write block cloning, and inspect Defender Performance Mode.",
+            )
+        )
 
         card = Card(self.p)
         cl = QVBoxLayout(card)
@@ -289,7 +307,9 @@ class DevDriveOptimizerPage(_Page):
         cl.addWidget(self.summary_label)
 
         self.table = QTableWidget(0, 6)
-        self.table.setHorizontalHeaderLabels(["Drive", "File System", "Dev Drive", "Block Cloning (CoW)", "Defender Async Mode", "Free Space"])
+        self.table.setHorizontalHeaderLabels(
+            ["Drive", "File System", "Dev Drive", "Block Cloning (CoW)", "Defender Async Mode", "Free Space"]
+        )
         self.table.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.ResizeToContents)
         self.table.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeMode.ResizeToContents)
         self.table.horizontalHeader().setSectionResizeMode(2, QHeaderView.ResizeMode.ResizeToContents)
@@ -304,7 +324,7 @@ class DevDriveOptimizerPage(_Page):
     def _on_audit(self):
         """Start an asynchronous storage-drive audit and update the summary label.
 
-            Updates self.summary_label, self.win, self._opt.
+        Updates self.summary_label, self.win, self._opt.
         """
         self.summary_label.setText("Querying volume geometry and fsutil devdrv status…")
         _run_task(self.win, self._opt.audit, self._on_audit_done, self._on_err)
@@ -330,9 +350,13 @@ class DevDriveOptimizerPage(_Page):
             self.table.setItem(r, 0, QTableWidgetItem(d.drive_letter))
             self.table.setItem(r, 1, QTableWidgetItem(d.filesystem))
             self.table.setItem(r, 2, QTableWidgetItem("Yes" if d.is_dev_drive else "No"))
-            self.table.setItem(r, 3, QTableWidgetItem("Supported (Instant CoW)" if d.supports_block_cloning else "Standard Copy"))
+            self.table.setItem(
+                r, 3, QTableWidgetItem("Supported (Instant CoW)" if d.supports_block_cloning else "Standard Copy")
+            )
             self.table.setItem(r, 4, QTableWidgetItem("Active" if d.defender_perf_mode else "Standard Filter"))
-            self.table.setItem(r, 5, QTableWidgetItem(f"{_fmt_bytes(d.free_space_bytes)} / {_fmt_bytes(d.total_space_bytes)}"))
+            self.table.setItem(
+                r, 5, QTableWidgetItem(f"{_fmt_bytes(d.free_space_bytes)} / {_fmt_bytes(d.total_space_bytes)}")
+            )
 
     def _on_err(self, exc):
         """Show an error message from a failed worker in the summary label.
@@ -349,11 +373,13 @@ class DevDriveOptimizerPage(_Page):
 # 3. BITLOCKER & DRIVE ENCRYPTION AUDITOR PAGE
 # ===========================================================================
 
+
 class BitLockerAuditorPage(_Page):
     """BitLocker page with an audit button, summary label, and volumes table.
 
-        Backed by BitLockerAuditor; builds tables, buttons, and dialogs for the actions below.
+    Backed by BitLockerAuditor; builds tables, buttons, and dialogs for the actions below.
     """
+
     def __init__(self, win: PremiumMainWindow):
         """Build the BitLocker page with an audit button, summary label, and volumes table.
 
@@ -363,7 +389,12 @@ class BitLockerAuditorPage(_Page):
             win (PremiumMainWindow): Parent window or shell controller instance.
         """
         super().__init__(win)
-        self.v.addWidget(title_block("BitLocker & Drive Encryption Auditor", "Audit volume encryption protection, cipher strength (XTS-AES), and active TPM key protectors."))
+        self.v.addWidget(
+            title_block(
+                "BitLocker & Drive Encryption Auditor",
+                "Audit volume encryption protection, cipher strength (XTS-AES), and active TPM key protectors.",
+            )
+        )
 
         card = Card(self.p)
         cl = QVBoxLayout(card)
@@ -382,7 +413,9 @@ class BitLockerAuditorPage(_Page):
         cl.addWidget(self.summary_label)
 
         self.table = QTableWidget(0, 6)
-        self.table.setHorizontalHeaderLabels(["Volume", "Protection", "Encrypted %", "Cipher Method", "Lock State", "Key Protectors"])
+        self.table.setHorizontalHeaderLabels(
+            ["Volume", "Protection", "Encrypted %", "Cipher Method", "Lock State", "Key Protectors"]
+        )
         self.table.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.ResizeToContents)
         self.table.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeMode.ResizeToContents)
         self.table.horizontalHeader().setSectionResizeMode(2, QHeaderView.ResizeMode.ResizeToContents)
@@ -397,7 +430,7 @@ class BitLockerAuditorPage(_Page):
     def _on_audit(self):
         """Start an asynchronous BitLocker audit and update the summary label.
 
-            Updates self.summary_label, self.win, self._aud.
+        Updates self.summary_label, self.win, self._aud.
         """
         self.summary_label.setText("Querying manage-bde and Win32_EncryptableVolume…")
         _run_task(self.win, self._aud.audit, self._on_audit_done, self._on_err)
@@ -441,11 +474,13 @@ class BitLockerAuditorPage(_Page):
 # 4. NTFS JUNCTION & REPARSE POINT AUDITOR PAGE
 # ===========================================================================
 
+
 class JunctionAuditorPage(_Page):
     """Junction Auditor page with scan/custom/unlink buttons and a links table.
 
-        Backed by JunctionAuditor, QMessageBox, QFileDialog; builds tables, buttons, and dialogs for the actions below.
+    Backed by JunctionAuditor, QMessageBox, QFileDialog; builds tables, buttons, and dialogs for the actions below.
     """
+
     def __init__(self, win: PremiumMainWindow):
         """Build the Junction Auditor page with scan/custom/unlink buttons and a links table.
 
@@ -455,7 +490,12 @@ class JunctionAuditorPage(_Page):
             win (PremiumMainWindow): Parent window or shell controller instance.
         """
         super().__init__(win)
-        self.v.addWidget(title_block("NTFS Junction & Reparse Point Auditor", "Identify directory junctions, symbolic links, broken dead links, and circular recursion traps."))
+        self.v.addWidget(
+            title_block(
+                "NTFS Junction & Reparse Point Auditor",
+                "Identify directory junctions, symbolic links, broken dead links, and circular recursion traps.",
+            )
+        )
 
         card = Card(self.p)
         cl = QVBoxLayout(card)
@@ -496,7 +536,7 @@ class JunctionAuditorPage(_Page):
     def _on_scan(self):
         """Scan reparse points across the user profile in the background.
 
-            Updates self.summary_label, self.win, self._aud.
+        Updates self.summary_label, self.win, self._aud.
         """
         self.summary_label.setText("Scanning reparse points across user profile…")
         _run_task(self.win, lambda: self._aud.audit(), self._on_scan_done, self._on_err)
@@ -504,7 +544,7 @@ class JunctionAuditorPage(_Page):
     def _on_custom(self):
         """Prompt for a folder and scan its reparse points in the background.
 
-            Uses QFileDialog; updates self.p, self.summary_label, self.win.
+        Uses QFileDialog; updates self.p, self.summary_label, self.win.
         """
         d = QFileDialog.getExistingDirectory(self.p, "Select Folder to Audit Junctions")
         if d:
@@ -538,7 +578,7 @@ class JunctionAuditorPage(_Page):
     def _on_clean_dead(self):
         """Unlink the dead junction selected in the table, then rescan.
 
-            Uses QMessageBox; updates self.table, self.p, self._aud.
+        Uses QMessageBox; updates self.table, self.p, self._aud.
         """
         row = self.table.currentRow()
         if row < 0:
@@ -564,11 +604,13 @@ class JunctionAuditorPage(_Page):
 # 5. SILENT BITROT & FILE INTEGRITY SCRUBBER PAGE
 # ===========================================================================
 
+
 class BitRotScrubberPage(_Page):
     """BitRot page with a target picker, scrub button, and corrupted-files table.
 
-        Backed by BitRotScrubber, QFileDialog; builds tables, buttons, and dialogs for the actions below.
+    Backed by BitRotScrubber, QFileDialog; builds tables, buttons, and dialogs for the actions below.
     """
+
     def __init__(self, win: PremiumMainWindow):
         """Build the BitRot page with a target picker, scrub button, and corrupted-files table.
 
@@ -578,7 +620,12 @@ class BitRotScrubberPage(_Page):
             win (PremiumMainWindow): Parent window or shell controller instance.
         """
         super().__init__(win)
-        self.v.addWidget(title_block("Silent BitRot & File Integrity Scrubber", "Detect bit-level silent data corruption and hash mutations across documents, photos, and archives."))
+        self.v.addWidget(
+            title_block(
+                "Silent BitRot & File Integrity Scrubber",
+                "Detect bit-level silent data corruption and hash mutations across documents, photos, and archives.",
+            )
+        )
 
         card = Card(self.p)
         cl = QVBoxLayout(card)
@@ -603,7 +650,9 @@ class BitRotScrubberPage(_Page):
         cl.addWidget(self.summary_label)
 
         self.table = QTableWidget(0, 4)
-        self.table.setHorizontalHeaderLabels(["Corrupted File Path", "Expected Baseline Hash", "Actual Mutated Hash", "Size"])
+        self.table.setHorizontalHeaderLabels(
+            ["Corrupted File Path", "Expected Baseline Hash", "Actual Mutated Hash", "Size"]
+        )
         self.table.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
         self.table.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeMode.ResizeToContents)
         self.table.horizontalHeader().setSectionResizeMode(2, QHeaderView.ResizeMode.ResizeToContents)
@@ -616,7 +665,7 @@ class BitRotScrubberPage(_Page):
     def _on_browse(self):
         """Open a directory picker and set it as the scrub target.
 
-            Uses QFileDialog; updates self.p, self.target_edit.
+        Uses QFileDialog; updates self.p, self.target_edit.
         """
         d = QFileDialog.getExistingDirectory(self.p, "Select Folder to Scrub", self.target_edit.text())
         if d:
@@ -625,7 +674,7 @@ class BitRotScrubberPage(_Page):
     def _on_scrub(self):
         """Hash and scrub the chosen folder in the background.
 
-            Updates self.target_edit, self.summary_label, self.win.
+        Updates self.target_edit, self.summary_label, self.win.
         """
         d = self.target_edit.text().strip()
         if not d:
@@ -670,11 +719,13 @@ class BitRotScrubberPage(_Page):
 # 6. MEMORY COMPRESSION & SYSMAIN OPTIMIZER PAGE
 # ===========================================================================
 
+
 class MemoryCompressionPage(_Page):
     """Memory Compression page with audit/toggle buttons and a metrics table.
 
-        Backed by MemoryCompressionTuner, QMessageBox; builds tables, buttons, and dialogs for the actions below.
+    Backed by MemoryCompressionTuner, QMessageBox; builds tables, buttons, and dialogs for the actions below.
     """
+
     def __init__(self, win: PremiumMainWindow):
         """Build the Memory Compression page with audit/toggle buttons and a metrics table.
 
@@ -684,7 +735,12 @@ class MemoryCompressionPage(_Page):
             win (PremiumMainWindow): Parent window or shell controller instance.
         """
         super().__init__(win)
-        self.v.addWidget(title_block("Windows Memory Compression & SysMain Optimizer", "Audit Windows 10/11 Memory Compression (MMAgent), RAM commit ratios, and tune compression overhead."))
+        self.v.addWidget(
+            title_block(
+                "Windows Memory Compression & SysMain Optimizer",
+                "Audit Windows 10/11 Memory Compression (MMAgent), RAM commit ratios, and tune compression overhead.",
+            )
+        )
 
         card = Card(self.p)
         cl = QVBoxLayout(card)
@@ -719,7 +775,7 @@ class MemoryCompressionPage(_Page):
     def _on_audit(self):
         """Query MMAgent memory status in the background.
 
-            Updates self.summary_label, self.win, self._tuner.
+        Updates self.summary_label, self.win, self._tuner.
         """
         self.summary_label.setText("Querying Get-MMAgent and memory working sets…")
         _run_task(self.win, self._tuner.audit, self._on_audit_done, self._on_err)
@@ -759,7 +815,7 @@ class MemoryCompressionPage(_Page):
     def _on_toggle(self):
         """Flip the memory-compression state to the opposite of the audited status.
 
-            Updates self._curr_status, self.summary_label, self.win.
+        Updates self._curr_status, self.summary_label, self.win.
         """
         if not self._curr_status:
             return
@@ -794,11 +850,13 @@ class MemoryCompressionPage(_Page):
 # 7. VIRTUAL ENVIRONMENT & SANDBOX CLEANER PAGE
 # ===========================================================================
 
+
 class SandboxCleanerPage(_Page):
     """Sandbox Cleaner page with scan/clean buttons and an artifacts table.
 
-        Backed by SandboxCleaner, QMessageBox; builds tables, buttons, and dialogs for the actions below.
+    Backed by SandboxCleaner, QMessageBox; builds tables, buttons, and dialogs for the actions below.
     """
+
     def __init__(self, win: PremiumMainWindow):
         """Build the Sandbox Cleaner page with scan/clean buttons and an artifacts table.
 
@@ -808,7 +866,12 @@ class SandboxCleanerPage(_Page):
             win (PremiumMainWindow): Parent window or shell controller instance.
         """
         super().__init__(win)
-        self.v.addWidget(title_block("Virtual Environment & Sandbox Artifact Purger", "Reclaim storage locked in Windows Sandbox containers, Hyper-V saved states (.vsv), and WSL2 swap disks."))
+        self.v.addWidget(
+            title_block(
+                "Virtual Environment & Sandbox Artifact Purger",
+                "Reclaim storage locked in Windows Sandbox containers, Hyper-V saved states (.vsv), and WSL2 swap disks.",
+            )
+        )
 
         card = Card(self.p)
         cl = QVBoxLayout(card)
@@ -846,7 +909,7 @@ class SandboxCleanerPage(_Page):
     def _on_scan(self):
         """Scan for discarded virtualization artifacts in the background.
 
-            Updates self.summary_label, self.win, self._cleaner.
+        Updates self.summary_label, self.win, self._cleaner.
         """
         self.summary_label.setText("Scanning Windows Sandbox, Hyper-V, and WSL artifacts…")
         _run_task(self.win, self._cleaner.scan, self._on_scan_done, self._on_err)
@@ -874,7 +937,7 @@ class SandboxCleanerPage(_Page):
     def _on_clean(self):
         """Purge every artifact flagged safe to clean; warn when none exist.
 
-            Uses QMessageBox; updates self._artifacts, self.p, self.summary_label.
+        Uses QMessageBox; updates self._artifacts, self.p, self.summary_label.
         """
         targets = [a.path for a in self._artifacts if a.is_safe_to_clean]
         if not targets:
@@ -911,11 +974,13 @@ class SandboxCleanerPage(_Page):
 # 8. SMB SHARE & NETWORK EXPOSURE AUDITOR PAGE
 # ===========================================================================
 
+
 class SmbShareAuditorPage(_Page):
     """SMB Auditor page with an audit button, summary label, and shares table.
 
-        Backed by SmbShareAuditor; builds tables, buttons, and dialogs for the actions below.
+    Backed by SmbShareAuditor; builds tables, buttons, and dialogs for the actions below.
     """
+
     def __init__(self, win: PremiumMainWindow):
         """Build the SMB Auditor page with an audit button, summary label, and shares table.
 
@@ -925,7 +990,12 @@ class SmbShareAuditorPage(_Page):
             win (PremiumMainWindow): Parent window or shell controller instance.
         """
         super().__init__(win)
-        self.v.addWidget(title_block("SMB Share & Network Exposure Auditor", "Audit local Windows SMB shares, hidden administrative shares (C$, ADMIN$), and verify SMB security settings."))
+        self.v.addWidget(
+            title_block(
+                "SMB Share & Network Exposure Auditor",
+                "Audit local Windows SMB shares, hidden administrative shares (C$, ADMIN$), and verify SMB security settings.",
+            )
+        )
 
         card = Card(self.p)
         cl = QVBoxLayout(card)
@@ -944,7 +1014,9 @@ class SmbShareAuditorPage(_Page):
         cl.addWidget(self.summary_label)
 
         self.table = QTableWidget(0, 5)
-        self.table.setHorizontalHeaderLabels(["Share Name", "Resource Path", "Share Type", "Administrative", "Risk Assessment"])
+        self.table.setHorizontalHeaderLabels(
+            ["Share Name", "Resource Path", "Share Type", "Administrative", "Risk Assessment"]
+        )
         self.table.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.ResizeToContents)
         self.table.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeMode.Stretch)
         self.table.horizontalHeader().setSectionResizeMode(2, QHeaderView.ResizeMode.ResizeToContents)
@@ -958,7 +1030,7 @@ class SmbShareAuditorPage(_Page):
     def _on_audit(self):
         """Start an asynchronous SMB share audit and update the summary label.
 
-            Updates self.summary_label, self.win, self._aud.
+        Updates self.summary_label, self.win, self._aud.
         """
         self.summary_label.setText("Querying Get-SmbShare and SMB security configuration…")
         _run_task(self.win, self._aud.audit, self._on_audit_done, self._on_err)
@@ -1002,11 +1074,13 @@ class SmbShareAuditorPage(_Page):
 # 9. PROCESS SECURITY TOKEN & INTEGRITY FORENSICS PAGE
 # ===========================================================================
 
+
 class ProcessTokenPage(_Page):
     """Process Token page with an audit button, summary label, and processes table.
 
-        Backed by ProcessTokenAuditor; builds tables, buttons, and dialogs for the actions below.
+    Backed by ProcessTokenAuditor; builds tables, buttons, and dialogs for the actions below.
     """
+
     def __init__(self, win: PremiumMainWindow):
         """Build the Process Token page with an audit button, summary label, and processes table.
 
@@ -1016,7 +1090,12 @@ class ProcessTokenPage(_Page):
             win (PremiumMainWindow): Parent window or shell controller instance.
         """
         super().__init__(win)
-        self.v.addWidget(title_block("Process Security Token & Integrity Forensics", "Inspect TokenIntegrityLevels (Untrusted to System), token elevation types, and critical sensitive privileges."))
+        self.v.addWidget(
+            title_block(
+                "Process Security Token & Integrity Forensics",
+                "Inspect TokenIntegrityLevels (Untrusted to System), token elevation types, and critical sensitive privileges.",
+            )
+        )
 
         card = Card(self.p)
         cl = QVBoxLayout(card)
@@ -1035,7 +1114,9 @@ class ProcessTokenPage(_Page):
         cl.addWidget(self.summary_label)
 
         self.table = QTableWidget(0, 6)
-        self.table.setHorizontalHeaderLabels(["PID", "Process Name", "User Account", "Integrity Level", "Elevation", "Critical Privileges"])
+        self.table.setHorizontalHeaderLabels(
+            ["PID", "Process Name", "User Account", "Integrity Level", "Elevation", "Critical Privileges"]
+        )
         self.table.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.ResizeToContents)
         self.table.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeMode.ResizeToContents)
         self.table.horizontalHeader().setSectionResizeMode(2, QHeaderView.ResizeMode.ResizeToContents)
@@ -1050,7 +1131,7 @@ class ProcessTokenPage(_Page):
     def _on_audit(self):
         """Start an asynchronous process token audit and update the summary label.
 
-            Updates self.summary_label, self.win, self._aud.
+        Updates self.summary_label, self.win, self._aud.
         """
         self.summary_label.setText("Querying OpenProcessToken and GetTokenInformation…")
         _run_task(self.win, self._aud.audit, self._on_audit_done, self._on_err)
@@ -1094,11 +1175,13 @@ class ProcessTokenPage(_Page):
 # 10. STORAGE GROWTH TRACKER & TIMELINE DIFFER PAGE
 # ===========================================================================
 
+
 class StorageGrowthTrackerPage(_Page):
     """Growth Tracker page with path picker, snapshot/diff buttons, and a growth table.
 
-        Backed by StorageGrowthTracker, QMessageBox, QFileDialog; builds tables, buttons, and dialogs for the actions below.
+    Backed by StorageGrowthTracker, QMessageBox, QFileDialog; builds tables, buttons, and dialogs for the actions below.
     """
+
     def __init__(self, win: PremiumMainWindow):
         """Build the Growth Tracker page with path picker, snapshot/diff buttons, and a growth table.
 
@@ -1108,7 +1191,12 @@ class StorageGrowthTrackerPage(_Page):
             win (PremiumMainWindow): Parent window or shell controller instance.
         """
         super().__init__(win)
-        self.v.addWidget(title_block("Storage Growth Tracker & Timeline Differ", "Take persistent directory snapshots and track disk usage expansion and folder growth deltas over time."))
+        self.v.addWidget(
+            title_block(
+                "Storage Growth Tracker & Timeline Differ",
+                "Take persistent directory snapshots and track disk usage expansion and folder growth deltas over time.",
+            )
+        )
 
         card = Card(self.p)
         cl = QVBoxLayout(card)
@@ -1137,7 +1225,9 @@ class StorageGrowthTrackerPage(_Page):
         cl.addWidget(self.summary_label)
 
         self.table = QTableWidget(0, 5)
-        self.table.setHorizontalHeaderLabels(["Directory Path", "Previous Size", "Current Size", "Net Growth", "% Growth"])
+        self.table.setHorizontalHeaderLabels(
+            ["Directory Path", "Previous Size", "Current Size", "Net Growth", "% Growth"]
+        )
         self.table.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
         self.table.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeMode.ResizeToContents)
         self.table.horizontalHeader().setSectionResizeMode(2, QHeaderView.ResizeMode.ResizeToContents)
@@ -1151,7 +1241,7 @@ class StorageGrowthTrackerPage(_Page):
     def _on_browse(self):
         """Open a directory picker and set it as the snapshot target.
 
-            Uses QFileDialog; updates self.p, self.path_edit.
+        Uses QFileDialog; updates self.p, self.path_edit.
         """
         d = QFileDialog.getExistingDirectory(self.p, "Select Directory to Snapshot", self.path_edit.text())
         if d:
@@ -1160,13 +1250,18 @@ class StorageGrowthTrackerPage(_Page):
     def _on_snapshot(self):
         """Capture a storage snapshot of the entered path in the background.
 
-            Updates self.path_edit, self.summary_label, self.win.
+        Updates self.path_edit, self.summary_label, self.win.
         """
         p = self.path_edit.text().strip()
         if not p:
             return
         self.summary_label.setText(f"Capturing storage snapshot of {p}…")
-        _run_task(self.win, lambda: self._tracker.take_snapshot(p, label=f"Scan of {Path(p).name}"), self._on_snapshot_done, self._on_err)
+        _run_task(
+            self.win,
+            lambda: self._tracker.take_snapshot(p, label=f"Scan of {Path(p).name}"),
+            self._on_snapshot_done,
+            self._on_err,
+        )
 
     def _on_snapshot_done(self, s: SnapshotSummary):
         """Show the captured snapshot id, label, and total footprint.
@@ -1183,17 +1278,21 @@ class StorageGrowthTrackerPage(_Page):
     def _on_diff(self):
         """Compare the two most recent snapshots, or prompt if fewer exist.
 
-            Uses QMessageBox; updates self._tracker, self.p, self.summary_label.
+        Uses QMessageBox; updates self._tracker, self.p, self.summary_label.
         """
         snaps = self._tracker.list_snapshots()
         if len(snaps) < 2:
-            QMessageBox.information(self.p, "Insufficient Snapshots", "Please take at least two snapshots to compare growth deltas.")
+            QMessageBox.information(
+                self.p, "Insufficient Snapshots", "Please take at least two snapshots to compare growth deltas."
+            )
             return
 
         base_id = snaps[1].snapshot_id
         target_id = snaps[0].snapshot_id
         self.summary_label.setText(f"Comparing Snapshot #{base_id} vs #{target_id}…")
-        _run_task(self.win, lambda: self._tracker.compare_snapshots(base_id, target_id), self._on_diff_done, self._on_err)
+        _run_task(
+            self.win, lambda: self._tracker.compare_snapshots(base_id, target_id), self._on_diff_done, self._on_err
+        )
 
     def _on_diff_done(self, rep: StorageGrowthDiffReport):
         """Show net growth between snapshots and list the fastest-growing directories.

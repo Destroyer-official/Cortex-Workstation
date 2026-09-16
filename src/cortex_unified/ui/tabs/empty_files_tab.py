@@ -6,12 +6,33 @@ from pathlib import Path
 from typing import List, Dict, Any, Optional, Union
 
 from PySide6.QtWidgets import (
-    QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLabel,
-    QLineEdit, QCheckBox, QTableWidget, QTableWidgetItem,
-    QProgressBar, QGroupBox, QFormLayout, QFileDialog,
-    QMessageBox, QHeaderView, QListWidget, QRadioButton,
-    QComboBox, QSplitter, QTreeWidget, QTreeWidgetItem, QTextEdit,
-    QSpinBox, QTabWidget, QAbstractItemView, QSizePolicy, QListWidgetItem
+    QWidget,
+    QVBoxLayout,
+    QHBoxLayout,
+    QPushButton,
+    QLabel,
+    QLineEdit,
+    QCheckBox,
+    QTableWidget,
+    QTableWidgetItem,
+    QProgressBar,
+    QGroupBox,
+    QFormLayout,
+    QFileDialog,
+    QMessageBox,
+    QHeaderView,
+    QListWidget,
+    QRadioButton,
+    QComboBox,
+    QSplitter,
+    QTreeWidget,
+    QTreeWidgetItem,
+    QTextEdit,
+    QSpinBox,
+    QTabWidget,
+    QAbstractItemView,
+    QSizePolicy,
+    QListWidgetItem,
 )
 from PySide6.QtCore import QThread, Signal, Qt, QObject, QTimer
 from PySide6.QtGui import QIcon, QFont, QTextCursor
@@ -26,7 +47,7 @@ from cortex_unified.analyzers.czkawka_tools import EmptyFinder, EmptyResult
 class EmptyFinderWorker(QThread):
     """QThread worker scanning zero-byte files and empty folders via czkawka EmptyFinder.
 
-        Emits status_updated and progress_updated during the scan, then scan_completed or error_occurred.
+    Emits status_updated and progress_updated during the scan, then scan_completed or error_occurred.
     """
 
     progress_updated = Signal(int)
@@ -55,19 +76,18 @@ class EmptyFinderWorker(QThread):
         try:
             self.status_updated.emit("Scanning empty items (czkawka)...")
             finder = EmptyFinder(self.path, self.config)
-            result = finder.find(
-                progress=lambda msg: self.status_updated.emit(msg))
+            result = finder.find(progress=lambda msg: self.status_updated.emit(msg))
             self.progress_updated.emit(100)
             stats = {"scanned": result.scanned, "duration": result.duration}
-            self.scan_completed.emit(
-                list(result.empty_files), list(result.empty_folders), stats)
+            self.scan_completed.emit(list(result.empty_files), list(result.empty_folders), stats)
         except Exception as e:
             self.error_occurred.emit(str(e))
+
 
 class EmptyFilesWorker(QThread):
     """QThread worker scanning for or deleting empty files and directories via Scanner and Deleter.
 
-        Emits status_updated and progress_updated during work, then scan_completed, delete_completed, or error_occurred.
+    Emits status_updated and progress_updated during work, then scan_completed, delete_completed, or error_occurred.
     """
 
     progress_updated = Signal(int)
@@ -102,55 +122,53 @@ class EmptyFilesWorker(QThread):
         """
         try:
             if self.operation == "scan":
-                self.status_updated.emit(
-                    "Scanning for empty files and directories...")
+                self.status_updated.emit("Scanning for empty files and directories...")
                 scanner = Scanner(self.config, self.path, enable_checkpoints=True)
-                
+
                 # Polling thread for live progress
                 import time
                 import threading
-                
+
                 def poll_progress():
                     """Relay scanner percentage and current path every 0.1s until the scan ends.
 
                     Updates progress bar widgets, percentage counters, and status indicators with streaming status updates from the running worker.
                     """
-                    while not getattr(scanner, '_scan_finished', False):
+                    while not getattr(scanner, "_scan_finished", False):
                         prog = scanner.get_scan_progress()
                         if prog:
                             self.progress_updated.emit(min(100, int(prog.percentage)))
                             current = Path(prog.current_path).name if prog.current_path else ""
                             self.status_updated.emit(f"Scanning: {current}")
                         time.sleep(0.1)
-                
+
                 t = threading.Thread(target=poll_progress)
                 t.daemon = True
                 t.start()
-                
+
                 try:
                     empty_files, empty_dirs = scanner.scan()
                 finally:
                     scanner._scan_finished = True
                     self.progress_updated.emit(100)
-                    
+
                 stats = scanner.get_stats()
                 self.scan_completed.emit(empty_files, empty_dirs, stats)
 
             elif self.operation == "delete":
-                self.status_updated.emit(
-                    "Deleting empty files and directories...")
+                self.status_updated.emit("Deleting empty files and directories...")
                 deleter = Deleter(dry_run=False, use_trash=True)
-                result = deleter.delete(
-                    self.files_to_delete, self.dirs_to_delete)
+                result = deleter.delete(self.files_to_delete, self.dirs_to_delete)
                 self.delete_completed.emit(result)
 
         except Exception as e:
             self.error_occurred.emit(str(e))
 
+
 class EmptyFilesTab(BaseTab):
     """Empty-files tab with scan-location picker, dry-run/trash/age options, results table, and progress bar.
 
-        Scan, czkawka-scan, and delete actions run EmptyFilesWorker and EmptyFinderWorker threads.
+    Scan, czkawka-scan, and delete actions run EmptyFilesWorker and EmptyFinderWorker threads.
     """
 
     def __init__(self, config, logger, safety_manager):
@@ -168,14 +186,12 @@ class EmptyFilesTab(BaseTab):
         self.empty_dirs = []
 
     def setup_ui(self):
-        """Build the scan-location picker, dry-run/trash/age options, scan/delete buttons, progress bar, and results table.
-        """
+        """Build the scan-location picker, dry-run/trash/age options, scan/delete buttons, progress bar, and results table."""
         layout = QVBoxLayout(self)
 
         # Title
         title = QLabel("Empty Files and Directories Cleaner")
-        title.setStyleSheet(
-        "font-size: 18px; font-weight: bold; margin: 10px;")
+        title.setStyleSheet("font-size: 18px; font-weight: bold; margin: 10px;")
         layout.addWidget(title)
 
         # Path selection
@@ -255,11 +271,11 @@ class EmptyFilesTab(BaseTab):
         self.select_all_btn = QPushButton("Select All")
         self.select_all_btn.clicked.connect(self.select_all_items)
         selection_layout.addWidget(self.select_all_btn)
-        
+
         self.deselect_all_btn = QPushButton("Deselect All")
         self.deselect_all_btn.clicked.connect(self.deselect_all_items)
         selection_layout.addWidget(self.deselect_all_btn)
-        
+
         selection_layout.addStretch()
         layout.addLayout(selection_layout)
 
@@ -267,8 +283,7 @@ class EmptyFilesTab(BaseTab):
         self.results_table = QTableWidget()
         self.results_table.setObjectName("empty_files_results")
         self.results_table.setColumnCount(4)
-        self.results_table.setHorizontalHeaderLabels(
-        ["Select", "Type", "Path", "Size"])
+        self.results_table.setHorizontalHeaderLabels(["Select", "Type", "Path", "Size"])
 
         header = self.results_table.horizontalHeader()
         header.setSectionResizeMode(0, QHeaderView.ResizeMode.ResizeToContents)
@@ -284,38 +299,26 @@ class EmptyFilesTab(BaseTab):
         layout.addWidget(self.summary_label)
 
     def setup_tooltips(self):
-        """Assign tooltips to the path, dry-run/trash/age option, and scan/delete action widgets.
-        """
-        self.path_input.setToolTip(
-            "Directory path to scan for empty files and folders")
-        self.dry_run_checkbox.setToolTip(
-            "Preview what would be deleted without actually deleting")
-        self.trash_checkbox.setToolTip(
-            "Move files to trash instead of permanent deletion")
-        self.age_spinbox.setToolTip(
-            "Only consider files/folders older than specified days")
-        self.scan_button.setToolTip(
-            "Start scanning for empty files and directories")
-        self.czkawka_scan_button.setToolTip(
-            "Scan with czkawka EmptyFinder (zero-byte files, empty folders)")
-        self.delete_button.setToolTip(
-            "Delete selected empty files and directories")
+        """Assign tooltips to the path, dry-run/trash/age option, and scan/delete action widgets."""
+        self.path_input.setToolTip("Directory path to scan for empty files and folders")
+        self.dry_run_checkbox.setToolTip("Preview what would be deleted without actually deleting")
+        self.trash_checkbox.setToolTip("Move files to trash instead of permanent deletion")
+        self.age_spinbox.setToolTip("Only consider files/folders older than specified days")
+        self.scan_button.setToolTip("Start scanning for empty files and directories")
+        self.czkawka_scan_button.setToolTip("Scan with czkawka EmptyFinder (zero-byte files, empty folders)")
+        self.delete_button.setToolTip("Delete selected empty files and directories")
 
     def browse_path(self):
-        """Browse for directory to scan.
-        """
-        path = QFileDialog.getExistingDirectory(
-            self, "Select Directory to Scan")
+        """Browse for directory to scan."""
+        path = QFileDialog.getExistingDirectory(self, "Select Directory to Scan")
         if path:
             self.path_input.setText(path)
 
     def start_scan(self):
-        """Validate the path and launch the scan worker.
-        """
+        """Validate the path and launch the scan worker."""
         path = self.path_input.text().strip()
         if not path or not Path(path).exists():
-            QMessageBox.warning(self, "Invalid Path",
-                                "Please select a valid directory to scan.")
+            QMessageBox.warning(self, "Invalid Path", "Please select a valid directory to scan.")
             return
 
         self.scan_button.setEnabled(False)
@@ -339,12 +342,10 @@ class EmptyFilesTab(BaseTab):
         worker.start()
 
     def start_czkawka_scan(self):
-        """Validate the path and launch the czkawka EmptyFinder worker.
-        """
+        """Validate the path and launch the czkawka EmptyFinder worker."""
         path = self.path_input.text().strip()
         if not path or not Path(path).exists():
-            QMessageBox.warning(self, "Invalid Path",
-                                "Please select a valid directory to scan.")
+            QMessageBox.warning(self, "Invalid Path", "Please select a valid directory to scan.")
             return
 
         self.scan_button.setEnabled(False)
@@ -365,14 +366,12 @@ class EmptyFilesTab(BaseTab):
         worker.scan_completed.connect(self.scan_completed)
         worker.error_occurred.connect(self.handle_error)
         worker.finished.connect(lambda: self.operation_finished(worker))
-        worker.finished.connect(
-            lambda: self.czkawka_scan_button.setEnabled(True))
+        worker.finished.connect(lambda: self.czkawka_scan_button.setEnabled(True))
 
         worker.start()
 
     def start_delete(self):
-        """Start deleting selected items.
-        """
+        """Start deleting selected items."""
         selected_files = []
         selected_dirs = []
 
@@ -388,17 +387,16 @@ class EmptyFilesTab(BaseTab):
                     selected_dirs.append(path)
 
         if not selected_files and not selected_dirs:
-            QMessageBox.warning(self, "No Selection",
-                                "Please select items to delete.")
+            QMessageBox.warning(self, "No Selection", "Please select items to delete.")
             return
 
         # Confirm deletion
         total_items = len(selected_files) + len(selected_dirs)
         reply = QMessageBox.question(
-            self, "Confirm Deletion",
-            f"Delete {total_items} empty items?\n"
-            f"Files: {len(selected_files)}, Directories: {len(selected_dirs)}",
-            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
+            self,
+            "Confirm Deletion",
+            f"Delete {total_items} empty items?\n" f"Files: {len(selected_files)}, Directories: {len(selected_dirs)}",
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
         )
 
         if reply != QMessageBox.StandardButton.Yes:
@@ -409,8 +407,7 @@ class EmptyFilesTab(BaseTab):
         self.progress_bar.setVisible(True)
         self.progress_bar.setRange(0, 0)
 
-        worker = EmptyFilesWorker(
-            self.config, "", "delete", selected_files, selected_dirs)
+        worker = EmptyFilesWorker(self.config, "", "delete", selected_files, selected_dirs)
         self.add_worker_thread(worker)
 
         worker.status_updated.connect(self.status_label.setText)
@@ -446,8 +443,7 @@ class EmptyFilesTab(BaseTab):
             checkbox.setChecked(True)
             self.results_table.setCellWidget(row, 0, checkbox)
             self.results_table.setItem(row, 1, QTableWidgetItem("File"))
-            self.results_table.setItem(
-                row, 2, QTableWidgetItem(str(file_path)))
+            self.results_table.setItem(row, 2, QTableWidgetItem(str(file_path)))
             self.results_table.setItem(row, 3, QTableWidgetItem("0 B"))
             row += 1
 
@@ -461,24 +457,20 @@ class EmptyFilesTab(BaseTab):
             self.results_table.setItem(row, 3, QTableWidgetItem("0 B"))
             row += 1
 
-        self.summary_label.setText(
-            f"Found {len(empty_files)} empty files and {len(empty_dirs)} empty directories"
-        )
+        self.summary_label.setText(f"Found {len(empty_files)} empty files and {len(empty_dirs)} empty directories")
 
         self.status_label.setText("Scan completed")
         self.delete_button.setEnabled(total_items > 0)
 
     def select_all_items(self):
-        """Check every row checkbox in the results table.
-        """
+        """Check every row checkbox in the results table."""
         for row in range(self.results_table.rowCount()):
             checkbox = self.results_table.cellWidget(row, 0)
             if checkbox:
                 checkbox.setChecked(True)
 
     def deselect_all_items(self):
-        """Uncheck every row checkbox in the results table.
-        """
+        """Uncheck every row checkbox in the results table."""
         for row in range(self.results_table.rowCount()):
             checkbox = self.results_table.cellWidget(row, 0)
             if checkbox:
@@ -491,9 +483,9 @@ class EmptyFilesTab(BaseTab):
         Args:
             result: Collection or dictionary holding operation results.
         """
-        files_deleted = result.get('files_deleted', 0)
-        dirs_deleted = result.get('dirs_deleted', 0)
-        errors = result.get('errors', [])
+        files_deleted = result.get("files_deleted", 0)
+        dirs_deleted = result.get("dirs_deleted", 0)
+        errors = result.get("errors", [])
 
         message = f"Deleted {files_deleted} files and {dirs_deleted} directories."
         if errors:
@@ -511,8 +503,7 @@ class EmptyFilesTab(BaseTab):
         Args:
             error_message: Informational or progress status message.
         """
-        QMessageBox.critical(
-            self, "Error", f"An error occurred: {error_message}")
+        QMessageBox.critical(self, "Error", f"An error occurred: {error_message}")
         self.status_label.setText(f"Error: {error_message}")
 
     def operation_finished(self, worker):

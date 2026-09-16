@@ -26,6 +26,7 @@ class FileAttributeFlags(Flag):
 
     Mirrors READONLY/HIDDEN/SYSTEM/ARCHIVE/NORMAL/TEMPORARY/COMPRESSED constants for Get/SetFileAttributesW.
     """
+
     READONLY = 0x00000001
     HIDDEN = 0x00000002
     SYSTEM = 0x00000004
@@ -41,6 +42,7 @@ class TimestampInfo:
 
     Stores path/filename, created/modified/accessed epochs, raw attributes int, and readonly/hidden/system/archive booleans.
     """
+
     path: str
     filename: str
     created_time: float
@@ -59,6 +61,7 @@ class TimestampUpdateResult:
 
     Holds path, success flag, and optional error string.
     """
+
     path: str
     success: bool
     error: Optional[str] = None
@@ -213,6 +216,7 @@ class TimestampTouchEngine:
             return TimestampUpdateResult(str(path), False, f"Failed to open handle (Win32 Error: {err})")
 
         try:
+
             def _to_filetime(ts: Optional[float]) -> Optional[ctypes.c_uint64]:
                 """Convert Unix epoch to Windows FILETIME.
 

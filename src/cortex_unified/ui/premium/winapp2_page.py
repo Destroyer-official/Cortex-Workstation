@@ -30,6 +30,7 @@ from .window import _Page, fmt_bytes
 
 class _Winapp2Worker(QObject):
     """Background worker (_Winapp2Worker) performing Winapp2Worker. Signals progress, finished, clean_finished report status. Configured with cleaner, targets."""
+
     progress = Signal(int, int, str)
     finished = Signal(object)
     clean_finished = Signal(int, int)

@@ -11,6 +11,7 @@ IS_WINDOWS = platform.system() == "Windows"
 
 class TestInterpret:
     """Group testinterpret tests covering unconfigured; enabled weekly; recycle bin config; downloads config; low space cadence; unknown cadence is custom."""
+
     def test_unconfigured(self):
         """Verify unconfigured via StorageSense._interpret."""
         s = StorageSense._interpret({})
@@ -50,6 +51,7 @@ class TestInterpret:
 
 class TestValidation:
     """Group testvalidation tests covering set cadence rejects bad; set recycle days rejects bad."""
+
     def test_set_cadence_rejects_bad(self):
         """Verify set cadence rejects bad via StorageSense, msg.lower, set_cadence."""
         ok, msg = StorageSense().set_cadence(999)
@@ -63,6 +65,7 @@ class TestValidation:
 
 class TestSupport:
     """Group testsupport tests covering is supported; get status shape."""
+
     def test_is_supported(self):
         """Verify is supported via StorageSense.is_supported."""
         assert StorageSense.is_supported() == IS_WINDOWS

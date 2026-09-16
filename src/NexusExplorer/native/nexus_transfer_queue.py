@@ -35,6 +35,7 @@ log = logging.getLogger("nexus.transfer")
 
 class JobState(Enum):
     """Lifecycle states of a queued transfer job."""
+
     QUEUED = 0
     RUNNING = 1
     PAUSED = 2
@@ -48,6 +49,7 @@ class JobState(Enum):
 class TransferJob:
     """State record for one queued copy/move/delete job (progress, priority,
     and the active FFI handle or CLI QProcess driving it)."""
+
     job_id: str = ""
     kind: str = ""  # "copy", "move", "delete"
     sources: list[str] = field(default_factory=list)
@@ -63,8 +65,8 @@ class TransferJob:
     error: str = ""
     error_full: str = ""
     priority: int = 0  # higher = runs first
-    handle: int | None = None      # FFI job handle when running
-    proc: QProcess | None = None   # CLI fallback process
+    handle: int | None = None  # FFI job handle when running
+    proc: QProcess | None = None  # CLI fallback process
     """State record for one queued copy/move/delete job (progress, priority,
     and the active FFI handle or CLI QProcess driving it)."""
 
@@ -102,11 +104,11 @@ def fmt_eta(secs: float) -> str:
 class TransferQueue(QObject):
     """Manages queued file transfers with progress and control."""
 
-    job_added = Signal(str)       # job_id
-    job_started = Signal(str)     # job_id
+    job_added = Signal(str)  # job_id
+    job_started = Signal(str)  # job_id
     job_progress = Signal(str, int, str)  # job_id, percent, status_text
     job_completed = Signal(str, bool, str)  # job_id, success, message
-    job_cancelled = Signal(str)   # job_id
+    job_cancelled = Signal(str)  # job_id
     queue_empty = Signal()
 
     def __init__(self, engine, parent=None, max_concurrent: int = 1):
@@ -175,8 +177,7 @@ class TransferQueue(QObject):
                 priority=priority,
             )
             self._jobs[job_id] = job
-            bisect.insort(self._order, job_id,
-                          key=lambda jid: -self._jobs[jid].priority)
+            bisect.insort(self._order, job_id, key=lambda jid: -self._jobs[jid].priority)
             self._pending_count += 1
         self.job_added.emit(job_id)
         self._try_start_next()
@@ -246,7 +247,8 @@ class TransferQueue(QObject):
             else:
                 return False
         self.job_progress.emit(
-            jid, progress,
+            jid,
+            progress,
             f"{kind}: resumed {progress}%",
         )
         return True
@@ -265,7 +267,8 @@ class TransferQueue(QObject):
         removed."""
         with self._lock:
             finished = [
-                jid for jid, j in self._jobs.items()
+                jid
+                for jid, j in self._jobs.items()
                 if j.state in (JobState.COMPLETED, JobState.FAILED, JobState.CANCELLED)
             ]
             for jid in finished:
@@ -322,8 +325,7 @@ class TransferQueue(QObject):
         ffi = self._engine.ffi
         control: dict = {}
 
-        def on_progress(done_b: int, total_b: int, speed: float = 0.0,
-                        eta: float = 0.0, cur: str = "") -> None:
+        def on_progress(done_b: int, total_b: int, speed: float = 0.0, eta: float = 0.0, cur: str = "") -> None:
             """Engine progress hook: update job percent/speed/ETA/current
             file and re-emit job_progress on the GUI thread via a
             QTimer.singleShot(0, ...) hop."""
@@ -334,13 +336,10 @@ class TransferQueue(QObject):
                 job.progress = min(100, int(done_b * 100 / total_b))
             job.speed_bps = speed
             job.eta_secs = eta
-            status = (
-                f"{job.kind}: {human_bytes(done_b)} / {human_bytes(total_b)}"
-                f"  ·  {human_bytes(speed)}/s"
-                + (f"  ·  ETA {fmt_eta(eta)}" if eta else "")
+            status = f"{job.kind}: {human_bytes(done_b)} / {human_bytes(total_b)}" f"  ·  {human_bytes(speed)}/s" + (
+                f"  ·  ETA {fmt_eta(eta)}" if eta else ""
             )
-            QTimer.singleShot(0, lambda j=job, p=job.progress, s=status:
-                              self.job_progress.emit(j.job_id, p, s))
+            QTimer.singleShot(0, lambda j=job, p=job.progress, s=status: self.job_progress.emit(j.job_id, p, s))
 
         def on_started(handle: int) -> None:
             """Record the engine job handle for pause/resume/cancel."""
@@ -350,16 +349,14 @@ class TransferQueue(QObject):
             """Default conflict policy: always overwrite (return 1); no user prompt."""
             return 1  # overwrite for now; dialog pending
 
-        hooks = {"progress": on_progress, "started": on_started,
-                 "conflict": _conflict_hook}
+        hooks = {"progress": on_progress, "started": on_started, "conflict": _conflict_hook}
 
         def job_fn():
             """Backend selector: run ffi.delete_paths for 'delete',
             ffi.copy/ffi.move for transfers; unknown kinds yield an error
             result dict."""
             if job.kind == "delete":
-                r = ffi.delete_paths(job.sources, to_trash=not job.permanent,
-                                     control=control, hooks=hooks)
+                r = ffi.delete_paths(job.sources, to_trash=not job.permanent, control=control, hooks=hooks)
             elif job.kind in ("copy", "move"):
                 fn = ffi.copy if job.kind == "copy" else ffi.move
                 r = fn(job.sources, job.dest, control=control, hooks=hooks)
@@ -370,6 +367,7 @@ class TransferQueue(QObject):
         class _Job(QRunnable):
             """Pool worker that executes job_fn and reports the result
             through _finish (exceptions become a failure result)."""
+
             def run(self_inner):
                 """Run the FFI job, log exceptions, and finish the
                 TransferJob with the ok/error outcome."""
@@ -379,6 +377,7 @@ class TransferQueue(QObject):
                     log.exception("queue job failed")
                     r = {"ok": False, "error": str(exc)}
                 self._finish(job, bool(r.get("ok")), r.get("error", ""))
+
             """Pool worker that executes job_fn and reports the result
             through _finish (exceptions become a failure result)."""
 
@@ -386,6 +385,7 @@ class TransferQueue(QObject):
 
     def _start_job_python(self, job: TransferJob):
         """Pure-Python asynchronous transfer runner with live progress and cancel support."""
+
         def _get_copy_target(target_path: Path) -> Path:
             """Return target_path, or a non-colliding 'name - Copy [ (N)]'
             sibling when a copy destination would overwrite itself."""
@@ -424,7 +424,9 @@ class TransferQueue(QObject):
                     if src_p.is_dir():
                         # Circular move/copy check
                         try:
-                            if dest_dir.resolve() == src_p.resolve() or dest_dir.resolve().is_relative_to(src_p.resolve()):
+                            if dest_dir.resolve() == src_p.resolve() or dest_dir.resolve().is_relative_to(
+                                src_p.resolve()
+                            ):
                                 log.warning("Cannot %s directory '%s' into a subfolder of itself", job.kind, src_p)
                                 failed_files.append((str(src_p), "Cannot copy/move folder into a subfolder of itself"))
                                 continue
@@ -499,6 +501,7 @@ class TransferQueue(QObject):
                         if not job.permanent:
                             try:
                                 import send2trash
+
                                 send2trash.send2trash(src_str)
                                 deleted = True
                             except Exception:
@@ -506,6 +509,7 @@ class TransferQueue(QObject):
 
                         if not deleted:
                             if is_dir:
+
                                 def _onerror(func, path, exc_info):
                                     """rmtree error handler: clear the
                                     read-only/system file attributes and
@@ -519,6 +523,7 @@ class TransferQueue(QObject):
                                         func(path)
                                     except Exception:
                                         pass
+
                                 shutil.rmtree(src_str, onerror=_onerror)
                                 if os.path.exists(src_str):
                                     time.sleep(0.1)
@@ -607,6 +612,7 @@ class TransferQueue(QObject):
                             try:
                                 if os.path.exists(dst_str):
                                     import stat, ctypes
+
                                     os.chmod(dst_str, stat.S_IWRITE | stat.S_IREAD)
                                     try:
                                         ctypes.windll.kernel32.SetFileAttributesW(dst_str, 128)
@@ -627,6 +633,7 @@ class TransferQueue(QObject):
                         if job.kind == "move":
                             try:
                                 import stat
+
                                 os.chmod(src_str, stat.S_IWRITE | stat.S_IREAD)
                                 try:
                                     ctypes.windll.kernel32.SetFileAttributesW(src_str, 128)
@@ -651,7 +658,11 @@ class TransferQueue(QObject):
                         except Exception:
                             pass
                         file_name = Path(src_str).name
-                        err_tag = "In use by Windows" if "Permission denied" in str(exc) or "used by another process" in str(exc) else "Access denied"
+                        err_tag = (
+                            "In use by Windows"
+                            if "Permission denied" in str(exc) or "used by another process" in str(exc)
+                            else "Access denied"
+                        )
                         status = f"{job.kind}: Skipped '{file_name}' ({err_tag})"
                         self.job_progress.emit(job.job_id, job.progress, status)
 
@@ -685,16 +696,19 @@ class TransferQueue(QObject):
         class _PyJob(QRunnable):
             """Pool worker wrapper: names its thread after the job and
             funnels any exception into a failed _finish."""
+
             def run(self_inner):
                 """Run run_transfer on a pool thread under a job-specific
                 thread name; exceptions report failure via _finish."""
                 import threading
+
                 threading.current_thread().name = f"NexusTransfer-{job.job_id}"
                 try:
                     run_transfer()
                 except Exception as exc:
                     log.exception("Python transfer job failed: %s", exc)
                     self._finish(job, False, str(exc))
+
             """Pool worker wrapper: names its thread after the job and
             funnels any exception into a failed _finish."""
 
@@ -738,7 +752,8 @@ class TransferQueue(QObject):
         for job in running:
             if job.state is JobState.RUNNING:
                 self.job_progress.emit(
-                    job.job_id, job.progress,
+                    job.job_id,
+                    job.progress,
                     f"{job.kind}: {job.current_file or ''} {job.progress}%",
                 )
 

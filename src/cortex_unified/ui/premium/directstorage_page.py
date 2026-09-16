@@ -33,6 +33,7 @@ from .window import _Page
 
 class _DirectStorageWorker(QObject):
     """Background worker (_DirectStorageWorker) performing DirectStorageWorker. Signals finished report status. Configured with optimizer."""
+
     finished = Signal(object)
 
     def __init__(self, optimizer: DirectStorageOptimizer) -> None:
@@ -107,7 +108,9 @@ class DirectStorageOptimizerPage(_Page):
 
         # Table for volumes
         self.table = QTableWidget(0, 5)
-        self.table.setHorizontalHeaderLabels(["Drive", "BypassIO State", "Media Type", "Storage Driver", "Blocking Minifilters"])
+        self.table.setHorizontalHeaderLabels(
+            ["Drive", "BypassIO State", "Media Type", "Storage Driver", "Blocking Minifilters"]
+        )
         self.table.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.ResizeToContents)
         self.table.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeMode.ResizeToContents)
         self.table.horizontalHeader().setSectionResizeMode(2, QHeaderView.ResizeMode.ResizeToContents)
@@ -168,5 +171,7 @@ class DirectStorageOptimizerPage(_Page):
             filters_str = ", ".join(v.blocking_minifilters) if v.blocking_minifilters else "None (Optimal)"
             self.table.setItem(row, 4, QTableWidgetItem(filters_str))
 
-        rec_text = "\n".join(f"• {r}" for r in report.recommendations) if report.recommendations else "All systems optimal."
+        rec_text = (
+            "\n".join(f"• {r}" for r in report.recommendations) if report.recommendations else "All systems optimal."
+        )
         self.txt_recommendations.setPlainText(rec_text)

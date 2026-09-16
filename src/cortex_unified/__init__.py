@@ -32,9 +32,7 @@ __version__ = "1.2.0"
 __author__ = "Cortex Workstation Team"
 __email__ = "team@cortex-workstation.io"
 __license__ = "MIT"
-__description__ = (
-    "A comprehensive utility to find and remove unnecessary files and folders"
-)
+__description__ = "A comprehensive utility to find and remove unnecessary files and folders"
 
 # Public name -> submodule that defines it. Kept as data so ``__getattr__``,
 # ``__dir__`` and the test suite all agree on one source of truth.

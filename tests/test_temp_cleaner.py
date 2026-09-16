@@ -61,9 +61,7 @@ def temp_roots(tmp_path, monkeypatch):
     user.mkdir()
     system.mkdir()
     locations = [("user_temp", user), ("system_temp", system)]
-    monkeypatch.setattr(
-        TempCleaner, "LOCATIONS", classmethod(lambda cls: list(locations))
-    )
+    monkeypatch.setattr(TempCleaner, "LOCATIONS", classmethod(lambda cls: list(locations)))
     return {"tmp": tmp_path, "user": user, "system": system}
 
 
@@ -81,6 +79,7 @@ def _cleaner(**kwargs) -> TempCleaner:
 
 class TestScan:
     """Group testscan tests covering finds old files with sizes and locations; skips fresh files; min age zero includes fresh files; exclude patterns honored; unreadable and missing roots are ignored; symlinked directory is never traversed."""
+
     def test_finds_old_files_with_sizes_and_locations(self, temp_roots):
         """Verify finds old files with sizes and locations via cleaner.scan, _make_old, _cleaner.
 
@@ -163,9 +162,7 @@ class TestScan:
         monkeypatch.setattr(
             TempCleaner,
             "LOCATIONS",
-            classmethod(
-                lambda cls: [("missing", missing), ("usable", usable)]
-            ),
+            classmethod(lambda cls: [("missing", missing), ("usable", usable)]),
         )
 
         findings = _cleaner(min_age_days=1).scan()
@@ -195,9 +192,7 @@ class TestScan:
         assert all(not Path(p).is_relative_to(link) for p in found_paths)
         assert str(secret) not in found_paths
 
-    @pytest.mark.skipif(
-        not sys.platform.startswith("win"), reason="junctions are Windows-only"
-    )
+    @pytest.mark.skipif(not sys.platform.startswith("win"), reason="junctions are Windows-only")
     def test_junctioned_directory_is_never_traversed(self, temp_roots):
         """Verify junctioned directory is never traversed via pytest.mark.skipif, subprocess.run, pytest.skip.
 
@@ -229,6 +224,7 @@ class TestScan:
 
 class TestTotals:
     """Group testtotals tests covering total reclaimable before scan is zero; total reclaimable sums scan results."""
+
     def test_total_reclaimable_before_scan_is_zero(self):
         """Verify total reclaimable before scan is zero via total_reclaimable, _cleaner."""
         assert _cleaner().total_reclaimable() == 0
@@ -250,6 +246,7 @@ class TestTotals:
 
 class TestClean:
     """Group testclean tests covering dry run touches nothing; use trash removes files from scan results; without trash files are unlinked; refuses paths outside discovered roots; never deletes files modified within min age."""
+
     def test_dry_run_touches_nothing(self, temp_roots):
         """Verify dry run touches nothing via cleaner.scan, cleaner.clean, _make_old.
 
@@ -289,9 +286,7 @@ class TestClean:
             trashed.append(str(path))
             os.unlink(path)
 
-        monkeypatch.setattr(
-            "cortex_unified.core.deleter.send2trash", fake_send2trash
-        )
+        monkeypatch.setattr("cortex_unified.core.deleter.send2trash", fake_send2trash)
 
         cleaner = _cleaner(min_age_days=1)
         findings = cleaner.scan()
@@ -366,6 +361,7 @@ class TestClean:
 
 class TestCleanTempCLI:
     """Group testcleantempcli tests covering help lists command; dry run lists findings and deletes nothing; delete flag cleans after confirmation skip; trash flag routes through send2trash."""
+
     def test_help_lists_command(self):
         """Verify help lists command via result.output.lower, CliRunner, invoke."""
         result = CliRunner().invoke(main, ["clean-temp", "--help"])
@@ -426,9 +422,7 @@ class TestCleanTempCLI:
             trashed.append(str(path))
             os.unlink(path)
 
-        monkeypatch.setattr(
-            "cortex_unified.core.deleter.send2trash", fake_send2trash
-        )
+        monkeypatch.setattr("cortex_unified.core.deleter.send2trash", fake_send2trash)
 
         runner = CliRunner()
         result = runner.invoke(main, ["clean-temp", "--trash", "--yes"])

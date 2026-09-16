@@ -31,6 +31,7 @@ from cortex_unified.system_tools.wan_audit import (
 @dataclass
 class SyntheticDevice:
     """Helper syntheticdevice using field."""
+
     ip: str
     mac: str = ""
     vendor: str = ""
@@ -88,9 +89,7 @@ def test_scope_rejects_public_special_and_out_of_scope_without_sockets(monkeypat
 
 def test_private_scope_spec_supports_host_cidr_and_range():
     """Verify private scope spec supports host cidr and range via pytest.raises, parse_network_scope_spec."""
-    scopes = parse_network_scope_spec(
-        "192.168.50.7,192.168.50.16/30,"
-        "192.168.50.20-192.168.50.22")
+    scopes = parse_network_scope_spec("192.168.50.7,192.168.50.16/30," "192.168.50.20-192.168.50.22")
     assert "192.168.50.7/32" in scopes
     assert "192.168.50.16/30" in scopes
     assert "192.168.50.20/31" in scopes
@@ -101,8 +100,7 @@ def test_private_scope_spec_supports_host_cidr_and_range():
 
 def test_custom_port_spec_is_bounded_and_deterministic():
     """Verify custom port spec is bounded and deterministic via pytest.raises, parse_custom_port_spec."""
-    assert parse_custom_port_spec("443,80,8000-8002,443") == (
-        80, 443, 8000, 8001, 8002)
+    assert parse_custom_port_spec("443,80,8000-8002,443") == (80, 443, 8000, 8001, 8002)
     for value in ("0", "65536", "90-80", "80,,443", "x"):
         with pytest.raises(ValueError):
             parse_custom_port_spec(value)
@@ -116,14 +114,17 @@ def test_custom_ports_are_validated_before_any_socket(monkeypatch):
     """
     calls = []
     monkeypatch.setattr(
-        scanner_module.socket, "socket",
+        scanner_module.socket,
+        "socket",
         lambda *_args, **_kwargs: calls.append(True),
     )
     scanner = NetworkServiceScanner(timeout=0.05, workers=1)
     with pytest.raises(ValueError):
         scanner.scan(
-            ["192.168.50.9"], ["192.168.50.0/24"],
-            ScanProfile.TARGETED, custom_ports=[0],
+            ["192.168.50.9"],
+            ["192.168.50.0/24"],
+            ScanProfile.TARGETED,
+            custom_ports=[0],
         )
     assert calls == []
 
@@ -167,34 +168,41 @@ def test_catalog_exact_product_version_and_no_version_false_positive(tmp_path):
         tmp_path: Filesystem path to the target file or directory.
     """
     path = tmp_path / "catalog.json"
-    path.write_text(json.dumps({
-        "catalog_version": 1,
-        "advisories": [{
-            "id": "CVE-2099-0001",
-            "product": "Acme Router OS",
-            "summary": "Synthetic advisory",
-            "severity": "high",
-            "source": "synthetic fixture",
-            "references": ["https://example.invalid/advisory"],
-            "constraints": [
-                {"operator": ">=", "version": "3.0"},
-                {"operator": "<", "version": "3.5"},
-            ],
-        }],
-    }), encoding="utf-8")
+    path.write_text(
+        json.dumps(
+            {
+                "catalog_version": 1,
+                "advisories": [
+                    {
+                        "id": "CVE-2099-0001",
+                        "product": "Acme Router OS",
+                        "summary": "Synthetic advisory",
+                        "severity": "high",
+                        "source": "synthetic fixture",
+                        "references": ["https://example.invalid/advisory"],
+                        "constraints": [
+                            {"operator": ">=", "version": "3.0"},
+                            {"operator": "<", "version": "3.5"},
+                        ],
+                    }
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
     catalog = VulnerabilityCatalog.load(path)
-    assert [item.advisory_id for item in catalog.match("Acme-Router OS", "3.4")] == [
-        "CVE-2099-0001"
-    ]
+    assert [item.advisory_id for item in catalog.match("Acme-Router OS", "3.4")] == ["CVE-2099-0001"]
     assert catalog.match("Acme Router OS Extra", "3.4") == []
     assert catalog.match("Acme Router OS", "") == []
-    matched = audit_devices([
-        SyntheticDevice(
-            "192.168.50.20",
-            service_observations=[observation(
-                443, "https", product="Acme Router OS", version="3.4")],
-        )
-    ], vulnerability_catalog=catalog)
+    matched = audit_devices(
+        [
+            SyntheticDevice(
+                "192.168.50.20",
+                service_observations=[observation(443, "https", product="Acme Router OS", version="3.4")],
+            )
+        ],
+        vulnerability_catalog=catalog,
+    )
     assert matched[0].cve_ids == ["CVE-2099-0001"]
     assert matched[0].device_ip == "192.168.50.20"
     assert "Potential advisory match" in " ".join(matched[0].evidence)
@@ -226,13 +234,16 @@ def test_fingerprint_combines_device_and_protocol_evidence():
     json.dumps(fingerprint.to_dict())
 
 
-@pytest.mark.parametrize(("address", "expected"), [
-    ("8.8.8.8", "public"),
-    ("100.64.0.1", "cgnat"),
-    ("192.168.50.1", "private_upstream"),
-    ("127.0.0.1", "unknown"),
-    ("not-an-ip", "unknown"),
-])
+@pytest.mark.parametrize(
+    ("address", "expected"),
+    [
+        ("8.8.8.8", "public"),
+        ("100.64.0.1", "cgnat"),
+        ("192.168.50.1", "private_upstream"),
+        ("127.0.0.1", "unknown"),
+        ("not-an-ip", "unknown"),
+    ],
+)
 def test_wan_classification(address, expected):
     """Verify wan classification via pytest.mark.parametrize, classify_external_ip.
 

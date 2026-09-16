@@ -52,10 +52,31 @@ _MULTICAST_BIT = 0x01
 #: Corporate suffixes stripped for display. Purely cosmetic - the underlying
 #: value from IEEE is never altered, so no mapping can become wrong.
 _NOISE_SUFFIXES = (
-    "co.,ltd.", "co.,ltd", "co., ltd.", "co., ltd", "co ltd", "co.ltd",
-    "company limited", "limited", "ltd.", "ltd", "inc.", "inc", "corporation",
-    "corp.", "corp", "gmbh", "s.a.", "b.v.", "pty", "plc", "llc",
-    "technologies", "technology", "electronics", "private",
+    "co.,ltd.",
+    "co.,ltd",
+    "co., ltd.",
+    "co., ltd",
+    "co ltd",
+    "co.ltd",
+    "company limited",
+    "limited",
+    "ltd.",
+    "ltd",
+    "inc.",
+    "inc",
+    "corporation",
+    "corp.",
+    "corp",
+    "gmbh",
+    "s.a.",
+    "b.v.",
+    "pty",
+    "plc",
+    "llc",
+    "technologies",
+    "technology",
+    "electronics",
+    "private",
 )
 
 
@@ -97,6 +118,7 @@ def _first_octet(mac: str) -> int | None:
 
 # -- pure bit-level facts (never stale, never wrong) -----------------------
 
+
 def is_randomized(mac: str) -> bool:
     """True when *mac* is a locally-administered (typically privacy) address.
 
@@ -125,6 +147,7 @@ def is_multicast(mac: str) -> bool:
 
 # -- vendor lookup (IEEE-backed only) --------------------------------------
 
+
 def lookup(mac: str) -> str:
     """Return the registered organisation for *mac*, or ``""`` if unknown.
 
@@ -142,7 +165,7 @@ def lookup(mac: str) -> str:
     ensure_registry_loaded()
 
     digits = norm.replace(":", "")
-    for length in (9, 7):                     # MA-S, then MA-M
+    for length in (9, 7):  # MA-S, then MA-M
         vendor = _LONG_ASSIGNMENTS.get(digits[:length])
         if vendor:
             return vendor
@@ -202,6 +225,7 @@ def describe_vendor(mac: str) -> str:
 
 # -- registry loading ------------------------------------------------------
 
+
 def cache_dir() -> Path:
     """Directory holding the downloaded IEEE registry.
 
@@ -243,8 +267,7 @@ def load_ieee_registry(path: str | os.PathLike[str]) -> int:
                 if org.lower().startswith("ieee registration authority"):
                     continue
                 if len(assignment) == 6:
-                    prefix = ":".join(
-                        assignment[i:i + 2] for i in range(0, 6, 2)).lower()
+                    prefix = ":".join(assignment[i : i + 2] for i in range(0, 6, 2)).lower()
                     if prefix not in _OUI:
                         _OUI[prefix] = org
                         added += 1
@@ -282,7 +305,7 @@ def ensure_registry_loaded() -> bool:
     global _registry_loaded
     if _registry_loaded:
         return True
-    _registry_loaded = True          # only ever attempt the disk read once
+    _registry_loaded = True  # only ever attempt the disk read once
     return load_cached_registry() > 0
 
 
@@ -304,6 +327,7 @@ def registry_age_days() -> float | None:
     """
     try:
         import time
+
         return max(0.0, (time.time() - cached_registry_path().stat().st_mtime) / 86400.0)
     except OSError:
         return None
@@ -328,8 +352,8 @@ def registry_status() -> dict[str, object]:
 
 #: IEEE publishes each block size as its own CSV; all are public.
 _IEEE_SOURCES = (
-    "https://standards-oui.ieee.org/oui/oui.csv",      # MA-L, 24-bit
-    "https://standards-oui.ieee.org/oui28/mam.csv",    # MA-M, 28-bit
+    "https://standards-oui.ieee.org/oui/oui.csv",  # MA-L, 24-bit
+    "https://standards-oui.ieee.org/oui28/mam.csv",  # MA-M, 28-bit
     "https://standards-oui.ieee.org/oui36/oui36.csv",  # MA-S, 36-bit
 )
 
@@ -362,8 +386,7 @@ def refresh_from_ieee(timeout: int = 60, cancel_event=None) -> tuple[bool, str]:
         if cancel_event is not None and cancel_event.is_set():
             return False, "Vendor database update cancelled."
         try:
-            request = urllib.request.Request(
-                url, headers={"User-Agent": "Cortex-Cleaner (MAC vendor lookup)"})
+            request = urllib.request.Request(url, headers={"User-Agent": "Cortex-Cleaner (MAC vendor lookup)"})
             with urllib.request.urlopen(request, timeout=timeout) as response:
                 text = response.read().decode("utf-8", "replace")
             lines = text.splitlines()
@@ -379,9 +402,11 @@ def refresh_from_ieee(timeout: int = 60, cancel_event=None) -> tuple[bool, str]:
 
     if not chunks:
         detail = "; ".join(errors[:2])
-        return False, ("Could not reach the IEEE registry "
-                       f"({detail}). Device makers will stay unnamed until this "
-                       "succeeds, but discovery itself still works.")
+        return False, (
+            "Could not reach the IEEE registry "
+            f"({detail}). Device makers will stay unnamed until this "
+            "succeeds, but discovery itself still works."
+        )
     try:
         target.write_text("\n".join(chunks), encoding="utf-8")
     except OSError as exc:
@@ -392,8 +417,7 @@ def refresh_from_ieee(timeout: int = 60, cancel_event=None) -> tuple[bool, str]:
     _registry_loaded = False
     added = load_ieee_registry(target)
     _registry_loaded = True
-    message = (f"Loaded {added:,} vendor assignments from "
-               f"{len(fetched)} IEEE file(s).")
+    message = f"Loaded {added:,} vendor assignments from " f"{len(fetched)} IEEE file(s)."
     if errors:
         message += f" ({len(errors)} registry file(s) unavailable.)"
     return True, message

@@ -60,26 +60,103 @@ _NO_WINDOW = _proc.NO_WINDOW
 
 #: Drive letters whose whole tree we refuse to compress-flag recursively.
 _SYSTEM_TREES = {
-    "windows", "windows.old", "winsxs", "program files", "program files (x86)",
-    "programdata", "$recycle.bin", "system volume information", "perflogs",
-    "recovery", "efi",
+    "windows",
+    "windows.old",
+    "winsxs",
+    "program files",
+    "program files (x86)",
+    "programdata",
+    "$recycle.bin",
+    "system volume information",
+    "perflogs",
+    "recovery",
+    "efi",
 }
 
 #: File extensions that compress well -> count ~full weight in the estimate.
 _COMPRESSIBLE_EXT = {
-    ".txt", ".log", ".json", ".xml", ".html", ".htm", ".css", ".js", ".mjs",
-    ".sql", ".csv", ".tsv", ".ini", ".cfg", ".conf", ".config", ".yaml",
-    ".yml", ".toml", ".py", ".pyw", ".jsx", ".ts", ".tsx", ".c", ".h", ".cpp",
-    ".hpp", ".cs", ".java", ".go", ".rs", ".rb", ".php", ".md", ".rst", ".doc",
-    ".docx", ".xls", ".xlsx", ".ppt", ".pptx", ".pdf", ".rtf", ".odt", ".eml",
+    ".txt",
+    ".log",
+    ".json",
+    ".xml",
+    ".html",
+    ".htm",
+    ".css",
+    ".js",
+    ".mjs",
+    ".sql",
+    ".csv",
+    ".tsv",
+    ".ini",
+    ".cfg",
+    ".conf",
+    ".config",
+    ".yaml",
+    ".yml",
+    ".toml",
+    ".py",
+    ".pyw",
+    ".jsx",
+    ".ts",
+    ".tsx",
+    ".c",
+    ".h",
+    ".cpp",
+    ".hpp",
+    ".cs",
+    ".java",
+    ".go",
+    ".rs",
+    ".rb",
+    ".php",
+    ".md",
+    ".rst",
+    ".doc",
+    ".docx",
+    ".xls",
+    ".xlsx",
+    ".ppt",
+    ".pptx",
+    ".pdf",
+    ".rtf",
+    ".odt",
+    ".eml",
 }
 
 #: Already-compressed container/media extensions -> ~nothing to gain.
 _INCOMPRESSIBLE_EXT = {
-    ".jpg", ".jpeg", ".png", ".gif", ".webp", ".avif", ".mp3", ".mp4", ".mkv",
-    ".avi", ".mov", ".wmv", ".flac", ".aac", ".ogg", ".zip", ".7z", ".rar",
-    ".gz", ".bz2", ".xz", ".tar", ".xz", ".exe", ".dll", ".msi", ".cab",
-    ".jar", ".war", ".whl", ".iso", ".nrg",
+    ".jpg",
+    ".jpeg",
+    ".png",
+    ".gif",
+    ".webp",
+    ".avif",
+    ".mp3",
+    ".mp4",
+    ".mkv",
+    ".avi",
+    ".mov",
+    ".wmv",
+    ".flac",
+    ".aac",
+    ".ogg",
+    ".zip",
+    ".7z",
+    ".rar",
+    ".gz",
+    ".bz2",
+    ".xz",
+    ".tar",
+    ".xz",
+    ".exe",
+    ".dll",
+    ".msi",
+    ".cab",
+    ".jar",
+    ".war",
+    ".whl",
+    ".iso",
+    ".nrg",
 }
 
 #: Conservative per-type savings used for the *estimate* (never a promise).
@@ -89,7 +166,12 @@ _COMPRESS_NONE = 0.02
 
 #: Directories / files we never consider compressing regardless of size.
 _BLOCKED_NAMES = {
-    "node_modules", "site-packages", "__pycache__", ".git", ".hg", ".svn",
+    "node_modules",
+    "site-packages",
+    "__pycache__",
+    ".git",
+    ".hg",
+    ".svn",
 }
 
 
@@ -99,6 +181,7 @@ class FolderEstimate:
 
     Manages FolderEstimate operations and coordinates related state changes for the component.
     """
+
     path: str
     size_bytes: int
     estimated_savings: int
@@ -130,6 +213,7 @@ class CompressionResult:
 
     Manages CompressionResult operations and coordinates related state changes for the component.
     """
+
     path: str
     success: bool
     message: str
@@ -218,8 +302,7 @@ class CompactOSManager:
         if not _IS_WINDOWS:
             return ""
         letter = drive.rstrip(":\\").upper()
-        out = self._run(
-            ["fsutil", "volume", "compression", f"{letter}:"], timeout=30)
+        out = self._run(["fsutil", "volume", "compression", f"{letter}:"], timeout=30)
         if out and "COMPRESSED" in out.upper():
             return "COMPRESSED"
         if out and "NOT COMPRESSED" in out.upper():
@@ -289,8 +372,8 @@ class CompactOSManager:
             Optional[FolderEstimate]: Result of the operation.
         """
         total = 0
-        compressible = 0            # bytes of clearly-compressible content
-        known = 0                   # bytes with a known (good/bad) extension
+        compressible = 0  # bytes of clearly-compressible content
+        known = 0  # bytes with a known (good/bad) extension
         count = 0
         try:
             for dirpath, dirnames, filenames in os.walk(folder):
@@ -379,26 +462,24 @@ class CompactOSManager:
         if not _IS_WINDOWS:
             return CompressionResult(str(p), False, "Windows-only feature.")
         if not self.is_admin():
-            return CompressionResult(
-                str(p), False, "Administrator privileges are required to compress folders.")
+            return CompressionResult(str(p), False, "Administrator privileges are required to compress folders.")
 
         resolved = p.resolve()
         if resolved.name.lower() in _SYSTEM_TREES or resolved.name in _BLOCKED_NAMES:
-            return CompressionResult(str(p), False,
-                                     f"Refused: {resolved.name} is a protected/system folder.")
+            return CompressionResult(str(p), False, f"Refused: {resolved.name} is a protected/system folder.")
         # Refuse to compact an entire drive root by accident.
         if resolved.parent == resolved:
-            return CompressionResult(str(p), False,
-                                     "Refusing to compress a drive root.")
+            return CompressionResult(str(p), False, "Refusing to compress a drive root.")
 
         flag = "/c"
         if recursive:
             flag += " /s"
-        out = self._run(
-            ["compact", flag, str(resolved)], timeout=1800, cancel_event=cancel_event)
+        out = self._run(["compact", flag, str(resolved)], timeout=1800, cancel_event=cancel_event)
 
-        if out and "files within" in out.lower() and (
-            "compressed" in out.lower() or "compression succeeded" in out.lower()
+        if (
+            out
+            and "files within" in out.lower()
+            and ("compressed" in out.lower() or "compression succeeded" in out.lower())
         ):
             return CompressionResult(str(p), True, "Compression completed.", 0, out[:400])
         reason = self._parse_failure(out)
@@ -447,8 +528,11 @@ class CompactOSManager:
         """
         try:
             proc = _proc.run(
-                args, text=True, timeout=timeout,
-                cancel_event=cancel_event, creationflags=_NO_WINDOW,
+                args,
+                text=True,
+                timeout=timeout,
+                cancel_event=cancel_event,
+                creationflags=_NO_WINDOW,
                 errors="replace",
             )
             return (proc.stdout or "") + (proc.stderr or "")

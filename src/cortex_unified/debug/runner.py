@@ -114,9 +114,8 @@ def bold(text: str) -> str:
 
 @dataclass
 class DiagnosticItem:
-    """Single named check outcome with status, message, and timing.
+    """Single named check outcome with status, message, and timing."""
 
-    """
     name: str
     status: str  # PASS, FAIL, SKIP, WARN
     message: str = ""
@@ -126,9 +125,8 @@ class DiagnosticItem:
 
 @dataclass
 class DiagnosticSection:
-    """Grouped checks with pass, fail, and skip tallies.
+    """Grouped checks with pass, fail, and skip tallies."""
 
-    """
     title: str
     items: List[DiagnosticItem] = field(default_factory=list)
     passed: int = 0
@@ -159,9 +157,8 @@ class DiagnosticSection:
 
 @dataclass
 class DiagnosticReport:
-    """Whole-run diagnostics with per-section breakdown and readiness flag.
+    """Whole-run diagnostics with per-section breakdown and readiness flag."""
 
-    """
     timestamp: str
     total_duration_sec: float
     sections: List[DiagnosticSection] = field(default_factory=list)
@@ -202,9 +199,8 @@ class DiagnosticReport:
 
 
 class DiagnosticRunner:
-    """Offscreen production diagnostics orchestrator across subsystems.
+    """Offscreen production diagnostics orchestrator across subsystems."""
 
-    """
     def __init__(self, verbose: bool = False):
         """Initialize the runner with an empty diagnostic report.
 
@@ -219,9 +215,7 @@ class DiagnosticRunner:
             total_duration_sec=0.0,
         )
 
-    def run_section(
-        self, title: str, fn: Callable[[DiagnosticSection], None]
-    ) -> DiagnosticSection:
+    def run_section(self, title: str, fn: Callable[[DiagnosticSection], None]) -> DiagnosticSection:
         """Run one named section, capturing unhandled exceptions as FAIL.
 
 
@@ -301,9 +295,7 @@ class DiagnosticRunner:
                 )
                 sec.failed += 1
         except Exception as exc:
-            sec.items.append(
-                DiagnosticItem(name="Icon Engine", status="FAIL", message=str(exc))
-            )
+            sec.items.append(DiagnosticItem(name="Icon Engine", status="FAIL", message=str(exc)))
             sec.failed += 1
 
     def check_system_tools(self, sec: DiagnosticSection) -> None:
@@ -314,9 +306,7 @@ class DiagnosticRunner:
             sec (DiagnosticSection): The sec parameter.
         """
         tools_dir = SRC_DIR / "cortex_unified" / "system_tools"
-        tool_files = sorted(
-            [f.stem for f in tools_dir.glob("*.py") if not f.name.startswith("__")]
-        )
+        tool_files = sorted([f.stem for f in tools_dir.glob("*.py") if not f.name.startswith("__")])
         for tool_name in tool_files:
             t0 = time.perf_counter()
             try:
@@ -351,9 +341,7 @@ class DiagnosticRunner:
             sec (DiagnosticSection): The sec parameter.
         """
         analyzers_dir = SRC_DIR / "cortex_unified" / "analyzers"
-        analyzer_files = sorted(
-            [f.stem for f in analyzers_dir.glob("*.py") if not f.name.startswith("__")]
-        )
+        analyzer_files = sorted([f.stem for f in analyzers_dir.glob("*.py") if not f.name.startswith("__")])
         for an_name in analyzer_files:
             t0 = time.perf_counter()
             try:
@@ -399,9 +387,7 @@ class DiagnosticRunner:
             from cortex_unified.engine.storage import detect_storage
 
             # Verify security path guards
-            safe, reason = check_deletion_safety(
-                os.environ.get("WINDIR", r"C:\Windows") + r"\System32\kernel32.dll"
-            )
+            safe, reason = check_deletion_safety(os.environ.get("WINDIR", r"C:\Windows") + r"\System32\kernel32.dll")
             assert not safe, "System file kernel32.dll was flagged safe to delete!"
             sec.items.append(
                 DiagnosticItem(
@@ -437,9 +423,7 @@ class DiagnosticRunner:
             )
             sec.passed += 1
         except Exception as exc:
-            sec.items.append(
-                DiagnosticItem(name="Core Engine", status="FAIL", message=str(exc))
-            )
+            sec.items.append(DiagnosticItem(name="Core Engine", status="FAIL", message=str(exc)))
             sec.failed += 1
 
     def check_caches_and_algorithms(self, sec: DiagnosticSection) -> None:
@@ -494,11 +478,7 @@ class DiagnosticRunner:
             )
             sec.passed += 1
         except Exception as exc:
-            sec.items.append(
-                DiagnosticItem(
-                    name="Algorithmic Engines", status="FAIL", message=str(exc)
-                )
-            )
+            sec.items.append(DiagnosticItem(name="Algorithmic Engines", status="FAIL", message=str(exc)))
             sec.failed += 1
 
     def check_nexus_explorer(self, sec: DiagnosticSection) -> None:
@@ -570,6 +550,7 @@ class DiagnosticRunner:
 
             # Test Nexus Power Tools
             from NexusExplorer.native.nexus_hash_tool import HashTool, HashAlgorithm
+
             h_res = HashTool.compute_hash(__file__, HashAlgorithm.SHA256)
             assert bool(h_res.digest), "Hash computation failed"
             sec.items.append(
@@ -582,6 +563,7 @@ class DiagnosticRunner:
             sec.passed += 1
 
             from NexusExplorer.native.nexus_batch_renamer import BatchRenamer
+
             renamer = BatchRenamer()
             p_res = renamer.preview_rename([__file__], replace_pattern="<name>_test")
             assert len(p_res) == 1, "Batch renamer preview failed"
@@ -595,6 +577,7 @@ class DiagnosticRunner:
             sec.passed += 1
 
             from NexusExplorer.native.nexus_dir_diff import DirectoryDiffEngine
+
             sec.items.append(
                 DiagnosticItem(
                     name="Nexus Directory Diff & Sync",
@@ -605,6 +588,7 @@ class DiagnosticRunner:
             sec.passed += 1
 
             from NexusExplorer.native.nexus_file_splitter import FileSplitterJoiner
+
             sec.items.append(
                 DiagnosticItem(
                     name="Nexus File Splitter & Joiner",
@@ -615,6 +599,7 @@ class DiagnosticRunner:
             sec.passed += 1
 
             from NexusExplorer.native.nexus_unlocker import FileUnlocker
+
             sec.items.append(
                 DiagnosticItem(
                     name="Nexus Process Unlocker (Restart Manager)",
@@ -625,6 +610,7 @@ class DiagnosticRunner:
             sec.passed += 1
 
             from NexusExplorer.native.nexus_ads_manager import AlternateDataStreamsManager
+
             sec.items.append(
                 DiagnosticItem(
                     name="Nexus NTFS Alternate Data Streams",
@@ -635,6 +621,7 @@ class DiagnosticRunner:
             sec.passed += 1
 
             from NexusExplorer.native.nexus_links_manager import LinksManager
+
             sec.items.append(
                 DiagnosticItem(
                     name="Nexus NTFS Links & Junctions Manager",
@@ -645,6 +632,7 @@ class DiagnosticRunner:
             sec.passed += 1
 
             from NexusExplorer.native.nexus_fast_copier import FastCopier
+
             sec.items.append(
                 DiagnosticItem(
                     name="Nexus Fast File Copier & Transfer Engine",
@@ -655,6 +643,7 @@ class DiagnosticRunner:
             sec.passed += 1
 
             from NexusExplorer.native.nexus_timestamp_touch import TimestampTouchEngine
+
             sec.items.append(
                 DiagnosticItem(
                     name="Nexus Forensic Timestamp & Attribute Touch",
@@ -665,6 +654,7 @@ class DiagnosticRunner:
             sec.passed += 1
 
             from NexusExplorer.native.nexus_archive_manager import ArchiveManager
+
             sec.items.append(
                 DiagnosticItem(
                     name="Nexus Multi-Format Archive Studio",
@@ -675,6 +665,7 @@ class DiagnosticRunner:
             sec.passed += 1
 
             from NexusExplorer.native.file_signature_sniffer import FileSignatureSniffer
+
             sec.items.append(
                 DiagnosticItem(
                     name="Nexus File Signature & Magic Bytes Sniffer",
@@ -685,6 +676,7 @@ class DiagnosticRunner:
             sec.passed += 1
 
             from NexusExplorer.native.binary_differ import BinaryDiffer
+
             sec.items.append(
                 DiagnosticItem(
                     name="Nexus Binary & Hex File Differ",
@@ -695,6 +687,7 @@ class DiagnosticRunner:
             sec.passed += 1
 
             from NexusExplorer.native.usn_journal_scanner import UsnJournalScanner
+
             sec.items.append(
                 DiagnosticItem(
                     name="Nexus NTFS USN Change Journal Scanner",
@@ -705,6 +698,7 @@ class DiagnosticRunner:
             sec.passed += 1
 
             from NexusExplorer.native.par2_recovery import Par2RecoveryEngine
+
             sec.items.append(
                 DiagnosticItem(
                     name="Nexus PAR2 Parity Integrity Validator",
@@ -715,6 +709,7 @@ class DiagnosticRunner:
             sec.passed += 1
 
             from NexusExplorer.native.image_optimizer import ImageOptimizer
+
             sec.items.append(
                 DiagnosticItem(
                     name="Nexus Batch Image Optimizer & WebP Transcoder",
@@ -725,6 +720,7 @@ class DiagnosticRunner:
             sec.passed += 1
 
             from cortex_unified.system_tools.slack_space_analyzer import SlackSpaceAnalyzer
+
             sec.items.append(
                 DiagnosticItem(
                     name="Nexus NTFS Slack Space & Cluster Forensics",
@@ -735,11 +731,7 @@ class DiagnosticRunner:
             sec.passed += 1
 
         except Exception as exc:
-            sec.items.append(
-                DiagnosticItem(
-                    name="Nexus File Manager", status="FAIL", message=str(exc)
-                )
-            )
+            sec.items.append(DiagnosticItem(name="Nexus File Manager", status="FAIL", message=str(exc)))
             sec.failed += 1
 
     def check_ui_pages(self, sec: DiagnosticSection) -> None:
@@ -787,9 +779,7 @@ class DiagnosticRunner:
 
             win.close()
         except Exception as exc:
-            sec.items.append(
-                DiagnosticItem(name="UI Shell", status="FAIL", message=str(exc))
-            )
+            sec.items.append(DiagnosticItem(name="UI Shell", status="FAIL", message=str(exc)))
             sec.failed += 1
 
     def run_all(self) -> DiagnosticReport:
@@ -878,13 +868,9 @@ class DiagnosticRunner:
             sec (DiagnosticSection): The sec parameter.
         """
         if sec.is_success:
-            print(
-                f"  {green('✓')} {sec.title}: All {sec.passed}/{sec.total} checks passed ({sec.duration_ms:.1f}ms)"
-            )
+            print(f"  {green('✓')} {sec.title}: All {sec.passed}/{sec.total} checks passed ({sec.duration_ms:.1f}ms)")
         else:
-            print(
-                f"  {red('✗')} {sec.title}: {sec.failed}/{sec.total} checks failed ({sec.duration_ms:.1f}ms)"
-            )
+            print(f"  {red('✗')} {sec.title}: {sec.failed}/{sec.total} checks failed ({sec.duration_ms:.1f}ms)")
             for it in sec.items:
                 if it.status == "FAIL":
                     print(f"    - {red(it.name)}: {it.message}")
@@ -911,15 +897,9 @@ def main() -> int:
     Returns:
         int: Result of the operation.
     """
-    parser = argparse.ArgumentParser(
-        description="Cortex Cleaner Production Diagnostics"
-    )
-    parser.add_argument(
-        "--json", action="store_true", help="Output machine-readable JSON report"
-    )
-    parser.add_argument(
-        "-v", "--verbose", action="store_true", help="Verbose itemized diagnostic logs"
-    )
+    parser = argparse.ArgumentParser(description="Cortex Cleaner Production Diagnostics")
+    parser.add_argument("--json", action="store_true", help="Output machine-readable JSON report")
+    parser.add_argument("-v", "--verbose", action="store_true", help="Verbose itemized diagnostic logs")
     args = parser.parse_args()
 
     runner = DiagnosticRunner(verbose=args.verbose)

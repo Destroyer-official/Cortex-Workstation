@@ -111,13 +111,13 @@ def _SecondaryButton(text: str, parent=None) -> QPushButton:
 def _run_task(win, work_fn, done_fn, err_fn=None):
     """Run work_fn on the window's worker runtime, or inline as a fallback, dispatching to done_fn / err_fn.
 
-        Operates on this page widgets as implemented in the method body below.
+    Operates on this page widgets as implemented in the method body below.
 
-            Args:
-                win: Parent window or shell controller instance.
-                work_fn: The work fn parameter.
-                done_fn: The done fn parameter.
-                err_fn: Error message string or exception instance.
+        Args:
+            win: Parent window or shell controller instance.
+            work_fn: The work fn parameter.
+            done_fn: The done fn parameter.
+            err_fn: Error message string or exception instance.
 
     """
     if hasattr(win, "worker_runtime") and getattr(win, "worker_runtime", None) is not None:
@@ -135,11 +135,13 @@ def _run_task(win, work_fn, done_fn, err_fn=None):
 # 1. ENVIRONMENT VARIABLE & PATH OPTIMIZER PAGE
 # ===========================================================================
 
+
 class EnvVariableManagerPage(_Page):
     """PATH Optimizer page with analyze/clean/export buttons and an entries table.
 
-        Backed by EnvironmentVariableManager, QMessageBox, QFileDialog; builds tables, buttons, and dialogs for the actions below.
+    Backed by EnvironmentVariableManager, QMessageBox, QFileDialog; builds tables, buttons, and dialogs for the actions below.
     """
+
     def __init__(self, win: PremiumMainWindow):
         """Build the PATH Optimizer page with analyze/clean/export buttons and an entries table.
 
@@ -149,7 +151,12 @@ class EnvVariableManagerPage(_Page):
             win (PremiumMainWindow): Parent window or shell controller instance.
         """
         super().__init__(win)
-        self.v.addWidget(title_block("Environment Variable & PATH Optimizer", "Audit PATH for dead links, duplicate directories, and manage User/System environment variables."))
+        self.v.addWidget(
+            title_block(
+                "Environment Variable & PATH Optimizer",
+                "Audit PATH for dead links, duplicate directories, and manage User/System environment variables.",
+            )
+        )
 
         card = Card(self.p)
         cl = QVBoxLayout(card)
@@ -192,7 +199,7 @@ class EnvVariableManagerPage(_Page):
     def _on_analyze(self):
         """Analyze PATH and list entries with dead-link and duplicate flags.
 
-            Uses EnvironmentVariableManager; updates self.summary_label, self.table.
+        Uses EnvironmentVariableManager; updates self.summary_label, self.table.
         """
         rep = EnvironmentVariableManager.analyze_path()
         self.summary_label.setText(
@@ -217,27 +224,31 @@ class EnvVariableManagerPage(_Page):
     def _on_clean(self):
         """Confirm and remove dead/duplicate User PATH entries, then re-analyze.
 
-            Uses EnvironmentVariableManager, QMessageBox; updates self._on_analyze.
+        Uses EnvironmentVariableManager, QMessageBox; updates self._on_analyze.
         """
         confirm = QMessageBox.question(
-            self, "Confirm PATH Cleanup",
+            self,
+            "Confirm PATH Cleanup",
             "Clean User PATH by removing non-existent folders and redundant duplicates?",
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
         )
         if confirm == QMessageBox.StandardButton.Yes:
             res = EnvironmentVariableManager.clean_path(scope="User")
             QMessageBox.information(
-                self, "Clean Complete",
-                f"Removed {res.entries_removed} entries ({res.dead_links_removed} dead links, {res.duplicates_removed} duplicates)."
+                self,
+                "Clean Complete",
+                f"Removed {res.entries_removed} entries ({res.dead_links_removed} dead links, {res.duplicates_removed} duplicates).",
             )
             self._on_analyze()
 
     def _on_export(self):
         """Export environment variables to a .env or .bat file.
 
-            Uses EnvironmentVariableManager, QMessageBox.
+        Uses EnvironmentVariableManager, QMessageBox.
         """
-        f, _ = QFileDialog.getSaveFileName(self, "Export Environment Variables", "environment.env", "Env Files (*.env *.bat)")
+        f, _ = QFileDialog.getSaveFileName(
+            self, "Export Environment Variables", "environment.env", "Env Files (*.env *.bat)"
+        )
         if f:
             fmt = "bat" if f.endswith(".bat") else "env"
             ok = EnvironmentVariableManager.export_env_to_file(f, fmt=fmt)
@@ -249,11 +260,13 @@ class EnvVariableManagerPage(_Page):
 # 2. WINDOWS SERVICE MANAGER PAGE
 # ===========================================================================
 
+
 class WindowsServiceManagerPage(_Page):
     """Service Manager page with scan button, profile combo, and services table.
 
-        Backed by WindowsServiceManager, QMessageBox; builds tables, buttons, and dialogs for the actions below.
+    Backed by WindowsServiceManager, QMessageBox; builds tables, buttons, and dialogs for the actions below.
     """
+
     def __init__(self, win: PremiumMainWindow):
         """Build the Service Manager page with scan button, profile combo, and services table.
 
@@ -263,7 +276,12 @@ class WindowsServiceManagerPage(_Page):
             win (PremiumMainWindow): Parent window or shell controller instance.
         """
         super().__init__(win)
-        self.v.addWidget(title_block("Windows Service Profile Optimizer", "Profile and disable unnecessary background services with pre-tuned Gaming, Minimal, and Developer presets."))
+        self.v.addWidget(
+            title_block(
+                "Windows Service Profile Optimizer",
+                "Profile and disable unnecessary background services with pre-tuned Gaming, Minimal, and Developer presets.",
+            )
+        )
 
         card = Card(self.p)
         cl = QVBoxLayout(card)
@@ -302,7 +320,7 @@ class WindowsServiceManagerPage(_Page):
     def _on_scan(self):
         """Enumerate Windows services on the worker runtime.
 
-            Uses WindowsServiceManager; updates self.scan_btn, self.table, self.win.
+        Uses WindowsServiceManager; updates self.scan_btn, self.table, self.win.
         """
         self.scan_btn.setEnabled(False)
         self.table.setRowCount(0)
@@ -342,19 +360,21 @@ class WindowsServiceManagerPage(_Page):
     def _on_apply_profile(self):
         """Confirm and apply the selected service profile, then rescan.
 
-            Uses WindowsServiceManager, QMessageBox; updates self.profile_combo, self._on_scan.
+        Uses WindowsServiceManager, QMessageBox; updates self.profile_combo, self._on_scan.
         """
         prof = self.profile_combo.currentText()
         confirm = QMessageBox.question(
-            self, f"Confirm {prof} Profile",
+            self,
+            f"Confirm {prof} Profile",
             f"Apply '{prof}' optimization profile to disable redundant background services?\n\n(Requires Administrator privileges)",
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
         )
         if confirm == QMessageBox.StandardButton.Yes:
             res = WindowsServiceManager.apply_profile(prof)
             QMessageBox.information(
-                self, "Profile Applied",
-                f"Configured {res.services_changed} services ({res.services_stopped} stopped, {res.services_disabled} disabled)."
+                self,
+                "Profile Applied",
+                f"Configured {res.services_changed} services ({res.services_stopped} stopped, {res.services_disabled} disabled).",
             )
             self._on_scan()
 
@@ -363,11 +383,13 @@ class WindowsServiceManagerPage(_Page):
 # 3. FONT CACHE & ORPHANED REGISTRY CLEANER PAGE
 # ===========================================================================
 
+
 class FontCacheManagerPage(_Page):
     """Font Cache page with scan/clean buttons and a fonts table.
 
-        Backed by FontCacheManager, QMessageBox; builds tables, buttons, and dialogs for the actions below.
+    Backed by FontCacheManager, QMessageBox; builds tables, buttons, and dialogs for the actions below.
     """
+
     def __init__(self, win: PremiumMainWindow):
         """Build the Font Cache page with scan/clean buttons and a fonts table.
 
@@ -377,7 +399,12 @@ class FontCacheManagerPage(_Page):
             win (PremiumMainWindow): Parent window or shell controller instance.
         """
         super().__init__(win)
-        self.v.addWidget(title_block("Font Cache & Registry Orphan Cleaner", "Inspect installed font footprint, detect duplicate font files, and clean orphaned font registry entries."))
+        self.v.addWidget(
+            title_block(
+                "Font Cache & Registry Orphan Cleaner",
+                "Inspect installed font footprint, detect duplicate font files, and clean orphaned font registry entries.",
+            )
+        )
 
         card = Card(self.p)
         cl = QVBoxLayout(card)
@@ -417,7 +444,7 @@ class FontCacheManagerPage(_Page):
     def _on_scan(self):
         """Analyze installed fonts and flag orphans and duplicates.
 
-            Uses FontCacheManager; updates self.summary_label, self.table.
+        Uses FontCacheManager; updates self.summary_label, self.table.
         """
         rep = FontCacheManager.analyze()
         self.summary_label.setText(
@@ -440,10 +467,11 @@ class FontCacheManagerPage(_Page):
     def _on_clean(self):
         """Confirm and remove orphaned font entries, then rescan.
 
-            Uses FontCacheManager, QMessageBox; updates self._on_scan.
+        Uses FontCacheManager, QMessageBox; updates self._on_scan.
         """
         confirm = QMessageBox.question(
-            self, "Confirm Orphan Cleanup",
+            self,
+            "Confirm Orphan Cleanup",
             "Delete orphaned font registry entries pointing to missing files?",
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
         )
@@ -457,11 +485,13 @@ class FontCacheManagerPage(_Page):
 # 4. DEEP MULTI-LOCATION TEMP CLEANER PAGE
 # ===========================================================================
 
+
 class TempFolderCleanerPage(_Page):
     """Temp Cleaner page with age spinner, scan/clean buttons, and a locations table.
 
-        Backed by TempFolderCleaner, QMessageBox; builds tables, buttons, and dialogs for the actions below.
+    Backed by TempFolderCleaner, QMessageBox; builds tables, buttons, and dialogs for the actions below.
     """
+
     def __init__(self, win: PremiumMainWindow):
         """Build the Temp Cleaner page with age spinner, scan/clean buttons, and a locations table.
 
@@ -471,7 +501,12 @@ class TempFolderCleanerPage(_Page):
             win (PremiumMainWindow): Parent window or shell controller instance.
         """
         super().__init__(win)
-        self.v.addWidget(title_block("Deep Multi-Location Temp Cleaner", "Scan and purge stale temporary files, GPU shader caches, and Windows patch residues."))
+        self.v.addWidget(
+            title_block(
+                "Deep Multi-Location Temp Cleaner",
+                "Scan and purge stale temporary files, GPU shader caches, and Windows patch residues.",
+            )
+        )
 
         card = Card(self.p)
         cl = QVBoxLayout(card)
@@ -500,7 +535,9 @@ class TempFolderCleanerPage(_Page):
         cl.addWidget(self.summary_label)
 
         self.table = QTableWidget(0, 5)
-        self.table.setHorizontalHeaderLabels(["Location Name", "Folder Path", "Total Files", "Total Size", "Recoverable Stale Size"])
+        self.table.setHorizontalHeaderLabels(
+            ["Location Name", "Folder Path", "Total Files", "Total Size", "Recoverable Stale Size"]
+        )
         self.table.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.ResizeToContents)
         self.table.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeMode.Stretch)
         self.table.horizontalHeader().setSectionResizeMode(2, QHeaderView.ResizeMode.ResizeToContents)
@@ -517,7 +554,7 @@ class TempFolderCleanerPage(_Page):
     def _on_scan(self):
         """Scan all temp locations and show stale-file totals.
 
-            Uses TempFolderCleaner; updates self.hours_spin, self.summary_label, self.table.
+        Uses TempFolderCleaner; updates self.hours_spin, self.summary_label, self.table.
         """
         h = self.hours_spin.value()
         rep = TempFolderCleaner.scan(stale_hours=h)
@@ -539,19 +576,21 @@ class TempFolderCleanerPage(_Page):
     def _on_clean(self):
         """Confirm and delete temp files older than the chosen age, then rescan.
 
-            Uses TempFolderCleaner, QMessageBox; updates self.hours_spin, self._on_scan.
+        Uses TempFolderCleaner, QMessageBox; updates self.hours_spin, self._on_scan.
         """
         h = self.hours_spin.value()
         confirm = QMessageBox.question(
-            self, "Confirm Temp Purge",
+            self,
+            "Confirm Temp Purge",
             f"Delete temporary files older than {h} hours across all discovered locations?",
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
         )
         if confirm == QMessageBox.StandardButton.Yes:
             res = TempFolderCleaner.clean(stale_hours=h)
             QMessageBox.information(
-                self, "Purge Complete",
-                f"Deleted {res.files_deleted:,} files ({_fmt_bytes(res.bytes_freed)} freed). Skipped {res.locked_skipped} locked files."
+                self,
+                "Purge Complete",
+                f"Deleted {res.files_deleted:,} files ({_fmt_bytes(res.bytes_freed)} freed). Skipped {res.locked_skipped} locked files.",
             )
             self._on_scan()
 
@@ -560,11 +599,13 @@ class TempFolderCleanerPage(_Page):
 # 5. CONTEXT MENU & SHELL EXTENSION MANAGER PAGE
 # ===========================================================================
 
+
 class ContextMenuManagerPage(_Page):
     """Context Menu page with scan button, enable/disable actions, and an entries table.
 
-        Backed by ContextMenuManager, QMessageBox; builds tables, buttons, and dialogs for the actions below.
+    Backed by ContextMenuManager, QMessageBox; builds tables, buttons, and dialogs for the actions below.
     """
+
     def __init__(self, win: PremiumMainWindow):
         """Build the Context Menu page with scan button, enable/disable actions, and an entries table.
 
@@ -574,7 +615,12 @@ class ContextMenuManagerPage(_Page):
             win (PremiumMainWindow): Parent window or shell controller instance.
         """
         super().__init__(win)
-        self.v.addWidget(title_block("Context Menu & Shell Extension Manager", "Inspect and disable bloated right-click Explorer context menu handlers and orphaned items."))
+        self.v.addWidget(
+            title_block(
+                "Context Menu & Shell Extension Manager",
+                "Inspect and disable bloated right-click Explorer context menu handlers and orphaned items.",
+            )
+        )
 
         card = Card(self.p)
         cl = QVBoxLayout(card)
@@ -620,7 +666,7 @@ class ContextMenuManagerPage(_Page):
     def _on_scan(self):
         """Analyze context-menu entries and flag orphaned handlers.
 
-            Uses ContextMenuManager; updates self._entries, self.summary_label, self.table.
+        Uses ContextMenuManager; updates self._entries, self.summary_label, self.table.
         """
         rep = ContextMenuManager.analyze()
         self._entries = rep.entries
@@ -645,7 +691,7 @@ class ContextMenuManagerPage(_Page):
     def _on_disable_selected(self):
         """Disable the context-menu entry selected in the table.
 
-            Uses ContextMenuManager, QMessageBox; updates self.table, self._entries, self._on_scan.
+        Uses ContextMenuManager, QMessageBox; updates self.table, self._entries, self._on_scan.
         """
         row = self.table.currentRow()
         if 0 <= row < len(self._entries):
@@ -660,7 +706,7 @@ class ContextMenuManagerPage(_Page):
     def _on_enable_selected(self):
         """Enable the context-menu entry selected in the table.
 
-            Uses ContextMenuManager, QMessageBox; updates self.table, self._entries, self._on_scan.
+        Uses ContextMenuManager, QMessageBox; updates self.table, self._entries, self._on_scan.
         """
         row = self.table.currentRow()
         if 0 <= row < len(self._entries):
@@ -677,11 +723,13 @@ class ContextMenuManagerPage(_Page):
 # 6. VIRTUAL MEMORY & PAGEFILE OPTIMIZER PAGE
 # ===========================================================================
 
+
 class PagefileOptimizerPage(_Page):
     """Pagefile page with status labels, drive/size controls, and apply/reset buttons.
 
-        Backed by PagefileOptimizer, QMessageBox; builds tables, buttons, and dialogs for the actions below.
+    Backed by PagefileOptimizer, QMessageBox; builds tables, buttons, and dialogs for the actions below.
     """
+
     def __init__(self, win: PremiumMainWindow):
         """Build the Pagefile page with status labels, drive/size controls, and apply/reset buttons.
 
@@ -691,7 +739,12 @@ class PagefileOptimizerPage(_Page):
             win (PremiumMainWindow): Parent window or shell controller instance.
         """
         super().__init__(win)
-        self.v.addWidget(title_block("Virtual Memory & Pagefile Hardware Optimizer", "Configure pagefile.sys allocation to eliminate SSD write amplification and ensure system stability."))
+        self.v.addWidget(
+            title_block(
+                "Virtual Memory & Pagefile Hardware Optimizer",
+                "Configure pagefile.sys allocation to eliminate SSD write amplification and ensure system stability.",
+            )
+        )
 
         card = Card(self.p)
         cl = QVBoxLayout(card)
@@ -750,20 +803,23 @@ class PagefileOptimizerPage(_Page):
             f"Committed Pagefile: {_fmt_bytes(st.total_pagefile_bytes)}  •  Memory Load: {st.memory_load_percent}%\n"
             f"Current Configuration: {'Automatic / System-Managed' if st.current_config.is_automatic else f'Custom ({st.current_config.initial_mb}MB - {st.current_config.maximum_mb}MB on {st.current_config.drive_letter})'}"
         )
-        self.rec_label.setText(f"Hardware Recommendation:\n{st.recommendation_reason}\nRecommended Range: {st.recommended_min_mb} MB - {st.recommended_max_mb} MB")
+        self.rec_label.setText(
+            f"Hardware Recommendation:\n{st.recommendation_reason}\nRecommended Range: {st.recommended_min_mb} MB - {st.recommended_max_mb} MB"
+        )
         self.init_spin.setValue(st.recommended_min_mb)
         self.max_spin.setValue(st.recommended_max_mb)
 
     def _on_apply(self):
         """Confirm and set a fixed pagefile on the chosen drive, then refresh.
 
-            Uses PagefileOptimizer, QMessageBox; updates self.drive_combo, self.init_spin, self.max_spin.
+        Uses PagefileOptimizer, QMessageBox; updates self.drive_combo, self.init_spin, self.max_spin.
         """
         drive = self.drive_combo.currentText()
         init_mb = self.init_spin.value()
         max_mb = self.max_spin.value()
         confirm = QMessageBox.question(
-            self, "Confirm Pagefile Setup",
+            self,
+            "Confirm Pagefile Setup",
             f"Set paging file on {drive} to {init_mb}MB - {max_mb}MB?\n\n(Requires Administrator privileges)",
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
         )
@@ -778,7 +834,7 @@ class PagefileOptimizerPage(_Page):
     def _on_reset_auto(self):
         """Reset the pagefile to system-managed, then refresh.
 
-            Uses PagefileOptimizer, QMessageBox; updates self._refresh.
+        Uses PagefileOptimizer, QMessageBox; updates self._refresh.
         """
         ok, msg = PagefileOptimizer.set_automatic_pagefile()
         if ok:
@@ -792,11 +848,13 @@ class PagefileOptimizerPage(_Page):
 # 7. TELEMETRY & DIAGNOSTIC DATA MANAGER PAGE
 # ===========================================================================
 
+
 class DiagnosticDataManagerPage(_Page):
     """Telemetry page with audit/harden buttons, score label, and settings table.
 
-        Backed by DiagnosticDataManager, QMessageBox; builds tables, buttons, and dialogs for the actions below.
+    Backed by DiagnosticDataManager, QMessageBox; builds tables, buttons, and dialogs for the actions below.
     """
+
     def __init__(self, win: PremiumMainWindow):
         """Build the Telemetry page with audit/harden buttons, score label, and settings table.
 
@@ -806,7 +864,12 @@ class DiagnosticDataManagerPage(_Page):
             win (PremiumMainWindow): Parent window or shell controller instance.
         """
         super().__init__(win)
-        self.v.addWidget(title_block("Windows Telemetry & Diagnostic Data Manager", "Audit OS diagnostic data submission, CEIP tracking, and enforce maximum telemetry privacy."))
+        self.v.addWidget(
+            title_block(
+                "Windows Telemetry & Diagnostic Data Manager",
+                "Audit OS diagnostic data submission, CEIP tracking, and enforce maximum telemetry privacy.",
+            )
+        )
 
         card = Card(self.p)
         cl = QVBoxLayout(card)
@@ -844,7 +907,7 @@ class DiagnosticDataManagerPage(_Page):
     def _on_audit(self):
         """Audit telemetry settings and show the privacy hardening score.
 
-            Uses DiagnosticDataManager; updates self.score_label, self.table.
+        Uses DiagnosticDataManager; updates self.score_label, self.table.
         """
         rep = DiagnosticDataManager.audit_telemetry()
         self.score_label.setText(
@@ -855,7 +918,9 @@ class DiagnosticDataManagerPage(_Page):
         self.table.setRowCount(len(rep.settings))
         for r, s in enumerate(rep.settings):
             self.table.setItem(r, 0, QTableWidgetItem(s.name))
-            self.table.setItem(r, 1, QTableWidgetItem(str(s.current_value) if s.current_value is not None else "Default / Unset"))
+            self.table.setItem(
+                r, 1, QTableWidgetItem(str(s.current_value) if s.current_value is not None else "Default / Unset")
+            )
             self.table.setItem(r, 2, QTableWidgetItem(str(s.recommended_value)))
             st_item = QTableWidgetItem("PROTECTED" if s.is_hardened else "EXPOSED (Telemetry Active)")
             if s.is_hardened:
@@ -867,10 +932,11 @@ class DiagnosticDataManagerPage(_Page):
     def _on_harden(self):
         """Confirm and apply maximum-privacy telemetry policies, then re-audit.
 
-            Uses DiagnosticDataManager, QMessageBox; updates self._on_audit.
+        Uses DiagnosticDataManager, QMessageBox; updates self._on_audit.
         """
         confirm = QMessageBox.question(
-            self, "Confirm Hardening",
+            self,
+            "Confirm Hardening",
             "Enforce maximum privacy by disabling diagnostic telemetry, CEIP, and activity tracking?\n\n(Requires Administrator privileges)",
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
         )
@@ -879,7 +945,11 @@ class DiagnosticDataManagerPage(_Page):
             if errors:
                 QMessageBox.warning(self, "Notice", f"Applied {applied} settings.\nErrors: {'; '.join(errors[:2])}")
             else:
-                QMessageBox.information(self, "Hardening Complete", f"All {applied} telemetry policies successfully hardened to maximum privacy.")
+                QMessageBox.information(
+                    self,
+                    "Hardening Complete",
+                    f"All {applied} telemetry policies successfully hardened to maximum privacy.",
+                )
             self._on_audit()
 
 
@@ -887,11 +957,13 @@ class DiagnosticDataManagerPage(_Page):
 # 8. STARTUP IMPACT ANALYZER PAGE
 # ===========================================================================
 
+
 class StartupImpactPage(_Page):
     """Startup Impact page with scan/toggle buttons and an items table.
 
-        Backed by StartupImpactAnalyzer, QMessageBox; builds tables, buttons, and dialogs for the actions below.
+    Backed by StartupImpactAnalyzer, QMessageBox; builds tables, buttons, and dialogs for the actions below.
     """
+
     def __init__(self, win: PremiumMainWindow):
         """Build the Startup Impact page with scan/toggle buttons and an items table.
 
@@ -901,7 +973,12 @@ class StartupImpactPage(_Page):
             win (PremiumMainWindow): Parent window or shell controller instance.
         """
         super().__init__(win)
-        self.v.addWidget(title_block("Startup Impact Analyzer & Sequencer", "Analyze boot delay impact from StartupApproved records and toggle heavy startup programs."))
+        self.v.addWidget(
+            title_block(
+                "Startup Impact Analyzer & Sequencer",
+                "Analyze boot delay impact from StartupApproved records and toggle heavy startup programs.",
+            )
+        )
 
         card = Card(self.p)
         cl = QVBoxLayout(card)
@@ -943,7 +1020,7 @@ class StartupImpactPage(_Page):
     def _on_scan(self):
         """Analyze startup items and show impact levels and boot delay.
 
-            Uses StartupImpactAnalyzer; updates self._items, self.summary_label, self.table.
+        Uses StartupImpactAnalyzer; updates self._items, self.summary_label, self.table.
         """
         rep = StartupImpactAnalyzer.analyze_startup()
         self._items = rep.items
@@ -972,7 +1049,7 @@ class StartupImpactPage(_Page):
     def _on_toggle(self):
         """Enable or disable the startup item selected in the table.
 
-            Uses StartupImpactAnalyzer, QMessageBox; updates self.table, self._items, self._on_scan.
+        Uses StartupImpactAnalyzer, QMessageBox; updates self.table, self._items, self._on_scan.
         """
         row = self.table.currentRow()
         if 0 <= row < len(self._items):
@@ -991,11 +1068,13 @@ class StartupImpactPage(_Page):
 # 9. NTFS CLUSTER ALLOCATION & SLACK SPACE FORENSICS PAGE
 # ===========================================================================
 
+
 class SlackSpaceAnalyzerPage(_Page):
     """Slack Space page with folder picker, analyze button, and offenders table.
 
-        Backed by SlackSpaceAnalyzer, QFileDialog; builds tables, buttons, and dialogs for the actions below.
+    Backed by SlackSpaceAnalyzer, QFileDialog; builds tables, buttons, and dialogs for the actions below.
     """
+
     def __init__(self, win: PremiumMainWindow):
         """Build the Slack Space page with folder picker, analyze button, and offenders table.
 
@@ -1005,7 +1084,12 @@ class SlackSpaceAnalyzerPage(_Page):
             win (PremiumMainWindow): Parent window or shell controller instance.
         """
         super().__init__(win)
-        self.v.addWidget(title_block("NTFS Cluster Slack Space Forensics", "Analyze storage wasted by filesystem cluster allocation and identify severe slack waste directories."))
+        self.v.addWidget(
+            title_block(
+                "NTFS Cluster Slack Space Forensics",
+                "Analyze storage wasted by filesystem cluster allocation and identify severe slack waste directories.",
+            )
+        )
 
         card = Card(self.p)
         cl = QVBoxLayout(card)
@@ -1028,7 +1112,9 @@ class SlackSpaceAnalyzerPage(_Page):
         cl.addWidget(self.summary_label)
 
         self.table = QTableWidget(0, 5)
-        self.table.setHorizontalHeaderLabels(["Directory Path", "File Count", "Logical Size", "Physical Allocation", "Slack Waste (% Wasted)"])
+        self.table.setHorizontalHeaderLabels(
+            ["Directory Path", "File Count", "Logical Size", "Physical Allocation", "Slack Waste (% Wasted)"]
+        )
         self.table.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
         self.table.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeMode.ResizeToContents)
         self.table.horizontalHeader().setSectionResizeMode(2, QHeaderView.ResizeMode.ResizeToContents)
@@ -1045,7 +1131,7 @@ class SlackSpaceAnalyzerPage(_Page):
     def _on_choose(self):
         """Pick a directory and immediately analyze it.
 
-            Uses QFileDialog; updates self._target_path, self._on_scan.
+        Uses QFileDialog; updates self._target_path, self._on_scan.
         """
         f = QFileDialog.getExistingDirectory(self, "Select Directory to Analyze")
         if f:
@@ -1055,7 +1141,7 @@ class SlackSpaceAnalyzerPage(_Page):
     def _on_scan(self):
         """Analyze cluster slack waste on the worker runtime.
 
-            Uses SlackSpaceAnalyzer; updates self.scan_btn, self.table, self._target_path.
+        Uses SlackSpaceAnalyzer; updates self.scan_btn, self.table, self._target_path.
         """
         self.scan_btn.setEnabled(False)
         self.table.setRowCount(0)
@@ -1101,11 +1187,13 @@ class SlackSpaceAnalyzerPage(_Page):
 # 10. HARDWARE FAULT & CRASH EVENT MONITOR PAGE
 # ===========================================================================
 
+
 class EventLogMonitorPage(_Page):
     """Event Monitor page with scan button and an events table.
 
-        Backed by EventLogMonitor; builds tables, buttons, and dialogs for the actions below.
+    Backed by EventLogMonitor; builds tables, buttons, and dialogs for the actions below.
     """
+
     def __init__(self, win: PremiumMainWindow):
         """Build the Event Monitor page with scan button and an events table.
 
@@ -1115,7 +1203,12 @@ class EventLogMonitorPage(_Page):
             win (PremiumMainWindow): Parent window or shell controller instance.
         """
         super().__init__(win)
-        self.v.addWidget(title_block("Hardware Fault & Crash Event Monitor", "Real-time anomaly scanner for NTFS bad blocks, controller faults, BSODs, and dirty shutdowns."))
+        self.v.addWidget(
+            title_block(
+                "Hardware Fault & Crash Event Monitor",
+                "Real-time anomaly scanner for NTFS bad blocks, controller faults, BSODs, and dirty shutdowns.",
+            )
+        )
 
         card = Card(self.p)
         cl = QVBoxLayout(card)
@@ -1150,7 +1243,7 @@ class EventLogMonitorPage(_Page):
     def _on_scan(self):
         """Query event-log anomalies on the worker runtime.
 
-            Uses EventLogMonitor; updates self.scan_btn, self.table, self.summary_label.
+        Uses EventLogMonitor; updates self.scan_btn, self.table, self.summary_label.
         """
         self.scan_btn.setEnabled(False)
         self.table.setRowCount(0)

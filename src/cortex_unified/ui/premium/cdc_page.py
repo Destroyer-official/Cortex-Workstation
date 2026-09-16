@@ -24,6 +24,7 @@ from cortex_unified.analyzers.content_defined_chunker import ContentDefinedChunk
 
 class _CdcWorker(QObject):
     """Background worker (_CdcWorker) performing CdcWorker. Signals finished, progress, failed report status. Configured with root, threshold. Its run() step calls ContentDefinedChunker, finder.find_cdc_duplicates, emit, str."""
+
     finished = Signal(dict)
     progress = Signal(str)
     failed = Signal(str)
@@ -81,14 +82,19 @@ class CdcPage(_Page):
             win: Parent window or shell controller instance.
         """
         super().__init__(win)
-        self.v.addWidget(title_block(
-            "CDC Dedup (FastCDC/VectorCDC)",
-            "Content-Defined Chunking (Gear hash, normalized 2 KiB/8 KiB/64 KiB) + "
-            "Jaccard over chunk fingerprints. Robust to arbitrary insertions – "
-            "a 1-byte shift perturbs one chunk, not the whole file.",
-        ))
+        self.v.addWidget(
+            title_block(
+                "CDC Dedup (FastCDC/VectorCDC)",
+                "Content-Defined Chunking (Gear hash, normalized 2 KiB/8 KiB/64 KiB) + "
+                "Jaccard over chunk fingerprints. Robust to arbitrary insertions – "
+                "a 1-byte shift perturbs one chunk, not the whole file.",
+            )
+        )
         from PySide6.QtWidgets import (
-            QFileDialog, QProgressBar, QPushButton, QDoubleSpinBox,
+            QFileDialog,
+            QProgressBar,
+            QPushButton,
+            QDoubleSpinBox,
         )
 
         picker = QHBoxLayout()
@@ -182,15 +188,13 @@ class CdcPage(_Page):
         if not groups:
             self.state.show_empty(
                 "No CDC near-duplicates above the Jaccard threshold. Lower the "
-                "threshold or scan VM images / datasets with injected edits.")
+                "threshold or scan VM images / datasets with injected edits."
+            )
             self.status.setText("No CDC duplicates found.")
             self.win.statusBar().showMessage("No CDC duplicates", 5000)
             return
         self.state.clear()
-        rows = [
-            (str(p), gid, f"Jaccard ≥ {self.thr_spin.value():.2f}")
-            for gid, paths in groups.items() for p in paths
-        ]
+        rows = [(str(p), gid, f"Jaccard ≥ {self.thr_spin.value():.2f}") for gid, paths in groups.items() for p in paths]
         self.tbl.setRowCount(len(rows))
         for r, (path, gid, hint) in enumerate(rows):
             self.tbl.setItem(r, 0, QTableWidgetItem(path))
@@ -202,9 +206,7 @@ class CdcPage(_Page):
                 total += Path(path).stat().st_size
             except OSError:
                 pass
-        self.status.setText(
-            f"{len(groups)} CDC groups, {len(rows)} files, "
-            f"{fmt_bytes(total)} if all removed.")
+        self.status.setText(f"{len(groups)} CDC groups, {len(rows)} files, " f"{fmt_bytes(total)} if all removed.")
         self.win.statusBar().showMessage(f"{len(groups)} CDC-duplicate groups", 5000)
 
     def _fail(self, msg):

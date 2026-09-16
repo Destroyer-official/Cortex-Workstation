@@ -25,8 +25,8 @@ from pathlib import Path
 class RiskLevel(str, enum.Enum):
     """Risk Level.
 
- Handles risk level for.
- """
+    Handles risk level for.
+    """
 
     LOW = "low"  # regenerable automatically (temp, thumbnail cache)
     MEDIUM = "medium"  # costs a re-download / re-index (package/browser caches)
@@ -36,11 +36,11 @@ class RiskLevel(str, enum.Enum):
     def rank(self) -> int:
         """Rank helper.
 
- Handles rank for.
+        Handles rank for.
 
- Returns:
- int: Result of the operation.
- """
+        Returns:
+        int: Result of the operation.
+        """
         return {"low": 0, "medium": 1, "high": 2}[self.value]
 
 
@@ -65,11 +65,11 @@ class CleanupCategory:
     def existing_paths(self) -> list[Path]:
         """Subset of declared paths that actually exist on this machine.
 
- Handles existing paths for.
+        Handles existing paths for.
 
- Returns:
- list[Path]: List of processed items or identifiers.
- """
+        Returns:
+        list[Path]: List of processed items or identifiers.
+        """
         out: list[Path] = []
         for p in self.paths:
             try:
@@ -83,11 +83,11 @@ class CleanupCategory:
 def _env_path(*names: str) -> list[Path]:
     """Return existing directories for the first set env var among *names*.
 
- Handles env path for.
+    Handles env path for.
 
- Returns:
- list[Path]: List of processed items or identifiers.
- """
+    Returns:
+    list[Path]: List of processed items or identifiers.
+    """
     for n in names:
         v = os.environ.get(n)
         if v:
@@ -98,14 +98,14 @@ def _env_path(*names: str) -> list[Path]:
 def _existing(paths) -> tuple[Path, ...]:
     """Existing helper.
 
- Handles existing for.
+    Handles existing for.
 
- Args:
- paths: Filesystem path to the target file or directory.
+    Args:
+    paths: Filesystem path to the target file or directory.
 
- Returns:
- tuple[Path, ..]: Result of the operation.
- """
+    Returns:
+    tuple[Path, ..]: Result of the operation.
+    """
     out: list[Path] = []
     for p in paths:
         try:
@@ -182,11 +182,11 @@ _APP_CACHE_CACHE: dict[str, tuple[Path, ...]] = {}
 def _fixed_drive_roots() -> list[Path]:
     """Scan all fixed local drives for common temp/project directories.
 
- Handles fixed drive roots for.
+    Handles fixed drive roots for.
 
- Returns:
- list[Path]: List of processed items or identifiers.
- """
+    Returns:
+    list[Path]: List of processed items or identifiers.
+    """
     import string
 
     roots: list[Path] = []
@@ -251,12 +251,12 @@ def _discover_app_caches(bases: list[Path], max_depth: int = 6) -> tuple[Path, .
     def _walk(path: Path, depth: int) -> None:
         """Walk helper.
 
- Handles walk for.
+        Handles walk for.
 
- Args:
- path (Path): Filesystem path to the target file or directory.
- depth (int): The depth parameter.
- """
+        Args:
+        path (Path): Filesystem path to the target file or directory.
+        depth (int): The depth parameter.
+        """
         if depth > max_depth:
             return
         for sub in _safe_scandir(path):
@@ -285,14 +285,14 @@ def _discover_app_caches(bases: list[Path], max_depth: int = 6) -> tuple[Path, .
 def _safe_scandir(path: Path) -> list[Path]:
     """List immediate subdirectories of *path*, ignoring errors.
 
- Handles safe scandir for.
+    Handles safe scandir for.
 
- Args:
- path (Path): Filesystem path to the target file or directory.
+    Args:
+    path (Path): Filesystem path to the target file or directory.
 
- Returns:
- list[Path]: List of processed items or identifiers.
- """
+    Returns:
+    list[Path]: List of processed items or identifiers.
+    """
     out: list[Path] = []
     try:
         with os.scandir(path) as it:
@@ -310,14 +310,14 @@ def _safe_scandir(path: Path) -> list[Path]:
 def _get_dir_size(path: Path) -> int:
     """Fast estimate of reclaimable bytes under *path* (best-effort, no follow).
 
- Handles get dir size for.
+    Handles get dir size for.
 
- Args:
- path (Path): Filesystem path to the target file or directory.
+    Args:
+    path (Path): Filesystem path to the target file or directory.
 
- Returns:
- int: Result of the operation.
- """
+    Returns:
+    int: Result of the operation.
+    """
     total = 0
     try:
         for root, _, files in os.walk(path):
@@ -334,14 +334,14 @@ def _get_dir_size(path: Path) -> int:
 def _ai_ide_recording_dirs(home: Path) -> tuple[Path, ...]:
     """AI IDE automation recording roots (Antigravity / Gemini browser_recordings + brain).
 
- Handles ai ide recording dirs for.
+    Handles ai ide recording dirs for.
 
- Args:
- home (Path): The home parameter.
+    Args:
+    home (Path): The home parameter.
 
- Returns:
- tuple[Path, ..]: Result of the operation.
- """
+    Returns:
+    tuple[Path, ..]: Result of the operation.
+    """
     candidates = [
         home / ".gemini" / "antigravity-ide" / "browser_recordings",
         home / ".gemini" / "antigravity-ide" / "brain",
@@ -361,22 +361,18 @@ def _ai_ide_recording_dirs(home: Path) -> tuple[Path, ...]:
 def _docker_desktop_cache_dirs(local: Path) -> tuple[Path, ...]:
     """Filesystem cache used by Docker Desktop (parallel to SDK prune).
 
- Handles docker desktop cache dirs for.
+    Handles docker desktop cache dirs for.
 
- Args:
- local (Path): The local parameter.
+    Args:
+    local (Path): The local parameter.
 
- Returns:
- tuple[Path, ..]: Result of the operation.
- """
+    Returns:
+    tuple[Path, ..]: Result of the operation.
+    """
     candidates = [
         local / "Docker",
         local / "DockerDesktop",
-        (
-            Path(os.environ.get("APPDATA", "")) / "Docker"
-            if os.environ.get("APPDATA")
-            else None
-        ),
+        (Path(os.environ.get("APPDATA", "")) / "Docker" if os.environ.get("APPDATA") else None),
     ]
     out: list[Path] = []
     for p in candidates:
@@ -393,14 +389,14 @@ def _docker_desktop_cache_dirs(local: Path) -> tuple[Path, ...]:
 def _cargo_cache_dirs(home: Path) -> tuple[Path, ...]:
     """Cargo registry + git checkouts (re-downloaded via cargo fetch).
 
- Handles cargo cache dirs for.
+    Handles cargo cache dirs for.
 
- Args:
- home (Path): The home parameter.
+    Args:
+    home (Path): The home parameter.
 
- Returns:
- tuple[Path, ..]: Result of the operation.
- """
+    Returns:
+    tuple[Path, ..]: Result of the operation.
+    """
     candidates = [
         home / ".cargo" / "registry",
         home / ".cargo" / "git",
@@ -412,14 +408,14 @@ def _cargo_cache_dirs(home: Path) -> tuple[Path, ...]:
 def _rustup_toolchain_dirs(home: Path) -> tuple[Path, ...]:
     """Rustup toolchains (opt-in, re-download via rustup toolchain install).
 
- Handles rustup toolchain dirs for.
+    Handles rustup toolchain dirs for.
 
- Args:
- home (Path): The home parameter.
+    Args:
+    home (Path): The home parameter.
 
- Returns:
- tuple[Path, ..]: Result of the operation.
- """
+    Returns:
+    tuple[Path, ..]: Result of the operation.
+    """
     p = home / ".rustup" / "toolchains"
     try:
         if p.is_dir():
@@ -432,22 +428,18 @@ def _rustup_toolchain_dirs(home: Path) -> tuple[Path, ...]:
 def _scoop_cache_dirs(home: Path) -> tuple[Path, ...]:
     """Scoop package cache (scoop cache rm *).
 
- Handles scoop cache dirs for.
+    Handles scoop cache dirs for.
 
- Args:
- home (Path): The home parameter.
+    Args:
+    home (Path): The home parameter.
 
- Returns:
- tuple[Path, ..]: Result of the operation.
- """
+    Returns:
+    tuple[Path, ..]: Result of the operation.
+    """
     candidates = [
         home / "scoop" / "cache",
         home / "scoop" / "apps",
-        (
-            Path(os.environ.get("SCOOP", "")) / "cache"
-            if os.environ.get("SCOOP")
-            else None
-        ),
+        (Path(os.environ.get("SCOOP", "")) / "cache" if os.environ.get("SCOOP") else None),
     ]
     out: list[Path] = []
     for p in candidates:
@@ -464,24 +456,20 @@ def _scoop_cache_dirs(home: Path) -> tuple[Path, ...]:
 def _npm_pip_cache_dirs(home: Path, local: Path) -> tuple[Path, ...]:
     """Global package manager caches (npm, pip, etc.) for categories registry.
 
- Handles npm pip cache dirs for.
+    Handles npm pip cache dirs for.
 
- Args:
- home (Path): The home parameter.
- local (Path): The local parameter.
+    Args:
+    home (Path): The home parameter.
+    local (Path): The local parameter.
 
- Returns:
- tuple[Path, ..]: Result of the operation.
- """
+    Returns:
+    tuple[Path, ..]: Result of the operation.
+    """
     candidates = [
         local / "npm-cache",
         local / "pip" / "Cache",
         home / ".npm" / "_cacache",
-        (
-            Path(os.environ.get("APPDATA", "")) / "npm-cache"
-            if os.environ.get("APPDATA")
-            else None
-        ),
+        (Path(os.environ.get("APPDATA", "")) / "npm-cache" if os.environ.get("APPDATA") else None),
         home / "AppData" / "Local" / "pip" / "Cache",
     ]
     out: list[Path] = []
@@ -499,14 +487,14 @@ def _npm_pip_cache_dirs(home: Path, local: Path) -> tuple[Path, ...]:
 def _wsl_vhdx_dirs(home: Path) -> tuple[Path, ...]:
     """WSL distro ext4.vhdx host files (compactable, not deletable; surfaced for info).
 
- Handles wsl vhdx dirs for.
+    Handles wsl vhdx dirs for.
 
- Args:
- home (Path): The home parameter.
+    Args:
+    home (Path): The home parameter.
 
- Returns:
- tuple[Path, ..]: Result of the operation.
- """
+    Returns:
+    tuple[Path, ..]: Result of the operation.
+    """
     local = Path(os.environ.get("LOCALAPPDATA", home / "AppData" / "Local"))
     # vhdx files live under LocalAppData\Packages\...\LocalState\ext4.vhdx and
     # AppData\Local\Docker\wsl etc.; we surface the parent dirs for size probe.
@@ -521,14 +509,14 @@ def _wsl_vhdx_dirs(home: Path) -> tuple[Path, ...]:
 def _browser_cache_dirs(local: Path) -> tuple[Path, ...]:
     """Existing browser cache directories across common Chromium browsers + Firefox.
 
- Handles browser cache dirs for.
+    Handles browser cache dirs for.
 
- Args:
- local (Path): The local parameter.
+    Args:
+    local (Path): The local parameter.
 
- Returns:
- tuple[Path, ..]: Result of the operation.
- """
+    Returns:
+    tuple[Path, ..]: Result of the operation.
+    """
     dirs: list[Path] = []
     chromium = {
         "Chrome": local / "Google" / "Chrome" / "User Data",
@@ -557,11 +545,11 @@ def _browser_cache_dirs(local: Path) -> tuple[Path, ...]:
 def _windows_categories() -> list[CleanupCategory]:
     """Windows categories.
 
- Handles windows categories for.
+    Handles windows categories for.
 
- Returns:
- list[CleanupCategory]: List of processed items or identifiers.
- """
+    Returns:
+    list[CleanupCategory]: List of processed items or identifiers.
+    """
     home = Path.home()
     local_list = _env_path("LOCALAPPDATA") or [home / "AppData" / "Local"]
     roaming_list = _env_path("APPDATA") or [home / "AppData" / "Roaming"]
@@ -666,14 +654,8 @@ def _windows_categories() -> list[CleanupCategory]:
 
     # 7. Auto-detected application caches (dynamic, deep) --------------------
     # Also scan temp roots on fixed drives for scattered caches
-    _extra_cache_roots = [
-        p
-        for p in _custom_temp_roots()
-        if p not in (local, roaming_list[0], programdata)
-    ]
-    app_caches = _discover_app_caches(
-        [local, roaming_list[0], programdata, *_extra_cache_roots]
-    )
+    _extra_cache_roots = [p for p in _custom_temp_roots() if p not in (local, roaming_list[0], programdata)]
+    app_caches = _discover_app_caches([local, roaming_list[0], programdata, *_extra_cache_roots])
     if app_caches:
         cats.append(
             CleanupCategory(
@@ -708,15 +690,7 @@ def _windows_categories() -> list[CleanupCategory]:
             label="Delivery Optimization cache",
             description="Windows Update peer-download cache; re-downloaded if needed.",
             risk=RiskLevel.MEDIUM,
-            paths=_existing(
-                (
-                    programdata
-                    / "Microsoft"
-                    / "Windows"
-                    / "DeliveryOptimization"
-                    / "Cache",
-                )
-            ),
+            paths=_existing((programdata / "Microsoft" / "Windows" / "DeliveryOptimization" / "Cache",)),
             default_enabled=False,  # system dir; opt-in
         )
     )
@@ -833,11 +807,7 @@ def _windows_categories() -> list[CleanupCategory]:
             label="Cargo registry cache",
             description="Rust Cargo registry cache (~/.cargo/registry, ~/.cargo/git). Re-downloaded via cargo fetch; use cargo clean for per-project targets.",
             risk=RiskLevel.MEDIUM,
-            paths=(
-                cargo_dirs
-                if cargo_dirs
-                else (home / ".cargo" / "registry", home / ".cargo" / "git")
-            ),
+            paths=(cargo_dirs if cargo_dirs else (home / ".cargo" / "registry", home / ".cargo" / "git")),
             reversible=True,
             default_enabled=False,
         )
@@ -909,11 +879,11 @@ def _windows_categories() -> list[CleanupCategory]:
 def _posix_categories() -> list[CleanupCategory]:
     """Posix categories.
 
- Handles posix categories for.
+    Handles posix categories for.
 
- Returns:
- list[CleanupCategory]: List of processed items or identifiers.
- """
+    Returns:
+    list[CleanupCategory]: List of processed items or identifiers.
+    """
     home = Path.home()
     system = platform.system()
     cats: list[CleanupCategory] = []
@@ -989,11 +959,11 @@ def _posix_categories() -> list[CleanupCategory]:
 def default_categories() -> list[CleanupCategory]:
     """Return the platform-appropriate cleanup category registry.
 
- Handles default categories for.
+    Handles default categories for.
 
- Returns:
- list[CleanupCategory]: List of processed items or identifiers.
- """
+    Returns:
+    list[CleanupCategory]: List of processed items or identifiers.
+    """
     if platform.system() == "Windows":
         return _windows_categories()
     return _posix_categories()
@@ -1002,9 +972,9 @@ def default_categories() -> list[CleanupCategory]:
 def categories_by_id() -> dict[str, CleanupCategory]:
     """Categories by id.
 
- Handles categories by id for.
+    Handles categories by id for.
 
- Returns:
- dict[str, CleanupCategory]: Dictionary mapping identifiers to status or values.
- """
+    Returns:
+    dict[str, CleanupCategory]: Dictionary mapping identifiers to status or values.
+    """
     return {c.id: c for c in default_categories()}

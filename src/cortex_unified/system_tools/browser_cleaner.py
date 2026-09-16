@@ -63,6 +63,7 @@ from typing import Callable, Dict, List, Optional, Set
 
 try:
     import platformdirs  # type: ignore
+
     HAS_PLATFORMDIRS = True
 except ImportError:
     HAS_PLATFORMDIRS = False
@@ -71,12 +72,14 @@ except ImportError:
 # Data structures
 # ---------------------------------------------------------------------------
 
+
 @dataclass(slots=True)
 class Cleanable:
     """Cleanable data container.
 
     Permanently purges or removes specified target items, reclaiming storage space and logging actions taken.
     """
+
     path: Path
     size: int
     category: str  # cache, indexeddb, serviceworker, codecache, gpucache, shadercache, cookies, history, etc.
@@ -85,9 +88,11 @@ class Cleanable:
     risk: str  # low/medium/high
     can_vacuum: bool = False
 
+
 # ---------------------------------------------------------------------------
 # Profile discovery — dynamic
 # ---------------------------------------------------------------------------
+
 
 def _discover_chromium_profiles(base_names: List[str]) -> List[Path]:
     """Discover Chromium profile dirs for the given browser base names.
@@ -127,6 +132,7 @@ def _discover_chromium_profiles(base_names: List[str]) -> List[Path]:
     # Fallback scan for any "User Data" containing "Default"
     return [p for p in profiles if p.exists()]
 
+
 _CHROMIUM_MAP = {
     "chrome": ["Google/Chrome"],
     "edge": ["Microsoft/Edge"],
@@ -135,6 +141,7 @@ _CHROMIUM_MAP = {
     "chromium": ["Chromium"],
     "opera": ["Opera Software/Opera Stable"],
 }
+
 
 def _discover_firefox_profiles() -> List[Path]:
     """Discover Firefox profile dirs via default locations plus profiles.ini.
@@ -168,9 +175,11 @@ def _discover_firefox_profiles() -> List[Path]:
                     profiles.append(full)
     return profiles
 
+
 # ---------------------------------------------------------------------------
 # Scanners
 # ---------------------------------------------------------------------------
+
 
 class DeepBrowserCleaner:
     """Deep cleaner for Chromium/Firefox caches, IndexedDB, and cookies.
@@ -179,9 +188,13 @@ class DeepBrowserCleaner:
     vacuum compacts SQLite. Deletions are permanent; passwords gated by
     expert_mode.
     """
-    def __init__(self, keep_cookies: List[str] | None = None,
-                 progress: Callable[[str], None] | None = None,
-                 cancel: threading.Event | None = None):
+
+    def __init__(
+        self,
+        keep_cookies: List[str] | None = None,
+        progress: Callable[[str], None] | None = None,
+        cancel: threading.Event | None = None,
+    ):
         """Initialize Deep Browser Cleaner.
 
         Initializes the instance and configures internal state.
@@ -329,8 +342,8 @@ class DeepBrowserCleaner:
                         # overwrite then delete
                         sz = p.stat().st_size
                         with open(p, "r+b", buffering=0) as f:
-                            f.write(os.urandom(min(sz, 1024*1024)))
-                            if sz > 1024*1024:
+                            f.write(os.urandom(min(sz, 1024 * 1024)))
+                            if sz > 1024 * 1024:
                                 f.seek(0)
                                 f.write(b"\x00" * sz)
                         p.unlink()
@@ -402,5 +415,6 @@ class DeepBrowserCleaner:
             except Exception as exc:
                 self.progress(f"Vacuum failed {db}: {exc}")
         return out
+
 
 __all__ = ["DeepBrowserCleaner", "Cleanable"]

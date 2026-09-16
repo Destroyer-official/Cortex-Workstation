@@ -57,7 +57,7 @@ def test_malformed_yaml_warns_and_falls_back(tmp_path, caplog):
     path.write_text("exclude_dirs: [unclosed\n", encoding="utf-8")
     with caplog.at_level(logging.WARNING, logger="cortex.core.config"):
         cfg = Config(str(path))
-    assert cfg.config_data == DEFAULT_CONFIG          # still usable and safe
+    assert cfg.config_data == DEFAULT_CONFIG  # still usable and safe
     assert any("not valid YAML" in r.message for r in caplog.records)
 
 
@@ -139,8 +139,7 @@ def test_protected_directories_are_excluded_by_default(tmp_path, name):
     """
     cfg = Config(str(tmp_path / "absent.yaml"))
     assert cfg.matches_exclude_patterns(str(tmp_path / name)), (
-        f"{name} must be excluded by default; deleting inside it can corrupt "
-        "a repository or a dependency tree"
+        f"{name} must be excluded by default; deleting inside it can corrupt " "a repository or a dependency tree"
     )
 
 
@@ -178,11 +177,10 @@ def test_user_settings_override_defaults_key_by_key(tmp_path):
         tmp_path: Filesystem path to the target file or directory.
     """
     path = tmp_path / "c.yaml"
-    path.write_text("exclude_dirs:\n  - only_mine\nmin_age_days: 30\n",
-                    encoding="utf-8")
+    path.write_text("exclude_dirs:\n  - only_mine\nmin_age_days: 30\n", encoding="utf-8")
     cfg = Config(str(path))
-    assert cfg.exclude_dirs == ["only_mine"]      # replaced
-    assert cfg.min_age_days == 30                 # replaced
+    assert cfg.exclude_dirs == ["only_mine"]  # replaced
+    assert cfg.min_age_days == 30  # replaced
     # Not mentioned in the file -> default retained.
     assert cfg.exclude_regex_patterns == DEFAULT_CONFIG["exclude_regex_patterns"]
     assert cfg.default_action == DEFAULT_CONFIG["default_action"]

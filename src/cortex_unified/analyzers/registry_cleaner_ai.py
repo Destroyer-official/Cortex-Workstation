@@ -65,14 +65,17 @@ import subprocess
 import sys
 import threading
 import time
+
 try:
     import winreg
 except ImportError:
     winreg = None  # type: ignore
 
 if winreg is None:
+
     class _MockWinreg:
         """Fallback mock implementation of winreg module for non-Windows platforms."""
+
         REG_NONE = 0
         REG_SZ = 1
         REG_EXPAND_SZ = 2
@@ -105,6 +108,7 @@ if winreg is None:
         KEY_CREATE_LINK = 0x0020
         KEY_WOW64_64KEY = 0x0100
         KEY_WOW64_32KEY = 0x0200
+
     winreg = _MockWinreg()  # type: ignore
 from dataclasses import dataclass, field
 from datetime import datetime
@@ -114,12 +118,14 @@ from typing import Callable, Dict, List, Optional, Tuple, Any
 # Optional ML deps
 try:
     import onnxruntime as ort
+
     HAS_ORT = True
 except ImportError:
     HAS_ORT = False
 
 try:
     import numpy as np
+
     HAS_NUMPY = True
 except ImportError:
     HAS_NUMPY = False
@@ -128,11 +134,11 @@ except ImportError:
 # Data structures
 # ---------------------------------------------------------------------------
 
+
 @dataclass(frozen=True, slots=True)
 class RegistryIssue:
-    """One registry finding: key/value, category, risk score, recommendation, and evidence.
+    """One registry finding: key/value, category, risk score, recommendation, and evidence."""
 
-    """
     key_path: str
     value_name: str
     value_data: str
@@ -151,13 +157,14 @@ class RegistryIssue:
             dict: Dictionary mapping identifiers to status or values.
         """
         import dataclasses
+
         return dataclasses.asdict(self)
+
 
 @dataclass(frozen=True, slots=True)
 class ScanResult:
-    """Result of one registry scan: issues sorted by risk plus timing and model version.
+    """Result of one registry scan: issues sorted by risk plus timing and model version."""
 
-    """
     issues: List[RegistryIssue]
     scan_time: float
     categories_scanned: List[str]
@@ -169,23 +176,27 @@ class ScanResult:
         Returns:
             str: Formatted string or path.
         """
-        return json.dumps({
-            "scan_time": self.scan_time,
-            "categories_scanned": self.categories_scanned,
-            "model_version": self.model_version,
-            "issues": [i.to_dict() for i in self.issues],
-        }, indent=2)
+        return json.dumps(
+            {
+                "scan_time": self.scan_time,
+                "categories_scanned": self.categories_scanned,
+                "model_version": self.model_version,
+                "issues": [i.to_dict() for i in self.issues],
+            },
+            indent=2,
+        )
+
 
 @dataclass
 class CleanResult:
-    """Outcome of one clean pass: cleaned and failed issues, restore flag, backup, and duration.
+    """Outcome of one clean pass: cleaned and failed issues, restore flag, backup, and duration."""
 
-    """
     cleaned: List[RegistryIssue]
     failed: List[Tuple[RegistryIssue, str]]
     restore_point_created: bool
     backup_path: str
     duration_seconds: float
+
 
 # ---------------------------------------------------------------------------
 # Feature extraction (pure Python, no ML deps required)
@@ -199,6 +210,7 @@ _HIVES = {
     "HKLM": (winreg.HKEY_LOCAL_MACHINE, "HKEY_LOCAL_MACHINE"),
     "HKCU": (winreg.HKEY_CURRENT_USER, "HKEY_CURRENT_USER"),
 }
+
 
 def _split(path: str) -> Tuple[int, str, int]:
     """Split an HKLM/HKCU key path into hive handle, subkey, and 64-bit read access.
@@ -216,6 +228,7 @@ def _split(path: str) -> Tuple[int, str, int]:
         access |= winreg.KEY_WOW64_64KEY
     return hive, rest, access
 
+
 def _split32(path: str) -> Optional[Tuple[int, str, int]]:
     """Split an HKLM path into its 32-bit registry view, or None for non-HKLM paths.
 
@@ -227,8 +240,8 @@ def _split32(path: str) -> Optional[Tuple[int, str, int]]:
     """
     if not path.startswith("HKLM\\"):
         return None
-    return (winreg.HKEY_LOCAL_MACHINE, path.partition("\\")[2],
-            winreg.KEY_READ | winreg.KEY_WOW64_32KEY)
+    return (winreg.HKEY_LOCAL_MACHINE, path.partition("\\")[2], winreg.KEY_READ | winreg.KEY_WOW64_32KEY)
+
 
 def _expand(p: str) -> Optional[str]:
     """Expand env vars and registry ExpandEnvironmentStrings in a path value.
@@ -243,6 +256,7 @@ def _expand(p: str) -> Optional[str]:
         return os.path.expandvars(winreg.ExpandEnvironmentStrings(p))
     except Exception:
         return os.path.expandvars(p) if p else p
+
 
 # Kernel services store ImagePath in NT device-path form, either absolute
 # ("\SystemRoot\...") or relative ("system32\drivers\..."). Relative paths are
@@ -262,6 +276,7 @@ _RELATIVE_ROOTS = (
     "%SystemRoot%\\SysWOW64",
 )
 
+
 def _resolve_target(raw: str) -> Optional[str]:
     """Resolve a registry path value to an on-disk path, or None if unresolvable.
 
@@ -276,7 +291,7 @@ def _resolve_target(raw: str) -> Optional[str]:
     s = raw.strip()
     for prefix, replacement in _NT_PREFIXES.items():
         if s.startswith(prefix):
-            s = replacement + s[len(prefix):]
+            s = replacement + s[len(prefix) :]
             break
     if not s:
         return None
@@ -289,6 +304,7 @@ def _resolve_target(raw: str) -> Optional[str]:
     # adds progressively shorter token prefixes so "C:\\Program Files\\App
     # a.exe /x" still resolves without corrupting plain spaced paths.
     return _expand(s) or None
+
 
 def _target_candidates(raw: str) -> List[str]:
     """Every plausible absolute path a registry ImagePath/target could mean.
@@ -314,6 +330,7 @@ def _target_candidates(raw: str) -> List[str]:
         for root in _RELATIVE_ROOTS:
             candidates.append(str(Path(_expand(root)) / p))
     return candidates
+
 
 def _verifiable(path: str) -> bool:
     """True when absence of *path* can actually be proven.
@@ -353,6 +370,7 @@ def _verifiable(path: str) -> bool:
     except (PermissionError, OSError):
         return False
 
+
 def _target_exists(raw: str) -> bool:
     """True when *raw* resolves to an existing file under any known root.
 
@@ -360,6 +378,7 @@ def _target_exists(raw: str) -> bool:
     the check inconclusive, which counts as "exists" for safety.
     """
     return _target_exists_any(_target_candidates(raw))
+
 
 def _target_exists_any(candidates: List[str]) -> bool:
     """Same rule as :func:`_target_exists` for pre-resolved candidates.
@@ -377,10 +396,12 @@ def _target_exists_any(candidates: List[str]) -> bool:
             return True  # cannot prove missing -> assume present
     return False
 
+
 # -- Per-category detectors --------------------------------------------------
 # Each detector receives (key_path, values, access) where values is the
 # {name: (data, type)} dict for the key, and returns True when the entry is
 # a genuine leftover (its target no longer exists).
+
 
 def _exe_from_command(cmd: str) -> Optional[str]:
     """First absolute candidate for an executable named by a command line.
@@ -393,6 +414,7 @@ def _exe_from_command(cmd: str) -> Optional[str]:
     """
     candidates = _target_candidates(cmd)
     return candidates[0] if candidates else None
+
 
 def _detect_missing_path(key_path: str, values: Dict, access: int) -> bool:
     r"""App Paths\<exe> whose (Default) target is gone.
@@ -409,6 +431,7 @@ def _detect_missing_path(key_path: str, values: Dict, access: int) -> bool:
     if not isinstance(target, str) or not target:
         return False
     return not _target_exists(target)
+
 
 def _detect_orphaned_uninstall(key_path: str, values: Dict, access: int) -> bool:
     r"""Uninstall\<app> entry whose InstallLocation / uninstaller is missing.
@@ -436,6 +459,7 @@ def _detect_orphaned_uninstall(key_path: str, values: Dict, access: int) -> bool
     # No location recorded: orphan only when no uninstaller target survives.
     return isinstance(uninst, str) and bool(uninst.strip()) and not _target_exists(uninst)
 
+
 def _detect_missing_path_value(key_path: str, values: Dict, access: int) -> bool:
     """Any REG_EXPAND_SZ/REG_SZ value that names a file that no longer exists.
 
@@ -453,12 +477,12 @@ def _detect_missing_path_value(key_path: str, values: Dict, access: int) -> bool
         if not isinstance(data, str) or len(data) < 4:
             continue
         lowered = data.lower()
-        if not (lowered.endswith((".exe", ".dll", ".sys", ".ttf", ".fon",
-                                  ".ocx", ".ico", ".scr", ".cpl"))):
+        if not (lowered.endswith((".exe", ".dll", ".sys", ".ttf", ".fon", ".ocx", ".ico", ".scr", ".cpl"))):
             continue
         if not _target_exists(data):
             return True
     return False
+
 
 def _detect_shared_dll_gone(key_path: str, values: Dict, access: int) -> bool:
     """SharedDLLs: every value name is a DLL path; flag the missing ones.
@@ -476,6 +500,7 @@ def _detect_shared_dll_gone(key_path: str, values: Dict, access: int) -> bool:
             return True
     return False
 
+
 def _font_candidates(data: str) -> List[str]:
     """Absolute candidates for a Fonts value.
 
@@ -487,6 +512,7 @@ def _font_candidates(data: str) -> List[str]:
         return _target_candidates(data)
     fonts_dir = _expand(r"%SystemRoot%\Fonts")
     return [str(Path(fonts_dir) / data)]
+
 
 def _detect_orphaned_font(key_path: str, values: Dict, access: int) -> bool:
     """Fonts: value data names font files under the Fonts directory.
@@ -505,6 +531,7 @@ def _detect_orphaned_font(key_path: str, values: Dict, access: int) -> bool:
         if not _target_exists_any(_font_candidates(data)):
             return True
     return False
+
 
 def _detect_orphaned_service(key_path: str, values: Dict, access: int) -> bool:
     """Services\\<svc>: the driver or service binary is verifiably gone.
@@ -529,6 +556,7 @@ def _detect_orphaned_service(key_path: str, values: Dict, access: int) -> bool:
     if not isinstance(image, str) or not image.strip():
         return False  # nothing to verify; never guess
     return not _target_exists(image)
+
 
 def _key_age_days(key_path: str, access: Optional[int] = None) -> int:
     """Days since the key's last write, from the FILETIME QueryInfoKey returns.
@@ -555,13 +583,14 @@ def _key_age_days(key_path: str, access: Optional[int] = None) -> int:
         return 0
     return max(0, int((time.time() - seconds) / 86_400))
 
+
 #: MRU entries older than this are considered stale. 180 days matches the
 #: retention window common to RunMRU / ComDlg32 "last visited" lists before
 #: Windows rotates them out.
 _MRU_STALE_DAYS = 180
 
-def _detect_stale_mru(key_path: str, values: Dict, access: int,
-                      stale_days: int = _MRU_STALE_DAYS) -> bool:
+
+def _detect_stale_mru(key_path: str, values: Dict, access: int, stale_days: int = _MRU_STALE_DAYS) -> bool:
     """MRU list untouched for longer than *stale_days*.
 
     These lists are harmless but never useful once stale, and they leak the
@@ -571,6 +600,7 @@ def _detect_stale_mru(key_path: str, values: Dict, access: int,
     if not values:
         return False
     return _key_age_days(key_path, access or None) >= stale_days
+
 
 #: category -> (roots, detector, also_scan_32bit_view)
 _CATEGORY_DEFS: Dict[str, Tuple[List[str], Any, bool]] = {
@@ -614,16 +644,20 @@ _CATEGORY_DEFS: Dict[str, Tuple[List[str], Any, bool]] = {
         False,
     ),
     "orphaned_path_value": (
-        [r"HKLM\Software\Microsoft\Windows\CurrentVersion\Run",
-         r"HKLM\Software\Microsoft\Windows\CurrentVersion\RunOnce",
-         r"HKCU\Software\Microsoft\Windows\CurrentVersion\Run",
-         r"HKCU\Software\Microsoft\Windows\CurrentVersion\RunOnce"],
+        [
+            r"HKLM\Software\Microsoft\Windows\CurrentVersion\Run",
+            r"HKLM\Software\Microsoft\Windows\CurrentVersion\RunOnce",
+            r"HKCU\Software\Microsoft\Windows\CurrentVersion\Run",
+            r"HKCU\Software\Microsoft\Windows\CurrentVersion\RunOnce",
+        ],
         _detect_missing_path_value,
         True,
     ),
     "stale_mru_cache": (
-        [r"HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\ComDlg32",
-         r"HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\RunMRU"],
+        [
+            r"HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\ComDlg32",
+            r"HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\RunMRU",
+        ],
         _detect_stale_mru,
         False,
     ),
@@ -643,10 +677,12 @@ _CATEGORY_PATTERNS = {
     "leftover_software_key": [r"HKLM\\Software\\[^\\]+$"],
 }
 
+
 def _log2(x: float) -> float:
     """math.log2 with the 0-limit handled, so entropy of a single-symbol
     string is 0 rather than a domain error."""
     return math.log2(x) if x > 0 else 0.0
+
 
 def _categorize_key(key_path: str) -> str:
     """Fast rule-based categorization.
@@ -663,10 +699,17 @@ def _categorize_key(key_path: str) -> str:
                 return cat
     return "unknown"
 
-def _extract_features(key_path: str, value_name: str, value_data: str,
-                      value_type: int, parent_exists: bool,
-                      uninstaller_exists: bool, is_signed: bool,
-                      age_days: int) -> List[float]:
+
+def _extract_features(
+    key_path: str,
+    value_name: str,
+    value_data: str,
+    value_type: int,
+    parent_exists: bool,
+    uninstaller_exists: bool,
+    is_signed: bool,
+    age_days: int,
+) -> List[float]:
     """Extract numerical features for ML model.
 
     Args:
@@ -704,10 +747,7 @@ def _extract_features(key_path: str, value_name: str, value_data: str,
             freq[ch] = freq.get(ch, 0) + 1
         total = len(value_data)
         # Shannon entropy, math.log2 in a pure-Python loop.
-        entropy = -sum(
-            (count / total) * _log2(count / total)
-            for count in freq.values()
-        )
+        entropy = -sum((count / total) * _log2(count / total) for count in freq.values())
         features.append(min(entropy / 8.0, 1.0))
     else:
         features.append(0.0)
@@ -732,9 +772,11 @@ def _extract_features(key_path: str, value_name: str, value_data: str,
 
     return features
 
+
 # ---------------------------------------------------------------------------
 # Authenticode verification (WinVerifyTrust, no external tools)
 # ---------------------------------------------------------------------------
+
 
 def _is_authenticode_signed(path: Path) -> bool:
     """True when *path* carries a trusted Authenticode signature.
@@ -750,70 +792,74 @@ def _is_authenticode_signed(path: Path) -> bool:
         return False
 
     class GUID(ctypes.Structure):
-        """GUID struct for WinVerifyTrust Authenticode checks.
+        """GUID struct for WinVerifyTrust Authenticode checks."""
 
-        """
-        _fields_ = [("Data1", wintypes.DWORD), ("Data2", wintypes.WORD),
-                    ("Data3", wintypes.WORD), ("Data4", ctypes.c_byte * 8)]
+        _fields_ = [
+            ("Data1", wintypes.DWORD),
+            ("Data2", wintypes.WORD),
+            ("Data3", wintypes.WORD),
+            ("Data4", ctypes.c_byte * 8),
+        ]
 
     class WINTRUST_FILE_INFO(ctypes.Structure):
-        """WINTRUST_FILE_INFO struct naming the file WinVerifyTrust should verify.
+        """WINTRUST_FILE_INFO struct naming the file WinVerifyTrust should verify."""
 
-        """
-        _fields_ = [("cbStruct", wintypes.DWORD),
-                    ("pcwszFilePath", wintypes.LPCWSTR),
-                    ("hFile", wintypes.HANDLE),
-                    ("pgKnownSubject", ctypes.c_void_p)]
+        _fields_ = [
+            ("cbStruct", wintypes.DWORD),
+            ("pcwszFilePath", wintypes.LPCWSTR),
+            ("hFile", wintypes.HANDLE),
+            ("pgKnownSubject", ctypes.c_void_p),
+        ]
 
     class WINTRUST_DATA(ctypes.Structure):
-        """WINTRUST_DATA struct requesting UI-less, no-revocation Authenticode verification.
+        """WINTRUST_DATA struct requesting UI-less, no-revocation Authenticode verification."""
 
-        """
-        _fields_ = [("cbStruct", wintypes.DWORD),
-                    ("pPolicyCallbackData", ctypes.c_void_p),
-                    ("pSIPClientData", ctypes.c_void_p),
-                    ("dwUIChoice", wintypes.DWORD),
-                    ("fdwRevocationChecks", wintypes.DWORD),
-                    ("dwUnionChoice", wintypes.DWORD),
-                    ("pFile", ctypes.POINTER(WINTRUST_FILE_INFO)),
-                    ("dwStateAction", wintypes.DWORD),
-                    ("hWVTStateData", wintypes.HANDLE),
-                    ("pwszURLReference", wintypes.LPCWSTR),
-                    ("dwProvFlags", wintypes.DWORD),
-                    ("dwUIContext", wintypes.DWORD),
-                    ("pSignatureSettings", ctypes.c_void_p)]
+        _fields_ = [
+            ("cbStruct", wintypes.DWORD),
+            ("pPolicyCallbackData", ctypes.c_void_p),
+            ("pSIPClientData", ctypes.c_void_p),
+            ("dwUIChoice", wintypes.DWORD),
+            ("fdwRevocationChecks", wintypes.DWORD),
+            ("dwUnionChoice", wintypes.DWORD),
+            ("pFile", ctypes.POINTER(WINTRUST_FILE_INFO)),
+            ("dwStateAction", wintypes.DWORD),
+            ("hWVTStateData", wintypes.HANDLE),
+            ("pwszURLReference", wintypes.LPCWSTR),
+            ("dwProvFlags", wintypes.DWORD),
+            ("dwUIContext", wintypes.DWORD),
+            ("pSignatureSettings", ctypes.c_void_p),
+        ]
 
     # WINTRUST_ACTION_GENERIC_VERIFY_V2
-    action = GUID(0xAAC56B, 0xCD44, 0x11D0,
-                  (ctypes.c_byte * 8)(0x8C, 0xC2, 0x00, 0xC0, 0x4F, 0xC2, 0x95, 0xEE))
+    action = GUID(0xAAC56B, 0xCD44, 0x11D0, (ctypes.c_byte * 8)(0x8C, 0xC2, 0x00, 0xC0, 0x4F, 0xC2, 0x95, 0xEE))
     file_info = WINTRUST_FILE_INFO(ctypes.sizeof(WINTRUST_FILE_INFO), str(path), None, None)
     data = WINTRUST_DATA()
     data.cbStruct = ctypes.sizeof(WINTRUST_DATA)
-    data.dwUIChoice = 2            # WTD_UI_NONE
-    data.fdwRevocationChecks = 0   # WTD_REVOKE_NONE
-    data.dwUnionChoice = 1         # WTD_CHOICE_FILE
+    data.dwUIChoice = 2  # WTD_UI_NONE
+    data.fdwRevocationChecks = 0  # WTD_REVOKE_NONE
+    data.dwUnionChoice = 1  # WTD_CHOICE_FILE
     data.pFile = ctypes.pointer(file_info)
-    data.dwStateAction = 1         # WTD_STATEACTION_VERIFY
+    data.dwStateAction = 1  # WTD_STATEACTION_VERIFY
     data.dwProvFlags = 0x00000010  # WTD_CACHE_ONLY_URL_RETRIEVAL
 
     try:
         wintrust = ctypes.WinDLL("wintrust.dll")
         wintrust.WinVerifyTrust.restype = ctypes.c_long
         result = wintrust.WinVerifyTrust(None, ctypes.byref(action), ctypes.byref(data))
-        data.dwStateAction = 2     # WTD_STATEACTION_CLOSE
+        data.dwStateAction = 2  # WTD_STATEACTION_CLOSE
         wintrust.WinVerifyTrust(None, ctypes.byref(action), ctypes.byref(data))
         return result == 0
     except Exception:
         return False
 
+
 # ---------------------------------------------------------------------------
 # ONNX Model wrapper
 # ---------------------------------------------------------------------------
 
-class _MLModel:
-    """ONNX registry-risk model with a rule-based fallback when ONNX or NumPy is missing.
 
-    """
+class _MLModel:
+    """ONNX registry-risk model with a rule-based fallback when ONNX or NumPy is missing."""
 
     def __init__(self, model_path: Optional[str] = None):
         """Load the ONNX session when a model path, runtime, and file are all available.
@@ -881,22 +927,24 @@ class _MLModel:
         risk = max(0.0, min(1.0, risk))
         return risk, 0.7
 
+
 # ---------------------------------------------------------------------------
 # Core cleaner
 # ---------------------------------------------------------------------------
 
 # Categories whose finding means the *key* is the orphan (the offending
 # value is only evidence). For these, clean() removes the key, not a value.
-_KEY_LEVEL_CATEGORIES = frozenset({
-    "orphaned_uninstall",      # the Uninstall\<app> entry itself is dead
-    "orphaned_service_driver", # the Services\<svc> entry points nowhere
-    "stale_mru_cache",         # the whole MRU list is stale
-})
+_KEY_LEVEL_CATEGORIES = frozenset(
+    {
+        "orphaned_uninstall",  # the Uninstall\<app> entry itself is dead
+        "orphaned_service_driver",  # the Services\<svc> entry points nowhere
+        "stale_mru_cache",  # the whole MRU list is stale
+    }
+)
+
 
 class AIRegistryCleaner:
-    """Scans registry categories for provably-missing targets, scores risk, and cleans with backups.
-
-    """
+    """Scans registry categories for provably-missing targets, scores risk, and cleans with backups."""
 
     def __init__(
         self,
@@ -936,8 +984,11 @@ class AIRegistryCleaner:
         try:
             proc = subprocess.run(
                 ["powershell", "-NoProfile", "-Command", script],
-                capture_output=True, text=True, timeout=timeout,
-                encoding=sys.getdefaultencoding(), errors="replace"
+                capture_output=True,
+                text=True,
+                timeout=timeout,
+                encoding=sys.getdefaultencoding(),
+                errors="replace",
             )
             return proc.returncode, proc.stdout, proc.stderr
         except subprocess.TimeoutExpired:
@@ -1128,8 +1179,7 @@ class AIRegistryCleaner:
                             continue
 
                         # Which value proves the orphan, for reporting.
-                        value_name, value_data, value_type = self._offending_value(
-                            key_path, values, cat)
+                        value_name, value_data, value_type = self._offending_value(key_path, values, cat)
                         dedup = (key_path.lower(), value_name.lower())
                         if dedup in seen:
                             continue
@@ -1142,29 +1192,38 @@ class AIRegistryCleaner:
                         age_days = self._estimate_age(key_path)
 
                         features = _extract_features(
-                            key_path, value_name, value_data, value_type,
-                            parent_exists, uninstaller_exists, is_signed, age_days)
+                            key_path,
+                            value_name,
+                            value_data,
+                            value_type,
+                            parent_exists,
+                            uninstaller_exists,
+                            is_signed,
+                            age_days,
+                        )
                         risk, conf = self.model.predict(features)
 
                         rec = "remove" if risk < 0.3 else ("review" if risk < 0.6 else "keep")
-                        issues.append(RegistryIssue(
-                            key_path=key_path,
-                            value_name=value_name,
-                            value_data=value_data[:500],
-                            value_type=value_type,
-                            category=cat,
-                            risk_score=risk,
-                            confidence=conf,
-                            recommendation=rec,
-                            evidence={
-                                "parent_exists": parent_exists,
-                                "uninstaller_exists": uninstaller_exists,
-                                "is_signed": is_signed,
-                                "age_days": age_days,
-                                "registry_view": "32-bit" if access else "native",
-                                "features": features,
-                            },
-                        ))
+                        issues.append(
+                            RegistryIssue(
+                                key_path=key_path,
+                                value_name=value_name,
+                                value_data=value_data[:500],
+                                value_type=value_type,
+                                category=cat,
+                                risk_score=risk,
+                                confidence=conf,
+                                recommendation=rec,
+                                evidence={
+                                    "parent_exists": parent_exists,
+                                    "uninstaller_exists": uninstaller_exists,
+                                    "is_signed": is_signed,
+                                    "age_days": age_days,
+                                    "registry_view": "32-bit" if access else "native",
+                                    "features": features,
+                                },
+                            )
+                        )
                         if len(issues) % 50 == 0:
                             self.progress(f"{len(issues)} candidate entries")
 
@@ -1203,8 +1262,9 @@ class AIRegistryCleaner:
             return []
         return paths
 
-    def _offending_value(self, key_path: str, values: Dict[str, Tuple[Any, int]],
-                         category: str) -> Tuple[str, str, int]:
+    def _offending_value(
+        self, key_path: str, values: Dict[str, Tuple[Any, int]], category: str
+    ) -> Tuple[str, str, int]:
         """Pick the value whose target is missing, for display and removal.
 
         Args:
@@ -1244,9 +1304,9 @@ class AIRegistryCleaner:
             return name, str(values[name][0]), values[name][1]
         return "", "", winreg.REG_SZ
 
-    def clean(self, issues: List[RegistryIssue],
-              selected_ids: Optional[List[int]] = None,
-              full_hive_backup: bool = False) -> CleanResult:
+    def clean(
+        self, issues: List[RegistryIssue], selected_ids: Optional[List[int]] = None, full_hive_backup: bool = False
+    ) -> CleanResult:
         """Clean selected issues (by index in the *issues* list).
 
         Safety model: every mutation is preceded by a per-key ``reg export``
@@ -1276,9 +1336,7 @@ class AIRegistryCleaner:
                 continue
             try:
                 backup_file = self._remove_and_backup(issue)
-                cleaned.append(RegistryIssue(
-                    **{**issue.to_dict(), "backup_path": backup_file}
-                ))
+                cleaned.append(RegistryIssue(**{**issue.to_dict(), "backup_path": backup_file}))
             except Exception as exc:
                 failed.append((issue, str(exc)))
 
@@ -1328,11 +1386,9 @@ class AIRegistryCleaner:
             hive, sub, _access = parts
             try:
                 try:
-                    with winreg.OpenKey(hive, sub, 0,
-                                        winreg.KEY_READ | extra) as key:
+                    with winreg.OpenKey(hive, sub, 0, winreg.KEY_READ | extra) as key:
                         if winreg.QueryInfoKey(key)[0] > 0:
-                            raise OSError(
-                                f"refusing to delete {key_path}: subkeys present")
+                            raise OSError(f"refusing to delete {key_path}: subkeys present")
                 except FileNotFoundError:
                     return  # already gone; treat as success
                 winreg.DeleteKeyEx(hive, sub, 0, extra)
@@ -1362,8 +1418,7 @@ class AIRegistryCleaner:
                 continue
             hive, sub, _access = parts
             try:
-                with winreg.OpenKey(hive, sub, 0,
-                                    winreg.KEY_SET_VALUE | extra) as key:
+                with winreg.OpenKey(hive, sub, 0, winreg.KEY_SET_VALUE | extra) as key:
                     winreg.DeleteValue(key, value_name)
                 return
             except FileNotFoundError:
@@ -1391,9 +1446,7 @@ class AIRegistryCleaner:
             views.append("/reg:32")
         for i, flag in enumerate(views):
             out = self._backup_dir / f"reg_{safe}{'_32' if flag == '/reg:32' else ''}_{ts}.reg"
-            proc = subprocess.run(
-                ["reg", "export", key_path, str(out), "/y", flag],
-                capture_output=True)
+            proc = subprocess.run(["reg", "export", key_path, str(out), "/y", flag], capture_output=True)
             if proc.returncode == 0 and out.exists():
                 backups.append(str(out))
         if not backups:
@@ -1412,9 +1465,7 @@ class AIRegistryCleaner:
         saved: List[str] = []
         for hive in ("HKLM", "HKCU"):
             out = self._backup_dir / f"{hive.lower()}_{ts}.reg"
-            proc = subprocess.run(
-                ["reg", "export", hive, str(out), "/y"],
-                capture_output=True, timeout=300)
+            proc = subprocess.run(["reg", "export", hive, str(out), "/y"], capture_output=True, timeout=300)
             if proc.returncode == 0 and out.exists():
                 saved.append(str(out))
         if not saved:
@@ -1428,14 +1479,21 @@ class AIRegistryCleaner:
             bool: True if the operation succeeded, False otherwise.
         """
         try:
-            subprocess.run([
-                "powershell", "-NoProfile", "-Command",
-                "Checkpoint-Computer -Description 'Cortex Registry Clean' "
-                "-RestorePointType 'MODIFY_SETTINGS'"
-            ], check=True, capture_output=True, timeout=120)
+            subprocess.run(
+                [
+                    "powershell",
+                    "-NoProfile",
+                    "-Command",
+                    "Checkpoint-Computer -Description 'Cortex Registry Clean' " "-RestorePointType 'MODIFY_SETTINGS'",
+                ],
+                check=True,
+                capture_output=True,
+                timeout=120,
+            )
             return True
         except Exception:
             return False
+
 
 __all__ = [
     "AIRegistryCleaner",

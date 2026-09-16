@@ -16,6 +16,7 @@ IS_WINDOWS = platform.system() == "Windows"
 
 class TestGating:
     """Group testgating tests covering is supported matches platform; list returns list."""
+
     def test_is_supported_matches_platform(self):
         """Verify is supported matches platform via FirewallManager.is_supported."""
         assert FirewallManager.is_supported() == IS_WINDOWS
@@ -27,6 +28,7 @@ class TestGating:
 
 class TestAddressValidation:
     """Group testaddressvalidation tests covering valid ipv4; valid cidr; valid range; valid ipv6; invalid rejected; block bad address refused."""
+
     def test_valid_ipv4(self):
         """Verify valid ipv4 via FirewallManager._valid_address."""
         assert FirewallManager._valid_address("8.8.8.8") is True
@@ -57,6 +59,7 @@ class TestAddressValidation:
 
 class TestQuoting:
     """Group testquoting tests covering escapes single quotes; simple value."""
+
     def test_escapes_single_quotes(self):
         # Prevent PowerShell injection through crafted display names/paths.
         """Verify escapes single quotes via FirewallManager._ps_quote, q.startswith, q.endswith."""
@@ -71,6 +74,7 @@ class TestQuoting:
 
 class TestParsing:
     """Group testparsing tests covering empty; single rule; non cortex rule flagged false; array."""
+
     def test_empty(self):
         """Verify empty via FirewallManager._parse_rules."""
         assert FirewallManager._parse_rules(None) == []
@@ -90,7 +94,7 @@ class TestParsing:
         assert r.action == "Block"
         assert r.enabled is True
         assert r.managed_by_cortex is True
-        assert r.remote_address == ""   # "Any" normalized away
+        assert r.remote_address == ""  # "Any" normalized away
 
     def test_non_cortex_rule_flagged_false(self):
         """Verify non cortex rule flagged false via FirewallManager._parse_rules."""
@@ -111,10 +115,12 @@ class TestParsing:
 
 class TestDirectionGuard:
     """Group testdirectionguard tests covering bad direction rejected."""
+
     def test_bad_direction_rejected(self):
         """Verify bad direction rejected via pytest.skip, FirewallManager, _new_rule."""
         if not IS_WINDOWS:
             import pytest
+
             pytest.skip("Windows-only path")
         ok, msg = FirewallManager()._new_rule("Block", "Sideways", "x", program="c:\\a.exe")
         assert ok is False

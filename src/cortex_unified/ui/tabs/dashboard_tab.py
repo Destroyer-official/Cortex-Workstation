@@ -8,8 +8,14 @@ import os
 import shutil
 import logging
 from PySide6.QtWidgets import (
-    QVBoxLayout, QHBoxLayout, QPushButton, QLabel,
-    QProgressBar, QGroupBox, QListWidget, QFrame,
+    QVBoxLayout,
+    QHBoxLayout,
+    QPushButton,
+    QLabel,
+    QProgressBar,
+    QGroupBox,
+    QListWidget,
+    QFrame,
     QMessageBox,
 )
 from PySide6.QtCore import QThread, Qt, Signal, QObject
@@ -19,15 +25,15 @@ from .base_tab import BaseTab
 from cortex_unified.core.config import Config
 from cortex_unified.core.smart_scanner import SmartScannerWorker, SmartScanReport
 
-
 # ──────────────────────────────────────────────────────────────────────
 # Optimizer worker — runs actual cleanup in a background thread
 # ──────────────────────────────────────────────────────────────────────
 
+
 class OptimizerWorker(QObject):
     """Deletes junk files discovered by SmartScan."""
 
-    finished = Signal(dict)   # {"cleaned_mb": float, "errors": int}
+    finished = Signal(dict)  # {"cleaned_mb": float, "errors": int}
     error = Signal(str)
     progress = Signal(str)
 
@@ -110,10 +116,12 @@ class OptimizerWorker(QObject):
                     except OSError:
                         errors += 1
 
-        self.finished.emit({
-            "cleaned_mb": cleaned / (1024 * 1024),
-            "errors": errors,
-        })
+        self.finished.emit(
+            {
+                "cleaned_mb": cleaned / (1024 * 1024),
+                "errors": errors,
+            }
+        )
 
     def stop(self):
         """Request a cooperative stop by setting the cancel flag."""
@@ -123,6 +131,7 @@ class OptimizerWorker(QObject):
 # ──────────────────────────────────────────────────────────────────────
 # Dashboard Tab
 # ──────────────────────────────────────────────────────────────────────
+
 
 class DashboardTab(BaseTab):
     """Modern dashboard with Smart Scan and real Optimize Now."""
@@ -242,9 +251,11 @@ class DashboardTab(BaseTab):
         # ── Quick navigation ──────────────────────────────────────────
         qg = QGroupBox("Advanced Tools")
         ql = QHBoxLayout(qg)
-        for label, tab in [("Deep Uninstaller", "Deep Uninstaller"),
-                           ("Privacy Shield", "Privacy Shield"),
-                           ("Data Shredder", "File Shredder")]:
+        for label, tab in [
+            ("Deep Uninstaller", "Deep Uninstaller"),
+            ("Privacy Shield", "Privacy Shield"),
+            ("Data Shredder", "File Shredder"),
+        ]:
             btn = QPushButton(label)
             btn.clicked.connect(lambda _, t=tab: self.navigate_to(t))
             ql.addWidget(btn)
@@ -302,8 +313,9 @@ class DashboardTab(BaseTab):
         self.smart_scan_btn.setEnabled(True)
         self.smart_scan_btn.setText("RESCAN SYSTEM")
         self.progress_bar.setVisible(False)
-        self.status_label.setText(f"Scan complete in {report.scan_time_seconds:.1f}s — "
-                                  f"{report.total_cleanable_mb:.0f} MB reclaimable")
+        self.status_label.setText(
+            f"Scan complete in {report.scan_time_seconds:.1f}s — " f"{report.total_cleanable_mb:.0f} MB reclaimable"
+        )
 
         # Score color
         self.score_label.setText(str(report.health_score))
@@ -317,14 +329,17 @@ class DashboardTab(BaseTab):
         # Breakdown
         self.details_list.clear()
         self.details_list.addItem(f"🗑️  Temp files: {report.total_junk_mb:.1f} MB")
-        self.details_list.addItem(f"🌐  Browser caches: {report.browser_cache_mb:.1f} MB ({report.privacy_risks_count} browsers)")
+        self.details_list.addItem(
+            f"🌐  Browser caches: {report.browser_cache_mb:.1f} MB ({report.privacy_risks_count} browsers)"
+        )
         self.details_list.addItem(f"📦  Windows Update cache: {report.win_update_cache_mb:.1f} MB")
         self.details_list.addItem(f"♻️  Recycle Bin: {report.recycle_bin_mb:.1f} MB")
         self.details_list.addItem(f"⚡  Prefetch: {report.prefetch_mb:.1f} MB")
         self.details_list.addItem(f"🖼️  Thumbnail cache: {report.thumbnail_cache_mb:.1f} MB")
         self.details_list.addItem(f"🔧  Registry orphans: {report.registry_issues_count}")
-        self.details_list.addItem(f"🚀  Startup items: {report.startup_items_count} "
-                                  f"({report.startup_impact_score} impact pts)")
+        self.details_list.addItem(
+            f"🚀  Startup items: {report.startup_items_count} " f"({report.startup_impact_score} impact pts)"
+        )
 
         self.details_group.setVisible(True)
         self.optimize_btn.setEnabled(True)
@@ -347,12 +362,12 @@ class DashboardTab(BaseTab):
         progress bar while its progress/finished/error signals update the UI.
         """
         if not self.last_report or self.last_report.total_cleanable_mb < 1:
-            QMessageBox.information(self, "Nothing to clean",
-                                    "No significant junk was found.")
+            QMessageBox.information(self, "Nothing to clean", "No significant junk was found.")
             return
 
         reply = QMessageBox.question(
-            self, "Confirm Optimization",
+            self,
+            "Confirm Optimization",
             f"This will permanently delete ~{self.last_report.total_cleanable_mb:.0f} MB "
             f"of temp files, prefetch, and thumbnail caches.\n\n"
             f"Browser data is NOT touched here (use Privacy Shield).\n"
@@ -394,7 +409,8 @@ class DashboardTab(BaseTab):
         self.status_label.setText(f"Freed {mb:.1f} MB — {errs} files skipped (in use)")
 
         QMessageBox.information(
-            self, "Optimization Complete",
+            self,
+            "Optimization Complete",
             f"Cleaned {mb:.1f} MB of junk.\n"
             f"{errs} files could not be removed (locked by other programs).\n\n"
             f"Run Smart Scan again to see your new health score.",

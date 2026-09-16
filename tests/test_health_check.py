@@ -24,6 +24,7 @@ def _c(sev):
 
 class TestScoring:
     """Group testscoring tests covering all good is a; info does not deduct; one warning; one critical; multiple criticals floor at zero; grade boundaries."""
+
     def test_all_good_is_a(self):
         """Verify all good is a via HealthChecker._score, _c."""
         score, grade = HealthChecker._score([_c("good"), _c("good"), _c("good")])
@@ -60,6 +61,7 @@ class TestScoring:
 
 class TestRun:
     """Group testrun tests covering run returns report; progress called; checks have valid severity; to dict."""
+
     def test_run_returns_report(self):
         """Verify run returns report via HealthChecker, run."""
         report = HealthChecker().run()
@@ -96,6 +98,7 @@ class TestRun:
 
 class TestDiskSpaceCheck:
     """Group testdiskspacecheck tests covering disk space check runs."""
+
     def test_disk_space_check_runs(self):
         """Verify disk space check runs via HealthChecker._check_disk_space."""
         c = HealthChecker._check_disk_space()

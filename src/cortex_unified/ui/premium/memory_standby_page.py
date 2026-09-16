@@ -163,7 +163,11 @@ class MemoryStandbyPurgerPage(_Page):
         """
         self._refresh_stats()
         if res.success:
-            msg = f"{res.message}\nReclaimed: {fmt_bytes(res.reclaimed_bytes_approx)}." if res.reclaimed_bytes_approx > 0 else res.message
+            msg = (
+                f"{res.message}\nReclaimed: {fmt_bytes(res.reclaimed_bytes_approx)}."
+                if res.reclaimed_bytes_approx > 0
+                else res.message
+            )
             QMessageBox.information(self, "Command Succeeded", msg)
         else:
             QMessageBox.warning(self, "Command Status", res.message)

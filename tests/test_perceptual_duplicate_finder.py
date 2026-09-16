@@ -28,8 +28,7 @@ def _make_image(path: Path, size: int = 128):
         size (int): Integer number of bytes to format or process.
     """
     w = h = size
-    px = [((x * 3) % 255, (y * 5) % 255, ((x + y) * 7) % 255)
-          for y in range(h) for x in range(w)]
+    px = [((x * 3) % 255, (y * 5) % 255, ((x + y) * 7) % 255) for y in range(h) for x in range(w)]
     img = Image.new("RGB", (w, h))
     img.putdata(px)
     img.save(path)
@@ -48,6 +47,7 @@ def _make_plain(path: Path, size: int = 128, color: str = "red"):
 
 # --- hashing primitives ----------------------------------------------------
 
+
 def test_hashes_are_int(tmp_path):
     """Verify hashes are int via _make_image, compute_hash.
 
@@ -59,6 +59,7 @@ def test_hashes_are_int(tmp_path):
         val = compute_hash(tmp_path / "x.png", kind)
         assert isinstance(val, int)
         assert 0 <= val <= 0xFFFFFFFFFFFFFFFF
+
 
 def test_hashes_deterministic_on_identical_image(tmp_path):
     """Verify hashes deterministic on identical image via _make_image, compute_hash.
@@ -93,8 +94,7 @@ def test_perceptual_hashes_agree_across_rescales(tmp_path):
     im = Image.open(big)
     im.resize((80, 80), Image.Resampling.LANCZOS).save(small)
     for kind in HASH_KINDS:
-        assert hamming_distance(
-            compute_hash(big, kind), compute_hash(small, kind)) <= 10
+        assert hamming_distance(compute_hash(big, kind), compute_hash(small, kind)) <= 10
 
 
 def test_different_images_are_far_apart_in_phash(tmp_path):
@@ -108,9 +108,7 @@ def test_different_images_are_far_apart_in_phash(tmp_path):
     """
     _make_image(tmp_path / "pattern.png", size=128)
     _make_plain(tmp_path / "plain.png", color="green")
-    assert hamming_distance(
-        perceptual_hash(tmp_path / "pattern.png"),
-        perceptual_hash(tmp_path / "plain.png")) > 20
+    assert hamming_distance(perceptual_hash(tmp_path / "pattern.png"), perceptual_hash(tmp_path / "plain.png")) > 20
 
 
 def test_unknown_kind_raises(tmp_path):
@@ -125,6 +123,7 @@ def test_unknown_kind_raises(tmp_path):
 
 # --- finder -----------------------------------------------------------------
 
+
 def test_finder_groups_rescaled_identical_images(tmp_path):
     """Verify finder groups rescaled identical images via Image.open, PerceptualDuplicateFinder, finder.find_perceptual_duplicates.
 
@@ -132,8 +131,7 @@ def test_finder_groups_rescaled_identical_images(tmp_path):
         tmp_path: Filesystem path to the target file or directory.
     """
     _make_image(tmp_path / "a.jpg", size=256)
-    Image.open(tmp_path / "a.jpg").resize((90, 90), Image.Resampling.LANCZOS) \
-        .save(tmp_path / "b.jpg")
+    Image.open(tmp_path / "a.jpg").resize((90, 90), Image.Resampling.LANCZOS).save(tmp_path / "b.jpg")
     _make_plain(tmp_path / "c.png", color="red")
     finder = PerceptualDuplicateFinder(str(tmp_path), max_distance=10)
     groups = finder.find_perceptual_duplicates()
@@ -156,6 +154,7 @@ def test_finder_excludes_non_images(tmp_path):
     # one image alone => no group of size >=2
     assert finder.find_perceptual_duplicates() == {}
 
+
 def test_finder_respects_exclude_dirs(tmp_path):
     """Verify finder respects exclude dirs via PerceptualDuplicateFinder, finder.find_perceptual_duplicates, Config.
 
@@ -171,6 +170,7 @@ def test_finder_respects_exclude_dirs(tmp_path):
     _make_image(top_a)
     _make_image(top_b)
     from cortex_unified.core.config import Config
+
     cfg = Config()
     cfg.config_data["exclude_dirs"] = ["skip"]
     finder = PerceptualDuplicateFinder(str(tmp_path), config=cfg)
@@ -187,8 +187,7 @@ def test_finder_stats(tmp_path):
         tmp_path: Filesystem path to the target file or directory.
     """
     _make_image(tmp_path / "a.jpg", size=128)
-    Image.open(tmp_path / "a.jpg").resize((64, 64), Image.Resampling.LANCZOS) \
-        .save(tmp_path / "b.jpg")
+    Image.open(tmp_path / "a.jpg").resize((64, 64), Image.Resampling.LANCZOS).save(tmp_path / "b.jpg")
     finder = PerceptualDuplicateFinder(str(tmp_path))
     finder.find_perceptual_duplicates()
     stats = finder.get_stats()

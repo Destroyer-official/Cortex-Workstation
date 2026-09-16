@@ -21,6 +21,7 @@ from typing import Dict, List, Optional, Tuple
 @dataclass
 class PowerScheme:
     """Power Scheme data container."""
+
     guid: str
     name: str
     is_active: bool
@@ -30,6 +31,7 @@ class PowerScheme:
 @dataclass
 class PowerPlanStatus:
     """Power Plan Status data container."""
+
     active_scheme_name: str
     active_scheme_guid: str
     schemes: List[PowerScheme]
@@ -75,6 +77,7 @@ class PowerPlanOptimizer:
         is_admin = False
         try:
             import ctypes
+
             is_admin = bool(ctypes.windll.shell32.IsUserAnAdmin())
         except Exception:
             pass
@@ -100,7 +103,9 @@ class PowerPlanOptimizer:
             return False, "Windows only"
 
         try:
-            res = subprocess.run(["powercfg.exe", "/setactive", scheme_guid.strip()], capture_output=True, text=True, timeout=5)
+            res = subprocess.run(
+                ["powercfg.exe", "/setactive", scheme_guid.strip()], capture_output=True, text=True, timeout=5
+            )
             if res.returncode == 0:
                 return True, "Power plan successfully activated."
             return False, res.stderr.strip() or res.stdout.strip() or "Failed to set active power plan"

@@ -27,6 +27,7 @@ class TelemetrySetting:
 
     Manages TelemetrySetting operations and coordinates related state changes for the component.
     """
+
     id: str
     name: str
     hive_name: str  # "HKLM" or "HKCU"
@@ -44,6 +45,7 @@ class TelemetryAuditReport:
 
     Manages TelemetryAuditReport operations and coordinates related state changes for the component.
     """
+
     total_settings: int
     hardened_count: int
     exposed_count: int
@@ -199,24 +201,30 @@ class DiagnosticDataManager:
         hardened_cnt = 0
 
         for s in cls.DATA_COLLECTION_POLICIES:
-            hive = winreg.HKEY_LOCAL_MACHINE if s.hive_name == "HKLM" and winreg else (winreg.HKEY_CURRENT_USER if winreg else None)
+            hive = (
+                winreg.HKEY_LOCAL_MACHINE
+                if s.hive_name == "HKLM" and winreg
+                else (winreg.HKEY_CURRENT_USER if winreg else None)
+            )
             val = cls._read_dword(hive, s.subkey, s.value_name) if hive else None
 
-            is_hard = (val == s.recommended_value)
+            is_hard = val == s.recommended_value
             if is_hard:
                 hardened_cnt += 1
 
-            settings.append(TelemetrySetting(
-                id=s.id,
-                name=s.name,
-                hive_name=s.hive_name,
-                subkey=s.subkey,
-                value_name=s.value_name,
-                current_value=val,
-                recommended_value=s.recommended_value,
-                is_hardened=is_hard,
-                description=s.description,
-            ))
+            settings.append(
+                TelemetrySetting(
+                    id=s.id,
+                    name=s.name,
+                    hive_name=s.hive_name,
+                    subkey=s.subkey,
+                    value_name=s.value_name,
+                    current_value=val,
+                    recommended_value=s.recommended_value,
+                    is_hardened=is_hard,
+                    description=s.description,
+                )
+            )
 
         total = len(settings)
         score = (hardened_cnt / total * 100.0) if total > 0 else 0.0

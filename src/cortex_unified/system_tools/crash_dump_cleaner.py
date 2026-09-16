@@ -20,6 +20,7 @@ class CrashDumpItem:
 
     Manages CrashDumpItem operations and coordinates related state changes for the component.
     """
+
     path: str
     filename: str
     category: str  # "Kernel Dump", "Minidump", "LiveKernel", "User CrashDump", "WER Report"
@@ -33,6 +34,7 @@ class CrashDumpCleanReport:
 
     Manages CrashDumpCleanReport operations and coordinates related state changes for the component.
     """
+
     total_found: int = 0
     total_bytes_found: int = 0
     files_deleted: int = 0

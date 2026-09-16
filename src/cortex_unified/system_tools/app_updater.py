@@ -35,6 +35,7 @@ class UpgradableApp:
     Holds display name, exact package id, installed/available versions, and
     source feed for a single upgrade candidate.
     """
+
     name: str
     package_id: str
     current: str
@@ -91,9 +92,15 @@ class AppUpdater:
         """
         if not self.is_available():
             return []
-        out = self._run([
-            "winget", "upgrade", "--include-unknown", "--disable-interactivity",
-        ], timeout=120)
+        out = self._run(
+            [
+                "winget",
+                "upgrade",
+                "--include-unknown",
+                "--disable-interactivity",
+            ],
+            timeout=120,
+        )
         return self.parse_upgrade_output(out or "")
 
     def upgrade(self, package_id: str) -> tuple[bool, str]:
@@ -112,11 +119,20 @@ class AppUpdater:
             return False, "winget is not available."
         if not package_id:
             return False, "No package id provided."
-        out = self._run([
-            "winget", "upgrade", "--id", package_id, "--exact", "--silent",
-            "--accept-package-agreements", "--accept-source-agreements",
-            "--disable-interactivity",
-        ], timeout=1800)
+        out = self._run(
+            [
+                "winget",
+                "upgrade",
+                "--id",
+                package_id,
+                "--exact",
+                "--silent",
+                "--accept-package-agreements",
+                "--accept-source-agreements",
+                "--disable-interactivity",
+            ],
+            timeout=1800,
+        )
         text = out or ""
         # winget prints "Successfully installed" on success.
         if "Successfully installed" in text or "No available upgrade found" in text:
@@ -135,11 +151,19 @@ class AppUpdater:
         """
         if not self.is_available():
             return False, "winget is not available."
-        out = self._run([
-            "winget", "upgrade", "--all", "--silent",
-            "--accept-package-agreements", "--accept-source-agreements",
-            "--disable-interactivity", "--include-unknown",
-        ], timeout=3600)
+        out = self._run(
+            [
+                "winget",
+                "upgrade",
+                "--all",
+                "--silent",
+                "--accept-package-agreements",
+                "--accept-source-agreements",
+                "--disable-interactivity",
+                "--include-unknown",
+            ],
+            timeout=3600,
+        )
         return (out is not None), ("Bulk update finished." if out is not None else "Bulk update failed.")
 
     # -- parsing (unit-testable, no winget needed) --------------------------
@@ -159,8 +183,7 @@ class AppUpdater:
         lines = text.splitlines()
         header_idx = -1
         for i, line in enumerate(lines):
-            if ("Name" in line and "Id" in line and "Version" in line
-                    and "Available" in line):
+            if "Name" in line and "Id" in line and "Version" in line and "Available" in line:
                 header_idx = i
                 break
         if header_idx == -1:
@@ -176,7 +199,7 @@ class AppUpdater:
             return []
 
         apps: list[UpgradableApp] = []
-        for line in lines[header_idx + 1:]:
+        for line in lines[header_idx + 1 :]:
             stripped = line.strip()
             if not stripped:
                 continue

@@ -93,10 +93,7 @@ def fmt_bytes(n: int) -> str:
 _NAV = [(spec.id, spec.title, spec.icon) for spec in registry.ordered_specs()]
 
 #: ``[(group_id, group_title, (page_id, ...))]`` in sidebar order.
-_NAV_GROUPS = tuple(
-    (group.id, group.title, tuple(spec.id for spec in specs))
-    for group, specs in registry.grouped()
-)
+_NAV_GROUPS = tuple((group.id, group.title, tuple(spec.id for spec in specs)) for group, specs in registry.grouped())
 
 
 #: Logical size of a sidebar icon, in device-independent pixels.
@@ -112,8 +109,7 @@ _BRAND_MARK_PX = 20
 #: Backwards-compatible view of the registry: ``page_id -> (class, module)``.
 #: Derived, never maintained by hand.
 _PAGE_FACTORIES: dict[str, tuple[str, str]] = {
-    spec.id: (spec.factory.split(":")[1], spec.factory.split(":")[0])
-    for spec in registry.PAGES
+    spec.id: (spec.factory.split(":")[1], spec.factory.split(":")[0]) for spec in registry.PAGES
 }
 
 
@@ -212,16 +208,16 @@ class _LazyPageRegistry(Mapping):
         return frozenset(self._built)
 
 
-
-
 class _WorkerTaskSignals(QObject):
     """Signals carrying a worker result or exception to the GUI thread."""
+
     finished = Signal(object)
     failed = Signal(object)
 
 
 class _WorkerTaskRunnable(QRunnable):
     """QRunnable that runs work_fn off the UI thread and emits the outcome."""
+
     def __init__(self, work_fn, signals: _WorkerTaskSignals):
         """Store the work callable and its result signals."""
         super().__init__()
@@ -284,6 +280,7 @@ class PremiumMainWindow(QMainWindow):
         # with the entry point when provided so both read/write one file; a
         # standalone construction (tests) gets its own default-backed store.
         from .settings_store import SettingsStore
+
         self.settings = settings if settings is not None else SettingsStore()
         # Apps recently uninstalled on the Deep Uninstaller page, awaiting a
         # leftover scan on the Leftover Scanner page (cross-page handoff).
@@ -291,10 +288,10 @@ class PremiumMainWindow(QMainWindow):
         self.theme_name = theme
         self.palette_tokens: Palette = THEMES[theme]
         self._threads: list[QThread] = []
-        self._closing = False              # set in closeEvent; blocks new workers
-        self._force_quit = False           # set by the tray's Exit action
-        self._tray = None                  # PremiumTray, created after pages
-        self._tray_hint_shown = False      # one-time "still running in tray" hint
+        self._closing = False  # set in closeEvent; blocks new workers
+        self._force_quit = False  # set by the tray's Exit action
+        self._tray = None  # PremiumTray, created after pages
+        self._tray_hint_shown = False  # one-time "still running in tray" hint
         #: Threads that ignored every shutdown attempt. Detached from the
         #: window (so Qt teardown can never destroy a live QThread) and kept
         #: referenced here; the app entry point reads this to decide whether a
@@ -320,11 +317,13 @@ class PremiumMainWindow(QMainWindow):
         # Best-effort native backdrop (Windows 11 Mica/Acrylic); degrades to an
         # opaque token background on any other platform. Never raises.
         from .backdrop import apply_backdrop
+
         self.backdrop_mode = apply_backdrop(self)
 
         # Shared, fully-offline learning engine (learns which categories you
         # keep vs. skip). Loads a tiny local model; never touches the network.
         from cortex_unified.core.smart_suggest import SmartSuggester
+
         self.suggester = SmartSuggester()
 
         central = QWidget()
@@ -366,9 +365,11 @@ class PremiumMainWindow(QMainWindow):
         for b in (self._min_btn, self._max_btn):
             b.setObjectName("WinBtn")
         self._close_btn.setObjectName("CloseBtn")
-        for b, name in ((self._min_btn, "win-minimize"),
-                        (self._max_btn, "win-maximize"),
-                        (self._close_btn, "win-close")):
+        for b, name in (
+            (self._min_btn, "win-minimize"),
+            (self._max_btn, "win-maximize"),
+            (self._close_btn, "win-close"),
+        ):
             b.setIcon(icons.icon(name, _WIN_BTN_PX, muted))
             b.setIconSize(icons.icon_size(_WIN_BTN_PX))
             b.setFixedSize(36, 28)
@@ -384,8 +385,7 @@ class PremiumMainWindow(QMainWindow):
 
         # Expose the window-control buttons + brand under the conventional
         # ``_titlebar`` names for chrome code and accessibility tests.
-        self._titlebar = _TitleBarChrome(
-            self._brand_mark, self._min_btn, self._max_btn, self._close_btn)
+        self._titlebar = _TitleBarChrome(self._brand_mark, self._min_btn, self._max_btn, self._close_btn)
 
         right_lay.addWidget(title_row)
 
@@ -401,8 +401,16 @@ class PremiumMainWindow(QMainWindow):
         outer.addWidget(right_col, 1)
         self.setCentralWidget(central)
 
+        self._event_filter_installed = False
         if self._frameless:
-            QApplication.instance().installEventFilter(self)
+            app = QApplication.instance()
+            if app is not None:
+                app.installEventFilter(self)
+                self._event_filter_installed = True
+                try:
+                    self.destroyed.connect(self._remove_app_event_filter)
+                except Exception:
+                    pass
 
         # Pages are built on first view, not up front. Constructing all 43
         # eagerly cost ~2.6 s before the window could appear, even though a
@@ -415,6 +423,7 @@ class PremiumMainWindow(QMainWindow):
 
         # Ctrl+H toggle sidebar
         from PySide6.QtGui import QShortcut, QKeySequence
+
         self._sidebar_shortcut = QShortcut(QKeySequence("Ctrl+H"), self)
         self._sidebar_shortcut.activated.connect(self._toggle_sidebar)
 
@@ -426,6 +435,7 @@ class PremiumMainWindow(QMainWindow):
         # it can reference the fully-built pages/palette; availability-gated so
         # it is inert on headless/offscreen hosts and never affects startup.
         from .tray import PremiumTray
+
         self._tray = PremiumTray(self, self.settings)
 
     # -- sidebar ------------------------------------------------------------
@@ -468,8 +478,7 @@ class PremiumMainWindow(QMainWindow):
         brand_row.setContentsMargins(0, 0, 0, 0)
         brand_row.setSpacing(9)
         self._brand_mark = QLabel()
-        self._brand_mark.setPixmap(
-            icons.pixmap("brand", _BRAND_MARK_PX, self.palette_tokens.accent))
+        self._brand_mark.setPixmap(icons.pixmap("brand", _BRAND_MARK_PX, self.palette_tokens.accent))
         self._brand_mark.setFixedSize(icons.icon_size(_BRAND_MARK_PX))
         brand_row.addWidget(self._brand_mark, 0, Qt.AlignmentFlag.AlignVCenter)
         brand = QLabel("CORTEX")
@@ -496,8 +505,7 @@ class PremiumMainWindow(QMainWindow):
         nav_scroll.setObjectName("NavScroll")
         nav_scroll.setWidgetResizable(True)
         nav_scroll.setFrameShape(QScrollArea.Shape.NoFrame)
-        nav_scroll.setHorizontalScrollBarPolicy(
-            Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        nav_scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         nav_holder = QWidget()
         nav_holder.setObjectName("NavHolder")
         nav_lay = QVBoxLayout(nav_holder)
@@ -517,8 +525,7 @@ class PremiumMainWindow(QMainWindow):
             header = QPushButton()
             header.setObjectName("NavGroupHeader")
             header.setCheckable(True)
-            header.setChecked(group_id == registry.group_of(
-                registry.DEFAULT_PAGE_ID))
+            header.setChecked(group_id == registry.group_of(registry.DEFAULT_PAGE_ID))
             header.setCursor(Qt.CursorShape.PointingHandCursor)
             header.setAccessibleName(f"{title} navigation group")
             header.setToolTip(f"Show or hide {title} tools")
@@ -550,11 +557,9 @@ class PremiumMainWindow(QMainWindow):
                 # Real SVG, rasterised at the screen's device pixel ratio, so
                 # it stays sharp at 125%/150% scaling instead of relying on
                 # system font fallback for a Unicode glyph.
-                button.setIcon(icons.icon(
-                    spec.icon, _NAV_ICON_PX, self.palette_tokens.text_muted))
+                button.setIcon(icons.icon(spec.icon, _NAV_ICON_PX, self.palette_tokens.text_muted))
                 button.setIconSize(icons.icon_size(_NAV_ICON_PX))
-                button.clicked.connect(
-                    lambda _checked=False, pid=spec.id: self._select(pid))
+                button.clicked.connect(lambda _checked=False, pid=spec.id: self._select(pid))
                 button._page_id = spec.id  # type: ignore[attr-defined]
                 button._nav_label = spec.title  # type: ignore[attr-defined]
                 self._nav_group.addButton(button)
@@ -565,9 +570,7 @@ class PremiumMainWindow(QMainWindow):
             expanded = header.isChecked()
             body.setVisible(expanded)
             self._update_nav_header(group_id, expanded)
-            header.toggled.connect(
-                lambda open_, gid=group_id: self._set_nav_section(
-                    gid, open_))
+            header.toggled.connect(lambda open_, gid=group_id: self._set_nav_section(gid, open_))
 
         self._nav_empty = QLabel("NO TOOLS MATCH")
         self._nav_empty.setObjectName("NavEmpty")
@@ -581,7 +584,7 @@ class PremiumMainWindow(QMainWindow):
 
         self._nav_search.textChanged.connect(self._filter_navigation)
 
-        signal = QLabel("\u25CF  SYSTEM READY")
+        signal = QLabel("\u25cf  SYSTEM READY")
         signal.setObjectName("SidebarStatus")
         version = QLabel("CORE v2.1  //  LOCAL ENGINE")
         version.setObjectName("SidebarVersion")
@@ -612,24 +615,6 @@ class PremiumMainWindow(QMainWindow):
         bar.installEventFilter(self)
 
         return bar
-
-    def eventFilter(self, obj, event):
-        """Filter monitored Qt events for target child widgets.
-
-        Intercepts specific mouse, keyboard, or focus events to provide custom interactive behaviors before standard event dispatch.
-
-        Args:
-            obj: The obj parameter.
-            event: The Qt event object.
-        """
-        if obj is self._sidebar and not self._sidebar_pinned and not self._sidebar_expanded:
-            if event.type() == QEvent.Type.Enter:
-                self._sidebar_leave_timer.stop()
-                if not self._sidebar_hover_expanded:
-                    self._sidebar_hover_expand()
-            elif event.type() == QEvent.Type.Leave:
-                self._sidebar_leave_timer.start()
-        return super().eventFilter(obj, event)
 
     def _sidebar_hover_expand(self) -> None:
         """Temporarily expand sidebar on hover (when collapsed & not pinned)."""
@@ -694,7 +679,7 @@ class PremiumMainWindow(QMainWindow):
 
     def _stop_sidebar_anim(self) -> None:
         """Stop any running sidebar animations."""
-        for attr in ('_sidebar_anim', '_sidebar_anim2'):
+        for attr in ("_sidebar_anim", "_sidebar_anim2"):
             anim = getattr(self, attr, None)
             if anim is not None:
                 anim.stop()
@@ -754,8 +739,7 @@ class PremiumMainWindow(QMainWindow):
             self._sidebar_search.show()
             self._sidebar_signal.show()
             self._sidebar_version.show()
-            self._sidebar_nav_scroll.setHorizontalScrollBarPolicy(
-                Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+            self._sidebar_nav_scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
             for btn in self._nav_buttons_by_page.values():
                 btn.setText(f"  {getattr(btn, '_nav_label', '')}")
                 btn.setToolTip("")
@@ -792,15 +776,14 @@ class PremiumMainWindow(QMainWindow):
         self._sidebar_search.hide()
         self._sidebar_signal.hide()
         self._sidebar_version.hide()
-        self._sidebar_nav_scroll.setHorizontalScrollBarPolicy(
-            Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self._sidebar_nav_scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
 
         # Keep the icon-plus-title text so the button stays label-addressable,
         # but mark it collapsed so the stylesheet hides the text (font-size: 0)
         # while the sidebar shrinks to icon-width.
         for page_id, btn in self._nav_buttons_by_page.items():
             btn.setText(f"  {getattr(btn, '_nav_label', '')}")
-            btn.setToolTip(getattr(btn, '_nav_label', ''))
+            btn.setToolTip(getattr(btn, "_nav_label", ""))
             btn.setProperty("collapsed", True)
             btn.style().unpolish(btn)
             btn.style().polish(btn)
@@ -834,13 +817,14 @@ class PremiumMainWindow(QMainWindow):
             button.setIcon(icons.icon(spec.icon, _NAV_ICON_PX, color))
         mark = getattr(self, "_brand_mark", None)
         if mark is not None:
-            mark.setPixmap(icons.pixmap(
-                "brand", _BRAND_MARK_PX, self.palette_tokens.accent))
+            mark.setPixmap(icons.pixmap("brand", _BRAND_MARK_PX, self.palette_tokens.accent))
         muted = self.palette_tokens.text_muted
-        if hasattr(self, '_min_btn'):
-            for b, name in ((self._min_btn, "win-minimize"),
-                            (self._max_btn, "win-maximize" if not self.isMaximized() else "win-restore"),
-                            (self._close_btn, "win-close")):
+        if hasattr(self, "_min_btn"):
+            for b, name in (
+                (self._min_btn, "win-minimize"),
+                (self._max_btn, "win-maximize" if not self.isMaximized() else "win-restore"),
+                (self._close_btn, "win-close"),
+            ):
                 b.setIcon(icons.icon(name, _WIN_BTN_PX, muted))
         for gid, sec in getattr(self, "_nav_sections", {}).items():
             self._update_nav_header(gid, sec["header"].isChecked())
@@ -892,8 +876,7 @@ class PremiumMainWindow(QMainWindow):
                 button.setVisible(visible)
                 matched = matched or visible
             section["header"].setVisible(not query or matched)
-            section["body"].setVisible(
-                matched if query else section["header"].isChecked())
+            section["body"].setVisible(matched if query else section["header"].isChecked())
             found_any = found_any or matched
         self._nav_empty.setVisible(bool(query) and not found_any)
 
@@ -1043,6 +1026,7 @@ class PremiumMainWindow(QMainWindow):
     def set_theme(self, theme: str) -> None:
         """Apply a theme app-wide, retint icons, persist the choice, and refresh the tray."""
         from PySide6.QtWidgets import QApplication
+
         self.theme_name = theme
         self.palette_tokens = THEMES[theme]
         apply_theme(QApplication.instance(), theme)
@@ -1056,18 +1040,52 @@ class PremiumMainWindow(QMainWindow):
         if self._tray is not None:
             self._tray.refresh_theme(self.palette_tokens)
 
-    # -- frameless edge resize ---------------------------------------------
+    def _remove_app_event_filter(self, *_):
+        """Safely remove this window from QApplication's event filter list."""
+        if getattr(self, "_event_filter_installed", False):
+            self._event_filter_installed = False
+            app = QApplication.instance()
+            if app is not None:
+                try:
+                    app.removeEventFilter(self)
+                except Exception:
+                    pass
+
+    def close(self) -> bool:
+        """Close the window and safely detach app-level event filters."""
+        self._remove_app_event_filter()
+        return super().close()
+
+    # -- frameless edge resize & sidebar hover filter ----------------------
 
     def eventFilter(self, obj, event):  # noqa: N802
-        """App-level filter that turns the 6px window edge into a resize grip.
-
-        Uses the platform's native ``startSystemResize`` so resizing feels
-        exactly like a normal window (with live preview + snap)."""
+        """App-level filter that handles sidebar hover and frameless resize grip."""
         try:
+            # Check sidebar hover detection first
+            if (
+                hasattr(self, "_sidebar")
+                and obj is self._sidebar
+                and not getattr(self, "_sidebar_pinned", True)
+                and not getattr(self, "_sidebar_expanded", True)
+            ):
+                if event.type() == QEvent.Type.Enter:
+                    self._sidebar_leave_timer.stop()
+                    if not self._sidebar_hover_expanded:
+                        self._sidebar_hover_expand()
+                elif event.type() == QEvent.Type.Leave:
+                    self._sidebar_leave_timer.start()
+                return super().eventFilter(obj, event)
+
+            # Defensive guards for app-level event filtering
+            if not getattr(self, "_event_filter_installed", False):
+                return False
+            if getattr(self, "_closing", False) or not self.isVisible():
+                return False
             if getattr(self, "_in_event_filter", False):
                 return super().eventFilter(obj, event)
             if not self._frameless or self.isMaximized() or not self.isActiveWindow():
                 return super().eventFilter(obj, event)
+
             self._in_event_filter = True
             try:
                 et = event.type()
@@ -1075,8 +1093,7 @@ class PremiumMainWindow(QMainWindow):
                     if et == QEvent.Type.MouseMove:
                         edges = self._edge_at(event.globalPosition().toPoint())
                         self._update_edge_cursor(edges)
-                    elif et == QEvent.Type.MouseButtonPress and \
-                            event.button() == Qt.MouseButton.LeftButton:
+                    elif et == QEvent.Type.MouseButtonPress and event.button() == Qt.MouseButton.LeftButton:
                         edges = self._edge_at(event.globalPosition().toPoint())
                         if edges:
                             handle = self.windowHandle()
@@ -1088,7 +1105,7 @@ class PremiumMainWindow(QMainWindow):
             finally:
                 self._in_event_filter = False
             return super().eventFilter(obj, event)
-        except KeyboardInterrupt:
+        except Exception:
             return False
 
     def _edge_at(self, gpos):
@@ -1100,8 +1117,7 @@ class PremiumMainWindow(QMainWindow):
         top = abs(gpos.y() - r.top()) <= m
         bottom = abs(gpos.y() - r.bottom()) <= m
         # Only treat as an edge if the cursor is actually within the window band.
-        if not (r.left() - m <= gpos.x() <= r.right() + m
-                and r.top() - m <= gpos.y() <= r.bottom() + m):
+        if not (r.left() - m <= gpos.x() <= r.right() + m and r.top() - m <= gpos.y() <= r.bottom() + m):
             return Qt.Edge(0)
         edges = Qt.Edge(0)
         if left:
@@ -1194,8 +1210,7 @@ class PremiumMainWindow(QMainWindow):
         # (the X button) hides to the tray instead of quitting - unless a real
         # quit was requested via the tray's Exit action (_force_quit). Workers
         # keep running untouched, so an in-flight scan/clean is never aborted.
-        if (self.settings.close_to_tray and self._tray is not None
-                and self._tray.available and not self._force_quit):
+        if self.settings.close_to_tray and self._tray is not None and self._tray.available and not self._force_quit:
             event.ignore()
             self.hide()
             if not self._tray_hint_shown:
@@ -1207,10 +1222,7 @@ class PremiumMainWindow(QMainWindow):
             return
 
         self._closing = True
-        if self._frameless:
-            app = QApplication.instance()
-            if app is not None:
-                app.removeEventFilter(self)
+        self._remove_app_event_filter()
         # Stop the tray's background monitor before tearing workers down so no
         # timer tick fires during shutdown.
         if self._tray is not None:
@@ -1291,8 +1303,9 @@ class PremiumMainWindow(QMainWindow):
         self._workers_stuck = [t for t in threads if _running(t)]
         for t in self._workers_stuck:
             _LOG.error(
-                "worker thread %r could not be stopped; detaching it so "
-                "teardown never destroys a running thread", t.objectName())
+                "worker thread %r could not be stopped; detaching it so " "teardown never destroys a running thread",
+                t.objectName(),
+            )
             t.setParent(None)
             if t in self._threads:
                 self._threads.remove(t)
@@ -1301,6 +1314,7 @@ class PremiumMainWindow(QMainWindow):
 # =====================================================================
 #  Scroll behavior policy (Req 5)
 # =====================================================================
+
 
 class SingleScrollFilter(QObject):
     """Route a wheel gesture to a single Scroll_Container (Req 5.5).
@@ -1324,8 +1338,7 @@ class SingleScrollFilter(QObject):
     case the filter simply lets the inner view handle its own wheel events).
     """
 
-    def __init__(self, inner: QWidget, outer: QScrollArea | None = None,
-                 parent: QObject | None = None):
+    def __init__(self, inner: QWidget, outer: QScrollArea | None = None, parent: QObject | None = None):
         """Store the inner scrollable view and the outer page scroll area.
 
         Initializes the instance and configures internal state.
@@ -1382,6 +1395,7 @@ class SingleScrollFilter(QObject):
 # =====================================================================
 #  Keyboard, focus, and modal helpers (Req 10)
 # =====================================================================
+
 
 def set_tab_order(parent: QWidget | None, widgets) -> list[QWidget]:
     """Chain keyboard Tab traversal across *widgets* in a predictable order.
@@ -1455,6 +1469,7 @@ def run_modal(dialog, trigger: QWidget | None = None):
 # =====================================================================
 #  Pages
 # =====================================================================
+
 
 class _Page(QWidget):
     """Base page with access to the window + palette and a vertical layout.
@@ -1556,8 +1571,7 @@ class _Page(QWidget):
         self._scroll_filters.append(filt)
         return filt
 
-    def add_scrolling_list(self, inner: QWidget, *, stretch: int = 1,
-                           minimum_height: int | None = None) -> QWidget:
+    def add_scrolling_list(self, inner: QWidget, *, stretch: int = 1, minimum_height: int | None = None) -> QWidget:
         """Add a list/tree/table under the page's scroll policy (Req 5.2, 5.5).
 
         Gives ``inner`` a small ``minimumHeight`` and a layout stretch factor so
@@ -1565,8 +1579,7 @@ class _Page(QWidget):
         its wheel gestures to a single ``Scroll_Container``. Returns ``inner``
         for convenient chaining.
         """
-        inner.setMinimumHeight(self.LIST_MIN_HEIGHT if minimum_height is None
-                               else minimum_height)
+        inner.setMinimumHeight(self.LIST_MIN_HEIGHT if minimum_height is None else minimum_height)
         self.v.addWidget(inner, stretch)
         self.attach_single_scroll(inner)
         return inner
@@ -1587,13 +1600,15 @@ class DashboardPage(_Page):
         self._report = None
         self._preview_targets: dict = {}
         self._preview_counter = 0
-        self._excluded: dict[int, set[str]] = {}   # scan_idx -> excluded path prefixes
-        self._updating = False                      # guard for programmatic check changes
+        self._excluded: dict[int, set[str]] = {}  # scan_idx -> excluded path prefixes
+        self._updating = False  # guard for programmatic check changes
 
-        self.v.addWidget(title_block(
-            "System Overview Dashboard",
-            "One-click health analysis and safe storage reclamation across your entire PC.",
-        ))
+        self.v.addWidget(
+            title_block(
+                "System Overview Dashboard",
+                "One-click health analysis and safe storage reclamation across your entire PC.",
+            )
+        )
 
         # Hero: a modular bento grid - a tall gauge tile beside a cluster of
         # metric tiles, laid out with uniform gaps and rounded tiles.
@@ -1614,6 +1629,7 @@ class DashboardPage(_Page):
         self.gauge.setMinimumSize(128, 128)
         self.gauge.setMaximumHeight(146)
         from .widgets import attach_glow
+
         # Smaller glow (radius 20, alpha 40) so the halo stays inside the
         # constrained gauge bounds and never clips into green lines at the top.
         attach_glow(self.gauge, self.p.accent, 20, 40)
@@ -1723,6 +1739,7 @@ class DashboardPage(_Page):
 
         # Subtle accent glow on the two hero CTAs only (perf-safe, gentle).
         from .widgets import attach_glow
+
         attach_glow(self.scan_btn, self.p.accent, 22, 80)
         attach_glow(self.recycle_btn, self.p.accent, 18, 70)
         # Tactile press feedback (a subtle sink) on the hero actions.
@@ -1746,6 +1763,7 @@ class DashboardPage(_Page):
         Launches an asynchronous scan across the target subsystem, showing a loading indicator and disabling triggering controls.
         """
         from .workers import ScanWorker
+
         self._scanning = True
         self.scan_btn.setText("Cancel")
         self.progress.setVisible(True)
@@ -1753,9 +1771,7 @@ class DashboardPage(_Page):
         self.win.statusBar().showMessage("Scanning...")
         self.gauge.set_center_text("\u2026")
         self._scan_worker = ScanWorker(max_risk="medium")
-        self.win.run_worker(
-            self._scan_worker, self._on_scanned, self._on_fail, on_progress=self._on_progress
-        )
+        self.win.run_worker(self._scan_worker, self._on_scanned, self._on_fail, on_progress=self._on_progress)
 
     def _cancel_scan(self):
         """Cancel the running scan worker and show Cancelling state."""
@@ -1797,14 +1813,15 @@ class DashboardPage(_Page):
         self.tree.clear()
         risk_labels = {"low": "SAFE", "medium": "REVIEW", "high": "CAUTION"}
         for idx, scan in enumerate(report.scans):
-            ctx = {"category": scan.category.id, "size": scan.total_bytes,
-                   "age_days": scan.category.min_age_days}
-            top = QTreeWidgetItem([
-                scan.category.label,
-                "",   # risk shown as a pill badge widget below
-                str(scan.file_count),
-                fmt_bytes(scan.total_bytes),
-            ])
+            ctx = {"category": scan.category.id, "size": scan.total_bytes, "age_days": scan.category.min_age_days}
+            top = QTreeWidgetItem(
+                [
+                    scan.category.label,
+                    "",  # risk shown as a pill badge widget below
+                    str(scan.file_count),
+                    fmt_bytes(scan.total_bytes),
+                ]
+            )
             top.setFlags(top.flags() | Qt.ItemFlag.ItemIsUserCheckable)
             # Only auto-check SAFE (low-risk) categories. Medium/review (e.g.
             # browser cache) start unchecked so the user opts in deliberately.
@@ -1813,7 +1830,7 @@ class DashboardPage(_Page):
             checked = is_safe and self.win.suggester.recommend(ctx)
             top.setCheckState(0, Qt.CheckState.Checked if checked else Qt.CheckState.Unchecked)
             top.setData(0, Qt.ItemDataRole.UserRole, ctx)
-            top.setData(0, Qt.ItemDataRole.UserRole + 1, idx)      # scan index
+            top.setData(0, Qt.ItemDataRole.UserRole + 1, idx)  # scan index
             top.setToolTip(0, scan.category.description)
             # placeholder child so the expand arrow shows; real contents load lazily
             if scan.file_count:
@@ -1823,18 +1840,19 @@ class DashboardPage(_Page):
             # Real rounded pill badge for the risk column, with a plain-language
             # tooltip so users understand exactly how safe each category is.
             badge = Badge(self.p, scan.category.risk.value)
-            badge.setToolTip({
-                "low": "Safe to delete \u2014 auto-regenerating cache. No personal "
-                       "data, passwords or settings. Goes to the Recycle Bin.",
-                "medium": "Safe to delete, but it will re-download later (e.g. browser "
-                          "cache means pages re-fetch). Goes to the Recycle Bin.",
-                "high": "Review carefully before deleting.",
-            }.get(scan.category.risk.value, ""))
+            badge.setToolTip(
+                {
+                    "low": "Safe to delete \u2014 auto-regenerating cache. No personal "
+                    "data, passwords or settings. Goes to the Recycle Bin.",
+                    "medium": "Safe to delete, but it will re-download later (e.g. browser "
+                    "cache means pages re-fetch). Goes to the Recycle Bin.",
+                    "high": "Review carefully before deleting.",
+                }.get(scan.category.risk.value, "")
+            )
             self.tree.setItemWidget(top, 1, badge)
         self._updating = False
-        self._update_selection()   # reflect the auto-checked (SAFE) size live
-        self.win.statusBar().showMessage(
-            f"Found {fmt_bytes(total)} across {report.total_files} files", 5000)
+        self._update_selection()  # reflect the auto-checked (SAFE) size live
+        self.win.statusBar().showMessage(f"Found {fmt_bytes(total)} across {report.total_files} files", 5000)
 
     # -- live "selected to clean" total ------------------------------------
 
@@ -1851,7 +1869,7 @@ class DashboardPage(_Page):
             scan = self._report.scans[idx]
             excl = self._excluded.get(idx)
             if not excl:
-                total += scan.total_bytes           # whole category (fast path)
+                total += scan.total_bytes  # whole category (fast path)
             else:
                 total += sum(e.size for e in self._filtered_entries(scan, idx))
         return total
@@ -1872,7 +1890,7 @@ class DashboardPage(_Page):
     _ROLE_SCANIDX = Qt.ItemDataRole.UserRole + 1
     _ROLE_PREFIX = Qt.ItemDataRole.UserRole + 2
     _ROLE_LOADED = Qt.ItemDataRole.UserRole + 3
-    _ROLE_NODEPATH = Qt.ItemDataRole.UserRole + 4   # this node's own fs path (preview)
+    _ROLE_NODEPATH = Qt.ItemDataRole.UserRole + 4  # this node's own fs path (preview)
 
     def _expand_category(self, item: QTreeWidgetItem):
         """Lazily populate a node's contents off the UI thread when expanded.
@@ -1906,17 +1924,22 @@ class DashboardPage(_Page):
         self._preview_targets[nid] = item
 
         from .workers import DirPreviewWorker
+
         prefix = item.data(0, self._ROLE_PREFIX)
-        if prefix:   # folder / app node -> drill into its contents
+        if prefix:  # folder / app node -> drill into its contents
             worker = DirPreviewWorker(nid, scan.entries, "folder", prefix=prefix)
         elif scan.category.id == "app_caches":
             # Application caches -> group by owning app (Chrome, Discord, ...).
             import os
-            bases = [os.environ.get("LOCALAPPDATA", ""), os.environ.get("APPDATA", ""),
-                     os.environ.get("PROGRAMDATA", "")]
+
+            bases = [
+                os.environ.get("LOCALAPPDATA", ""),
+                os.environ.get("APPDATA", ""),
+                os.environ.get("PROGRAMDATA", ""),
+            ]
             bases = [b for b in bases if b]
             worker = DirPreviewWorker(nid, scan.entries, "appwise", roots=bases)
-        else:        # generic category node
+        else:  # generic category node
             roots = scan.category.existing_paths() or list(scan.category.paths)
             if len(roots) == 1:
                 worker = DirPreviewWorker(nid, scan.entries, "folder", prefix=str(roots[0]))
@@ -1931,8 +1954,8 @@ class DashboardPage(_Page):
             return
         scan_idx = item.data(0, self._ROLE_SCANIDX)
         parent_checked = item.checkState(0) != Qt.CheckState.Unchecked
-        self._updating = True   # setting check states below must not fire the handler
-        item.takeChildren()   # remove the "Loading..." placeholder
+        self._updating = True  # setting check states below must not fire the handler
+        item.takeChildren()  # remove the "Loading..." placeholder
         if not children:
             empty = QTreeWidgetItem(["(nothing to preview)", "", "", ""])
             empty.setFlags(empty.flags() & ~Qt.ItemFlag.ItemIsUserCheckable)
@@ -1941,9 +1964,8 @@ class DashboardPage(_Page):
             return
         excl = self._excluded.get(scan_idx, set())
         for c in children:
-            glyph = "\U0001F4C1 " if c["is_dir"] else "\U0001F4C4 "
-            child = QTreeWidgetItem([glyph + c["name"], "",
-                                    str(c["count"]), fmt_bytes(c["size"])])
+            glyph = "\U0001f4c1 " if c["is_dir"] else "\U0001f4c4 "
+            child = QTreeWidgetItem([glyph + c["name"], "", str(c["count"]), fmt_bytes(c["size"])])
             child.setToolTip(0, c["path"])
             child.setFlags(child.flags() | Qt.ItemFlag.ItemIsUserCheckable)
             child.setData(0, self._ROLE_SCANIDX, scan_idx)
@@ -1951,14 +1973,12 @@ class DashboardPage(_Page):
             # Initial check state: unchecked if parent is unchecked or this path
             # was previously excluded; otherwise checked.
             npath = c["path"].replace("/", "\\")
-            is_excluded = (not parent_checked) or any(
-                npath == x or npath.startswith(x + "\\") for x in excl)
-            child.setCheckState(0, Qt.CheckState.Unchecked if is_excluded
-                                else Qt.CheckState.Checked)
+            is_excluded = (not parent_checked) or any(npath == x or npath.startswith(x + "\\") for x in excl)
+            child.setCheckState(0, Qt.CheckState.Unchecked if is_excluded else Qt.CheckState.Checked)
             if c["expandable"]:
                 child.setData(0, self._ROLE_PREFIX, c["path"])
                 ph = QTreeWidgetItem(["Loading\u2026", "", "", ""])
-                child.addChild(ph)   # placeholder so the expand arrow appears
+                child.addChild(ph)  # placeholder so the expand arrow appears
             item.addChild(child)
         self._updating = False
 
@@ -1989,8 +2009,7 @@ class DashboardPage(_Page):
                 excl.add(npath)
             else:
                 # Re-include this node and anything beneath it.
-                self._excluded[scan_idx] = {
-                    x for x in excl if x != npath and not x.startswith(npath + "\\")}
+                self._excluded[scan_idx] = {x for x in excl if x != npath and not x.startswith(npath + "\\")}
         # Cascade the new state to already-loaded descendants for visual consistency.
         self._updating = True
         self._set_subtree_check(item, state)
@@ -2035,6 +2054,7 @@ class DashboardPage(_Page):
         # Record the offline learning signal from the user's selection, and
         # collect the checked categories to actually clean.
         from cortex_unified.engine.service import CategoryScan
+
         checked_scans = []
         for i in range(self.tree.topLevelItemCount()):
             item = self.tree.topLevelItem(i)
@@ -2058,12 +2078,12 @@ class DashboardPage(_Page):
         self.win.suggester.save()
 
         if not checked_scans:
-            QMessageBox.information(self, "Nothing selected",
-                                   "Check at least one category to clean.")
+            QMessageBox.information(self, "Nothing selected", "Check at least one category to clean.")
             return
         filtered = CleanupReport(scans=checked_scans)
         confirm = QMessageBox.question(
-            self, "Confirm cleanup",
+            self,
+            "Confirm cleanup",
             f"Free {fmt_bytes(filtered.total_reclaimable_bytes)} by removing "
             f"{filtered.total_files:,} regenerable cache/temp files across "
             f"{len(checked_scans)} categ(ies)?\n\n"
@@ -2076,13 +2096,13 @@ class DashboardPage(_Page):
         if confirm != QMessageBox.StandardButton.Yes:
             return
         from .workers import CleanWorker
+
         self.recycle_btn.setEnabled(False)
         self.progress.setVisible(True)
         self.scan_status.setText("Cleaning\u2026")
         self.win.statusBar().showMessage("Cleaning...")
         self._clean_worker = CleanWorker(filtered, method)
-        self.win.run_worker(self._clean_worker, self._on_cleaned, self._on_fail,
-                            on_progress=self._on_clean_progress)
+        self.win.run_worker(self._clean_worker, self._on_cleaned, self._on_fail, on_progress=self._on_clean_progress)
 
     def _on_clean_progress(self, text: str):
         """Show live cleaning progress text.
@@ -2101,8 +2121,10 @@ class DashboardPage(_Page):
         self._clean_worker = None
         msg = f"Reclaimed {fmt_bytes(freed)} from {items:,} items."
         if skipped:
-            msg += (f"  {skipped:,} were in use and skipped \u2014 close the app "
-                    "(e.g. your browser) and clean again to remove those.")
+            msg += (
+                f"  {skipped:,} were in use and skipped \u2014 close the app "
+                "(e.g. your browser) and clean again to remove those."
+            )
         self.win.statusBar().showMessage(msg, 8000)
         QMessageBox.information(self, "Cleanup complete", msg)
         self._scan()  # refresh
@@ -2190,18 +2212,15 @@ class _FolderScanPage(_Page):
         metrics_row.setSpacing(12)
         self.card_items = StatCard(self.p, "Items Found", "\u2014")
         self.card_items.setObjectName("BentoTile")
-        self.card_items.setSizePolicy(
-            QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+        self.card_items.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
         self.card_items.setMinimumHeight(64)
         self.card_size = StatCard(self.p, "Total Size", "\u2014")
         self.card_size.setObjectName("BentoTile")
-        self.card_size.setSizePolicy(
-            QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+        self.card_size.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
         self.card_size.setMinimumHeight(64)
         self.card_groups = StatCard(self.p, "Groups", "\u2014")
         self.card_groups.setObjectName("BentoTile")
-        self.card_groups.setSizePolicy(
-            QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+        self.card_groups.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
         self.card_groups.setMinimumHeight(64)
         metrics_row.addWidget(self.card_items)
         metrics_row.addWidget(self.card_size)
@@ -2221,15 +2240,12 @@ class _FolderScanPage(_Page):
             self.results_table.setShowGrid(False)
             self.results_table.setAlternatingRowColors(True)
             self.results_table.verticalHeader().setVisible(False)
-            self.results_table.setSelectionBehavior(
-                QTableWidget.SelectionBehavior.SelectRows)
-            self.results_table.setEditTriggers(
-                QTableWidget.EditTrigger.NoEditTriggers)
+            self.results_table.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectRows)
+            self.results_table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
             self.results_table.setSortingEnabled(True)
             header = self.results_table.horizontalHeader()
             header.setStretchLastSection(True)
-            header.setDefaultAlignment(
-                Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
+            header.setDefaultAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
         tc_lay.addWidget(self.result_area)
         self.v.addWidget(table_card, 1)
 
@@ -2261,8 +2277,7 @@ class _FolderScanPage(_Page):
 
         Launches a native file dialog and populates the selected path into the corresponding target input widget.
         """
-        folder = QFileDialog.getExistingDirectory(
-            self, "Select a folder", str(Path.home()))
+        folder = QFileDialog.getExistingDirectory(self, "Select a folder", str(Path.home()))
         if folder:
             self._folder = folder
             self.path_label.setText(folder)
@@ -2337,8 +2352,7 @@ class _FolderScanPage(_Page):
     def _enable_actions(self, has_rows: bool):
         """Enable or disable the delete action based on whether rows exist."""
         if self.results_table is not None:
-            self.results_table.setSelectionBehavior(
-                QTableWidget.SelectionBehavior.SelectRows)
+            self.results_table.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectRows)
         self.del_btn.setEnabled(has_rows)
 
     def _selected_paths(self) -> list[str]:
@@ -2357,11 +2371,11 @@ class _FolderScanPage(_Page):
         """Confirm and recycle the selected rows via DeleteSelectedWorker."""
         paths = self._selected_paths()
         if not paths:
-            QMessageBox.information(
-                self, "No selection", "Select one or more rows first.")
+            QMessageBox.information(self, "No selection", "Select one or more rows first.")
             return
         confirm = QMessageBox.question(
-            self, "Move to Recycle Bin",
+            self,
+            "Move to Recycle Bin",
             f"Move {len(paths)} selected item(s) to the Recycle Bin?\n\n"
             "You can restore them from the Recycle Bin if needed.",
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
@@ -2370,6 +2384,7 @@ class _FolderScanPage(_Page):
         if confirm != QMessageBox.StandardButton.Yes:
             return
         from .workers import DeleteSelectedWorker
+
         self._busy(True)
         self.del_btn.setEnabled(False)
         worker = DeleteSelectedWorker(paths, "recycle")
@@ -2380,8 +2395,7 @@ class _FolderScanPage(_Page):
         self._busy(False)
         msg = f"Recycled {ok} item(s), freeing {fmt_bytes(freed)}."
         if blocked:
-            msg += (f" {blocked} blocked by the safety guard or"
-                    " unavailable Recycle Bin.")
+            msg += f" {blocked} blocked by the safety guard or" " unavailable Recycle Bin."
         self.win.statusBar().showMessage(msg, 6000)
         QMessageBox.information(self, "Done", msg)
         if self._folder:
@@ -2402,6 +2416,7 @@ class _FolderScanPage(_Page):
 
 class DuplicatesPage(_FolderScanPage):
     """Folder-scan page that finds duplicate files for recycling."""
+
     title = "Duplicate Files Finder"
     subtitle = "Find and safely reclaim space from identical files using byte-for-byte checksum verification."
     action_label = "Find Duplicates"
@@ -2419,6 +2434,7 @@ class DuplicatesPage(_FolderScanPage):
     def _run(self):
         """Start a DuplicateWorker scan on the chosen folder."""
         from .workers import DuplicateWorker
+
         self._start(DuplicateWorker([self._folder]), self._done, self._fail)
 
     def _done(self, groups: dict):
@@ -2435,18 +2451,13 @@ class DuplicatesPage(_FolderScanPage):
         for r, (path, gid) in enumerate(rows):
             self.tree.setItem(r, 0, QTableWidgetItem(str(path)))
             self.tree.setItem(r, 1, QTableWidgetItem(f"#{gid}"))
-        total = sum(
-            Path(p).stat().st_size
-            for p, _ in rows
-            if Path(p).is_file()
-        )
+        total = sum(Path(p).stat().st_size for p, _ in rows if Path(p).is_file())
         self.card_items.set_value(f"{len(rows)}", animate=True)
         self.card_size.set_value(fmt_bytes(total), animate=True)
         self.card_groups.set_value(str(len(groups)), animate=True)
         self.hint.setText("Keep one copy per group; select the extras to recycle.")
         self._enable_actions(bool(rows))
-        self.win.statusBar().showMessage(
-            f"{len(groups)} duplicate groups found", 5000)
+        self.win.statusBar().showMessage(f"{len(groups)} duplicate groups found", 5000)
 
     def _fail(self, msg):
         """Handle an operation failure and notify the user.
@@ -2462,25 +2473,26 @@ class DuplicatesPage(_FolderScanPage):
 
 class DuplicatePhotosPage(_FolderScanPage):
     """Folder-scan page that finds duplicate photos for recycling."""
+
     title = "Similar & Duplicate Photos"
-    subtitle = ("Find duplicate and visually identical images (JPG, PNG, HEIC, RAW). "
-                "Review copies and free up storage.")
+    subtitle = (
+        "Find duplicate and visually identical images (JPG, PNG, HEIC, RAW). " "Review copies and free up storage."
+    )
     action_label = "Find Duplicate Photos"
 
     def _build_results(self) -> QWidget:
         """Build the two-column duplicate photo / group table."""
         self.tree = QTableWidget(0, 2)
         self.tree.setHorizontalHeaderLabels(["Duplicate photo", "Group"])
-        self.tree.horizontalHeader().setSectionResizeMode(
-            0, QHeaderView.ResizeMode.Stretch)
+        self.tree.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
         self.results_table = self.tree
         return self.tree
 
     def _run(self):
         """Start a DuplicatePhotosWorker scan on the chosen folder."""
         from .workers import DuplicatePhotosWorker
-        self._start(
-            DuplicatePhotosWorker([self._folder]), self._done, self._fail)
+
+        self._start(DuplicatePhotosWorker([self._folder]), self._done, self._fail)
 
     def _done(self, groups: dict):
         """Handle completion of the asynchronous task.
@@ -2491,28 +2503,18 @@ class DuplicatePhotosPage(_FolderScanPage):
             groups (dict): The groups parameter.
         """
         self._finish()
-        rows = [
-            (p, i)
-            for i, (_, members) in enumerate(groups.items(), 1)
-            for p in members
-        ]
+        rows = [(p, i) for i, (_, members) in enumerate(groups.items(), 1) for p in members]
         self.tree.setRowCount(len(rows))
         for r, (path, gid) in enumerate(rows):
             self.tree.setItem(r, 0, QTableWidgetItem(str(path)))
             self.tree.setItem(r, 1, QTableWidgetItem(f"#{gid}"))
-        total = sum(
-            Path(p).stat().st_size
-            for p, _ in rows
-            if Path(p).is_file()
-        )
+        total = sum(Path(p).stat().st_size for p, _ in rows if Path(p).is_file())
         self.card_items.set_value(f"{len(rows)}", animate=True)
         self.card_size.set_value(fmt_bytes(total), animate=True)
         self.card_groups.set_value(str(len(groups)), animate=True)
-        self.hint.setText(
-            "Keep one photo per group; select the extra copies to recycle.")
+        self.hint.setText("Keep one photo per group; select the extra copies to recycle.")
         self._enable_actions(bool(rows))
-        self.win.statusBar().showMessage(
-            f"{len(groups)} duplicate photo groups found", 5000)
+        self.win.statusBar().showMessage(f"{len(groups)} duplicate photo groups found", 5000)
 
     def _fail(self, msg):
         """Handle an operation failure and notify the user.
@@ -2528,6 +2530,7 @@ class DuplicatePhotosPage(_FolderScanPage):
 
 class LargeFilesPage(_FolderScanPage):
     """Folder-scan page that lists large files with AI-model tags."""
+
     title = "Large Files Finder"
     subtitle = "Locate space-consuming files across your drives. Large AI models and installer archives are safely highlighted."
     action_label = "Find Large Files"
@@ -2547,6 +2550,7 @@ class LargeFilesPage(_FolderScanPage):
     def _run(self):
         """Start a LargeFilesWorker scan on the chosen folder."""
         from .workers import LargeFilesWorker
+
         self._start(LargeFilesWorker(self._folder, 50.0), self._done, self._fail)
 
     def _done(self, entries: list):
@@ -2567,6 +2571,7 @@ class LargeFilesPage(_FolderScanPage):
         ai_count = 0
         ai_bytes = 0
         from PySide6.QtGui import QColor
+
         for r, e in enumerate(entries):
             path_str = str(e.path)
             self.tbl.setItem(r, 0, QTableWidgetItem(path_str))
@@ -2585,12 +2590,13 @@ class LargeFilesPage(_FolderScanPage):
         self.card_size.set_value(fmt_bytes(total), animate=True)
         self.card_groups.set_value(f"{ai_count} AI ({fmt_bytes(ai_bytes)})" if ai_count else "\u2014", animate=True)
         if ai_count:
-            self.hint.setText(f"{ai_count} AI model(s) flagged HIGH — models re-download but are 1-2GB each. Deselect them unless you intend to re-fetch.")
+            self.hint.setText(
+                f"{ai_count} AI model(s) flagged HIGH — models re-download but are 1-2GB each. Deselect them unless you intend to re-fetch."
+            )
         else:
             self.hint.setText("Select rows to move to Recycle Bin; AI models are flagged but deselected by default.")
         self._enable_actions(bool(entries))
-        self.win.statusBar().showMessage(
-            f"{len(entries)} large files ({ai_count} AI models)", 5000)
+        self.win.statusBar().showMessage(f"{len(entries)} large files ({ai_count} AI models)", 5000)
 
     def _fail(self, msg):
         """Handle an operation failure and notify the user.
@@ -2606,6 +2612,7 @@ class LargeFilesPage(_FolderScanPage):
 
 class EmptyPage(_FolderScanPage):
     """Folder-scan page that lists empty files and folders for cleanup."""
+
     title = "Empty Files & Folders"
     subtitle = "Locate and safely clean empty directories and 0-byte orphan files left behind by uninstalled software."
     action_label = "Find Empty Items"
@@ -2614,14 +2621,14 @@ class EmptyPage(_FolderScanPage):
         """Build the two-column path / type results table."""
         self.tbl = QTableWidget(0, 2)
         self.tbl.setHorizontalHeaderLabels(["Path", "Type"])
-        self.tbl.horizontalHeader().setSectionResizeMode(
-            0, QHeaderView.ResizeMode.Stretch)
+        self.tbl.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
         self.results_table = self.tbl
         return self.tbl
 
     def _run(self):
         """Start an EmptyWorker scan on the chosen folder."""
         from .workers import EmptyWorker
+
         self._start(EmptyWorker(self._folder), self._done, self._fail)
 
     def _done(self, files: list, dirs: list):
@@ -2634,19 +2641,16 @@ class EmptyPage(_FolderScanPage):
             dirs (list): The dirs parameter.
         """
         self._finish()
-        rows = [(p, "File") for p in files] + [
-            (p, "Directory") for p in dirs]
+        rows = [(p, "File") for p in files] + [(p, "Directory") for p in dirs]
         self.tbl.setRowCount(len(rows))
         for r, (path, kind) in enumerate(rows):
             self.tbl.setItem(r, 0, QTableWidgetItem(str(path)))
             self.tbl.setItem(r, 1, QTableWidgetItem(kind))
         self.card_items.set_value(f"{len(rows)}", animate=True)
-        self.card_size.set_value(
-            f"{len(files)} files, {len(dirs)} dirs", animate=True)
+        self.card_size.set_value(f"{len(files)} files, {len(dirs)} dirs", animate=True)
         self.card_groups.set_value("\u2014", animate=True)
         self._enable_actions(bool(rows))
-        self.win.statusBar().showMessage(
-            f"{len(files)} empty files, {len(dirs)} empty dirs", 5000)
+        self.win.statusBar().showMessage(f"{len(files)} empty files, {len(dirs)} empty dirs", 5000)
 
     def _fail(self, msg):
         """Handle an operation failure and notify the user.
@@ -2674,10 +2678,12 @@ class ShredPage(_Page):
         super().__init__(win)
         self._target: str | None = None
 
-        self.v.addWidget(title_block(
-            "Secure File Shredder",
-            "Permanently destroy confidential files beyond forensic recovery using NIST 800-88 sanitized overwriting.",
-        ))
+        self.v.addWidget(
+            title_block(
+                "Secure File Shredder",
+                "Permanently destroy confidential files beyond forensic recovery using NIST 800-88 sanitized overwriting.",
+            )
+        )
 
         card = Card(self.p)
         cl = QVBoxLayout(card)
@@ -2699,19 +2705,22 @@ class ShredPage(_Page):
         opts = QHBoxLayout()
         opts.addWidget(QLabel("Overwrite passes:"))
         from PySide6.QtWidgets import QCheckBox, QComboBox, QSpinBox
+
         self.passes = QSpinBox()
         self.passes.setRange(1, 35)
         self.passes.setValue(3)
         opts.addWidget(self.passes)
         opts.addWidget(QLabel(" Privacy level:"))
         self.pl_combo = QComboBox()
-        self.pl_combo.addItems([
-            "Auto (WAS/PULSE)",
-            "PL0 block erase (HDD)",
-            "PL1 page scrub (PULSE)",
-            "PL2 ECC crypto-erase",
-            "PL3 TRIM lockout",
-        ])
+        self.pl_combo.addItems(
+            [
+                "Auto (WAS/PULSE)",
+                "PL0 block erase (HDD)",
+                "PL1 page scrub (PULSE)",
+                "PL2 ECC crypto-erase",
+                "PL3 TRIM lockout",
+            ]
+        )
         self.pl_combo.setToolTip(
             "PL0 strongest (HDD 3-pass, SSD device-level) – heavy wear\n"
             "PL1 PULSE 2-pulse scrub low-disturbance (RBER <0.57% FG)\n"
@@ -2753,20 +2762,24 @@ class ShredPage(_Page):
 
         # -- Free-space wipe --
         import platform as _platform
+
         if _platform.system() == "Windows":
             wipe_card = Card(self.p)
             wl = QVBoxLayout(wipe_card)
             wl.setContentsMargins(22, 20, 22, 20)
             wl.setSpacing(12)
-            wl.addWidget(title_block(
-                "Wipe Free Space",
-                "Overwrite unused space so already-deleted files can't be "
-                "recovered by undelete tools. Uses Windows 'cipher /w'. Can take "
-                "a long time and needs plenty of free space to churn through.",
-            ))
+            wl.addWidget(
+                title_block(
+                    "Wipe Free Space",
+                    "Overwrite unused space so already-deleted files can't be "
+                    "recovered by undelete tools. Uses Windows 'cipher /w'. Can take "
+                    "a long time and needs plenty of free space to churn through.",
+                )
+            )
             wrow = QHBoxLayout()
             wrow.addWidget(QLabel("Drive letter:"))
             from PySide6.QtWidgets import QComboBox
+
             self.wipe_drive = QComboBox()
             self.wipe_drive.setEditable(False)
             self._populate_drives()
@@ -2792,6 +2805,7 @@ class ShredPage(_Page):
         """
         import string
         from pathlib import Path as _P
+
         for letter in string.ascii_uppercase:
             if _P(f"{letter}:\\").exists():
                 self.wipe_drive.addItem(f"{letter}:", letter)
@@ -2804,7 +2818,8 @@ class ShredPage(_Page):
         if not letter:
             return
         confirm = QMessageBox.warning(
-            self, "Wipe free space",
+            self,
+            "Wipe free space",
             f"Overwrite all free space on {letter}:?\n\n"
             "This does NOT touch your existing files, but it can take a long "
             "time and keep the disk busy. Requires Administrator.",
@@ -2814,6 +2829,7 @@ class ShredPage(_Page):
         if confirm != QMessageBox.StandardButton.Yes:
             return
         from .workers import FreeSpaceWipeWorker
+
         self.wipe_btn.setEnabled(False)
         self.wipe_progress.setVisible(True)
         self.win.statusBar().showMessage(f"Wiping free space on {letter}:\u2026")
@@ -2854,6 +2870,7 @@ class ShredPage(_Page):
         self.shred_btn.setEnabled(True)
         self.medium_label.setText("Medium: detecting\u2026")
         from .workers import StorageWorker
+
         self.win.run_worker(StorageWorker(path), self._on_medium, self._fail)
 
     def _on_medium(self, kind: str, overwrite_effective: bool):
@@ -2870,11 +2887,11 @@ class ShredPage(_Page):
         if not self._target:
             return
         # Single-pass delete stays Free; only multi-pass overwrite is premium.
-        if (self.passes.value() > 1
-                and not require_feature(self, Feature.SHRED_MULTIPASS)):
+        if self.passes.value() > 1 and not require_feature(self, Feature.SHRED_MULTIPASS):
             return
         confirm = QMessageBox.warning(
-            self, "Confirm secure shred",
+            self,
+            "Confirm secure shred",
             f"Permanently shred this file? This CANNOT be undone.\n\n{self._target}",
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
             QMessageBox.StandardButton.No,
@@ -2907,6 +2924,7 @@ class ShredPage(_Page):
             self.win.run_worker(worker, self._on_adaptive_done, self._fail)
             return
         from .workers import ShredWorker
+
         self.shred_btn.setEnabled(False)
         self.progress.setVisible(True)
         worker = ShredWorker(self._target, self.passes.value(), self.force_flash.isChecked())
@@ -2956,7 +2974,8 @@ class ShredPage(_Page):
         self.progress.setVisible(False)
         self.shred_btn.setEnabled(True)
         QMessageBox.information(
-            self, "Not effective on this medium",
+            self,
+            "Not effective on this medium",
             guidance + "\n\nTip: enable 'Overwrite on SSD anyway' only if you understand "
             "it wears the drive without a hard guarantee. For real assurance use full-disk "
             "encryption + key destruction, or the drive's hardware secure-erase.",
@@ -2977,6 +2996,7 @@ class ShredPage(_Page):
 
 class SettingsPage(_Page):
     """Settings page for theme, tray, motion, update checks, and safety cards."""
+
     def __init__(self, win: PremiumMainWindow):
         """Build the appearance/preference card plus the smart-suggestion and safety cards.
 
@@ -3010,41 +3030,39 @@ class SettingsPage(_Page):
 
         # Close-to-tray preference (keeps the app + monitor running in the
         # background when the window is closed).
-        self.tray_check = QCheckBox(
-            "Close to system tray (keep running in the background)")
+        self.tray_check = QCheckBox("Close to system tray (keep running in the background)")
         self.tray_check.setChecked(bool(self.win.settings.close_to_tray))
         # The tray object is created after the pages, so query the platform
         # capability directly rather than the not-yet-built window tray.
         from PySide6.QtWidgets import QSystemTrayIcon
+
         try:
             tray_ok = bool(QSystemTrayIcon.isSystemTrayAvailable())
         except Exception:  # noqa: BLE001
             tray_ok = False
         if not tray_ok:
             self.tray_check.setEnabled(False)
-            self.tray_check.setToolTip(
-                "A system tray is not available on this system.")
+            self.tray_check.setToolTip("A system tray is not available on this system.")
         self.tray_check.toggled.connect(self._on_close_to_tray_toggled)
         cl.addWidget(self.tray_check)
 
         # Reduce motion (accessibility): suppress non-essential animation - page
         # reveals and the smooth-scroll glide fall back to instant.
-        self.motion_check = QCheckBox(
-            "Reduce motion (minimise animations and smooth scrolling)")
+        self.motion_check = QCheckBox("Reduce motion (minimise animations and smooth scrolling)")
         self.motion_check.setChecked(bool(self.win.settings.reduced_motion))
         self.motion_check.toggled.connect(self._on_reduced_motion_toggled)
         cl.addWidget(self.motion_check)
 
         # Update check: strictly opt-in. When enabled, the app performs ONE
         # informational release check per run - no downloads, no installs.
-        self.update_check_box = QCheckBox(
-            "Check for newer releases on startup (one request, informational only)")
+        self.update_check_box = QCheckBox("Check for newer releases on startup (one request, informational only)")
         self.update_check_box.setChecked(bool(self.win.settings.update_check))
         self.update_check_box.toggled.connect(self._on_update_check_toggled)
         cl.addWidget(self.update_check_box)
         cl.addWidget(hline(self.p))
 
         from cortex_unified.engine import HASH_ALGORITHM
+
         info = QLabel(
             f"Hash backend: {HASH_ALGORITHM}\n"
             "Deletions are storage-aware: overwrite-shredding is only applied on\n"
@@ -3088,6 +3106,7 @@ class SettingsPage(_Page):
     def _on_reduced_motion_toggled(self, checked: bool) -> None:
         """Apply and persist the reduce-motion preference."""
         from . import motion
+
         motion.set_reduced_motion(bool(checked))
         self.win.settings.reduced_motion = bool(checked)
 
@@ -3124,7 +3143,8 @@ class SettingsPage(_Page):
     def _reset_smart(self):
         """Confirm, then wipe and reload the offline learning model."""
         confirm = QMessageBox.question(
-            self, "Reset learning",
+            self,
+            "Reset learning",
             "Forget everything Smart Suggestions has learned? This cannot be undone.",
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
             QMessageBox.StandardButton.No,
@@ -3155,9 +3175,7 @@ class SettingsPage(_Page):
 
         mgr = RestorePointManager()
         if not mgr.is_supported():
-            cl.addWidget(status_note(
-                self.p, "info",
-                "System Restore points are a Windows-only feature."))
+            cl.addWidget(status_note(self.p, "info", "System Restore points are a Windows-only feature."))
             self.v.addWidget(card)
             return
 
@@ -3170,8 +3188,7 @@ class SettingsPage(_Page):
         desc.setWordWrap(True)
         cl.addWidget(desc)
 
-        elev = ("Administrator" if mgr.is_elevated()
-                else "Not elevated (needed to create points)")
+        elev = "Administrator" if mgr.is_elevated() else "Not elevated (needed to create points)"
         self.rp_status = QLabel(f"Status: {elev}")
         cl.addWidget(self.rp_status)
 
@@ -3210,11 +3227,11 @@ class SettingsPage(_Page):
     def _create_restore_point(self):
         """Start a RestorePointWorker to create a restore point."""
         from .workers import RestorePointWorker
+
         self.rp_create_btn.setEnabled(False)
         self.rp_progress.setVisible(True)
         self.win.statusBar().showMessage("Creating restore point\u2026")
-        self.win.run_worker(RestorePointWorker("Cortex Workstation - manual"),
-                            self._on_rp_created, self._on_rp_fail)
+        self.win.run_worker(RestorePointWorker("Cortex Workstation - manual"), self._on_rp_created, self._on_rp_fail)
 
     def _on_rp_created(self, status: str, message: str):
         """Report the create outcome per status and refresh the list."""
@@ -3248,6 +3265,7 @@ class SettingsPage(_Page):
     def _refresh_restore_points(self):
         """Load existing restore points via RestorePointListWorker."""
         from .workers import RestorePointListWorker
+
         self.win.run_worker(RestorePointListWorker(), self._on_rp_listed, self._on_rp_fail)
 
     def _on_rp_listed(self, points: list):

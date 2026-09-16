@@ -40,6 +40,7 @@ CCH_RM_MAX_SVC_NAME = 63
 
 class RM_UNIQUE_PROCESS(ctypes.Structure):
     """R M_ U N I Q U E_ P R O C E S S."""
+
     _fields_ = [
         ("dwProcessId", ctypes.c_ulong),
         ("ProcessStartTime", ctypes.c_uint64),
@@ -48,6 +49,7 @@ class RM_UNIQUE_PROCESS(ctypes.Structure):
 
 class RM_PROCESS_INFO(ctypes.Structure):
     """R M_ P R O C E S S_ I N F O."""
+
     _fields_ = [
         ("Process", RM_UNIQUE_PROCESS),
         ("strAppName", ctypes.c_wchar * (CCH_RM_MAX_APP_NAME + 1)),
@@ -62,6 +64,7 @@ class RM_PROCESS_INFO(ctypes.Structure):
 @dataclass
 class LockingProcessInfo:
     """Identity and telemetry of a process holding an exclusive file lock."""
+
     pid: int
     name: str
     service_name: str = ""
@@ -80,6 +83,7 @@ class LockingProcessInfo:
 @dataclass
 class FileLockReport:
     """Forensic report detailing whether a file is locked and which processes lock it."""
+
     file_path: str
     exists: bool
     is_locked: bool
@@ -100,6 +104,7 @@ class FileLockReport:
 @dataclass
 class UnlockResult:
     """Outcome of an unlock or process termination attempt."""
+
     file_path: str
     success: bool
     terminated_pids: List[int] = field(default_factory=list)
@@ -240,6 +245,7 @@ class RestartManagerUnlocker:
         results: List[LockingProcessInfo] = []
         try:
             import psutil
+
             target_norm = os.path.normcase(os.path.abspath(abs_path))
             for proc in psutil.process_iter(["pid", "name"]):
                 try:
@@ -268,6 +274,7 @@ class RestartManagerUnlocker:
         try:
             import psutil
             from cortex_unified.core.proc import is_protected_process
+
             for pinfo in report.locking_processes:
                 try:
                     p = psutil.Process(pinfo.pid)
@@ -275,7 +282,9 @@ class RestartManagerUnlocker:
                     if is_protected_process(pinfo.pid) or is_protected_process(p_name):
                         self.logger.warning(
                             "Refusing to terminate protected system process %s (PID %d) locking %s",
-                            p_name, pinfo.pid, file_path
+                            p_name,
+                            pinfo.pid,
+                            file_path,
                         )
                         continue
                     if force_terminate:

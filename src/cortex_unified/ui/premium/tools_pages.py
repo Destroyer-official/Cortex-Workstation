@@ -42,8 +42,7 @@ def _windows_only(page: _Page, feature: str) -> bool:
     """
     if IS_WINDOWS:
         return False
-    note = status_note(
-        page.p, "info", f"{feature} is only available on Windows.")
+    note = status_note(page.p, "info", f"{feature} is only available on Windows.")
     page.v.addWidget(note)
     page.v.addStretch(1)
     return True
@@ -53,8 +52,10 @@ def _windows_only(page: _Page, feature: str) -> bool:
 #  Workers
 # =====================================================================
 
+
 class PowerPlanListWorker(QObject):
     """Background worker (PowerPlanListWorker) performing PowerPlanListWorker. Signals finished, failed report status. Its run() step calls emit, p.to_dict, list_plans, PerformanceTuner."""
+
     finished = Signal(list)
     failed = Signal(str)
 
@@ -65,6 +66,7 @@ class PowerPlanListWorker(QObject):
         """
         try:
             from cortex_unified.system_tools.performance_tuner import PerformanceTuner
+
             self.finished.emit([p.to_dict() for p in PerformanceTuner().list_plans()])
         except Exception as exc:  # noqa: BLE001
             self.failed.emit(str(exc))
@@ -72,6 +74,7 @@ class PowerPlanListWorker(QObject):
 
 class PowerPlanSetWorker(QObject):
     """Background worker (PowerPlanSetWorker) performing PowerPlanSetWorker. Signals finished, failed report status. Configured with guid. Its run() step calls set_active, PerformanceTuner, emit, str."""
+
     finished = Signal(bool, str)
     failed = Signal(str)
 
@@ -93,6 +96,7 @@ class PowerPlanSetWorker(QObject):
         """
         try:
             from cortex_unified.system_tools.performance_tuner import PerformanceTuner
+
             ok, msg = PerformanceTuner().set_active(self._guid)
             self.finished.emit(ok, msg)
         except Exception as exc:  # noqa: BLE001
@@ -101,6 +105,7 @@ class PowerPlanSetWorker(QObject):
 
 class ExtensionAuditWorker(QObject):
     """Background worker (ExtensionAuditWorker) performing ExtensionAuditWorker. Signals finished, failed report status. Its run() step calls emit, e.to_dict, audit, BrowserExtensionAuditor."""
+
     finished = Signal(list)
     failed = Signal(str)
 
@@ -111,6 +116,7 @@ class ExtensionAuditWorker(QObject):
         """
         try:
             from cortex_unified.system_tools.browser_extensions import BrowserExtensionAuditor
+
             self.finished.emit([e.to_dict() for e in BrowserExtensionAuditor().audit()])
         except Exception as exc:  # noqa: BLE001
             self.failed.emit(str(exc))
@@ -160,6 +166,7 @@ def _date_sort_key(driver: dict) -> str:
 
 class DriverListWorker(QObject):
     """Background worker (DriverListWorker) performing DriverListWorker. Signals finished, failed report status. Its run() step calls emit, d.to_dict, list_drivers, DriverInventory."""
+
     finished = Signal(list)
     failed = Signal(str)
 
@@ -170,6 +177,7 @@ class DriverListWorker(QObject):
         """
         try:
             from cortex_unified.system_tools.driver_inventory import DriverInventory
+
             self.finished.emit([d.to_dict() for d in DriverInventory().list_drivers()])
         except Exception as exc:  # noqa: BLE001
             self.failed.emit(str(exc))
@@ -178,6 +186,7 @@ class DriverListWorker(QObject):
 # =====================================================================
 #  Performance (power plans)  (feature C)
 # =====================================================================
+
 
 class PerformancePage(_Page):
     """Performance page: Switch your Windows power plan: High performance for demanding work."""
@@ -191,12 +200,14 @@ class PerformancePage(_Page):
             win: Parent window or shell controller instance.
         """
         super().__init__(win)
-        self.v.addWidget(title_block(
-            "Performance",
-            "Switch your Windows power plan: High performance for demanding work "
-            "or gaming, Balanced for everyday use, Power saver on battery. Fully "
-            "reversible - it changes a setting, never deletes anything.",
-        ))
+        self.v.addWidget(
+            title_block(
+                "Performance",
+                "Switch your Windows power plan: High performance for demanding work "
+                "or gaming, Balanced for everyday use, Power saver on battery. Fully "
+                "reversible - it changes a setting, never deletes anything.",
+            )
+        )
         if _windows_only(self, "Power-plan tuning"):
             return
 
@@ -243,8 +254,7 @@ class PerformancePage(_Page):
                     "Active",
                     lambda plan: "active" if plan["active"] else "",
                     sort_key=lambda plan: bool(plan["active"]),
-                    icon=lambda plan: (icons.icon("check", 14, self.p.success)
-                                       if plan["active"] else None),
+                    icon=lambda plan: (icons.icon("check", 14, self.p.success) if plan["active"] else None),
                 ),
             ],
             # Active plan first on arrival - it is the answer to "what am I on?".
@@ -254,8 +264,8 @@ class PerformancePage(_Page):
         # A QTableView has no itemSelectionChanged; the selection model is the
         # equivalent and also fires for keyboard navigation.
         self.tbl.selectionModel().selectionChanged.connect(
-            lambda *_: self.apply_btn.setEnabled(
-                self.tbl.selectionModel().hasSelection()))
+            lambda *_: self.apply_btn.setEnabled(self.tbl.selectionModel().hasSelection())
+        )
         self.v.addWidget(self.tbl, 1)
 
         self.state = StatePanel(self.p)
@@ -303,9 +313,9 @@ class PerformancePage(_Page):
         name = plan["name"]
         guid = plan["guid"]
         confirm = QMessageBox.question(
-            self, "Activate power plan",
-            f"Switch the active power plan to '{name}'?\n\n"
-            "This is reversible - you can switch back anytime.",
+            self,
+            "Activate power plan",
+            f"Switch the active power plan to '{name}'?\n\n" "This is reversible - you can switch back anytime.",
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
             QMessageBox.StandardButton.No,
         )
@@ -345,6 +355,7 @@ class PerformancePage(_Page):
 #  Browser Extensions  (feature E - read-only audit)
 # =====================================================================
 
+
 class BrowserExtensionsPage(_Page):
     """Browser Extensions page: Review extensions installed in Chrome, Edge, Brave, Vivaldi and."""
 
@@ -357,12 +368,14 @@ class BrowserExtensionsPage(_Page):
             win: Parent window or shell controller instance.
         """
         super().__init__(win)
-        self.v.addWidget(title_block(
-            "Browser Extensions",
-            "Review extensions installed in Chrome, Edge, Brave, Vivaldi and "
-            "Firefox, and which request broad permissions. Read-only - manage or "
-            "remove them from within your browser.",
-        ))
+        self.v.addWidget(
+            title_block(
+                "Browser Extensions",
+                "Review extensions installed in Chrome, Edge, Brave, Vivaldi and "
+                "Firefox, and which request broad permissions. Read-only - manage or "
+                "remove them from within your browser.",
+            )
+        )
 
         row = QHBoxLayout()
         self.refresh_btn = QPushButton("Scan Extensions")
@@ -399,12 +412,11 @@ class BrowserExtensionsPage(_Page):
                     "Extension",
                     lambda e: e["name"] or "Unknown extension",
                     stretch=True,
-                    foreground=lambda e: (Qt.GlobalColor.red
-                                          if e["broad_permissions"] else None),
-                    icon=lambda e: (icons.icon("warning", 14, self.p.warning)
-                                    if e["broad_permissions"] else None),
-                    tooltip=lambda e: ("Requests broad permissions - review this extension"
-                                       if e["broad_permissions"] else ""),
+                    foreground=lambda e: (Qt.GlobalColor.red if e["broad_permissions"] else None),
+                    icon=lambda e: (icons.icon("warning", 14, self.p.warning) if e["broad_permissions"] else None),
+                    tooltip=lambda e: (
+                        "Requests broad permissions - review this extension" if e["broad_permissions"] else ""
+                    ),
                 ),
                 Column("Browser", "browser"),
                 Column("Version", "version"),
@@ -458,7 +470,8 @@ class BrowserExtensionsPage(_Page):
             self.hint.setText(
                 f"{len(exts)} extension(s); {broad} request broad permissions "
                 "(flagged with a warning icon and shown in red). "
-                "Broad permissions aren't necessarily bad, but review ones you don't recognize.")
+                "Broad permissions aren't necessarily bad, but review ones you don't recognize."
+            )
         self.win.statusBar().showMessage(f"{len(exts)} extension(s)", 5000)
 
     def _fail(self, msg: str):
@@ -477,6 +490,7 @@ class BrowserExtensionsPage(_Page):
 #  Driver Inventory  (feature F - read-only, no auto-update)
 # =====================================================================
 
+
 class DriverInventoryPage(_Page):
     """Driver Inventory page: An honest, read-only list of your installed drivers with versions."""
 
@@ -489,13 +503,15 @@ class DriverInventoryPage(_Page):
             win: Parent window or shell controller instance.
         """
         super().__init__(win)
-        self.v.addWidget(title_block(
-            "Driver Inventory",
-            "An honest, read-only list of your installed drivers with versions "
-            "and dates. Cortex does NOT download or install drivers - automatic "
-            "driver updaters are a common source of scareware. Check versions "
-            "against your manufacturer's site.",
-        ))
+        self.v.addWidget(
+            title_block(
+                "Driver Inventory",
+                "An honest, read-only list of your installed drivers with versions "
+                "and dates. Cortex does NOT download or install drivers - automatic "
+                "driver updaters are a common source of scareware. Check versions "
+                "against your manufacturer's site.",
+            )
+        )
         if _windows_only(self, "Driver inventory"):
             return
 

@@ -16,11 +16,10 @@ from ..core.config import Config
 from ..core.scanner import Scanner
 from ..core.deleter import Deleter
 
-class AutoCleanRules:
-    """Evaluate disk-usage, startup, shutdown, and scheduled cleanup rules.
 
-    """
-    
+class AutoCleanRules:
+    """Evaluate disk-usage, startup, shutdown, and scheduled cleanup rules."""
+
     def __init__(self, config: Config = None):
         """Build an empty rule set bound to a config.
 
@@ -35,15 +34,10 @@ class AutoCleanRules:
         self.monitoring = False
         self.monitor_thread = None
         self.error_count = 0
-    
-    def add_disk_usage_rule(
-        self, 
-        threshold_percent: float, 
-        action: str = "clean_empty",
-        clean_params: Dict = None
-    ):
+
+    def add_disk_usage_rule(self, threshold_percent: float, action: str = "clean_empty", clean_params: Dict = None):
         """Add a rule to clean when disk usage exceeds threshold.
-        
+
         Args:
             threshold_percent: Disk usage percentage threshold (0-100)
             action: Action to take ("clean_empty", "clean_temp", "clean_cache", "custom")
@@ -54,63 +48,41 @@ class AutoCleanRules:
             "threshold": threshold_percent,
             "action": action,
             "clean_params": clean_params or {},
-            "active": True
+            "active": True,
         }
         with self._lock:
             self.rules.append(rule)
             return len(self.rules) - 1
-    
-    def add_startup_rule(
-        self, 
-        action: str = "clean_empty",
-        clean_params: Dict = None
-    ):
+
+    def add_startup_rule(self, action: str = "clean_empty", clean_params: Dict = None):
         """Add a rule to clean at system startup.
-        
+
         Args:
             action: Action to take ("clean_empty", "clean_temp", "clean_cache", "custom")
             clean_params: Parameters for the cleaning action
         """
-        rule = {
-            "type": "startup",
-            "action": action,
-            "clean_params": clean_params or {},
-            "active": True
-        }
+        rule = {"type": "startup", "action": action, "clean_params": clean_params or {}, "active": True}
         with self._lock:
             self.rules.append(rule)
             return len(self.rules) - 1
-    
-    def add_shutdown_rule(
-        self, 
-        action: str = "clean_empty",
-        clean_params: Dict = None
-    ):
+
+    def add_shutdown_rule(self, action: str = "clean_empty", clean_params: Dict = None):
         """Add a rule to clean at system shutdown.
-        
+
         Args:
             action: Action to take ("clean_empty", "clean_temp", "clean_cache", "custom")
             clean_params: Parameters for the cleaning action
         """
-        rule = {
-            "type": "shutdown",
-            "action": action,
-            "clean_params": clean_params or {},
-            "active": True
-        }
+        rule = {"type": "shutdown", "action": action, "clean_params": clean_params or {}, "active": True}
         with self._lock:
             self.rules.append(rule)
             return len(self.rules) - 1
-    
+
     def add_scheduled_rule(
-        self, 
-        schedule_type: str,
-        schedule_params: Dict,
-        action: str = "clean_empty",
-        clean_params: Dict = None
+        self, schedule_type: str, schedule_params: Dict, action: str = "clean_empty", clean_params: Dict = None
     ):
         """Add a scheduled rule.
-        
+
         Args:
             schedule_type: Type of schedule ("daily", "weekly", "monthly")
             schedule_params: Schedule parameters
@@ -123,12 +95,12 @@ class AutoCleanRules:
             "schedule_params": schedule_params,
             "action": action,
             "clean_params": clean_params or {},
-            "active": True
+            "active": True,
         }
         with self._lock:
             self.rules.append(rule)
             return len(self.rules) - 1
-    
+
     def _check_disk_usage(self, threshold_percent: float) -> bool:
         """Check if disk usage exceeds threshold.
 
@@ -143,19 +115,20 @@ class AutoCleanRules:
             if self.system == "windows":
                 # os.statvfs does not exist on Windows
                 import shutil
+
                 total, used, free = shutil.disk_usage("/")
             else:
                 statvfs = os.statvfs("/")
                 total = statvfs.f_frsize * statvfs.f_blocks
                 free = statvfs.f_frsize * statvfs.f_bavail
                 used = total - free
-            
+
             used_percent = (used / total * 100) if total > 0 else 0
             return used_percent >= threshold_percent
         except Exception:
             self.error_count += 1
             return False
-    
+
     def _execute_clean_action(self, action: str, clean_params: Dict):
         """Dispatch the rule's action to its matching handler.
 
@@ -175,7 +148,7 @@ class AutoCleanRules:
                 self._custom_clean_action(clean_params)
         except Exception:
             self.error_count += 1
-    
+
     def _clean_empty_files(self, params: Dict):
         """Clean empty files and directories via Scanner and Deleter.
 
@@ -191,15 +164,15 @@ class AutoCleanRules:
 
             scanner = Scanner(self.config, path)
             empty_files, empty_dirs = scanner.scan()
-            
+
             deleter = Deleter(dry_run, use_trash)
             result = deleter.delete(empty_files, empty_dirs)
-            
+
             return result
         except Exception:
             self.error_count += 1
             return None
-    
+
     def _clean_temp_files(self, params: Dict):
         """Sweep low-risk categories through the engine's CleanerService.
 
@@ -214,8 +187,7 @@ class AutoCleanRules:
             report = svc.scan_categories(max_risk=RiskLevel.LOW)
             method = DeletionMethod.DRY_RUN if dry_run else DeletionMethod.RECYCLE
             results = svc.clean_categories(report, method)
-            freed = sum(r.size for r in results
-                        if r.succeeded and r.method is not DeletionMethod.DRY_RUN)
+            freed = sum(r.size for r in results if r.succeeded and r.method is not DeletionMethod.DRY_RUN)
             return {
                 "temp_files_found": report.total_files,
                 "bytes_freed": freed,
@@ -266,8 +238,7 @@ class AutoCleanRules:
         """
         try:
             if not params.get("allow_command", False):
-                return {"error": "custom command execution is disabled "
-                                 "(set allow_command=True to enable)"}
+                return {"error": "custom command execution is disabled " "(set allow_command=True to enable)"}
 
             command = params.get("command")
             if not command:
@@ -277,13 +248,17 @@ class AutoCleanRules:
                 argv = list(command)
             else:
                 import shlex
+
                 # posix=False keeps Windows path backslashes intact.
                 argv = shlex.split(str(command), posix=(self.system != "windows"))
             if not argv:
                 return None
 
             result = subprocess.run(
-                argv, shell=False, capture_output=True, text=True,
+                argv,
+                shell=False,
+                capture_output=True,
+                text=True,
                 timeout=params.get("timeout", 120),
             )
             return {
@@ -294,7 +269,7 @@ class AutoCleanRules:
         except Exception:
             self.error_count += 1
             return None
-    
+
     def evaluate_rules(self):
         """Fire every active rule whose trigger currently holds.
 
@@ -307,50 +282,44 @@ class AutoCleanRules:
         for rule in rules_copy:
             if not rule.get("active", False):
                 continue
-            
+
             try:
                 if rule["type"] == "disk_usage":
                     if self._check_disk_usage(rule["threshold"]):
                         self._execute_clean_action(rule["action"], rule["clean_params"])
-                
+
                 elif rule["type"] == "startup":
                     self._execute_clean_action(rule["action"], rule["clean_params"])
-                
+
                 elif rule["type"] == "shutdown":
                     self._execute_clean_action(rule["action"], rule["clean_params"])
-                
+
                 elif rule["type"] == "scheduled":
                     self._execute_clean_action(rule["action"], rule["clean_params"])
-                    
+
             except Exception:
                 self.error_count += 1
-    
+
     def start_monitoring(self, interval_seconds: int = 60):
         """Start monitoring disk usage in a background thread.
-        
+
         Args:
             interval_seconds: Check interval in seconds
         """
         if self.monitoring:
             return
-        
-        self.monitoring = True
-        self.monitor_thread = threading.Thread(
-            target=self._monitor_loop, 
-            args=(interval_seconds,),
-            daemon=True
-        )
-        self.monitor_thread.start()
-    
-    def stop_monitoring(self):
-        """Stop the background monitoring thread.
 
-        """
+        self.monitoring = True
+        self.monitor_thread = threading.Thread(target=self._monitor_loop, args=(interval_seconds,), daemon=True)
+        self.monitor_thread.start()
+
+    def stop_monitoring(self):
+        """Stop the background monitoring thread."""
         self.monitoring = False
         if self.monitor_thread:
             self.monitor_thread.join()
             self.monitor_thread = None
-    
+
     def _monitor_loop(self, interval_seconds: int):
         """Poll evaluate_rules until stopped; errors never kill the loop.
 
@@ -365,7 +334,7 @@ class AutoCleanRules:
             except Exception:
                 self.error_count += 1
                 time.sleep(interval_seconds)
-    
+
     def get_stats(self) -> dict:
         """Summarize rule counts, monitor state, and error total.
 
@@ -376,14 +345,14 @@ class AutoCleanRules:
         with self._lock:
             rules_copy = list(self.rules)
         active_count = sum(1 for rule in rules_copy if rule.get("active", False))
-        
+
         return {
             "total_rules": len(rules_copy),
             "active_rules": active_count,
             "monitoring": self.monitoring,
-            "errors": self.error_count
+            "errors": self.error_count,
         }
-    
+
     def enable_rule(self, rule_index: int):
         """Activate the rule at the given index.
 
@@ -394,7 +363,7 @@ class AutoCleanRules:
         with self._lock:
             if 0 <= rule_index < len(self.rules):
                 self.rules[rule_index]["active"] = True
-    
+
     def disable_rule(self, rule_index: int):
         """Deactivate the rule at the given index.
 
@@ -405,7 +374,7 @@ class AutoCleanRules:
         with self._lock:
             if 0 <= rule_index < len(self.rules):
                 self.rules[rule_index]["active"] = False
-    
+
     def remove_rule(self, rule_index: int):
         """Delete the rule at the given index.
 

@@ -220,13 +220,23 @@ class AdaptiveSanitizer:
         verdict = self.guard.check(p)
         if not verdict.safe:
             return SanitizeResult(
-                p, level or PrivacyLevel.PL2, StorageKind.UNKNOWN,
-                False, False, "guard", f"blocked: {verdict.reason}",
+                p,
+                level or PrivacyLevel.PL2,
+                StorageKind.UNKNOWN,
+                False,
+                False,
+                "guard",
+                f"blocked: {verdict.reason}",
             )
         if not p.exists():
             return SanitizeResult(
-                p, level or PrivacyLevel.PL2, StorageKind.UNKNOWN,
-                False, False, "missing", "file no longer exists",
+                p,
+                level or PrivacyLevel.PL2,
+                StorageKind.UNKNOWN,
+                False,
+                False,
+                "missing",
+                "file no longer exists",
             )
         lvl = self.auto_level(p, level)
         try:
@@ -263,8 +273,13 @@ class AdaptiveSanitizer:
     # ---------------------------------------------------------------- internal
 
     def _execute(
-        self, p: Path, lvl: PrivacyLevel, kind: StorageKind,
-        verify: bool, force: bool, timeout: int,
+        self,
+        p: Path,
+        lvl: PrivacyLevel,
+        kind: StorageKind,
+        verify: bool,
+        force: bool,
+        timeout: int,
     ) -> SanitizeResult:
         """Dispatch PL.
 
@@ -306,23 +321,34 @@ class AdaptiveSanitizer:
                 r = d.delete(p, DeletionMethod.OVERWRITE, force_overwrite_on_flash=force)
                 ok = r.succeeded
                 verified = ok  # overwrite + fsync is verifiable on HDD
-                return SanitizeResult(p, PrivacyLevel.PL0, kind, ok, verified,
-                                      "hdd 3-pass overwrite + fsync",
-                                      r.reason or ("overwritten and removed" if ok else "overwrite failed"))
+                return SanitizeResult(
+                    p,
+                    PrivacyLevel.PL0,
+                    kind,
+                    ok,
+                    verified,
+                    "hdd 3-pass overwrite + fsync",
+                    r.reason or ("overwritten and removed" if ok else "overwrite failed"),
+                )
             except Exception as exc:  # noqa: BLE001
-                return SanitizeResult(p, PrivacyLevel.PL0, kind, False, False,
-                                      "hdd overwrite", str(exc))
+                return SanitizeResult(p, PrivacyLevel.PL0, kind, False, False, "hdd overwrite", str(exc))
         # SSD / flash: PL0 would be ATA Secure Erase / NVMe Format – requires
         # device-level ioctl, not safe to run per-file. We refuse per-file and
         # advise device-level sanitization (PULSE §6: page-overwrite impractical
         # on TLC, median RBER 13% FG).
         return SanitizeResult(
-            p, PrivacyLevel.PL0, kind, False, False,
+            p,
+            PrivacyLevel.PL0,
+            kind,
+            False,
+            False,
             "ssd block-erase (device-level required)",
-            ("PL0 block erase on flash must be done at device level (NVMe Format "
-             "/ ATA Secure Erase). Per-file PL0 would cause program-disturb on "
-             "adjacent pages (PULSE median RBER >0.93% SLC, ~13% TLC). Use PL1/PULSE "
-             "or PL2 crypto-erase for per-file sanitization."),
+            (
+                "PL0 block erase on flash must be done at device level (NVMe Format "
+                "/ ATA Secure Erase). Per-file PL0 would cause program-disturb on "
+                "adjacent pages (PULSE median RBER >0.93% SLC, ~13% TLC). Use PL1/PULSE "
+                "or PL2 crypto-erase for per-file sanitization."
+            ),
         )
 
     # PL1 – page scrubbing / PULSE low-disturbance overwrite pulses
@@ -367,16 +393,23 @@ class AdaptiveSanitizer:
             except OSError as exc:
                 failures.append(f"{p}: {exc}")
             ok = not failures
-            return SanitizeResult(p, PrivacyLevel.PL1, kind, ok, ok,
-                                  "p1 page-pulses (dir walk, hot/cold split)",
-                                  "completed" if ok else "; ".join(failures[:3]))
+            return SanitizeResult(
+                p,
+                PrivacyLevel.PL1,
+                kind,
+                ok,
+                ok,
+                "p1 page-pulses (dir walk, hot/cold split)",
+                "completed" if ok else "; ".join(failures[:3]),
+            )
         # Single file: 1-2 overwrite pulses (PULSE §4, FlashFox RAID-4)
         try:
             length = p.stat().st_size
             if length == 0:
                 p.unlink(missing_ok=True)
-                return SanitizeResult(p, PrivacyLevel.PL1, kind, True, True,
-                                      "p1 zero-length (unlink)", "empty file removed")
+                return SanitizeResult(
+                    p, PrivacyLevel.PL1, kind, True, True, "p1 zero-length (unlink)", "empty file removed"
+                )
             # PULSE low-disturbance: two scrub pulses max to keep RBER low
             pulses = 2 if kind in (StorageKind.SSD, StorageKind.NVME, StorageKind.REMOVABLE) else 1
             with open(p, "r+b", buffering=0) as fh:
@@ -384,6 +417,7 @@ class AdaptiveSanitizer:
                     fh.seek(0)
                     # First pulse: random, second: zeros (verifiable tail)
                     import os as _os
+
                     data = _os.urandom(min(length, 1024 * 1024))
                     # Stream in 1 MiB chunks to avoid huge allocation
                     fh.seek(0)
@@ -410,12 +444,17 @@ class AdaptiveSanitizer:
             p.unlink(missing_ok=True)
             # Issue TRIM hint for flash (best-effort, no error if unsupported)
             self._trim_parent(p)
-            return SanitizeResult(p, PrivacyLevel.PL1, kind, True, verified,
-                                  f"p1 {pulses}-pulse scrub + TRIM",
-                                  "scrubbed and trimmed" if verified else "scrubbed (tail verify pending)")
+            return SanitizeResult(
+                p,
+                PrivacyLevel.PL1,
+                kind,
+                True,
+                verified,
+                f"p1 {pulses}-pulse scrub + TRIM",
+                "scrubbed and trimmed" if verified else "scrubbed (tail verify pending)",
+            )
         except OSError as exc:
-            return SanitizeResult(p, PrivacyLevel.PL1, kind, False, False,
-                                  "p1 scrub", str(exc))
+            return SanitizeResult(p, PrivacyLevel.PL1, kind, False, False, "p1 scrub", str(exc))
 
     # PL2 – parity/ECC disruption / crypto-erase (Ahn PL2, FlashFox)
     def _pl2(self, p: Path, kind: StorageKind, verify: bool, timeout: int) -> SanitizeResult:
@@ -452,9 +491,15 @@ class AdaptiveSanitizer:
                 except OSError:
                     pass
                 ok = not failures
-                return SanitizeResult(p, PrivacyLevel.PL2, kind, ok, ok,
-                                      "p2 ecc-disrupt (dir, vertical)",
-                                      "disrupted" if ok else f"partial: {failures[:2]}")
+                return SanitizeResult(
+                    p,
+                    PrivacyLevel.PL2,
+                    kind,
+                    ok,
+                    ok,
+                    "p2 ecc-disrupt (dir, vertical)",
+                    "disrupted" if ok else f"partial: {failures[:2]}",
+                )
             # File: destroy header + parity
             try:
                 with open(p, "r+b") as fh:
@@ -477,12 +522,17 @@ class AdaptiveSanitizer:
             p.unlink(missing_ok=True)
             self._trim_parent(p)
             verified = True  # renaming + header destruction is Reed-Solomon unrecoverable (FlashFox)
-            return SanitizeResult(p, PrivacyLevel.PL2, kind, True, verified,
-                                  "p2 ecc/header crypto-disrupt + rename + TRIM",
-                                  "header destroyed, parity unrecoverable")
+            return SanitizeResult(
+                p,
+                PrivacyLevel.PL2,
+                kind,
+                True,
+                verified,
+                "p2 ecc/header crypto-disrupt + rename + TRIM",
+                "header destroyed, parity unrecoverable",
+            )
         except OSError as exc:
-            return SanitizeResult(p, PrivacyLevel.PL2, kind, False, False,
-                                  "p2 ecc", str(exc))
+            return SanitizeResult(p, PrivacyLevel.PL2, kind, False, False, "p2 ecc", str(exc))
 
     # PL3 – controller lockout / TRIM range (logical unmap)
     def _pl3(self, p: Path, kind: StorageKind, verify: bool, timeout: int) -> SanitizeResult:
@@ -504,6 +554,7 @@ class AdaptiveSanitizer:
             # Logical unmap: remove directory entry, issue TRIM on parent FS
             if p.is_dir() and not p.is_symlink():
                 import shutil
+
                 shutil.rmtree(p, ignore_errors=False)
             else:
                 p.unlink(missing_ok=True)
@@ -512,12 +563,17 @@ class AdaptiveSanitizer:
             if _IS_WINDOWS and verify:
                 time.sleep(0.05)  # device coalesces TRIM
             verified = not p.exists()
-            return SanitizeResult(p, PrivacyLevel.PL3, kind, verified, verified,
-                                  "p3 TRIM / block lockout",
-                                  "unmapped and trimmed" if verified else "unmapped (pending GC)")
+            return SanitizeResult(
+                p,
+                PrivacyLevel.PL3,
+                kind,
+                verified,
+                verified,
+                "p3 TRIM / block lockout",
+                "unmapped and trimmed" if verified else "unmapped (pending GC)",
+            )
         except OSError as exc:
-            return SanitizeResult(p, PrivacyLevel.PL3, kind, False, False,
-                                  "p3 trim", str(exc))
+            return SanitizeResult(p, PrivacyLevel.PL3, kind, False, False, "p3 trim", str(exc))
 
     def _trim_parent(self, p: Path) -> None:
         """Best-effort TRIM hint for the parent filesystem.
@@ -532,7 +588,11 @@ class AdaptiveSanitizer:
             return
         try:
             # Lightest possible TRIM-adjacent probe: query free space (touches FS)
-            _proc.run(["fsutil", "volume", "diskfree", str(p.anchor or "C:\\")],
-                      timeout=5, text=True, creationflags=_NO_WINDOW)
+            _proc.run(
+                ["fsutil", "volume", "diskfree", str(p.anchor or "C:\\")],
+                timeout=5,
+                text=True,
+                creationflags=_NO_WINDOW,
+            )
         except Exception:  # noqa: BLE001
             pass

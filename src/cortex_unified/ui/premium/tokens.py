@@ -87,9 +87,9 @@ class Elevation(IntEnum):
     """
 
     BACKGROUND = 0  # app / window backdrop
-    SURFACE = 1     # base cards / panels
-    RAISED = 2      # hero cards, popovers, hovered rows
-    OVERLAY = 3     # modals, menus, tooltips
+    SURFACE = 1  # base cards / panels
+    RAISED = 2  # hero cards, popovers, hovered rows
+    OVERLAY = 3  # modals, menus, tooltips
 
 
 @dataclass(frozen=True)
@@ -213,10 +213,10 @@ def elevation_style(palette: object, level: "Elevation | int") -> ElevationStyle
 
     # Candidate surface + border per level, ordered from background to overlay.
     candidates: list[tuple[str, str]] = [
-        (bg, border),                 # BACKGROUND
-        (surface, border),            # SURFACE
-        (raised, glass_border),       # RAISED
-        (overlay, glass_border),      # OVERLAY
+        (bg, border),  # BACKGROUND
+        (surface, border),  # SURFACE
+        (raised, glass_border),  # RAISED
+        (overlay, glass_border),  # OVERLAY
     ]
 
     # Enforce "surface never darker as level rises": clamp each candidate's

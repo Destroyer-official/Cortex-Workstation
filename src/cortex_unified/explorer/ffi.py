@@ -1,4 +1,5 @@
 """Rust FFI bridge for high-performance filesystem operations."""
+
 from __future__ import annotations
 
 import sys

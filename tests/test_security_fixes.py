@@ -11,6 +11,7 @@ from cortex_unified.scheduler.auto_clean_rules import AutoCleanRules
 
 class TestCustomCommandHardening:
     """Group testcustomcommandhardening tests covering disabled by default; runs without shell when allowed; metacharacters not interpreted."""
+
     def test_disabled_by_default(self):
         """Verify disabled by default via AutoCleanRules, rules._custom_clean_action, out.get."""
         rules = AutoCleanRules()
@@ -22,10 +23,12 @@ class TestCustomCommandHardening:
         """Verify runs without shell when allowed via AutoCleanRules, rules._custom_clean_action, out.get."""
         rules = AutoCleanRules()
         # A benign, cross-platform command via the interpreter itself.
-        out = rules._custom_clean_action({
-            "command": [sys.executable, "-c", "print('ok')"],
-            "allow_command": True,
-        })
+        out = rules._custom_clean_action(
+            {
+                "command": [sys.executable, "-c", "print('ok')"],
+                "allow_command": True,
+            }
+        )
         assert out is not None
         assert out.get("returncode") == 0
         assert "ok" in out.get("stdout", "")
@@ -46,9 +49,11 @@ class TestCustomCommandHardening:
 
 class TestAppUninstallerImportSafe:
     """Group testappuninstallerimportsafe tests covering import and construct; uninstall missing string returns false."""
+
     def test_import_and_construct(self):
         """Verify import and construct via AppUninstaller, u.get_installed_apps."""
         from cortex_unified.system_tools.app_uninstaller import AppUninstaller
+
         u = AppUninstaller()
         # get_installed_apps is safe/read-only; returns a list (possibly empty
         # on non-Windows where winreg is absent).
@@ -58,5 +63,6 @@ class TestAppUninstallerImportSafe:
     def test_uninstall_missing_string_returns_false(self):
         """Verify uninstall missing string returns false via AppUninstaller, u.uninstall_app."""
         from cortex_unified.system_tools.app_uninstaller import AppUninstaller
+
         u = AppUninstaller()
         assert u.uninstall_app({"name": "Nope"}) is False

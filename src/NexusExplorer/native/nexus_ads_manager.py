@@ -22,6 +22,7 @@ if platform.system() == "Windows":
 
         Exposes StreamSize and 296-WCHAR cStreamName for FindFirstStreamW/FindNextStreamW FFI signatures.
         """
+
         _fields_ = [
             ("StreamSize", ctypes.c_longlong),
             ("cStreamName", wintypes.WCHAR * 296),
@@ -34,10 +35,11 @@ class AlternateDataStream:
 
     Stores file path, full/stream names, $DATA type, size, Zone.Identifier flag, and 512-char preview.
     """
+
     file_path: str
     stream_full_name: str  # e.g. ":Zone.Identifier:$DATA"
-    stream_name: str       # e.g. "Zone.Identifier"
-    stream_type: str       # e.g. "$DATA"
+    stream_name: str  # e.g. "Zone.Identifier"
+    stream_type: str  # e.g. "$DATA"
     size_bytes: int
     is_zone_identifier: bool = False
     content_preview: str = ""
@@ -98,7 +100,7 @@ class AlternateDataStreamsManager:
                     parts = raw_name.strip(":").split(":")
                     stream_id = parts[0] if parts else raw_name
                     stream_type = parts[1] if len(parts) > 1 else "$DATA"
-                    is_zone_id = (stream_id.lower() == "zone.identifier")
+                    is_zone_id = stream_id.lower() == "zone.identifier"
 
                     # Preview stream content if small
                     preview = ""
@@ -109,15 +111,17 @@ class AlternateDataStreamsManager:
                     except Exception:
                         pass
 
-                    streams.append(AlternateDataStream(
-                        file_path=target,
-                        stream_full_name=raw_name,
-                        stream_name=stream_id,
-                        stream_type=stream_type,
-                        size_bytes=size,
-                        is_zone_identifier=is_zone_id,
-                        content_preview=preview,
-                    ))
+                    streams.append(
+                        AlternateDataStream(
+                            file_path=target,
+                            stream_full_name=raw_name,
+                            stream_name=stream_id,
+                            stream_type=stream_type,
+                            size_bytes=size,
+                            is_zone_identifier=is_zone_id,
+                            content_preview=preview,
+                        )
+                    )
 
                 # FindNextStreamW
                 has_next = kernel32.FindNextStreamW(handle, ctypes.byref(find_data))

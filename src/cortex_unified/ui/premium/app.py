@@ -57,9 +57,7 @@ def setup_logging(debug: bool = False) -> Path:
         console.setFormatter(fmt)
         root.addHandler(console)
 
-    fileh = logging.handlers.RotatingFileHandler(
-        log_file, maxBytes=2_000_000, backupCount=3, encoding="utf-8"
-    )
+    fileh = logging.handlers.RotatingFileHandler(log_file, maxBytes=2_000_000, backupCount=3, encoding="utf-8")
     fileh.setLevel(logging.DEBUG)  # always full detail in the file
     fileh.setFormatter(fmt)
     root.addHandler(fileh)
@@ -106,6 +104,7 @@ def _install_excepthook() -> None:
 
     Initiates the package or update installation workflow in the background, monitoring execution progress.
     """
+
     def hook(exc_type, exc_value, exc_tb):
         """Record an uncaught exception (log plus crash report file) then delegate to the default hook.
 
@@ -121,6 +120,7 @@ def _install_excepthook() -> None:
         try:
             import time
             import traceback
+
             target_dir = Path(log_dir())
             target_dir.mkdir(parents=True, exist_ok=True)
             stamp = time.strftime("%Y%m%d_%H%M%S")
@@ -129,7 +129,8 @@ def _install_excepthook() -> None:
                 "Cortex Workstation Crash Report\n"
                 "NOTE: paths below may contain personal filenames.\n\n"
                 + "".join(traceback.format_exception(exc_type, exc_value, exc_tb)),
-                encoding="utf-8")
+                encoding="utf-8",
+            )
         except Exception:  # noqa: BLE001 - logging already captured it
             pass
         sys.__excepthook__(exc_type, exc_value, exc_tb)
@@ -183,6 +184,7 @@ def _schedule_update_check(win, settings=None) -> None:
         """
         try:
             from cortex_unified.system_tools.update_checker import check_for_update
+
             result = check_for_update()
         except Exception:  # noqa: BLE001 - never disturb startup
             return
@@ -191,10 +193,13 @@ def _schedule_update_check(win, settings=None) -> None:
                 f"Update available: version {result.get('latest')} is "
                 "published (you are on "
                 f"{result.get('installed')}). Download from the project "
-                "releases page.", 15000)
+                "releases page.",
+                15000,
+            )
 
     try:
         from PySide6.QtCore import QTimer
+
         QTimer.singleShot(20000, _done)
     except ImportError:
         pass
@@ -281,9 +286,7 @@ def _configure_high_dpi() -> None:
     # the real fractional factor (1.25 / 1.5 / ...) through so Qt renders at the
     # display's native scale instead of scaling a rounded bitmap.
     try:
-        QGuiApplication.setHighDpiScaleFactorRoundingPolicy(
-            Qt.HighDpiScaleFactorRoundingPolicy.PassThrough
-        )
+        QGuiApplication.setHighDpiScaleFactorRoundingPolicy(Qt.HighDpiScaleFactorRoundingPolicy.PassThrough)
     except Exception:  # noqa: BLE001 - older/newer Qt without this enum
         pass
 
@@ -314,16 +317,14 @@ def main() -> int:
     try:
         from PySide6.QtWidgets import QApplication
     except ImportError:
-        sys.stderr.write(
-            "Cortex Workstation GUI requires PySide6.\n"
-            "Install it with:  pip install PySide6\n"
-        )
+        sys.stderr.write("Cortex Workstation GUI requires PySide6.\n" "Install it with:  pip install PySide6\n")
         return 1
 
     _install_excepthook()
     _install_threading_excepthook()
 
     from cortex_unified.core.utils import ensure_nexus_in_sys_path
+
     ensure_nexus_in_sys_path()
 
     from .settings_store import SettingsStore
@@ -337,6 +338,7 @@ def main() -> int:
     # Set AppUserModelID so Windows taskbar uses Cortex Workstation identity and icon
     try:
         import ctypes
+
         ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID("Destroyer.CortexWorkstation.App.1.2.0")
     except Exception:
         pass
@@ -349,6 +351,7 @@ def main() -> int:
 
     # Apply application icon
     from PySide6.QtGui import QIcon
+
     exe_dir = Path(sys.executable).resolve().parent
     icon_candidates = [
         exe_dir / "assets" / "icons" / "cortex.ico",
@@ -371,12 +374,12 @@ def main() -> int:
     if app_icon and not app_icon.isNull():
         app.setWindowIcon(app_icon)
 
-
     # Restore the user's saved theme (defaults to dark). The store is shared
     # with the window so a theme change made in Settings persists to one file.
     settings = SettingsStore()
     # Apply the saved reduced-motion preference before any UI animates.
     from . import motion
+
     motion.set_reduced_motion(settings.reduced_motion)
     theme = settings.theme
     apply_theme(app, theme)
@@ -407,8 +410,7 @@ def main() -> int:
         # not be stopped - which should now be rare, since every long-running
         # external-tool call routes its cancellation through core.proc, which
         # kills the process tree rather than relying on the thread noticing.
-        _LOG.error("%d worker thread(s) could not be stopped; exiting hard to "
-                   "avoid a teardown crash", len(stuck))
+        _LOG.error("%d worker thread(s) could not be stopped; exiting hard to " "avoid a teardown crash", len(stuck))
         logging.shutdown()
         sys.stdout.flush()
         sys.stderr.flush()

@@ -17,6 +17,7 @@ from cortex_unified.core.config import Config
 
 try:
     from cortex_unified.system_tools.registry_cleaner import RegistryCleaner
+
     HAS_REGISTRY_CLEANER = True
 except ImportError:
     HAS_REGISTRY_CLEANER = False
@@ -51,14 +52,19 @@ class SmartScanReport:
     def total_cleanable_mb(self) -> float:
         """Total cleanable mb.
 
- Handles total cleanable mb for.
+        Handles total cleanable mb for.
 
- Returns:
- float: Result of the operation.
- """
-        return (self.total_junk_mb + self.browser_cache_mb +
-                self.win_update_cache_mb + self.recycle_bin_mb +
-                self.prefetch_mb + self.thumbnail_cache_mb)
+        Returns:
+        float: Result of the operation.
+        """
+        return (
+            self.total_junk_mb
+            + self.browser_cache_mb
+            + self.win_update_cache_mb
+            + self.recycle_bin_mb
+            + self.prefetch_mb
+            + self.thumbnail_cache_mb
+        )
 
     def calculate_score(self):
         """Calculate 0-100 health score from real metrics.
@@ -89,7 +95,7 @@ class SmartScannerWorker(QObject):
     Precedence is explicit kwargs, then CORTEX_ environment variables, then YAML, then field defaults.
     """
 
-    finished = Signal(object)   # SmartScanReport
+    finished = Signal(object)  # SmartScanReport
     error = Signal(str)
     progress_updated = Signal(str, int)  # (status_msg, percentage)
 
@@ -134,9 +140,7 @@ class SmartScannerWorker(QObject):
             report.win_update_cache_mb = self._scan_dir_mb(
                 os.path.join(os.environ.get("WINDIR", r"C:\Windows"), "SoftwareDistribution", "Download")
             )
-            report.prefetch_mb = self._scan_dir_mb(
-                os.path.join(os.environ.get("WINDIR", r"C:\Windows"), "Prefetch")
-            )
+            report.prefetch_mb = self._scan_dir_mb(os.path.join(os.environ.get("WINDIR", r"C:\Windows"), "Prefetch"))
             report.thumbnail_cache_mb = self._scan_dir_mb(
                 os.path.join(os.environ.get("LOCALAPPDATA", ""), "Microsoft", "Windows", "Explorer")
             )
@@ -160,6 +164,7 @@ class SmartScannerWorker(QObject):
             self.progress_updated.emit("Measuring startup impact…", 70)
             try:
                 from cortex_unified.system_tools.startup_manager import StartupManager
+
                 sm = StartupManager()
                 items = sm.list_startup_items()
                 report.startup_items_count = len(items)
@@ -236,10 +241,10 @@ class SmartScannerWorker(QObject):
         appdata = os.environ.get("APPDATA", "")
 
         browsers = {
-            "Chrome":  os.path.join(local, "Google", "Chrome", "User Data"),
-            "Edge":    os.path.join(local, "Microsoft", "Edge", "User Data"),
-            "Brave":   os.path.join(local, "BraveSoftware", "Brave-Browser", "User Data"),
-            "Opera":   os.path.join(appdata, "Opera Software", "Opera Stable"),
+            "Chrome": os.path.join(local, "Google", "Chrome", "User Data"),
+            "Edge": os.path.join(local, "Microsoft", "Edge", "User Data"),
+            "Brave": os.path.join(local, "BraveSoftware", "Brave-Browser", "User Data"),
+            "Opera": os.path.join(appdata, "Opera Software", "Opera Stable"),
             "Firefox": os.path.join(appdata, "Mozilla", "Firefox", "Profiles"),
         }
 
@@ -275,7 +280,7 @@ class SmartScannerWorker(QObject):
             if self._should_stop:
                 break
             if root.count(os.sep) - base_depth >= max_depth:
-                _dirs.clear()   # prune
+                _dirs.clear()  # prune
                 continue
             for f in files:
                 try:

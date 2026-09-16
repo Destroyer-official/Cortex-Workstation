@@ -24,6 +24,7 @@ logger = logging.getLogger("cortex.system_tools.storage_growth_tracker")
 @dataclass
 class SnapshotSummary:
     """Snapshot Summary data container."""
+
     snapshot_id: int
     label: str
     root_path: str
@@ -46,6 +47,7 @@ class SnapshotSummary:
 @dataclass
 class DirectoryDelta:
     """Directory Delta data container."""
+
     path: str
     old_bytes: int
     new_bytes: int
@@ -66,6 +68,7 @@ class DirectoryDelta:
 @dataclass
 class StorageGrowthDiffReport:
     """Storage Growth Diff Report data container."""
+
     base_snapshot: SnapshotSummary
     target_snapshot: SnapshotSummary
     net_growth_bytes: int
@@ -98,8 +101,7 @@ class StorageGrowthTracker:
     def _init_db(self):
         """Create sqlite schema for snapshot metadata and items."""
         with sqlite3.connect(self._db_path) as conn:
-            conn.execute(
-                """
+            conn.execute("""
                 CREATE TABLE IF NOT EXISTS snapshots (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     label TEXT NOT NULL,
@@ -109,10 +111,8 @@ class StorageGrowthTracker:
                     total_files INTEGER NOT NULL,
                     total_folders INTEGER NOT NULL
                 )
-                """
-            )
-            conn.execute(
-                """
+                """)
+            conn.execute("""
                 CREATE TABLE IF NOT EXISTS snapshot_entries (
                     snapshot_id INTEGER NOT NULL,
                     path TEXT NOT NULL,
@@ -120,16 +120,11 @@ class StorageGrowthTracker:
                     size INTEGER NOT NULL,
                     FOREIGN KEY(snapshot_id) REFERENCES snapshots(id) ON DELETE CASCADE
                 )
-                """
-            )
-            conn.execute(
-                "CREATE INDEX IF NOT EXISTS idx_snap_entries ON snapshot_entries(snapshot_id, path)"
-            )
+                """)
+            conn.execute("CREATE INDEX IF NOT EXISTS idx_snap_entries ON snapshot_entries(snapshot_id, path)")
             conn.commit()
 
-    def take_snapshot(
-        self, root_path: str, label: str = "Manual Scan", max_depth: int = 5
-    ) -> SnapshotSummary:
+    def take_snapshot(self, root_path: str, label: str = "Manual Scan", max_depth: int = 5) -> SnapshotSummary:
         """Scan directory and capture persistent snapshot."""
         root = Path(root_path).resolve()
         now = time.time()
@@ -177,16 +172,11 @@ class StorageGrowthTracker:
             snap_id = cur.lastrowid or 1
 
             # Insert folder rollups and files
-            rows = [
-                (snap_id, path_str, is_dir, sz)
-                for (_, path_str, is_dir, sz) in entries_to_insert
-            ]
+            rows = [(snap_id, path_str, is_dir, sz) for (_, path_str, is_dir, sz) in entries_to_insert]
             for dpath, dsz in dir_sizes.items():
                 rows.append((snap_id, dpath, 1, dsz))
 
-            cur.executemany(
-                "INSERT INTO snapshot_entries VALUES (?, ?, ?, ?)", rows
-            )
+            cur.executemany("INSERT INTO snapshot_entries VALUES (?, ?, ?, ?)", rows)
             conn.commit()
 
         return SnapshotSummary(
@@ -203,7 +193,9 @@ class StorageGrowthTracker:
         """List all captured snapshots."""
         with sqlite3.connect(self._db_path) as conn:
             cur = conn.cursor()
-            cur.execute("SELECT id, label, root_path, timestamp, total_bytes, total_files, total_folders FROM snapshots ORDER BY timestamp DESC")
+            cur.execute(
+                "SELECT id, label, root_path, timestamp, total_bytes, total_files, total_folders FROM snapshots ORDER BY timestamp DESC"
+            )
             rows = cur.fetchall()
             return [
                 SnapshotSummary(
@@ -224,9 +216,15 @@ class StorageGrowthTracker:
             cur = conn.cursor()
 
             # Load snapshots metadata
-            cur.execute("SELECT id, label, root_path, timestamp, total_bytes, total_files, total_folders FROM snapshots WHERE id = ?", (base_id,))
+            cur.execute(
+                "SELECT id, label, root_path, timestamp, total_bytes, total_files, total_folders FROM snapshots WHERE id = ?",
+                (base_id,),
+            )
             b_row = cur.fetchone()
-            cur.execute("SELECT id, label, root_path, timestamp, total_bytes, total_files, total_folders FROM snapshots WHERE id = ?", (target_id,))
+            cur.execute(
+                "SELECT id, label, root_path, timestamp, total_bytes, total_files, total_folders FROM snapshots WHERE id = ?",
+                (target_id,),
+            )
             t_row = cur.fetchone()
 
             if not b_row or not t_row:

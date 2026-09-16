@@ -11,9 +11,19 @@ Features:
 """
 
 from PySide6.QtWidgets import (
-    QVBoxLayout, QHBoxLayout, QPushButton, QLabel,
-    QTableWidget, QTableWidgetItem, QHeaderView, QGroupBox,
-    QCheckBox, QMessageBox, QLineEdit, QSplitter, QProgressBar,
+    QVBoxLayout,
+    QHBoxLayout,
+    QPushButton,
+    QLabel,
+    QTableWidget,
+    QTableWidgetItem,
+    QHeaderView,
+    QGroupBox,
+    QCheckBox,
+    QMessageBox,
+    QLineEdit,
+    QSplitter,
+    QProgressBar,
 )
 from PySide6.QtCore import Qt, QThread, Signal, QObject
 from PySide6.QtGui import QFont
@@ -25,17 +35,19 @@ from cortex_unified.system_tools.leftover_cleaner import (
     LeftoverScanner,
 )
 
-
 # ──────────────────────────────────────────────────────────────────────
 # Workers
 # ──────────────────────────────────────────────────────────────────────
+
 
 class AppListWorker(QObject):
     """Worker that enumerates installed applications off the UI thread.
 
     Emits ``finished(list)`` with AppUninstaller.get_installed_apps() results.
     """
+
     finished = Signal(list)
+
     def run(self):
         """Query AppUninstaller for installed apps and emit them as a list."""
         self.finished.emit(AppUninstaller().get_installed_apps())
@@ -62,9 +74,7 @@ class ResidualScanWorker(QObject):
         ``failed`` with the error message.
         """
         try:
-            app = InstalledApp(name=self._app_name,
-                               publisher=self._publisher,
-                               install_location=self._install_location)
+            app = InstalledApp(name=self._app_name, publisher=self._publisher, install_location=self._install_location)
             findings = LeftoverScanner().scan_app(app)
             self.finished.emit([f.to_dict() for f in findings])
         except Exception as exc:  # noqa: BLE001
@@ -95,11 +105,12 @@ class ResidualCleanWorker(QObject):
                 LeftoverCleaner,
                 LeftoverFinding,
             )
-            models = [LeftoverFinding(kind=d["kind"], path=d["path"],
-                                      size_bytes=d.get("size_bytes", 0))
-                      for d in self._findings]
-            outcomes = LeftoverCleaner().clean(
-                models, create_restore_point=self._create_restore_point)
+
+            models = [
+                LeftoverFinding(kind=d["kind"], path=d["path"], size_bytes=d.get("size_bytes", 0))
+                for d in self._findings
+            ]
+            outcomes = LeftoverCleaner().clean(models, create_restore_point=self._create_restore_point)
             self.finished.emit([o.to_dict() for o in outcomes])
         except Exception as exc:  # noqa: BLE001
             self.failed.emit(str(exc))
@@ -108,6 +119,7 @@ class ResidualCleanWorker(QObject):
 # ──────────────────────────────────────────────────────────────────────
 # Uninstaller Tab
 # ──────────────────────────────────────────────────────────────────────
+
 
 class UninstallerTab(BaseTab):
     """Deep Uninstaller with residual hunting."""
@@ -137,11 +149,15 @@ class UninstallerTab(BaseTab):
 
         # Header
         header = QLabel("Deep Uninstaller & Residual Hunter")
-        hf = QFont(); hf.setPointSize(18); hf.setBold(True)
+        hf = QFont()
+        hf.setPointSize(18)
+        hf.setBold(True)
         header.setFont(hf)
         main_layout.addWidget(header)
 
-        desc = QLabel("Safely uninstall applications and remove leftover files from AppData, ProgramData, and Program Files.")
+        desc = QLabel(
+            "Safely uninstall applications and remove leftover files from AppData, ProgramData, and Program Files."
+        )
         desc.setWordWrap(True)
         desc.setStyleSheet("color: gray;")
         main_layout.addWidget(desc)
@@ -195,9 +211,7 @@ class UninstallerTab(BaseTab):
             dl.addWidget(w)
 
         self.btn_uninstall = QPushButton("Run Official Uninstaller")
-        self.btn_uninstall.setStyleSheet(
-            "background-color: #F44336; color: white; padding: 10px; font-weight: bold;"
-        )
+        self.btn_uninstall.setStyleSheet("background-color: #F44336; color: white; padding: 10px; font-weight: bold;")
         self.btn_uninstall.setEnabled(False)
         self.btn_uninstall.clicked.connect(self._run_uninstall)
         dl.addWidget(self.btn_uninstall)
@@ -215,8 +229,7 @@ class UninstallerTab(BaseTab):
         dl.addWidget(self.residual_progress)
 
         self.res_table = QTableWidget(0, 3)
-        self.res_table.setHorizontalHeaderLabels(
-            ["Leftover Path", "Size", "Confidence"])
+        self.res_table.setHorizontalHeaderLabels(["Leftover Path", "Size", "Confidence"])
         self.res_table.horizontalHeader().setSectionResizeMode(0, QHeaderView.Stretch)
         self.res_table.setSelectionMode(QTableWidget.MultiSelection)
         self.res_table.setSelectionBehavior(QTableWidget.SelectRows)
@@ -225,19 +238,17 @@ class UninstallerTab(BaseTab):
         dl.addWidget(self.res_table)
 
         self.btn_clean = QPushButton("Clean Selected (Recycle Bin)")
-        self.btn_clean.setStyleSheet(
-            "background-color: #FF9800; color: white; padding: 8px; font-weight: bold;"
-        )
+        self.btn_clean.setStyleSheet("background-color: #FF9800; color: white; padding: 8px; font-weight: bold;")
         self.btn_clean.setEnabled(False)
         self.btn_clean.clicked.connect(self._clean_residuals)
         dl.addWidget(self.btn_clean)
 
-        self.restore_point_chk = QCheckBox(
-            "Create a System Restore point first")
+        self.restore_point_chk = QCheckBox("Create a System Restore point first")
         self.restore_point_chk.setChecked(True)
         self.restore_point_chk.setToolTip(
             "Attempts a System Restore checkpoint before deleting anything.\n"
-            "Requires Administrator; Windows allows one point per 24 hours.")
+            "Requires Administrator; Windows allows one point per 24 hours."
+        )
         dl.addWidget(self.restore_point_chk)
 
         splitter.addWidget(details)
@@ -320,9 +331,7 @@ class UninstallerTab(BaseTab):
         """Repopulate the table with apps matching the text in name or publisher."""
         text = text.lower()
         filtered = [
-            a for a in self.all_apps
-            if text in a.get("name", "").lower()
-            or text in a.get("publisher", "").lower()
+            a for a in self.all_apps if text in a.get("name", "").lower() or text in a.get("publisher", "").lower()
         ]
         self._populate_table(filtered)
 
@@ -366,24 +375,26 @@ class UninstallerTab(BaseTab):
         app = self.app_table.item(sel[0].row(), 0).data(Qt.UserRole)
 
         reply = QMessageBox.question(
-            self, "Confirm Uninstall",
+            self,
+            "Confirm Uninstall",
             f"Launch the official uninstaller for:\n\n{app.get('name')}?\n\n"
             f"After it finishes, click 'Scan for Leftover Files' to find residuals.",
-            QMessageBox.Yes | QMessageBox.No, QMessageBox.No,
+            QMessageBox.Yes | QMessageBox.No,
+            QMessageBox.No,
         )
         if reply == QMessageBox.Yes:
             ok = self.uninstaller.uninstall_app(app)
             if ok:
                 QMessageBox.information(
-                    self, "Uninstaller Launched",
-                    "The uninstaller has been started.\n"
-                    "Once it finishes, click 'Scan for Leftover Files'.",
+                    self,
+                    "Uninstaller Launched",
+                    "The uninstaller has been started.\n" "Once it finishes, click 'Scan for Leftover Files'.",
                 )
             else:
                 QMessageBox.warning(
-                    self, "Error",
-                    "Failed to launch the uninstaller.\n"
-                    "It may require elevated privileges.",
+                    self,
+                    "Error",
+                    "Failed to launch the uninstaller.\n" "It may require elevated privileges.",
                 )
 
     # ── Residual Scan (threaded) ──────────────────────────────────────
@@ -406,8 +417,8 @@ class UninstallerTab(BaseTab):
 
         self._res_thread = QThread(self)
         self._res_worker = ResidualScanWorker(
-            app.get("name", ""), app.get("publisher", ""),
-            app.get("install_location", ""))
+            app.get("name", ""), app.get("publisher", ""), app.get("install_location", "")
+        )
         self._res_worker.moveToThread(self._res_thread)
 
         self._res_thread.started.connect(self._res_worker.run)
@@ -428,9 +439,9 @@ class UninstallerTab(BaseTab):
     @staticmethod
     def _confidence_label(level: str) -> str:
         """Map a scanner confidence level to a human-friendly label."""
-        return {"VeryGood": "Very good", "Good": "Good",
-                "Questionable": "Questionable", "Bad": "Poor"}.get(
-                    level, level or "?")
+        return {"VeryGood": "Very good", "Good": "Good", "Questionable": "Questionable", "Bad": "Poor"}.get(
+            level, level or "?"
+        )
 
     def _on_residuals_done(self, leftovers):
         """Populate the residual table from scan results.
@@ -463,8 +474,7 @@ class UninstallerTab(BaseTab):
         if leftovers:
             self.btn_clean.setEnabled(True)
         else:
-            QMessageBox.information(self, "Clean",
-                                    "No leftovers found for this application.")
+            QMessageBox.information(self, "Clean", "No leftovers found for this application.")
 
     # ── Residual Cleanup ──────────────────────────────────────────────
 
@@ -486,12 +496,14 @@ class UninstallerTab(BaseTab):
 
         keys = sum(1 for f in findings if f.get("kind") == "registry")
         reply = QMessageBox.question(
-            self, "Confirm Cleanup",
+            self,
+            "Confirm Cleanup",
             f"Clean {len(findings)} leftover item(s)?\n\n"
             f"  \u2022 Files/folders \u2192 moved to the Recycle Bin (recoverable)\n"
             f"  \u2022 Registry keys ({keys}) \u2192 exported as .reg backup first\n\n"
             "Proceed?",
-            QMessageBox.Yes | QMessageBox.No, QMessageBox.No,
+            QMessageBox.Yes | QMessageBox.No,
+            QMessageBox.No,
         )
         if reply != QMessageBox.Yes:
             return
@@ -500,9 +512,7 @@ class UninstallerTab(BaseTab):
         self.residual_progress.setVisible(True)
 
         self._clean_thread = QThread(self)
-        self._clean_worker = ResidualCleanWorker(
-            findings,
-            create_restore_point=self.restore_point_chk.isChecked())
+        self._clean_worker = ResidualCleanWorker(findings, create_restore_point=self.restore_point_chk.isChecked())
         self._clean_worker.moveToThread(self._clean_thread)
 
         self._clean_thread.started.connect(self._clean_worker.run)
@@ -531,13 +541,14 @@ class UninstallerTab(BaseTab):
         ok = [o for o in outcomes if o.get("ok")]
         failed = [o for o in outcomes if not o.get("ok")]
         recycled = sum(1 for o in ok if o.get("disposition") == "recycled")
-        keys = sum(1 for o in ok
-                   if o.get("disposition") == "registry_deleted")
+        keys = sum(1 for o in ok if o.get("disposition") == "registry_deleted")
 
-        msg = (f"Removed {len(ok)} of {len(outcomes)} items.\n\n"
-               f"  \u2022 {recycled} to the Recycle Bin\n"
-               f"  \u2022 {keys} registry keys (backups in "
-               f"~/CortexCleanerBackups/leftovers)")
+        msg = (
+            f"Removed {len(ok)} of {len(outcomes)} items.\n\n"
+            f"  \u2022 {recycled} to the Recycle Bin\n"
+            f"  \u2022 {keys} registry keys (backups in "
+            f"~/CortexCleanerBackups/leftovers)"
+        )
         if failed:
             msg += f"\n\n{len(failed)} failed:"
             for o in failed[:5]:
@@ -546,11 +557,12 @@ class UninstallerTab(BaseTab):
 
         # Drop the cleaned rows; keep anything that failed for review.
         failed_paths = {o.get("path") for o in failed}
-        kept = [self.res_table.item(r, 0).data(Qt.UserRole)
-                for r in range(self.res_table.rowCount())
-                if self.res_table.item(r, 0) is not None
-                and self.res_table.item(r, 0).data(Qt.UserRole).get("path")
-                in failed_paths]
+        kept = [
+            self.res_table.item(r, 0).data(Qt.UserRole)
+            for r in range(self.res_table.rowCount())
+            if self.res_table.item(r, 0) is not None
+            and self.res_table.item(r, 0).data(Qt.UserRole).get("path") in failed_paths
+        ]
         self.res_table.setRowCount(0)
         self._on_residuals_done(kept) if kept else None
         self.btn_clean.setEnabled(bool(kept))

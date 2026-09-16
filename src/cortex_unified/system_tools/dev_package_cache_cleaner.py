@@ -35,6 +35,7 @@ _LOG = logging.getLogger("cortex.system_tools.dev_package_cache")
 @dataclass
 class DevPackageStoreInfo:
     """Status and storage consumption of a specific developer package cache."""
+
     name: str
     ecosystem: str
     path: str
@@ -59,6 +60,7 @@ class DevPackageStoreInfo:
 @dataclass
 class DevPackageReport:
     """Consolidated storage consumption across all developer package ecosystems."""
+
     stores: List[DevPackageStoreInfo] = field(default_factory=list)
     total_packages: int = 0
     total_bytes: int = 0
@@ -77,6 +79,7 @@ class DevPackageReport:
 @dataclass
 class DevPackageCleanResult:
     """Outcome of a developer package cache purge."""
+
     cleaned_stores: int = 0
     deleted_packages: int = 0
     freed_bytes: int = 0
@@ -111,57 +114,71 @@ class DevPackageCacheCleaner:
         if lad:
             lad_p = Path(lad)
             # Windows Package Manager (Winget)
-            stores.append((
-                "Windows Package Manager (Winget) Cache",
-                "Winget",
-                lad_p / "Packages" / "Microsoft.DesktopAppInstaller_8wekyb3d8bbwe" / "LocalState",
-                "Downloaded MSIX, MSI, and EXE installers cached by winget.",
-            ))
+            stores.append(
+                (
+                    "Windows Package Manager (Winget) Cache",
+                    "Winget",
+                    lad_p / "Packages" / "Microsoft.DesktopAppInstaller_8wekyb3d8bbwe" / "LocalState",
+                    "Downloaded MSIX, MSI, and EXE installers cached by winget.",
+                )
+            )
             # Microsoft C++ vcpkg binary archives
-            stores.append((
-                "Microsoft vcpkg Binary Archive",
-                "vcpkg",
-                lad_p / "vcpkg" / "archives",
-                "Precompiled static and dynamic C/C++ libraries cached by vcpkg.",
-            ))
+            stores.append(
+                (
+                    "Microsoft vcpkg Binary Archive",
+                    "vcpkg",
+                    lad_p / "vcpkg" / "archives",
+                    "Precompiled static and dynamic C/C++ libraries cached by vcpkg.",
+                )
+            )
             # .NET NuGet v3 Cache
-            stores.append((
-                ".NET NuGet v3 Download Cache",
-                "NuGet",
-                lad_p / "NuGet" / "v3-cache",
-                "Downloaded .nupkg archives and metadata.",
-            ))
+            stores.append(
+                (
+                    ".NET NuGet v3 Download Cache",
+                    "NuGet",
+                    lad_p / "NuGet" / "v3-cache",
+                    "Downloaded .nupkg archives and metadata.",
+                )
+            )
             # Python Pip Cache
-            stores.append((
-                "Python Pip Wheel Cache",
-                "pip",
-                lad_p / "pip" / "cache",
-                "Locally cached Python .whl wheels and source tarballs.",
-            ))
+            stores.append(
+                (
+                    "Python Pip Wheel Cache",
+                    "pip",
+                    lad_p / "pip" / "cache",
+                    "Locally cached Python .whl wheels and source tarballs.",
+                )
+            )
             # Yarn Cache
-            stores.append((
-                "Yarn Package Cache",
-                "Yarn",
-                lad_p / "Yarn" / "Cache",
-                "Global Node.js package archives downloaded by Yarn.",
-            ))
+            stores.append(
+                (
+                    "Yarn Package Cache",
+                    "Yarn",
+                    lad_p / "Yarn" / "Cache",
+                    "Global Node.js package archives downloaded by Yarn.",
+                )
+            )
 
         if up:
             up_p = Path(up)
             # Rust Cargo Registry Cache
-            stores.append((
-                "Rust Cargo Registry Crate Cache",
-                "Cargo",
-                up_p / ".cargo" / "registry" / "cache",
-                "Compressed .crate packages downloaded from crates.io.",
-            ))
+            stores.append(
+                (
+                    "Rust Cargo Registry Crate Cache",
+                    "Cargo",
+                    up_p / ".cargo" / "registry" / "cache",
+                    "Compressed .crate packages downloaded from crates.io.",
+                )
+            )
             # Rust Cargo Git Checkouts
-            stores.append((
-                "Rust Cargo Git Clones Cache",
-                "Cargo",
-                up_p / ".cargo" / "git" / "checkouts",
-                "Cloned Git dependency repositories cached by Cargo.",
-            ))
+            stores.append(
+                (
+                    "Rust Cargo Git Clones Cache",
+                    "Cargo",
+                    up_p / ".cargo" / "git" / "checkouts",
+                    "Cloned Git dependency repositories cached by Cargo.",
+                )
+            )
 
         return stores
 

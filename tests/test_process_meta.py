@@ -11,6 +11,7 @@ IS_WINDOWS = platform.system() == "Windows"
 
 class TestKnown:
     """Group testknown tests covering common system processes; idle labeled as not real; unknown returns empty."""
+
     def test_common_system_processes(self):
         """Verify common system processes via process_meta.known_description."""
         assert "Service Host" in process_meta.known_description("svchost.exe")
@@ -29,11 +30,11 @@ class TestKnown:
 
 class TestDescribe:
     """Group testdescribe tests covering describe prefers known; describe unknown no path is empty; describe never fabricates."""
+
     def test_describe_prefers_known(self):
         # Even with a bogus path, a known name wins and never reads disk.
         """Verify describe prefers known via process_meta.describe."""
-        assert process_meta.describe("chrome.exe", "Z:\\nope\\chrome.exe") \
-            == "Google Chrome web browser"
+        assert process_meta.describe("chrome.exe", "Z:\\nope\\chrome.exe") == "Google Chrome web browser"
 
     def test_describe_unknown_no_path_is_empty(self):
         """Verify describe unknown no path is empty via process_meta.describe."""
@@ -47,6 +48,7 @@ class TestDescribe:
 
 class TestFileDescriptionCache:
     """Group testfiledescriptioncache tests covering cache used; empty path."""
+
     def test_cache_used(self):
         """Verify cache used via process_meta._desc_cache.clear, process_meta.file_description."""
         process_meta._desc_cache.clear()
@@ -62,12 +64,15 @@ class TestFileDescriptionCache:
 
 class TestRealSystemExeIfWindows:
     """Group testrealsystemexeifwindows tests covering reads a real description."""
+
     def test_reads_a_real_description(self):
         """Verify reads a real description via os.path.join, pytest.skip, os.environ.get."""
         if not IS_WINDOWS:
             import pytest
+
             pytest.skip("Windows-only version info")
         import os
+
         # explorer.exe almost always has a FileDescription.
         exe = os.path.join(os.environ.get("WINDIR", "C:\\Windows"), "explorer.exe")
         if os.path.exists(exe):

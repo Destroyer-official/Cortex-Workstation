@@ -38,8 +38,8 @@ _OVERWRITE_CHUNK = 1024 * 1024  # 1 MiB
 # time. Recycling is the only feature that needs it, so it is resolved on first
 # use instead of at import time: a read-only ``cortex scan`` must not pay for
 # the recycle-bin machinery it never calls.
-_trash_fn: Any = None          # cached callable once successfully imported
-_trash_probed: bool = False    # True once we've attempted the import
+_trash_fn: Any = None  # cached callable once successfully imported
+_trash_probed: bool = False  # True once we've attempted the import
 
 
 def _resolve_send2trash() -> Any:
@@ -56,8 +56,9 @@ def _resolve_send2trash() -> Any:
         try:
             from send2trash import send2trash as _fn  # type: ignore
         except ImportError:
-            _LOG.debug("send2trash unavailable; recycle will be reported as "
-                       "unsupported rather than silently hard-deleting")
+            _LOG.debug(
+                "send2trash unavailable; recycle will be reported as " "unsupported rather than silently hard-deleting"
+            )
             _trash_fn = None
         else:
             _trash_fn = _fn
@@ -180,8 +181,12 @@ class SecureDeleter:
             os.close(fd)
             recheck = self.guard.check(p)
             if not recheck.safe:
-                res = DeletionResult(p, DeletionOutcome.SKIPPED_UNSAFE, method,
-                                     reason="TOCTOU: path changed between check and delete (risk mitigated via dual-phase check)")
+                res = DeletionResult(
+                    p,
+                    DeletionOutcome.SKIPPED_UNSAFE,
+                    method,
+                    reason="TOCTOU: path changed between check and delete (risk mitigated via dual-phase check)",
+                )
                 self.results.append(res)
                 return res
 
@@ -223,16 +228,14 @@ class SecureDeleter:
         """
         items = [Path(p) for p in paths]
         files = [p for p in items if not p.is_dir()]
-        dirs = sorted((p for p in items if p.is_dir()),
-                      key=lambda d: len(d.parts), reverse=True)
-        ordered = files + dirs   # files first, then deepest dirs
+        dirs = sorted((p for p in items if p.is_dir()), key=lambda d: len(d.parts), reverse=True)
+        ordered = files + dirs  # files first, then deepest dirs
 
         if method is DeletionMethod.RECYCLE and _has_trash():
             return self._recycle_batch(ordered, progress, cancel_event, sizes=sizes)
 
         if method in (DeletionMethod.DELETE, DeletionMethod.DRY_RUN):
-            return self._delete_batch(files, dirs, method, progress,
-                                      cancel_event, sizes)
+            return self._delete_batch(files, dirs, method, progress, cancel_event, sizes)
 
         # OVERWRITE / other: fall back to the careful per-item path.
         out: list[DeletionResult] = []
@@ -266,9 +269,15 @@ class SecureDeleter:
             return self.guard.check(p).safe
         return True
 
-    def _delete_batch(self, files: list[Path], dirs: list[Path],
-                      method: DeletionMethod, progress=None, cancel_event=None,
-                      sizes: "dict[str, int] | None" = None) -> list[DeletionResult]:
+    def _delete_batch(
+        self,
+        files: list[Path],
+        dirs: list[Path],
+        method: DeletionMethod,
+        progress=None,
+        cancel_event=None,
+        sizes: "dict[str, int] | None" = None,
+    ) -> list[DeletionResult]:
         """Fast permanent-delete path: one guard check per directory, known
         sizes reused from the scan, direct ``unlink`` without per-file stats."""
         out: list[DeletionResult] = []
@@ -279,14 +288,14 @@ class SecureDeleter:
         def _size(p: Path) -> int:
             """Size helper.
 
- Cached size accessor used by summary and progress.
+            Cached size accessor used by summary and progress.
 
- Args:
- p (Path): The p parameter.
+            Args:
+            p (Path): The p parameter.
 
- Returns:
- int: Result of the operation.
- """
+            Returns:
+            int: Result of the operation.
+            """
             if sizes is not None:
                 s = sizes.get(str(p))
                 if s is not None:
@@ -299,38 +308,42 @@ class SecureDeleter:
                 break
             done += 1
             if not self._fast_safe(p, approved):
-                out.append(self._record(p, DeletionOutcome.SKIPPED_UNSAFE, method,
-                                        0, reason=self.guard.check(p).reason))
+                out.append(
+                    self._record(p, DeletionOutcome.SKIPPED_UNSAFE, method, 0, reason=self.guard.check(p).reason)
+                )
             elif dry:
                 out.append(self._record(p, DeletionOutcome.WOULD_DELETE, method, _size(p)))
             else:
                 size = _size(p)
                 try:
                     os.unlink(p)
-                    out.append(self._record(p, DeletionOutcome.DELETED,
-                                            DeletionMethod.DELETE, size))
+                    out.append(self._record(p, DeletionOutcome.DELETED, DeletionMethod.DELETE, size))
                 except PermissionError:
-                    out.append(self._record(p, DeletionOutcome.FAILED,
-                                            DeletionMethod.DELETE, size,
-                                            reason="in use / locked"))
+                    out.append(
+                        self._record(p, DeletionOutcome.FAILED, DeletionMethod.DELETE, size, reason="in use / locked")
+                    )
                 except OSError as exc:
-                    out.append(self._record(p, DeletionOutcome.FAILED,
-                                            DeletionMethod.DELETE, size, reason=str(exc)))
+                    out.append(self._record(p, DeletionOutcome.FAILED, DeletionMethod.DELETE, size, reason=str(exc)))
             if progress is not None and (done % 200 == 0 or done == total):
                 progress(done, total)
 
-        for p in dirs:   # deepest-first (already sorted by caller)
+        for p in dirs:  # deepest-first (already sorted by caller)
             if cancel_event is not None and cancel_event.is_set():
                 break
             done += 1
-            out.append(self.delete(p, method))   # dirs are few; use the safe path
+            out.append(self.delete(p, method))  # dirs are few; use the safe path
             if progress is not None and (done % 50 == 0 or done == total):
                 progress(done, total)
         return out
 
-    def _recycle_batch(self, items: list[Path], progress=None,
-                       cancel_event=None, chunk: int = 40,
-                       sizes: "dict[str, int] | None" = None) -> list[DeletionResult]:
+    def _recycle_batch(
+        self,
+        items: list[Path],
+        progress=None,
+        cancel_event=None,
+        chunk: int = 40,
+        sizes: "dict[str, int] | None" = None,
+    ) -> list[DeletionResult]:
         """Recycle *items* in chunks; fall back to per-file only for chunks that
         contain a locked/failed item (so success stays fast)."""
         out: list[DeletionResult] = []
@@ -346,14 +359,14 @@ class SecureDeleter:
         def _size(p: Path) -> int:
             """Size helper.
 
- Cached size accessor used by summary and progress.
+            Cached size accessor used by summary and progress.
 
- Args:
- p (Path): The p parameter.
+            Args:
+            p (Path): The p parameter.
 
- Returns:
- int: Result of the operation.
- """
+            Returns:
+            int: Result of the operation.
+            """
             if sizes is not None:
                 s = sizes.get(str(p))
                 if s is not None:
@@ -363,38 +376,43 @@ class SecureDeleter:
         for start in range(0, total, chunk):
             if cancel_event is not None and cancel_event.is_set():
                 break
-            group = items[start:start + chunk]
+            group = items[start : start + chunk]
             safe: list[tuple[Path, int]] = []
             for p in group:
                 if self._fast_safe(p, approved):
                     safe.append((p, _size(p)))
                 else:
                     verdict = self.guard.check(p)
-                    out.append(self._record(p, DeletionOutcome.SKIPPED_UNSAFE,
-                                            DeletionMethod.RECYCLE, 0, reason=verdict.reason))
+                    out.append(
+                        self._record(
+                            p, DeletionOutcome.SKIPPED_UNSAFE, DeletionMethod.RECYCLE, 0, reason=verdict.reason
+                        )
+                    )
             if safe:
                 try:
-                    trash([str(p) for p, _ in safe])   # one shell op for the batch
+                    trash([str(p) for p, _ in safe])  # one shell op for the batch
                     for p, size in safe:
-                        out.append(self._record(p, DeletionOutcome.RECYCLED,
-                                                DeletionMethod.RECYCLE, size))
+                        out.append(self._record(p, DeletionOutcome.RECYCLED, DeletionMethod.RECYCLE, size))
                 except Exception:  # noqa: BLE001 - isolate which items failed
                     for p, size in safe:
                         # Fast lock pre-check (microseconds) avoids the ~1s shell
                         # error a locked file otherwise costs.
                         if self._quick_locked(p):
-                            out.append(self._record(p, DeletionOutcome.FAILED,
-                                                    DeletionMethod.RECYCLE, size,
-                                                    reason="in use / locked"))
+                            out.append(
+                                self._record(
+                                    p, DeletionOutcome.FAILED, DeletionMethod.RECYCLE, size, reason="in use / locked"
+                                )
+                            )
                             continue
                         try:
                             trash(str(p))
-                            out.append(self._record(p, DeletionOutcome.RECYCLED,
-                                                    DeletionMethod.RECYCLE, size))
+                            out.append(self._record(p, DeletionOutcome.RECYCLED, DeletionMethod.RECYCLE, size))
                         except Exception as exc:  # noqa: BLE001
-                            out.append(self._record(p, DeletionOutcome.FAILED,
-                                                    DeletionMethod.RECYCLE, size,
-                                                    reason="in use / locked"))
+                            out.append(
+                                self._record(
+                                    p, DeletionOutcome.FAILED, DeletionMethod.RECYCLE, size, reason="in use / locked"
+                                )
+                            )
                             _LOG.debug("recycle failed for %s: %s", p, exc)
             done += len(group)
             if progress is not None:
@@ -420,9 +438,12 @@ class SecureDeleter:
             # Honest fallback: don't silently hard-delete when the user asked
             # for a reversible recycle. Surface it.
             return self._record(
-                p, DeletionOutcome.FAILED, DeletionMethod.RECYCLE, size,
+                p,
+                DeletionOutcome.FAILED,
+                DeletionMethod.RECYCLE,
+                size,
                 reason="send2trash not installed; recycle unavailable "
-                       "(install 'send2trash' or choose DELETE explicitly)",
+                "(install 'send2trash' or choose DELETE explicitly)",
             )
         trash(str(p))
         return self._record(p, DeletionOutcome.RECYCLED, DeletionMethod.RECYCLE, size)
@@ -430,19 +451,17 @@ class SecureDeleter:
     def _plain_delete(self, p: Path, size: int) -> DeletionResult:
         """Plain delete.
 
- Unlinks without overwriting for non-sensitive removals.
+        Unlinks without overwriting for non-sensitive removals.
 
- Args:
- p (Path): The p parameter.
- size (int): Integer number of bytes to format or process.
+        Args:
+        p (Path): The p parameter.
+        size (int): Integer number of bytes to format or process.
 
- Returns:
- DeletionResult: Result of the operation.
- """
+        Returns:
+        DeletionResult: Result of the operation.
+        """
         is_reparse_or_link = (
-            p.is_symlink()
-            or os.path.islink(str(p))
-            or (hasattr(os.path, "isjunction") and os.path.isjunction(str(p)))
+            p.is_symlink() or os.path.islink(str(p)) or (hasattr(os.path, "isjunction") and os.path.isjunction(str(p)))
         )
         if p.is_dir() and not is_reparse_or_link:
             shutil.rmtree(p)
@@ -460,6 +479,7 @@ class SecureDeleter:
         """
         try:
             from . import winattrs
+
             return winattrs.is_dehydrated(winattrs.attrs_of(p.lstat()))
         except OSError:
             return False
@@ -480,11 +500,14 @@ class SecureDeleter:
         if self._is_cloud_placeholder(p):
             # Refuse rather than pretend the shred was meaningful.
             return self._record(
-                p, DeletionOutcome.SKIPPED_UNSAFE, DeletionMethod.OVERWRITE, size,
+                p,
+                DeletionOutcome.SKIPPED_UNSAFE,
+                DeletionMethod.OVERWRITE,
+                size,
                 reason="cloud placeholder: the file's content is not stored on "
-                       "this disk, so overwriting it would download it first and "
-                       "still leave the cloud copy. Delete it from the cloud "
-                       "service instead.",
+                "this disk, so overwriting it would download it first and "
+                "still leave the cloud copy. Delete it from the cloud "
+                "service instead.",
             )
         kind = self.probe.probe(p).kind
         if not kind.overwrite_effective and not force:
@@ -492,9 +515,7 @@ class SecureDeleter:
             raise OverwriteNotEffective(kind, p)
 
         is_reparse_or_link = (
-            p.is_symlink()
-            or os.path.islink(str(p))
-            or (hasattr(os.path, "isjunction") and os.path.isjunction(str(p)))
+            p.is_symlink() or os.path.islink(str(p)) or (hasattr(os.path, "isjunction") and os.path.isjunction(str(p)))
         )
 
         if p.is_dir() and not is_reparse_or_link:
@@ -551,22 +572,23 @@ class SecureDeleter:
 
     # -- helpers ------------------------------------------------------------
 
-    def _record(self, p: Path, outcome: DeletionOutcome, method: DeletionMethod,
-                size: int, reason: str = "") -> DeletionResult:
+    def _record(
+        self, p: Path, outcome: DeletionOutcome, method: DeletionMethod, size: int, reason: str = ""
+    ) -> DeletionResult:
         """Record helper.
 
- Appends the outcome to the in-memory deletion log.
+        Appends the outcome to the in-memory deletion log.
 
- Args:
- p (Path): The p parameter.
- outcome (DeletionOutcome): The outcome parameter.
- method (DeletionMethod): The method parameter.
- size (int): Integer number of bytes to format or process.
- reason (str): The reason parameter.
+        Args:
+        p (Path): The p parameter.
+        outcome (DeletionOutcome): The outcome parameter.
+        method (DeletionMethod): The method parameter.
+        size (int): Integer number of bytes to format or process.
+        reason (str): The reason parameter.
 
- Returns:
- DeletionResult: Result of the operation.
- """
+        Returns:
+        DeletionResult: Result of the operation.
+        """
         res = DeletionResult(p, outcome, method, size=size, reason=reason)
         self.results.append(res)
         return res
@@ -587,20 +609,20 @@ class SecureDeleter:
         except PermissionError:
             return True
         except OSError:
-            return False   # other errors: let the real delete attempt decide
+            return False  # other errors: let the real delete attempt decide
 
     @staticmethod
     def _size_of(p: Path) -> int:
         """Size of.
 
- Best-effort byte size for files and directory trees.
+        Best-effort byte size for files and directory trees.
 
- Args:
- p (Path): The p parameter.
+        Args:
+        p (Path): The p parameter.
 
- Returns:
- int: Result of the operation.
- """
+        Returns:
+        int: Result of the operation.
+        """
         try:
             if p.is_file():
                 return p.stat().st_size
@@ -634,27 +656,32 @@ class SecureDeleter:
                 AdaptiveSanitizer,
                 PrivacyLevel,
             )
+
             san = AdaptiveSanitizer(guard=self.guard, probe=self.probe)
             lvl = PrivacyLevel(level) if level else None
             sres = san.sanitize(p, level=lvl, verify=verify)
             outcome = DeletionOutcome.DELETED if sres.success else DeletionOutcome.FAILED
             if sres.level.value == "pl3":
                 outcome = DeletionOutcome.DELETED if sres.success else DeletionOutcome.FAILED
-            method = DeletionMethod.OVERWRITE if sres.level in (PrivacyLevel.PL0, PrivacyLevel.PL1) else DeletionMethod.DELETE
-            return self._record(p, outcome, method, self._size_of(p),
-                                reason=f"{sres.method}: {sres.message} (wear={sres.wear_cost})")
+            method = (
+                DeletionMethod.OVERWRITE
+                if sres.level in (PrivacyLevel.PL0, PrivacyLevel.PL1)
+                else DeletionMethod.DELETE
+            )
+            return self._record(
+                p, outcome, method, self._size_of(p), reason=f"{sres.method}: {sres.message} (wear={sres.wear_cost})"
+            )
         except Exception as exc:  # noqa: BLE001
-            return self._record(p, DeletionOutcome.FAILED, DeletionMethod.OVERWRITE,
-                                self._size_of(p), reason=str(exc))
+            return self._record(p, DeletionOutcome.FAILED, DeletionMethod.OVERWRITE, self._size_of(p), reason=str(exc))
 
     def summary(self) -> dict[str, int]:
         """Summary helper.
 
- Totals of deleted, failed, and bytes freed.
+        Totals of deleted, failed, and bytes freed.
 
- Returns:
- dict[str, int]: Dictionary mapping identifiers to status or values.
- """
+        Returns:
+        dict[str, int]: Dictionary mapping identifiers to status or values.
+        """
         agg: dict[str, int] = {"total": len(self.results), "bytes": 0}
         for r in self.results:
             agg[r.outcome.value] = agg.get(r.outcome.value, 0) + 1
@@ -666,15 +693,14 @@ class SecureDeleter:
 def recycle_path(path: os.PathLike[str] | str) -> bool:
     """Safely move a file or directory to the system Recycle Bin/Trash.
 
- Moves a file or directory to the OS Recycle Bin/Trash.
+    Moves a file or directory to the OS Recycle Bin/Trash.
 
- Args:
- path (os.PathLike[str] | str): Filesystem path to the target file or directory.
+    Args:
+    path (os.PathLike[str] | str): Filesystem path to the target file or directory.
 
- Returns:
- bool: True if the operation succeeded, False otherwise.
- """
+    Returns:
+    bool: True if the operation succeeded, False otherwise.
+    """
     deleter = SecureDeleter()
     res = deleter.delete(path, method=DeletionMethod.RECYCLE)
     return res.succeeded
-

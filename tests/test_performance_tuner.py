@@ -19,6 +19,7 @@ SAMPLE = (
 
 class TestParse:
     """Group testparse tests covering parses all plans; marks active plan; empty input."""
+
     def test_parses_all_plans(self):
         """Verify parses all plans via PerformanceTuner._parse."""
         plans = PerformanceTuner._parse(SAMPLE)
@@ -43,6 +44,7 @@ class TestParse:
 
 class TestSafety:
     """Group testsafety tests covering is supported matches platform; set active rejects bad guid; list plans returns list; to dict."""
+
     def test_is_supported_matches_platform(self):
         """Verify is supported matches platform via PerformanceTuner.is_supported."""
         assert PerformanceTuner.is_supported() == IS_WINDOWS

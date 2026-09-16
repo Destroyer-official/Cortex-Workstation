@@ -22,6 +22,7 @@ if TYPE_CHECKING:  # pragma: no cover - typing only, keeps runtime Qt-free
 try:
     from PySide6.QtWidgets import QApplication
     from PySide6.QtGui import QFont
+
     _HAS_QT = True
 except ImportError:  # pragma: no cover
     _HAS_QT = False
@@ -32,12 +33,10 @@ except ImportError:  # pragma: no cover
 #: aligned as values animate. Ordered by availability: Windows ships Cascadia
 #: Mono / Consolas; macOS has SF Mono / Menlo; the generic ``monospace`` closes
 #: the stack so it degrades gracefully everywhere.
-MONO_STACK = ('"Cascadia Mono", "Consolas", "SF Mono", "JetBrains Mono", '
-              '"DejaVu Sans Mono", monospace')
+MONO_STACK = '"Cascadia Mono", "Consolas", "SF Mono", "JetBrains Mono", ' '"DejaVu Sans Mono", monospace'
 #: Same families as a Python list for QFont.setFamilies (used by painted widgets
 #: like the gauge, which can't consume the QSS stack).
-MONO_FAMILIES = ["Cascadia Mono", "Consolas", "SF Mono", "JetBrains Mono",
-                 "DejaVu Sans Mono"]
+MONO_FAMILIES = ["Cascadia Mono", "Consolas", "SF Mono", "JetBrains Mono", "DejaVu Sans Mono"]
 
 
 def _hex_to_rgb(color: str) -> tuple[int, int, int] | None:
@@ -81,10 +80,10 @@ class Palette:
     name: str
     is_dark: bool
     # surfaces
-    bg: str            # app background
-    surface: str       # cards / panels
-    surface_alt: str   # inputs / elevated rows
-    sidebar: str       # navigation rail
+    bg: str  # app background
+    surface: str  # cards / panels
+    surface_alt: str  # inputs / elevated rows
+    sidebar: str  # navigation rail
     border: str
     # text
     text: str
@@ -92,7 +91,7 @@ class Palette:
     text_faint: str
     # brand / accent
     accent: str
-    accent_2: str      # gradient partner
+    accent_2: str  # gradient partner
     accent_press: str
     on_accent: str
     # semantic
@@ -107,11 +106,11 @@ class Palette:
     #
     # Elevation surfaces (Req 12.1): fills for the RAISED and OVERLAY levels
     # above the base ``surface``. Consumed by ``tokens.elevation_style``.
-    surface_raised: str = ""   # RAISED level fill (hero cards, popovers)
-    overlay: str = ""          # OVERLAY level fill (modals, menus, tooltips)
+    surface_raised: str = ""  # RAISED level fill (hero cards, popovers)
+    overlay: str = ""  # OVERLAY level fill (modals, menus, tooltips)
     # Glass treatment (Req 12.3): translucency + a subtle top-edge highlight.
-    glass_alpha: int = 235     # 0-255 surface opacity for glass surfaces
-    glass_border: str = ""     # subtle highlight border for glass surfaces
+    glass_alpha: int = 235  # 0-255 surface opacity for glass surfaces
+    glass_border: str = ""  # subtle highlight border for glass surfaces
     # Accent gradient stops (Req 12.6): (position 0.0-1.0, color) pairs used to
     # build token-defined gradients for CTAs and the gauge arc.
     accent_grad_stops: tuple[tuple[float, str], ...] = ()
@@ -124,8 +123,7 @@ class Palette:
         Returns:
             str: Formatted string or path.
         """
-        return (f"qlineargradient(x1:0, y1:0, x2:1, y2:1, "
-                f"stop:0 {self.accent}, stop:1 {self.accent_2})")
+        return f"qlineargradient(x1:0, y1:0, x2:1, y2:1, " f"stop:0 {self.accent}, stop:1 {self.accent_2})"
 
     def glass(self, level: "Elevation | int") -> str:
         """Return an ``rgba(...)`` surface fill for the given elevation ``level``.
@@ -149,26 +147,26 @@ class Palette:
 MIDNIGHT = Palette(
     name="Cortex Midnight",
     is_dark=True,
-    bg="#0A0D15",           # deep cool near-black - premium, low glare (not pure black)
+    bg="#0A0D15",  # deep cool near-black - premium, low glare (not pure black)
     surface="#12151F",
     surface_alt="#1A1F2B",
     sidebar="#0D1019",
     border="#232A38",
-    text="#DCE3F0",         # soft cool off-white (never harsh pure white)
+    text="#DCE3F0",  # soft cool off-white (never harsh pure white)
     text_muted="#8A93A8",
     text_faint="#555E72",
-    accent="#35D0EE",       # electric cyan - the 'signal' accent (LED/HUD feel)
-    accent_2="#8B7BFF",     # indigo-violet gradient partner (premium edge)
+    accent="#35D0EE",  # electric cyan - the 'signal' accent (LED/HUD feel)
+    accent_2="#8B7BFF",  # indigo-violet gradient partner (premium edge)
     accent_press="#22B4D6",
-    on_accent="#04121A",    # near-black: high contrast across the cyan->violet arc
+    on_accent="#04121A",  # near-black: high contrast across the cyan->violet arc
     success="#3FE0A8",
     warning="#F5B84E",
     danger="#FF6B85",
     info="#4FC3F7",
     # modern visual language (Req 12.1, 12.3, 12.6, 12.7)
-    surface_raised="#1E2432",   # lifted above surface for hero/popovers
-    overlay="#28303F",          # highest level for modals/menus/tooltips
-    glass_alpha=224,            # slightly translucent frosted surfaces
+    surface_raised="#1E2432",  # lifted above surface for hero/popovers
+    overlay="#28303F",  # highest level for modals/menus/tooltips
+    glass_alpha=224,  # slightly translucent frosted surfaces
     glass_border="rgba(120, 224, 255, 0.13)",  # subtle cyan-tinted glass edge
     accent_grad_stops=((0.0, "#35D0EE"), (0.5, "#5AA0FF"), (1.0, "#8B7BFF")),
 )
@@ -184,7 +182,7 @@ DAYLIGHT = Palette(
     text="#161B26",
     text_muted="#5A6576",
     text_faint="#9AA4B6",
-    accent="#0E90D4",       # deeper cyan-blue so white-on-accent stays readable
+    accent="#0E90D4",  # deeper cyan-blue so white-on-accent stays readable
     accent_2="#7C5CFF",
     accent_press="#0B79B4",
     on_accent="#FFFFFF",
@@ -193,9 +191,9 @@ DAYLIGHT = Palette(
     danger="#DC2626",
     info="#0284C7",
     # modern visual language (Req 12.1, 12.3, 12.6, 12.7)
-    surface_raised="#FFFFFF",   # stays bright; depth carried by shadow/border
-    overlay="#FFFFFF",          # modals/menus sit brightest over the page
-    glass_alpha=240,            # near-opaque frosted white on light theme
+    surface_raised="#FFFFFF",  # stays bright; depth carried by shadow/border
+    overlay="#FFFFFF",  # modals/menus sit brightest over the page
+    glass_alpha=240,  # near-opaque frosted white on light theme
     glass_border="rgba(255, 255, 255, 0.65)",  # bright top-edge highlight
     accent_grad_stops=((0.0, "#0E90D4"), (1.0, "#7C5CFF")),
 )
@@ -250,8 +248,8 @@ def build_stylesheet(p: Palette) -> str:
     surface = elevation_style(p, Elevation.SURFACE)
     raised = elevation_style(p, Elevation.RAISED)
     overlay = elevation_style(p, Elevation.OVERLAY)
-    glass_raised = p.glass(Elevation.RAISED)     # rgba(...) glass fill
-    glass_overlay = p.glass(Elevation.OVERLAY)   # rgba(...) glass fill
+    glass_raised = p.glass(Elevation.RAISED)  # rgba(...) glass fill
+    glass_overlay = p.glass(Elevation.OVERLAY)  # rgba(...) glass fill
 
     return f"""
     /* ---------- base ---------- */
@@ -875,6 +873,7 @@ def apply_theme(app: "QApplication", theme: str = "dark") -> Palette:
         # so a mouse click never draws a boxy outline. Installed once.
         try:
             from .focus import install_focus_visible
+
             install_focus_visible(app)
         except Exception:  # noqa: BLE001 - theming must never fail on this
             pass

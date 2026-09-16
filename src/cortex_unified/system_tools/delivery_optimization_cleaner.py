@@ -20,6 +20,7 @@ class DeliveryOptimizationStatus:
 
     Manages DeliveryOptimizationStatus operations and coordinates related state changes for the component.
     """
+
     cache_path: str
     file_count: int
     size_bytes: int
@@ -32,6 +33,7 @@ class DeliveryOptimizationCleanReport:
 
     Manages DeliveryOptimizationCleanReport operations and coordinates related state changes for the component.
     """
+
     files_deleted: int = 0
     bytes_freed: int = 0
     errors: List[str] = None

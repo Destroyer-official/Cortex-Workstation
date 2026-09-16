@@ -41,13 +41,14 @@ def test_batch_recycle_removes_all_and_reports_progress(tmp_path):
     files = _make_files(tmp_path, 12)
     progress = []
     results = SecureDeleter().delete_many(
-        [str(f) for f in files], DeletionMethod.RECYCLE,
+        [str(f) for f in files],
+        DeletionMethod.RECYCLE,
         progress=lambda done, total: progress.append((done, total)),
     )
     assert len(results) == 12
     assert all(r.outcome is DeletionOutcome.RECYCLED for r in results)
-    assert all(not f.exists() for f in files)          # actually removed
-    assert progress and progress[-1][0] == progress[-1][1] == 12   # reached total
+    assert all(not f.exists() for f in files)  # actually removed
+    assert progress and progress[-1][0] == progress[-1][1] == 12  # reached total
 
 
 @pytest.mark.skipif(not _HAS_TRASH, reason="send2trash not installed")
@@ -59,9 +60,8 @@ def test_batch_recycle_cancel_stops_early(tmp_path):
     """
     files = _make_files(tmp_path, 20)
     cancel = threading.Event()
-    cancel.set()   # cancelled before it starts
-    results = SecureDeleter().delete_many(
-        [str(f) for f in files], DeletionMethod.RECYCLE, cancel_event=cancel)
+    cancel.set()  # cancelled before it starts
+    results = SecureDeleter().delete_many([str(f) for f in files], DeletionMethod.RECYCLE, cancel_event=cancel)
     # Nothing processed; all files remain.
     assert results == []
     assert all(f.exists() for f in files)
@@ -84,10 +84,12 @@ def test_fast_delete_batch_uses_known_sizes_and_removes_files(tmp_path):
     """The optimized DELETE path deletes files, reports freed bytes from the
     supplied ``sizes`` map (no re-stat), and reaches 100% progress."""
     files = _make_files(tmp_path, 15)
-    sizes = {str(f): 999 for f in files}   # deliberately != real size (128)
+    sizes = {str(f): 999 for f in files}  # deliberately != real size (128)
     progress = []
     results = SecureDeleter().delete_many(
-        [str(f) for f in files], DeletionMethod.DELETE, sizes=sizes,
+        [str(f) for f in files],
+        DeletionMethod.DELETE,
+        sizes=sizes,
         progress=lambda done, total: progress.append((done, total)),
     )
     assert len(results) == 15
@@ -107,8 +109,7 @@ def test_fast_delete_batch_cancel_stops_early(tmp_path):
     files = _make_files(tmp_path, 30)
     cancel = threading.Event()
     cancel.set()
-    results = SecureDeleter().delete_many(
-        [str(f) for f in files], DeletionMethod.DELETE, cancel_event=cancel)
+    results = SecureDeleter().delete_many([str(f) for f in files], DeletionMethod.DELETE, cancel_event=cancel)
     assert results == []
     assert all(f.exists() for f in files)
 
@@ -120,7 +121,6 @@ def test_fast_delete_batch_dry_run_deletes_nothing(tmp_path):
         tmp_path: Filesystem path to the target file or directory.
     """
     files = _make_files(tmp_path, 8)
-    results = SecureDeleter().delete_many(
-        [str(f) for f in files], DeletionMethod.DRY_RUN)
+    results = SecureDeleter().delete_many([str(f) for f in files], DeletionMethod.DRY_RUN)
     assert all(r.outcome is DeletionOutcome.WOULD_DELETE for r in results)
-    assert all(f.exists() for f in files)   # dry run touches nothing
+    assert all(f.exists() for f in files)  # dry run touches nothing

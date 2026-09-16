@@ -27,6 +27,7 @@ from .window import _Page
 
 class _BenchWorker(QObject):
     """Background worker (_BenchWorker) performing BenchWorker. Signals finished, failed report status. Configured with capacity, trace_len. Its run() step calls random.Random, range, rnd.random, rnd.choice."""
+
     finished = Signal(dict)
     failed = Signal(str)
 
@@ -56,10 +57,7 @@ class _BenchWorker(QObject):
             # Zipf-like trace: 80 % of requests hit 20 % of keys
             hot = [f"hot{i}" for i in range(20)]
             cold = [f"cold{i}" for i in range(200)]
-            trace = [
-                rnd.choice(hot) if rnd.random() < 0.8 else rnd.choice(cold)
-                for _ in range(self._n)
-            ]
+            trace = [rnd.choice(hot) if rnd.random() < 0.8 else rnd.choice(cold) for _ in range(self._n)]
             cache = S3FIFO(capacity=self._cap)
             for k in trace:
                 if cache.get(k) is None:
@@ -98,12 +96,14 @@ class S3FifoPage(_Page):
             win: Parent window or shell controller instance.
         """
         super().__init__(win)
-        self.v.addWidget(title_block(
-            "S3-FIFO Cache (SOSP'23)",
-            "FIFO Queues Are All You Need – three static FIFO queues (Small 10 % + "
-            "Main 90 % + Ghost) with 2-bit frequency and quick demotion. This benchmark "
-            "evaluates the policy on a synthetic Zipf trace versus LRU.",
-        ))
+        self.v.addWidget(
+            title_block(
+                "S3-FIFO Cache (SOSP'23)",
+                "FIFO Queues Are All You Need – three static FIFO queues (Small 10 % + "
+                "Main 90 % + Ghost) with 2-bit frequency and quick demotion. This benchmark "
+                "evaluates the policy on a synthetic Zipf trace versus LRU.",
+            )
+        )
 
         picker = QHBoxLayout()
         picker.addWidget(QLabel("Capacity:"))
@@ -185,9 +185,7 @@ class S3FifoPage(_Page):
             self.tbl.setItem(r, 0, QTableWidgetItem(k))
             self.tbl.setItem(r, 1, QTableWidgetItem(v))
         better = stats.get("hit_ratio", 0) > stats.get("lru_hit_ratio", 0)
-        self.status.setText(
-            "S3-FIFO beats LRU on this trace" if better else "LRU slightly ahead on this trace"
-        )
+        self.status.setText("S3-FIFO beats LRU on this trace" if better else "LRU slightly ahead on this trace")
         self.win.statusBar().showMessage("S3-FIFO benchmark complete", 5000)
 
     def _fail(self, msg: str):

@@ -64,6 +64,7 @@ class _FileEntry(ctypes.Structure):
     """Mirrors the Rust FFI FileEntry struct: one directory row with
     name/path/parent/ext UTF-8 pointers plus size, timestamps, and
     hidden/system/readonly flags."""
+
     _fields_ = [
         ("name", c_void_p),
         ("path", c_void_p),
@@ -85,6 +86,7 @@ class _FileEntry(ctypes.Structure):
 class _DriveInfo(ctypes.Structure):
     """Mirrors the Rust FFI DriveInfo struct: drive path/label/type/filesystem
     strings, free/total bytes, and is_ready flag."""
+
     _fields_ = [
         ("path", c_void_p),
         ("label", c_void_p),
@@ -101,25 +103,43 @@ class _DriveInfo(ctypes.Structure):
 class _SearchOptions(ctypes.Structure):
     """Mirrors the Rust FFI SearchOptions struct: recursive and
     include_hidden flags plus max_results bound."""
+
     _fields_ = [("recursive", c_int), ("max_results", c_uint), ("include_hidden", c_int)]
     """Mirrors the Rust FFI SearchOptions struct: recursive and
     include_hidden flags plus max_results bound."""
 
 
-SEARCH_CALLBACK = ctypes.CFUNCTYPE(
-    None, c_void_p, c_void_p, c_size_t, c_int, c_char_p
-)
+SEARCH_CALLBACK = ctypes.CFUNCTYPE(None, c_void_p, c_void_p, c_size_t, c_int, c_char_p)
 
 PROGRESS_CALLBACK = ctypes.CFUNCTYPE(
-    None, c_void_p, c_char_p, c_uint64, c_uint64, ctypes.c_double,
-    ctypes.c_double, c_char_p,
+    None,
+    c_void_p,
+    c_char_p,
+    c_uint64,
+    c_uint64,
+    ctypes.c_double,
+    ctypes.c_double,
+    c_char_p,
 )
 COMPLETION_CALLBACK = ctypes.CFUNCTYPE(
-    None, c_void_p, c_char_p, c_int, c_char_p,
+    None,
+    c_void_p,
+    c_char_p,
+    c_int,
+    c_char_p,
 )
 CONFLICT_CALLBACK = ctypes.CFUNCTYPE(
-    ctypes.c_int, c_void_p, c_char_p, c_char_p, c_char_p, c_char_p,
-    c_uint64, c_uint64, c_uint64, c_uint64, c_int,
+    ctypes.c_int,
+    c_void_p,
+    c_char_p,
+    c_char_p,
+    c_char_p,
+    c_char_p,
+    c_uint64,
+    c_uint64,
+    c_uint64,
+    c_uint64,
+    c_int,
 )
 
 
@@ -186,7 +206,10 @@ class NexusFfi:
 
         d.nexus_read_dir_sync.restype = c_int
         d.nexus_read_dir_sync.argtypes = [
-            c_void_p, c_char_p, POINTER(POINTER(_FileEntry)), POINTER(c_size_t),
+            c_void_p,
+            c_char_p,
+            POINTER(POINTER(_FileEntry)),
+            POINTER(c_size_t),
         ]
         d.nexus_free_entries.restype = None
         d.nexus_free_entries.argtypes = [POINTER(_FileEntry), c_size_t]
@@ -196,7 +219,9 @@ class NexusFfi:
 
         d.nexus_get_drives.restype = c_int
         d.nexus_get_drives.argtypes = [
-            c_void_p, POINTER(POINTER(_DriveInfo)), POINTER(c_size_t),
+            c_void_p,
+            POINTER(POINTER(_DriveInfo)),
+            POINTER(c_size_t),
         ]
         d.nexus_free_drives.restype = None
         d.nexus_free_drives.argtypes = [POINTER(_DriveInfo), c_size_t]
@@ -208,8 +233,12 @@ class NexusFfi:
 
         d.nexus_search_files.restype = c_int
         d.nexus_search_files.argtypes = [
-            c_void_p, c_char_p, c_char_p, POINTER(_SearchOptions),
-            SEARCH_CALLBACK, c_void_p,
+            c_void_p,
+            c_char_p,
+            c_char_p,
+            POINTER(_SearchOptions),
+            SEARCH_CALLBACK,
+            c_void_p,
         ]
         d.nexus_cancel_search.restype = c_int
         d.nexus_cancel_search.argtypes = [c_void_p, c_char_p]
@@ -222,7 +251,11 @@ class NexusFfi:
         d.nexus_create_folder.argtypes = [c_void_p, c_char_p, c_char_p]
         d.nexus_read_text_file.restype = c_int
         d.nexus_read_text_file.argtypes = [
-            c_void_p, c_char_p, c_uint, POINTER(c_void_p), POINTER(c_int),
+            c_void_p,
+            c_char_p,
+            c_uint,
+            POINTER(c_void_p),
+            POINTER(c_int),
             POINTER(c_uint64),
         ]
 
@@ -231,15 +264,26 @@ class NexusFfi:
 
         d.nexus_copy.restype = c_void_p
         d.nexus_copy.argtypes = [
-            c_void_p, POINTER(c_char_p), c_size_t, c_char_p,
-            PROGRESS_CALLBACK, COMPLETION_CALLBACK, CONFLICT_CALLBACK, c_void_p,
+            c_void_p,
+            POINTER(c_char_p),
+            c_size_t,
+            c_char_p,
+            PROGRESS_CALLBACK,
+            COMPLETION_CALLBACK,
+            CONFLICT_CALLBACK,
+            c_void_p,
         ]
         d.nexus_move.restype = c_void_p
         d.nexus_move.argtypes = d.nexus_copy.argtypes
         d.nexus_delete.restype = c_void_p
         d.nexus_delete.argtypes = [
-            c_void_p, POINTER(c_char_p), c_size_t, c_int,
-            PROGRESS_CALLBACK, COMPLETION_CALLBACK, c_void_p,
+            c_void_p,
+            POINTER(c_char_p),
+            c_size_t,
+            c_int,
+            PROGRESS_CALLBACK,
+            COMPLETION_CALLBACK,
+            c_void_p,
         ]
         for name in ("nexus_pause_job", "nexus_resume_job", "nexus_cancel_job"):
             fn = getattr(d, name)
@@ -285,9 +329,7 @@ class NexusFfi:
         json.loads on our side). Falls back to per-row struct marshaling if
         the engine export is unavailable."""
         out = c_void_p(0)
-        code = self._dll.nexus_read_dir_sync_json(
-            self._handle, path.encode("utf-8"), byref(out)
-        )
+        code = self._dll.nexus_read_dir_sync_json(self._handle, path.encode("utf-8"), byref(out))
         if code == 0 and out:
             try:
                 raw = string_at(out)
@@ -298,9 +340,7 @@ class NexusFfi:
 
         out_entries = POINTER(_FileEntry)()
         out_count = c_size_t(0)
-        code = self._dll.nexus_read_dir_sync(
-            self._handle, path.encode("utf-8"), byref(out_entries), byref(out_count)
-        )
+        code = self._dll.nexus_read_dir_sync(self._handle, path.encode("utf-8"), byref(out_entries), byref(out_count))
         if code != 0:
             raise OSError(f"nexus_read_dir_sync failed ({code}) for {path!r}")
         n = out_count.value
@@ -320,15 +360,17 @@ class NexusFfi:
         drives = []
         for i in range(count.value):
             d = out[i]
-            drives.append({
-                "path": _decode(d.path),
-                "label": _decode(d.label),
-                "driveType": _decode(d.drive_type),
-                "filesystem": _decode(d.filesystem),
-                "freeBytes": int(d.free_bytes),
-                "totalBytes": int(d.total_bytes),
-                "isReady": bool(d.is_ready),
-            })
+            drives.append(
+                {
+                    "path": _decode(d.path),
+                    "label": _decode(d.label),
+                    "driveType": _decode(d.drive_type),
+                    "filesystem": _decode(d.filesystem),
+                    "freeBytes": int(d.free_bytes),
+                    "totalBytes": int(d.total_bytes),
+                    "isReady": bool(d.is_ready),
+                }
+            )
         self._dll.nexus_free_drives(out, count.value)
         return drives
 
@@ -420,16 +462,12 @@ class NexusFfi:
     # -------------------------------------------------------------- helpers
     def rename(self, path: str, new_name: str) -> bool:
         """Rename a file or directory via nexus_rename; True on code 0."""
-        return self._dll.nexus_rename(
-            self._handle, path.encode("utf-8"), new_name.encode("utf-8")
-        ) == 0
+        return self._dll.nexus_rename(self._handle, path.encode("utf-8"), new_name.encode("utf-8")) == 0
 
     def create_folder(self, parent: str, name: str) -> bool:
         """Create a folder under parent via nexus_create_folder; True on
         code 0."""
-        return self._dll.nexus_create_folder(
-            self._handle, parent.encode("utf-8"), name.encode("utf-8")
-        ) == 0
+        return self._dll.nexus_create_folder(self._handle, parent.encode("utf-8"), name.encode("utf-8")) == 0
 
     def read_text_file(self, path: str, max_bytes: int = 65536) -> tuple[str, bool, int]:
         """Read up to max_bytes of a text file via nexus_read_text_file.
@@ -454,7 +492,6 @@ class NexusFfi:
             self._dll.nexus_free_string(out)
         return content, bool(truncated.value), int(size.value)
 
-
     # ------------------------------------------------------------ transfers
     @staticmethod
     def _cstr_array(items: list[str]) -> ctypes.Array[c_char_p]:
@@ -463,8 +500,7 @@ class NexusFfi:
         encoded = [s.encode("utf-8") for s in items]
         return (ctypes.c_char_p * len(encoded))(*encoded)
 
-    def _run_job(self, starter: Any, keep_alive: list, hooks: dict | None = None,
-                 control: dict | None = None) -> dict:
+    def _run_job(self, starter: Any, keep_alive: list, hooks: dict | None = None, control: dict | None = None) -> dict:
         """Common plumbing: fire callbacks from the Rust worker thread,
         block on a threading.Event (GIL released), return a result dict.
 
@@ -505,8 +541,7 @@ class NexusFfi:
             and return the policy from hooks['conflict'] clamped to 0..2;
             defaults to 1 (overwrite) when no hook or hook failure."""
             dec = lambda p: p.decode("utf-8", "replace") if p else ""
-            info = {"id": dec(cid), "source": dec(src),
-                    "destination": dec(dst), "is_dir": bool(is_dir)}
+            info = {"id": dec(cid), "source": dec(src), "destination": dec(dst), "is_dir": bool(is_dir)}
             with lock:
                 result["conflicts"].append(info)
             h = hooks.get("conflict")
@@ -555,10 +590,10 @@ class NexusFfi:
         dest_b = dest_dir.encode("utf-8")
         keep = list(track or [])
         return self._run_job(
-            lambda pc, cc, xc: self._dll.nexus_copy(
-                self._handle, arr, len(sources), dest_b, pc, cc, xc, None
-            ),
-            keep, hooks, control,
+            lambda pc, cc, xc: self._dll.nexus_copy(self._handle, arr, len(sources), dest_b, pc, cc, xc, None),
+            keep,
+            hooks,
+            control,
         )
 
     def move(
@@ -575,10 +610,10 @@ class NexusFfi:
         dest_b = dest_dir.encode("utf-8")
         keep = list(track or [])
         return self._run_job(
-            lambda pc, cc, xc: self._dll.nexus_move(
-                self._handle, arr, len(sources), dest_b, pc, cc, xc, None
-            ),
-            keep, hooks, control,
+            lambda pc, cc, xc: self._dll.nexus_move(self._handle, arr, len(sources), dest_b, pc, cc, xc, None),
+            keep,
+            hooks,
+            control,
         )
 
     def delete_paths(
@@ -595,10 +630,17 @@ class NexusFfi:
         keep = list(track or [])
         return self._run_job(
             lambda pc, cc, _xc: self._dll.nexus_delete(
-                self._handle, arr, len(paths), 1 if to_trash else 0,
-                pc, cc, None,
+                self._handle,
+                arr,
+                len(paths),
+                1 if to_trash else 0,
+                pc,
+                cc,
+                None,
             ),
-            keep, hooks, control,
+            keep,
+            hooks,
+            control,
         )
 
     def orphans(self) -> list[dict]:
@@ -627,7 +669,9 @@ class NexusFfi:
 
 
 import weakref
+
 _ffi_instances: set = weakref.WeakSet()
+
 
 def _atexit_cleanup() -> None:
     """Close every still-alive NexusFfi instance at interpreter exit so
@@ -637,5 +681,6 @@ def _atexit_cleanup() -> None:
             inst.close()
         except Exception:
             pass
+
 
 atexit.register(_atexit_cleanup)

@@ -29,6 +29,7 @@ IS_WINDOWS = sys.platform == "win32"
 
 class _DeliveryScanWorker(QObject):
     """Background worker (_DeliveryScanWorker) performing DeliveryScanWorker. Signals finished, failed report status. Its run() step calls DeliveryOptimizationCleaner.get_status, emit, str."""
+
     finished = Signal(object)  # DeliveryOptimizationStatus
     failed = Signal(str)
 
@@ -41,6 +42,7 @@ class _DeliveryScanWorker(QObject):
             from cortex_unified.system_tools.delivery_optimization_cleaner import (
                 DeliveryOptimizationCleaner,
             )
+
             status = DeliveryOptimizationCleaner.get_status()
             self.finished.emit(status)
         except Exception as exc:  # noqa: BLE001
@@ -49,6 +51,7 @@ class _DeliveryScanWorker(QObject):
 
 class _DeliveryCleanWorker(QObject):
     """Background worker (_DeliveryCleanWorker) performing DeliveryCleanWorker. Signals finished, failed report status. Its run() step calls DeliveryOptimizationCleaner.clean_cache, emit, str."""
+
     finished = Signal(object)  # DeliveryOptimizationCleanReport
     failed = Signal(str)
 
@@ -61,6 +64,7 @@ class _DeliveryCleanWorker(QObject):
             from cortex_unified.system_tools.delivery_optimization_cleaner import (
                 DeliveryOptimizationCleaner,
             )
+
             report = DeliveryOptimizationCleaner.clean_cache()
             self.finished.emit(report)
         except Exception as exc:  # noqa: BLE001
@@ -79,17 +83,18 @@ class DeliveryOptimizationPage(_Page):
             win: Parent window or shell controller instance.
         """
         super().__init__(win)
-        self.v.addWidget(title_block(
-            "Delivery Optimization (WUDO) Cache",
-            "Scans and purges the Windows Delivery Optimization peer cache. "
-            "Windows Update downloads update chunks and stores them locally to "
-            "share with other PCs on your local network or the Internet. Over "
-            "time, this cache can occupy tens of gigabytes of hidden disk space.",
-        ))
+        self.v.addWidget(
+            title_block(
+                "Delivery Optimization (WUDO) Cache",
+                "Scans and purges the Windows Delivery Optimization peer cache. "
+                "Windows Update downloads update chunks and stores them locally to "
+                "share with other PCs on your local network or the Internet. Over "
+                "time, this cache can occupy tens of gigabytes of hidden disk space.",
+            )
+        )
 
         if not IS_WINDOWS:
-            self.v.addWidget(status_note(
-                self.p, "info", "Delivery Optimization is a Windows-specific OS subsystem."))
+            self.v.addWidget(status_note(self.p, "info", "Delivery Optimization is a Windows-specific OS subsystem."))
             return
 
         self._status = None
@@ -180,9 +185,7 @@ class DeliveryOptimizationPage(_Page):
         self._scan_btn.setEnabled(True)
 
         self._size_headline.setText(fmt_bytes(status.size_bytes))
-        self._desc_label.setText(
-            f"Found {status.file_count:,} cached update chunks across peer distribution folders."
-        )
+        self._desc_label.setText(f"Found {status.file_count:,} cached update chunks across peer distribution folders.")
         self._path_label.setText(f"Cache Location: {status.cache_path}")
 
         if status.size_bytes > 0:

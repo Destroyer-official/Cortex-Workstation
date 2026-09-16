@@ -134,11 +134,24 @@ def test_depth_monotonic_for_arbitrary_palettes(bg, surface, surface_alt, border
     shadow is strictly greater - the elevation-monotonicity property.
     """
     palette = Palette(
-        name="Generated", is_dark=True,
-        bg=bg, surface=surface, surface_alt=surface_alt, sidebar=bg, border=border,
-        text="#FFFFFF", text_muted="#AAAAAA", text_faint="#777777",
-        accent="#6E8BFF", accent_2="#9B7CFF", accent_press="#5A78F0", on_accent="#000000",
-        success="#48D19B", warning="#E9B45A", danger="#EF6F84", info="#68B6F0",
+        name="Generated",
+        is_dark=True,
+        bg=bg,
+        surface=surface,
+        surface_alt=surface_alt,
+        sidebar=bg,
+        border=border,
+        text="#FFFFFF",
+        text_muted="#AAAAAA",
+        text_faint="#777777",
+        accent="#6E8BFF",
+        accent_2="#9B7CFF",
+        accent_press="#5A78F0",
+        on_accent="#000000",
+        success="#48D19B",
+        warning="#E9B45A",
+        danger="#EF6F84",
+        info="#68B6F0",
     )
     _assert_monotonic_depth(palette)
 
@@ -153,6 +166,7 @@ def test_elevation_style_tolerates_minimal_palette():
 
     class Bare:
         """Helper bare."""
+
         bg = "#101010"
         surface = "#202020"
         surface_alt = "#303030"
@@ -183,9 +197,7 @@ def test_contrast_ratio_identical_colors_is_minimum():
 
 def test_contrast_ratio_is_symmetric():
     """Swapping foreground/background does not change the ratio."""
-    assert contrast_ratio("#123456", "#abcdef") == pytest.approx(
-        contrast_ratio("#abcdef", "#123456")
-    )
+    assert contrast_ratio("#123456", "#abcdef") == pytest.approx(contrast_ratio("#abcdef", "#123456"))
 
 
 def test_contrast_ratio_handles_shorthand_hex():

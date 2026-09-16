@@ -22,6 +22,7 @@ class BrowserTarget:
 
     Records browser, cache category, path, size, and file count.
     """
+
     browser_name: str
     category: str  # "Web Cache", "GPU Cache", "Code Cache", "Service Worker", "Crash Dumps"
     path: str
@@ -35,6 +36,7 @@ class BrowserCleanResult:
 
     Counts browsers touched, files deleted, and bytes freed.
     """
+
     browsers_cleaned: int
     files_deleted: int
     bytes_freed: int
@@ -137,13 +139,15 @@ class BrowserDeepCleaner:
                     if target_dir.is_dir():
                         sz, fc = cls._dir_stats(target_dir)
                         if sz > 0:
-                            targets.append(BrowserTarget(
-                                browser_name=b_name,
-                                category=cat_name,
-                                path=str(target_dir),
-                                size_bytes=sz,
-                                file_count=fc,
-                            ))
+                            targets.append(
+                                BrowserTarget(
+                                    browser_name=b_name,
+                                    category=cat_name,
+                                    path=str(target_dir),
+                                    size_bytes=sz,
+                                    file_count=fc,
+                                )
+                            )
 
         # Mozilla Firefox
         firefox_profiles = local_app / "Mozilla" / "Firefox" / "Profiles"
@@ -154,13 +158,15 @@ class BrowserDeepCleaner:
                     if ff_cache.is_dir():
                         sz, fc = cls._dir_stats(ff_cache)
                         if sz > 0:
-                            targets.append(BrowserTarget(
-                                browser_name="Mozilla Firefox",
-                                category="Web Cache (cache2)",
-                                path=str(ff_cache),
-                                size_bytes=sz,
-                                file_count=fc,
-                            ))
+                            targets.append(
+                                BrowserTarget(
+                                    browser_name="Mozilla Firefox",
+                                    category="Web Cache (cache2)",
+                                    path=str(ff_cache),
+                                    size_bytes=sz,
+                                    file_count=fc,
+                                )
+                            )
 
         return sorted(targets, key=lambda t: t.size_bytes, reverse=True)
 

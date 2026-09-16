@@ -46,6 +46,7 @@ from cortex_unified.explorer.cloud import CloudManager, CloudProviderType, Cloud
 @dataclass(slots=True)
 class _WorkerResult:
     """Background worker (_WorkerResult) performing WorkerResult."""
+
     entries: list[CloudFileEntry]
     stats: CloudScanStats
     duplicates: list[DuplicateGroup]
@@ -53,6 +54,7 @@ class _WorkerResult:
 
 class _CloudWorker(QObject):
     """Background worker (_CloudWorker) performing CloudWorker. Signals finished, progress, failed report status. Configured with target, max_objects, include_versions, include_delete_markers. Its run() step calls CloudStorageAnalyzer, analyzer.scan_sync, analyzer.find_duplicates, emit."""
+
     finished = Signal(_WorkerResult)
     progress = Signal(str)
     failed = Signal(str)
@@ -147,9 +149,7 @@ class CloudStoragePage(_Page):
         self.max_spin.setValue(10000)
         self.max_spin.setToolTip("Maximum objects to enumerate")
         self.ver_chk = QCheckBox("Include versions (S3)")
-        self.ver_chk.setToolTip(
-            "Enumerate non-current object versions (billable storage)"
-        )
+        self.ver_chk.setToolTip("Enumerate non-current object versions (billable storage)")
         self.del_chk = QCheckBox("Include delete markers (S3)")
         self.del_chk.setToolTip("Include S3 delete markers in scan")
 
@@ -236,9 +236,7 @@ class CloudStoragePage(_Page):
         lay.addWidget(self.unpriced_note)
 
         self.provider_breakdown = QTableWidget(0, 3)
-        self.provider_breakdown.setHorizontalHeaderLabels(
-            ["Provider", "Objects", "Size"]
-        )
+        self.provider_breakdown.setHorizontalHeaderLabels(["Provider", "Objects", "Size"])
         self.provider_breakdown.horizontalHeader().setStretchLastSection(True)
         self.provider_breakdown.verticalHeader().setVisible(False)
         self.provider_breakdown.setAlternatingRowColors(True)
@@ -252,9 +250,7 @@ class CloudStoragePage(_Page):
         lay.setSpacing(8)
 
         self.provider_tbl = QTableWidget(0, 4)
-        self.provider_tbl.setHorizontalHeaderLabels(
-            ["Provider", "Objects", "Size", "Est. Cost/mo"]
-        )
+        self.provider_tbl.setHorizontalHeaderLabels(["Provider", "Objects", "Size", "Est. Cost/mo"])
         self.provider_tbl.horizontalHeader().setStretchLastSection(True)
         self.provider_tbl.verticalHeader().setVisible(False)
         self.provider_tbl.setAlternatingRowColors(True)
@@ -268,9 +264,7 @@ class CloudStoragePage(_Page):
         lay.setSpacing(8)
 
         self.class_tbl = QTableWidget(0, 5)
-        self.class_tbl.setHorizontalHeaderLabels(
-            ["Storage Class", "Provider", "Objects", "Size (GB)", "Est. Cost/mo"]
-        )
+        self.class_tbl.setHorizontalHeaderLabels(["Storage Class", "Provider", "Objects", "Size (GB)", "Est. Cost/mo"])
         self.class_tbl.horizontalHeader().setStretchLastSection(True)
         self.class_tbl.verticalHeader().setVisible(False)
         self.class_tbl.setAlternatingRowColors(True)
@@ -318,9 +312,7 @@ class CloudStoragePage(_Page):
                     "rclone://remote/path",
                 ]
             )
-        self.status.setText(
-            f"Found {sum(len(v) for v in targets.values())} targets across {len(targets)} providers"
-        )
+        self.status.setText(f"Found {sum(len(v) for v in targets.values())} targets across {len(targets)} providers")
 
     def _run(self):
         """Disable action buttons, show progress/status, and launch the background worker (strip, currentText, show_error)."""
@@ -377,9 +369,7 @@ class CloudStoragePage(_Page):
         self._duplicates = result.duplicates
 
         if not result.entries:
-            self.state.show_empty(
-                "No objects found. Check credentials, target path, and permissions."
-            )
+            self.state.show_empty("No objects found. Check credentials, target path, and permissions.")
             self.status.setText("No objects found.")
             self.win.statusBar().showMessage("No objects found", 5000)
             return
@@ -425,27 +415,20 @@ class CloudStoragePage(_Page):
         """
         self.stat_total_objects.set_value(f"{stats.total_objects:,}", animate=True)
         self.stat_total_size.set_value(fmt_bytes(stats.total_size_bytes), animate=True)
-        self.stat_monthly_cost.set_value(
-            f"${stats.estimated_monthly_cost_usd:,.2f}/mo", animate=True
-        )
+        self.stat_monthly_cost.set_value(f"${stats.estimated_monthly_cost_usd:,.2f}/mo", animate=True)
         wasted = sum(g.wasted_bytes for g in self._duplicates)
         self.stat_wasted.set_value(fmt_bytes(wasted), animate=True)
 
         if stats.unpriced_classes:
             unpriced = ", ".join(sorted(stats.unpriced_classes))
             self.unpriced_note.setText(
-                f"Note: No live pricing available for: {unpriced}. "
-                "Costs shown are for priced classes only."
+                f"Note: No live pricing available for: {unpriced}. " "Costs shown are for priced classes only."
             )
         else:
-            self.unpriced_note.setText(
-                "All storage classes priced from live vendor APIs."
-            )
+            self.unpriced_note.setText("All storage classes priced from live vendor APIs.")
 
         self.provider_breakdown.setRowCount(len(stats.by_provider))
-        for r, (prov, count) in enumerate(
-            sorted(stats.by_provider.items(), key=lambda x: -x[1])
-        ):
+        for r, (prov, count) in enumerate(sorted(stats.by_provider.items(), key=lambda x: -x[1])):
             size = sum(e.size for e in self._entries if e.provider == prov)
             self.provider_breakdown.setItem(r, 0, QTableWidgetItem(prov))
             self.provider_breakdown.setItem(r, 1, QTableWidgetItem(f"{count:,}"))
@@ -461,9 +444,7 @@ class CloudStoragePage(_Page):
         """
         analyzer = CloudStorageAnalyzer()
         self.provider_tbl.setRowCount(len(stats.by_provider))
-        for r, (prov, count) in enumerate(
-            sorted(stats.by_provider.items(), key=lambda x: -x[1])
-        ):
+        for r, (prov, count) in enumerate(sorted(stats.by_provider.items(), key=lambda x: -x[1])):
             provider = analyzer.get_provider(prov)
             size = sum(e.size for e in self._entries if e.provider == prov)
             cost = provider.estimate_cost(stats) if provider else 0.0
@@ -490,9 +471,7 @@ class CloudStoragePage(_Page):
 
         analyzer = CloudStorageAnalyzer()
         rows = []
-        for cls, byte_count in sorted(
-            stats.by_storage_class.items(), key=lambda kv: -kv[1]
-        ):
+        for cls, byte_count in sorted(stats.by_storage_class.items(), key=lambda kv: -kv[1]):
             gb = byte_count / (1024**3)
             provider = analyzer.get_provider(prov_for_class.get(cls, ""))
             rate = None
@@ -554,7 +533,9 @@ class CloudStoragePage(_Page):
         pc_lay.setContentsMargins(18, 14, 18, 14)
         pc_lay.setSpacing(10)
 
-        header_desc = QLabel("Configure, authenticate, and connect native cloud providers (OneDrive, Google Drive, Dropbox, Amazon S3).")
+        header_desc = QLabel(
+            "Configure, authenticate, and connect native cloud providers (OneDrive, Google Drive, Dropbox, Amazon S3)."
+        )
         header_desc.setObjectName("Muted")
         pc_lay.addWidget(header_desc)
 
@@ -673,7 +654,7 @@ class CloudStoragePage(_Page):
             QMessageBox.warning(
                 self,
                 "Authentication Notice",
-                f"Could not connect to {pt.name}. Please ensure API tokens or credentials are set in environment variables or configuration."
+                f"Could not connect to {pt.name}. Please ensure API tokens or credentials are set in environment variables or configuration.",
             )
 
     def _disconnect_provider(self, pt: CloudProviderType):
@@ -768,7 +749,9 @@ class CloudStoragePage(_Page):
             if ok:
                 QMessageBox.information(self, "Download Complete", f"Downloaded to:\n{local_dest}")
             else:
-                QMessageBox.warning(self, "Download Notice", "Download could not complete or provider is unauthenticated.")
+                QMessageBox.warning(
+                    self, "Download Notice", "Download could not complete or provider is unauthenticated."
+                )
 
     def _on_cloud_file_double_clicked(self, row, col):
         """Navigate into folder on double click.

@@ -22,6 +22,7 @@ class DiffStatus(Enum):
 
     Covers IDENTICAL, LEFT_ONLY, RIGHT_ONLY, NEWER_LEFT/RIGHT, and CONTENT_DIFF.
     """
+
     IDENTICAL = "Identical"
     LEFT_ONLY = "Left Only"
     RIGHT_ONLY = "Right Only"
@@ -35,6 +36,7 @@ class SyncMode(Enum):
 
     Selects MIRROR_LEFT_TO_RIGHT, MIRROR_RIGHT_TO_LEFT, TWO_WAY_MERGE, or UPDATE_NEWER.
     """
+
     MIRROR_LEFT_TO_RIGHT = "Mirror Left -> Right"
     MIRROR_RIGHT_TO_LEFT = "Mirror Right -> Left"
     TWO_WAY_MERGE = "Two-Way Bidirectional Merge"
@@ -47,6 +49,7 @@ class DiffEntry:
 
     Stores left/right absolute paths, DiffStatus, sizes, mtimes, and directory flag.
     """
+
     relative_path: str
     left_path: Optional[str]
     right_path: Optional[str]
@@ -64,6 +67,7 @@ class SyncStats:
 
     Tallies copied/updated/deleted/skipped, bytes transferred, and per-path error strings.
     """
+
     copied: int = 0
     updated: int = 0
     deleted: int = 0
@@ -181,39 +185,45 @@ class DirectoryDiffEngine:
 
             if in_left and not in_right:
                 size, mtime, is_d = left_files[rel]
-                diff_entries.append(DiffEntry(
-                    relative_path=rel,
-                    left_path=str(left_base / rel),
-                    right_path=None,
-                    status=DiffStatus.LEFT_ONLY,
-                    left_size=size,
-                    left_mtime=mtime,
-                    is_dir=is_d,
-                ))
+                diff_entries.append(
+                    DiffEntry(
+                        relative_path=rel,
+                        left_path=str(left_base / rel),
+                        right_path=None,
+                        status=DiffStatus.LEFT_ONLY,
+                        left_size=size,
+                        left_mtime=mtime,
+                        is_dir=is_d,
+                    )
+                )
             elif in_right and not in_left:
                 size, mtime, is_d = right_files[rel]
-                diff_entries.append(DiffEntry(
-                    relative_path=rel,
-                    left_path=None,
-                    right_path=str(right_base / rel),
-                    status=DiffStatus.RIGHT_ONLY,
-                    right_size=size,
-                    right_mtime=mtime,
-                    is_dir=is_d,
-                ))
+                diff_entries.append(
+                    DiffEntry(
+                        relative_path=rel,
+                        left_path=None,
+                        right_path=str(right_base / rel),
+                        status=DiffStatus.RIGHT_ONLY,
+                        right_size=size,
+                        right_mtime=mtime,
+                        is_dir=is_d,
+                    )
+                )
             else:
                 # Exists on both sides
                 l_size, l_mtime, l_is_d = left_files[rel]
                 r_size, r_mtime, r_is_d = right_files[rel]
 
                 if l_is_d and r_is_d:
-                    diff_entries.append(DiffEntry(
-                        relative_path=rel,
-                        left_path=str(left_base / rel),
-                        right_path=str(right_base / rel),
-                        status=DiffStatus.IDENTICAL,
-                        is_dir=True,
-                    ))
+                    diff_entries.append(
+                        DiffEntry(
+                            relative_path=rel,
+                            left_path=str(left_base / rel),
+                            right_path=str(right_base / rel),
+                            status=DiffStatus.IDENTICAL,
+                            is_dir=True,
+                        )
+                    )
                     continue
 
                 status = DiffStatus.IDENTICAL
@@ -233,17 +243,19 @@ class DirectoryDiffEngine:
                     elif abs(time_diff) > 2.0:  # Allow 2-second timestamp tolerance for FAT32
                         status = DiffStatus.NEWER_LEFT if time_diff > 0 else DiffStatus.NEWER_RIGHT
 
-                diff_entries.append(DiffEntry(
-                    relative_path=rel,
-                    left_path=str(left_base / rel),
-                    right_path=str(right_base / rel),
-                    status=status,
-                    left_size=l_size,
-                    right_size=r_size,
-                    left_mtime=l_mtime,
-                    right_mtime=r_mtime,
-                    is_dir=False,
-                ))
+                diff_entries.append(
+                    DiffEntry(
+                        relative_path=rel,
+                        left_path=str(left_base / rel),
+                        right_path=str(right_base / rel),
+                        status=status,
+                        left_size=l_size,
+                        right_size=r_size,
+                        left_mtime=l_mtime,
+                        right_mtime=r_mtime,
+                        is_dir=False,
+                    )
+                )
 
         return diff_entries
 

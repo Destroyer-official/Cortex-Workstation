@@ -81,18 +81,14 @@ def _parse_date(value: str) -> date | None:
 
 @dataclass(slots=True)
 class LicensePayload:
-    """License payload bound to a key, tier, and machine fingerprint.
-
-    """
+    """License payload bound to a key, tier, and machine fingerprint."""
 
     key: str
     tier: Tier
     name: str = ""
     email: str = ""
     issued: str = field(default_factory=lambda: _today().isoformat())
-    expiry: str = field(
-        default_factory=lambda: (_today() + timedelta(days=DEFAULT_TERM_DAYS)).isoformat()
-    )
+    expiry: str = field(default_factory=lambda: (_today() + timedelta(days=DEFAULT_TERM_DAYS)).isoformat())
     fingerprint: str = ""
 
     def canonical(self) -> bytes:
@@ -163,9 +159,7 @@ class LicensePayload:
 
 @dataclass(slots=True)
 class LicenseState:
-    """Evaluated license outcome with tier, flags, and reason.
-
-    """
+    """Evaluated license outcome with tier, flags, and reason."""
 
     tier: Tier = Tier.FREE
     licensed: bool = False
@@ -287,9 +281,7 @@ class LicenseManager:
             return None
 
     def invalidate(self) -> None:
-        """Drop the cached validation state.
-
-        """
+        """Drop the cached validation state."""
         with self._lock:
             self._cache = None
             self._cache_sig = None
@@ -382,14 +374,14 @@ class LicenseManager:
         if state.trial:
             raise RuntimeError(f"Trial already used (expired {state.expiry}).")
         return self.activate(
-            key=_TRIAL_KEY, tier=Tier.PRO,
-            name="Trial", term_days=TRIAL_DAYS,
+            key=_TRIAL_KEY,
+            tier=Tier.PRO,
+            name="Trial",
+            term_days=TRIAL_DAYS,
         )
 
     def deactivate(self) -> None:
-        """Remove the stored license file and clear the cache.
-
-        """
+        """Remove the stored license file and clear the cache."""
         with self._lock:
             try:
                 self._path.unlink(missing_ok=True)
@@ -494,9 +486,7 @@ def get_license_manager() -> LicenseManager:
 
 
 def reset_singleton() -> None:
-    """Forget the singleton (test isolation).
-
-    """
+    """Forget the singleton (test isolation)."""
     global _MANAGER
     with _MANAGER_LOCK:
         _MANAGER = None

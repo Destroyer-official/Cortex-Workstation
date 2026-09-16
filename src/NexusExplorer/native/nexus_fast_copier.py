@@ -18,6 +18,7 @@ class CopyMode(Enum):
 
     Selects STANDARD buffered copy, DIRECT_IO label, or VERIFY_SHA256 streaming hash check.
     """
+
     STANDARD = "Standard Buffered"
     DIRECT_IO = "High Throughput Direct"
     VERIFY_SHA256 = "Copy with SHA-256 Verification"
@@ -29,6 +30,7 @@ class CopyItemProgress:
 
     Updates progress bar widgets, percentage counters, and status indicators with streaming status updates from the running worker.
     """
+
     current_file: str
     files_completed: int
     total_files: int
@@ -45,6 +47,7 @@ class CopySummary:
 
     Records success, files copied, bytes transferred, elapsed/average speed, verified count, and errors.
     """
+
     success: bool
     files_copied: int
     bytes_transferred: int
@@ -226,6 +229,7 @@ class FastCopier:
             success = False
             err_msg = ""
             for attempt in range(max_retries):
+
                 def _file_chunk_cb(chunk_len: int):
                     """Per-chunk progress accumulator for one file.
 
@@ -246,17 +250,23 @@ class FastCopier:
 
                     if progress_cb:
                         pct = (total_transferred / total_bytes * 100) if total_bytes > 0 else 0.0
-                        eta = (total_bytes - total_transferred) / (current_speed * 1024 * 1024) if current_speed > 0 else 0.0
-                        progress_cb(CopyItemProgress(
-                            current_file=src_path.name,
-                            files_completed=files_completed,
-                            total_files=total_files,
-                            bytes_transferred=total_transferred,
-                            total_bytes=total_bytes,
-                            speed_mb_s=current_speed,
-                            percent=min(100.0, pct),
-                            eta_seconds=max(0.0, eta),
-                        ))
+                        eta = (
+                            (total_bytes - total_transferred) / (current_speed * 1024 * 1024)
+                            if current_speed > 0
+                            else 0.0
+                        )
+                        progress_cb(
+                            CopyItemProgress(
+                                current_file=src_path.name,
+                                files_completed=files_completed,
+                                total_files=total_files,
+                                bytes_transferred=total_transferred,
+                                total_bytes=total_bytes,
+                                speed_mb_s=current_speed,
+                                percent=min(100.0, pct),
+                                eta_seconds=max(0.0, eta),
+                            )
+                        )
 
                 ok, b_copied, err = cls._copy_single_file(
                     src_path,

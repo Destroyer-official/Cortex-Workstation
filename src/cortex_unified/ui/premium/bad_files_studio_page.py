@@ -35,6 +35,7 @@ from .window import _Page
 
 class _BadFilesScanWorker(QObject):
     """Background worker (_BadFilesScanWorker) performing BadFilesScanWorker. Signals finished, failed report status. Configured with mode, folder. Its run() step calls Path, BadExtensionFinder, str, finder.find."""
+
     finished = Signal(list)
     failed = Signal(str)
 
@@ -62,36 +63,43 @@ class _BadFilesScanWorker(QObject):
                 BadNamesFinder,
                 ExifCleaner,
             )
+
             root = Path(self._folder)
             results = []
             if self._mode == "extensions":
                 finder = BadExtensionFinder(root=str(root))
                 items = finder.find()
                 for item in items:
-                    results.append({
-                        "path": str(item.path),
-                        "detail": f"Actual: {item.actual} -> Claimed: {item.claimed}",
-                        "issue": "Extension Mismatch",
-                    })
+                    results.append(
+                        {
+                            "path": str(item.path),
+                            "detail": f"Actual: {item.actual} -> Claimed: {item.claimed}",
+                            "issue": "Extension Mismatch",
+                        }
+                    )
             elif self._mode == "names":
                 finder = BadNamesFinder(root=str(root))
                 items = finder.find()
                 for p in items:
-                    results.append({
-                        "path": str(p),
-                        "detail": "Invalid characters or Windows reserved name",
-                        "issue": "Illegal / Non-standard Filename",
-                    })
+                    results.append(
+                        {
+                            "path": str(p),
+                            "detail": "Invalid characters or Windows reserved name",
+                            "issue": "Illegal / Non-standard Filename",
+                        }
+                    )
             elif self._mode == "exif":
                 finder = ExifCleaner(root=str(root))
                 items = finder.scan()
                 for p, tags in items:
                     gps = "GPS Location" if any("gps" in k.lower() for k in tags.keys()) else "Camera Metadata"
-                    results.append({
-                        "path": str(p),
-                        "detail": f"{len(tags)} EXIF tags found ({gps})",
-                        "issue": "Privacy Metadata Exposed",
-                    })
+                    results.append(
+                        {
+                            "path": str(p),
+                            "detail": f"{len(tags)} EXIF tags found ({gps})",
+                            "issue": "Privacy Metadata Exposed",
+                        }
+                    )
             self.finished.emit(results)
         except Exception as exc:  # noqa: BLE001
             self.failed.emit(str(exc))
@@ -109,12 +117,14 @@ class BadFilesStudioPage(_Page):
             win: Parent window or shell controller instance.
         """
         super().__init__(win)
-        self.v.addWidget(title_block(
-            "Bad Extensions, Names & EXIF Studio",
-            "Multi-tool diagnostic suite: detect mismatched file extensions (magic header analysis), "
-            "invalid file names causing sync errors, and strip privacy-sensitive EXIF metadata "
-            "(GPS coordinates, camera serials) from photos.",
-        ))
+        self.v.addWidget(
+            title_block(
+                "Bad Extensions, Names & EXIF Studio",
+                "Multi-tool diagnostic suite: detect mismatched file extensions (magic header analysis), "
+                "invalid file names causing sync errors, and strip privacy-sensitive EXIF metadata "
+                "(GPS coordinates, camera serials) from photos.",
+            )
+        )
 
         self._folder = str(Path.home() / "Pictures")
 
@@ -260,6 +270,7 @@ class BadFilesStudioPage(_Page):
             return
 
         from cortex_unified.analyzers.czkawka_tools import ExifCleaner
+
         paths = []
         for idx in sel:
             p_str = self.tbl.item(idx.row(), 0).data(Qt.ItemDataRole.UserRole)

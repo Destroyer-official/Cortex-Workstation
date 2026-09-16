@@ -343,9 +343,7 @@ class DriverManagerPage(_Page):
         self.tbl.setRowCount(len(filtered))
         for r, drv in enumerate(filtered):
             self.tbl.setItem(r, 0, QTableWidgetItem(drv.device_name))
-            self.tbl.setItem(
-                r, 1, QTableWidgetItem(cls_filter if cls_filter != "All" else "")
-            )
+            self.tbl.setItem(r, 1, QTableWidgetItem(cls_filter if cls_filter != "All" else ""))
             self.tbl.setItem(r, 2, QTableWidgetItem(drv.current_version))
             self.tbl.setItem(r, 3, QTableWidgetItem(drv.provider))
 
@@ -361,9 +359,7 @@ class DriverManagerPage(_Page):
             self.tbl.setItem(r, 5, QTableWidgetItem(update))
 
         self.tbl.resizeColumnsToContents()
-        self.install_btn.setEnabled(
-            any(getattr(d, "is_outdated", False) for d in filtered)
-        )
+        self.install_btn.setEnabled(any(getattr(d, "is_outdated", False) for d in filtered))
 
     # -- actions -------------------------------------------------------------
 
@@ -375,17 +371,13 @@ class DriverManagerPage(_Page):
         self.scan_btn.setEnabled(False)
         self.install_btn.setEnabled(False)
         self.progress.setVisible(True)
-        self.state.show_loading(
-            "Scanning devices and checking for driver updates\u2026"
-        )
+        self.state.show_loading("Scanning devices and checking for driver updates\u2026")
         self.status.setText("Enumerating PnP devices\u2026")
         self.tbl.setRowCount(0)
 
         w = _ScanWorker()
         self._scan_worker = w
-        self.win.run_worker(
-            w, self._on_scan_done, self._on_scan_fail, on_progress=self._on_progress
-        )
+        self.win.run_worker(w, self._on_scan_done, self._on_scan_fail, on_progress=self._on_progress)
 
     def _on_progress(self, msg: str):
         """Show worker progress text in the status label.
@@ -410,10 +402,7 @@ class DriverManagerPage(_Page):
         self.scan_btn.setEnabled(True)
 
         if not drivers:
-            self.state.show_empty(
-                "No devices found. Ensure you are running with "
-                "sufficient privileges."
-            )
+            self.state.show_empty("No devices found. Ensure you are running with " "sufficient privileges.")
             self.status.setText("No devices detected.")
             self.win.statusBar().showMessage("Scan complete — no devices", 5000)
             return
@@ -422,10 +411,7 @@ class DriverManagerPage(_Page):
         self._populate_table(drivers)
         outdated = sum(1 for d in drivers if getattr(d, "is_outdated", False))
         missing = sum(1 for d in drivers if getattr(d, "is_missing", False))
-        self.status.setText(
-            f"{len(drivers)} devices found \u2014 {outdated} outdated, "
-            f"{missing} missing."
-        )
+        self.status.setText(f"{len(drivers)} devices found \u2014 {outdated} outdated, " f"{missing} missing.")
         self.win.statusBar().showMessage(f"Scan complete: {len(drivers)} devices", 5000)
 
     def _on_scan_fail(self, msg: str):
@@ -495,9 +481,7 @@ class DriverManagerPage(_Page):
         ok = sum(1 for v in results.values() if v)
         fail = sum(1 for v in results.values() if not v)
         self.status.setText(f"Install complete: {ok} succeeded, {fail} failed.")
-        self.win.statusBar().showMessage(
-            f"Driver install: {ok} ok, {fail} failed", 5000
-        )
+        self.win.statusBar().showMessage(f"Driver install: {ok} ok, {fail} failed", 5000)
 
         if fail:
             self.state.show_error(
@@ -532,9 +516,7 @@ class DriverManagerPage(_Page):
         self.status.setText("Exporting drivers\u2026")
 
         w = _BackupWorker()
-        self.win.run_worker(
-            w, self._on_backup_done, self._on_backup_fail, on_progress=self._on_progress
-        )
+        self.win.run_worker(w, self._on_backup_done, self._on_backup_fail, on_progress=self._on_progress)
 
     def _on_backup_done(self, path: str):
         """Re-enable Backup and report the export directory.

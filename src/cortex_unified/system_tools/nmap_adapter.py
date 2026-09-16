@@ -176,25 +176,17 @@ def _normalize_targets(
     """
     scopes = parse_allowed_networks(allowed_networks)
     if not scopes:
-        raise NmapAuthorizationError(
-            "at least one private IPv4 scope is required"
-        )
+        raise NmapAuthorizationError("at least one private IPv4 scope is required")
     normalized: list[ipaddress.IPv4Address] = []
     for target in targets:
         if not is_authorized_target(target, scopes):
-            raise NmapAuthorizationError(
-                f"target is not an authorized private IPv4 host: {target!r}"
-            )
+            raise NmapAuthorizationError(f"target is not an authorized private IPv4 host: {target!r}")
         normalized.append(ipaddress.IPv4Address(str(target)))
     unique = sorted(set(normalized), key=int)
     if not unique:
-        raise NmapAuthorizationError(
-            "at least one explicit target is required"
-        )
+        raise NmapAuthorizationError("at least one explicit target is required")
     if len(unique) > MAX_TARGETS:
-        raise NmapAuthorizationError(
-            f"target count exceeds the limit of {MAX_TARGETS}"
-        )
+        raise NmapAuthorizationError(f"target count exceeds the limit of {MAX_TARGETS}")
     return tuple(map(str, unique)), scopes
 
 
@@ -248,13 +240,9 @@ def _normalize_modes(modes: Iterable[str] | str | None) -> tuple[str, ...]:
         raise ValueError(f"unsupported Nmap mode(s): {joined}")
     selected_scans = set(normalized) & _SCAN_MODES
     if len(selected_scans) > 1:
-        raise ValueError(
-            "connect, syn, and ack scan modes are mutually exclusive"
-        )
+        raise ValueError("connect, syn, and ack scan modes are mutually exclusive")
     if set(normalized) & _EXPERT_MODES and not _is_windows_admin():
-        raise NmapPrivilegeError(
-            "expert modes require explicit Windows administrator access"
-        )
+        raise NmapPrivilegeError("expert modes require explicit Windows administrator access")
     return normalized
 
 
@@ -272,24 +260,20 @@ def parse_nmap_xml(
     root = _bounded_root(payload)
     observations: list[ServiceObservation] = []
     for host in _descendants(root, "host"):
-        addresses = [
-            item.get("addr", "")
-            for item in _children(host, "address")
-            if item.get("addrtype") == "ipv4"
-        ]
+        addresses = [item.get("addr", "") for item in _children(host, "address") if item.get("addrtype") == "ipv4"]
         if not addresses:
             continue
         ip = addresses[0]
         if not is_authorized_target(ip, scopes):
-            raise NmapOutputError(
-                f"Nmap returned an unauthorized or invalid host: {ip!r}"
-            )
+            raise NmapOutputError(f"Nmap returned an unauthorized or invalid host: {ip!r}")
         ip = str(ipaddress.IPv4Address(ip))
-        os_matches = sorted({
-            (item.get("name", "")[:160], item.get("accuracy", "")[:3])
-            for item in _descendants(host, "osmatch")
-            if item.get("name")
-        })[:8]
+        os_matches = sorted(
+            {
+                (item.get("name", "")[:160], item.get("accuracy", "")[:3])
+                for item in _descendants(host, "osmatch")
+                if item.get("name")
+            }
+        )[:8]
         for port_node in _descendants(host, "port"):
             protocol = port_node.get("protocol", "").lower()
             if protocol not in {"tcp", "udp"}:
@@ -318,49 +302,46 @@ def parse_nmap_xml(
                 parts = (product, version)
                 identified = " ".join(item for item in parts if item)
                 evidence.append(f"Nmap service identification: {identified}")
-            evidence.extend(
-                f"Nmap OS match: {os_name} ({accuracy}% accuracy)"
-                for os_name, accuracy in os_matches
-            )
+            evidence.extend(f"Nmap OS match: {os_name} ({accuracy}% accuracy)" for os_name, accuracy in os_matches)
             service_data = {}
             if service is not None:
                 service_data = {
-                    key: service.get(key, "")
-                    for key in ("method", "conf", "tunnel", "extrainfo")
-                    if service.get(key)
+                    key: service.get(key, "") for key in ("method", "conf", "tunnel", "extrainfo") if service.get(key)
                 }
             metadata = {
                 "evidence": evidence,
                 "state_reason": reason,
                 "service": service_data,
-                "os_matches": [
-                    {"name": item[0], "accuracy": item[1]}
-                    for item in os_matches
-                ],
+                "os_matches": [{"name": item[0], "accuracy": item[1]} for item in os_matches],
             }
             confidence = 0.75
             if service is not None and service.get("conf", "").isdigit():
                 confidence = min(1.0, int(service.get("conf", "0")) / 10.0)
-            observations.append(ServiceObservation(
-                ip=ip,
-                port=port,
-                transport=protocol,
-                name=name or "unknown",
-                state=state,
-                source="nmap",
-                product=product,
-                version=version,
-                metadata=metadata,
-                confidence=confidence,
-            ))
-    unique = {
-        (item.ip, item.port, item.transport, item.name, item.state): item
-        for item in observations
-    }
-    return sorted(unique.values(), key=lambda item: (
-        int(ipaddress.IPv4Address(item.ip)), item.port,
-        item.transport, item.name, item.state,
-    ))
+            observations.append(
+                ServiceObservation(
+                    ip=ip,
+                    port=port,
+                    transport=protocol,
+                    name=name or "unknown",
+                    state=state,
+                    source="nmap",
+                    product=product,
+                    version=version,
+                    metadata=metadata,
+                    confidence=confidence,
+                )
+            )
+    unique = {(item.ip, item.port, item.transport, item.name, item.state): item for item in observations}
+    return sorted(
+        unique.values(),
+        key=lambda item: (
+            int(ipaddress.IPv4Address(item.ip)),
+            item.port,
+            item.transport,
+            item.name,
+            item.state,
+        ),
+    )
 
 
 class NmapAdapter:
@@ -403,7 +384,8 @@ class NmapAdapter:
         if executable:
             return NmapStatus(True, executable, "Nmap is available")
         return NmapStatus(
-            False, None,
+            False,
+            None,
             f"Nmap executable {self._requested_executable!r} is not available",
         )
 
@@ -426,8 +408,7 @@ class NmapAdapter:
         selected_ports = _normalize_ports(ports)
         selected_modes = _normalize_modes(modes)
         scan_mode = next(
-            (item for item in ("connect", "syn", "ack")
-             if item in selected_modes),
+            (item for item in ("connect", "syn", "ack") if item in selected_modes),
             "connect",
         )
         mode_argument = {"connect": "-sT", "syn": "-sS", "ack": "-sA"}
@@ -436,10 +417,18 @@ class NmapAdapter:
             arguments.extend(["-sV", "--version-light"])
         if "os" in selected_modes:
             arguments.append("-O")
-        arguments.extend([
-            "--max-retries", "2", "--host-timeout", "30s",
-            "-p", ",".join(map(str, selected_ports)), "-oX", "-",
-        ])
+        arguments.extend(
+            [
+                "--max-retries",
+                "2",
+                "--host-timeout",
+                "30s",
+                "-p",
+                ",".join(map(str, selected_ports)),
+                "-oX",
+                "-",
+            ]
+        )
         arguments.extend(hosts)
         return arguments, scopes
 
@@ -458,8 +447,7 @@ class NmapAdapter:
         *timeout* is clamped to [0.1, 600] seconds. Non-zero exit raises
         :class:`NmapExecutionError` with up to 512 bytes of stderr.
         """
-        arguments, scopes = self.build_arguments(
-            targets, allowed_networks, ports, modes)
+        arguments, scopes = self.build_arguments(targets, allowed_networks, ports, modes)
         if cancel_event is not None and cancel_event.is_set():
             raise proc.ProcessCancelled(arguments)
         try:
@@ -477,9 +465,7 @@ class NmapAdapter:
             if isinstance(stderr, bytes):
                 stderr = stderr.decode("utf-8", "replace")
             detail = str(stderr or "unknown error").strip()[:512]
-            raise NmapExecutionError(
-                f"Nmap exited with status {result.returncode}: {detail}"
-            )
+            raise NmapExecutionError(f"Nmap exited with status {result.returncode}: {detail}")
         return parse_nmap_xml(result.stdout, scopes)
 
 
@@ -531,15 +517,29 @@ def scan_nmap(
         list[ServiceObservation]: List of processed items or identifiers.
     """
     return NmapAdapter(executable).scan(
-        targets, allowed_networks, ports, modes,
-        timeout=timeout, cancel_event=cancel_event,
+        targets,
+        allowed_networks,
+        ports,
+        modes,
+        timeout=timeout,
+        cancel_event=cancel_event,
     )
 
 
 __all__ = [
-    "MAX_XML_BYTES", "MAX_XML_DEPTH", "MAX_XML_NODES", "NmapAdapter",
-    "NmapAuthorizationError", "NmapError", "NmapExecutionError",
-    "NmapOutputError", "NmapPrivilegeError", "NmapStatus",
-    "NmapUnavailableError", "is_nmap_available", "nmap_status",
-    "parse_nmap_xml", "scan_nmap",
+    "MAX_XML_BYTES",
+    "MAX_XML_DEPTH",
+    "MAX_XML_NODES",
+    "NmapAdapter",
+    "NmapAuthorizationError",
+    "NmapError",
+    "NmapExecutionError",
+    "NmapOutputError",
+    "NmapPrivilegeError",
+    "NmapStatus",
+    "NmapUnavailableError",
+    "is_nmap_available",
+    "nmap_status",
+    "parse_nmap_xml",
+    "scan_nmap",
 ]

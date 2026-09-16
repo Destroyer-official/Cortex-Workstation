@@ -24,6 +24,7 @@ class DriverPackage:
 
     Manages DriverPackage operations and coordinates related state changes for the component.
     """
+
     published_name: str  # "oem12.inf"
     original_name: str  # "nv_dispi.inf"
     provider_name: str  # "NVIDIA"
@@ -41,6 +42,7 @@ class DriverCleanResult:
 
     Manages DriverCleanResult operations and coordinates related state changes for the component.
     """
+
     drivers_deleted: int
     bytes_freed_estimate: int
     errors: List[str] = None
@@ -84,15 +86,17 @@ class DriverStoreCleaner:
                 line = line.strip()
                 if not line:
                     if "Published Name" in current_dict:
-                        drivers.append(DriverPackage(
-                            published_name=current_dict.get("Published Name", ""),
-                            original_name=current_dict.get("Original Name", ""),
-                            provider_name=current_dict.get("Provider Name", ""),
-                            class_name=current_dict.get("Class Name", ""),
-                            driver_version=current_dict.get("Driver Version", ""),
-                            driver_date=current_dict.get("Driver Date", ""),
-                            signer_name=current_dict.get("Signer Name", ""),
-                        ))
+                        drivers.append(
+                            DriverPackage(
+                                published_name=current_dict.get("Published Name", ""),
+                                original_name=current_dict.get("Original Name", ""),
+                                provider_name=current_dict.get("Provider Name", ""),
+                                class_name=current_dict.get("Class Name", ""),
+                                driver_version=current_dict.get("Driver Version", ""),
+                                driver_date=current_dict.get("Driver Date", ""),
+                                signer_name=current_dict.get("Signer Name", ""),
+                            )
+                        )
                     current_dict = {}
                     continue
 
@@ -101,15 +105,17 @@ class DriverStoreCleaner:
                     current_dict[key.strip()] = val.strip()
 
             if "Published Name" in current_dict:
-                drivers.append(DriverPackage(
-                    published_name=current_dict.get("Published Name", ""),
-                    original_name=current_dict.get("Original Name", ""),
-                    provider_name=current_dict.get("Provider Name", ""),
-                    class_name=current_dict.get("Class Name", ""),
-                    driver_version=current_dict.get("Driver Version", ""),
-                    driver_date=current_dict.get("Driver Date", ""),
-                    signer_name=current_dict.get("Signer Name", ""),
-                ))
+                drivers.append(
+                    DriverPackage(
+                        published_name=current_dict.get("Published Name", ""),
+                        original_name=current_dict.get("Original Name", ""),
+                        provider_name=current_dict.get("Provider Name", ""),
+                        class_name=current_dict.get("Class Name", ""),
+                        driver_version=current_dict.get("Driver Version", ""),
+                        driver_date=current_dict.get("Driver Date", ""),
+                        signer_name=current_dict.get("Signer Name", ""),
+                    )
+                )
         except Exception:
             return []
 

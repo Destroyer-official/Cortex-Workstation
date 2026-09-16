@@ -29,9 +29,10 @@ class DiskHealth:
 
     Manages DiskHealth operations and coordinates related state changes for the component.
     """
+
     name: str
     media_type: str
-    health_status: str          # Healthy / Warning / Unhealthy / Unknown
+    health_status: str  # Healthy / Warning / Unhealthy / Unknown
     operational_status: str
     size_bytes: int = 0
     wear_percent: int | None = None
@@ -154,17 +155,19 @@ class DiskHealthMonitor:
 
         disks: list[DiskHealth] = []
         for d in data:
-            disks.append(DiskHealth(
-                name=str(d.get("Name") or "Unknown"),
-                media_type=str(d.get("MediaType") or "Unspecified"),
-                health_status=str(d.get("Health") or "Unknown"),
-                operational_status=str(d.get("Op") or ""),
-                size_bytes=_int(d.get("Size")) or 0,
-                wear_percent=_int(d.get("Wear")),
-                temperature_c=_int(d.get("Temp")),
-                reallocated_sectors=_int(d.get("Realloc")),
-                power_on_hours=_int(d.get("Hours")),
-            ))
+            disks.append(
+                DiskHealth(
+                    name=str(d.get("Name") or "Unknown"),
+                    media_type=str(d.get("MediaType") or "Unspecified"),
+                    health_status=str(d.get("Health") or "Unknown"),
+                    operational_status=str(d.get("Op") or ""),
+                    size_bytes=_int(d.get("Size")) or 0,
+                    wear_percent=_int(d.get("Wear")),
+                    temperature_c=_int(d.get("Temp")),
+                    reallocated_sectors=_int(d.get("Realloc")),
+                    power_on_hours=_int(d.get("Hours")),
+                )
+            )
         return disks
 
     def _run(self, script: str) -> str | None:
@@ -181,7 +184,9 @@ class DiskHealthMonitor:
         try:
             proc = _proc.run(
                 ["powershell", "-NoProfile", "-NonInteractive", "-Command", script],
-                text=True, timeout=45, creationflags=_NO_WINDOW,
+                text=True,
+                timeout=45,
+                creationflags=_NO_WINDOW,
             )
             return proc.stdout if proc.returncode == 0 else (proc.stdout or None)
         except (_proc.ProcessCancelled, OSError, subprocess.SubprocessError) as exc:

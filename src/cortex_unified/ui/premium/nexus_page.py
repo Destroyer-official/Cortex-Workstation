@@ -39,6 +39,7 @@ def _load_nexus_module():
     # 1. Try unified explorer wrapper
     try:
         from cortex_unified.explorer.widget import DARK_QSS, ExplorerWidget
+
         if ExplorerWidget is not None:
             return ExplorerWidget, DARK_QSS, None
     except Exception as _exc:
@@ -47,6 +48,7 @@ def _load_nexus_module():
     # 2. Try direct import from sys.path (ensured via ensure_nexus_in_sys_path)
     try:
         from nexus_explorer import DARK_QSS, ExplorerWidget  # type: ignore
+
         if ExplorerWidget is not None:
             return ExplorerWidget, DARK_QSS, None
     except Exception as _exc:
@@ -55,6 +57,7 @@ def _load_nexus_module():
     # 3. Try package-qualified import
     try:
         from NexusExplorer.native.nexus_explorer import DARK_QSS, ExplorerWidget  # type: ignore
+
         if ExplorerWidget is not None:
             return ExplorerWidget, DARK_QSS, None
     except Exception as _exc:
@@ -65,9 +68,9 @@ def _load_nexus_module():
     return None, "", "ExplorerWidget could not be resolved from any candidate source"
 
 
-
 class _ErrorCard(QWidget):
     """_ErrorCard (QWidget) implementing ErrorCard. Methods include __init__()."""
+
     def __init__(self, message: str, parent=None):
         """__init__.
 
@@ -126,21 +129,25 @@ class NexusExplorerPage(_Page):
         self._loaded = True
 
         if os.environ.get("QT_QPA_PLATFORM", "").lower() == "offscreen":
-            self.v.addWidget(_ErrorCard(
-                "The native file explorer requires a real display server.\n"
-                "It is unavailable in headless (offscreen) mode."
-            ))
+            self.v.addWidget(
+                _ErrorCard(
+                    "The native file explorer requires a real display server.\n"
+                    "It is unavailable in headless (offscreen) mode."
+                )
+            )
             self.v.addStretch(1)
             return
 
         ExplorerWidget, dark_qss, import_error = _load_nexus_module()
 
         if ExplorerWidget is None:
-            self.v.addWidget(_ErrorCard(
-                "The native explorer module could not be loaded.\n\n"
-                f"{import_error}\n\nExpected module at:\n"
-                f"{NATIVE_DIR / 'nexus_explorer.py'}"
-            ))
+            self.v.addWidget(
+                _ErrorCard(
+                    "The native explorer module could not be loaded.\n\n"
+                    f"{import_error}\n\nExpected module at:\n"
+                    f"{NATIVE_DIR / 'nexus_explorer.py'}"
+                )
+            )
             self.v.addStretch(1)
             return
 
@@ -152,6 +159,5 @@ class NexusExplorerPage(_Page):
         except Exception:
             log.exception("Nexus explorer failed to build")
             detail = traceback.format_exc(limit=3)
-            self.v.addWidget(_ErrorCard(
-                "The explorer failed to start:\n" + detail))
+            self.v.addWidget(_ErrorCard("The explorer failed to start:\n" + detail))
             self.v.addStretch(1)

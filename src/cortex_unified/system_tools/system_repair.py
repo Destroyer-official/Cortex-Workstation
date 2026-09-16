@@ -36,12 +36,13 @@ _NO_WINDOW = 0x08000000 if _IS_WINDOWS else 0
 @dataclass(slots=True)
 class RepairResult:
     """Record holding tool, success, status, message, needs_reboot, raw_tail."""
+
     tool: str
     success: bool
-    status: str          # short outcome label
-    message: str         # human explanation
+    status: str  # short outcome label
+    message: str  # human explanation
     needs_reboot: bool = False
-    raw_tail: str = ""   # last lines of output for transparency
+    raw_tail: str = ""  # last lines of output for transparency
 
     def to_dict(self) -> dict[str, Any]:
         """Serialize to a plain dict with keys tool, success, status, message, needs_reboot, raw_tail.
@@ -50,8 +51,11 @@ class RepairResult:
         dict[str, Any]: Dictionary mapping identifiers to status or values.
         """
         return {
-            "tool": self.tool, "success": self.success, "status": self.status,
-            "message": self.message, "needs_reboot": self.needs_reboot,
+            "tool": self.tool,
+            "success": self.success,
+            "status": self.status,
+            "message": self.message,
+            "needs_reboot": self.needs_reboot,
             "raw_tail": self.raw_tail,
         }
 
@@ -79,6 +83,7 @@ class SystemRepair:
             return False
         try:
             import ctypes
+
             return bool(ctypes.windll.shell32.IsUserAnAdmin())
         except Exception:  # noqa: BLE001
             return False
@@ -110,31 +115,41 @@ class SystemRepair:
         RepairResult: Result of the operation.
         """
         if out is None:
-            return RepairResult("SFC", False, "error",
-                                "Could not run SFC (Administrator required).")
+            return RepairResult("SFC", False, "error", "Could not run SFC (Administrator required).")
         low = out.lower()
         tail = "\n".join(l for l in out.splitlines() if l.strip())[-600:]
         if "did not find any integrity violations" in low:
-            return RepairResult("SFC", True, "clean",
-                                "No corrupted system files found.", raw_tail=tail)
+            return RepairResult("SFC", True, "clean", "No corrupted system files found.", raw_tail=tail)
         if "successfully repaired" in low:
-            return RepairResult("SFC", True, "repaired",
-                                "Found corrupted files and successfully repaired them.",
-                                needs_reboot=True, raw_tail=tail)
+            return RepairResult(
+                "SFC",
+                True,
+                "repaired",
+                "Found corrupted files and successfully repaired them.",
+                needs_reboot=True,
+                raw_tail=tail,
+            )
         if "unable to fix" in low or "could not perform" in low:
-            return RepairResult("SFC", False, "partial",
-                                "Found corruption but could not repair everything. "
-                                "Run DISM RestoreHealth, then SFC again.", raw_tail=tail)
+            return RepairResult(
+                "SFC",
+                False,
+                "partial",
+                "Found corruption but could not repair everything. " "Run DISM RestoreHealth, then SFC again.",
+                raw_tail=tail,
+            )
         if "another servicing" in low or "pending" in low:
-            return RepairResult("SFC", False, "busy",
-                                "A system servicing operation is in progress; try again "
-                                "after it finishes.", raw_tail=tail)
+            return RepairResult(
+                "SFC",
+                False,
+                "busy",
+                "A system servicing operation is in progress; try again " "after it finishes.",
+                raw_tail=tail,
+            )
         return RepairResult("SFC", True, "done", "SFC finished.", raw_tail=tail)
 
     # -- DISM ---------------------------------------------------------------
 
-    def run_dism(self, action: str = "CheckHealth",
-                cancel_event: "threading.Event | None" = None) -> RepairResult:
+    def run_dism(self, action: str = "CheckHealth", cancel_event: "threading.Event | None" = None) -> RepairResult:
         """Run dism helper (runs `["dism", "/Online", "/Cleanup-Image", f"/{action}"]`). Returns RepairResult(...). Windows-only; returns a safe default elsewhere.
 
         Args:
@@ -146,11 +161,9 @@ class SystemRepair:
         """
         if not _IS_WINDOWS:
             return RepairResult("DISM", False, "unsupported", "Windows only.")
-        action = action if action in ("CheckHealth", "ScanHealth", "RestoreHealth") \
-            else "CheckHealth"
+        action = action if action in ("CheckHealth", "ScanHealth", "RestoreHealth") else "CheckHealth"
         timeout = 60 * 30 if action == "RestoreHealth" else 60 * 15
-        out = self._run(["dism", "/Online", "/Cleanup-Image", f"/{action}"],
-                        timeout=timeout, cancel_event=cancel_event)
+        out = self._run(["dism", "/Online", "/Cleanup-Image", f"/{action}"], timeout=timeout, cancel_event=cancel_event)
         return self._parse_dism(out, action)
 
     @staticmethod
@@ -165,35 +178,47 @@ class SystemRepair:
         RepairResult: Result of the operation.
         """
         if out is None:
-            return RepairResult("DISM", False, "error",
-                                "Could not run DISM (Administrator required).")
+            return RepairResult("DISM", False, "error", "Could not run DISM (Administrator required).")
         low = out.lower()
         tail = "\n".join(l for l in out.splitlines() if l.strip())[-600:]
         if "no component store corruption detected" in low:
-            return RepairResult("DISM", True, "clean",
-                                "The Windows component store is healthy.", raw_tail=tail)
-        if "the restore operation completed successfully" in low or \
-           ("restorehealth" in action.lower() and "completed successfully" in low):
-            return RepairResult("DISM", True, "repaired",
-                                "Component store corruption was repaired successfully.",
-                                needs_reboot=True, raw_tail=tail)
+            return RepairResult("DISM", True, "clean", "The Windows component store is healthy.", raw_tail=tail)
+        if "the restore operation completed successfully" in low or (
+            "restorehealth" in action.lower() and "completed successfully" in low
+        ):
+            return RepairResult(
+                "DISM",
+                True,
+                "repaired",
+                "Component store corruption was repaired successfully.",
+                needs_reboot=True,
+                raw_tail=tail,
+            )
         if "the component store is repairable" in low:
-            return RepairResult("DISM", True, "repairable",
-                                "Corruption detected but it IS repairable. Run DISM "
-                                "RestoreHealth to fix it.", raw_tail=tail)
+            return RepairResult(
+                "DISM",
+                True,
+                "repairable",
+                "Corruption detected but it IS repairable. Run DISM " "RestoreHealth to fix it.",
+                raw_tail=tail,
+            )
         if "error" in low and "0x" in low:
             m = re.search(r"(0x[0-9a-fA-F]{8})", out)
             code = m.group(1) if m else ""
-            return RepairResult("DISM", False, "error",
-                                f"DISM reported an error {code}. Check your internet "
-                                "connection (RestoreHealth may fetch files from Windows "
-                                "Update).", raw_tail=tail)
+            return RepairResult(
+                "DISM",
+                False,
+                "error",
+                f"DISM reported an error {code}. Check your internet "
+                "connection (RestoreHealth may fetch files from Windows "
+                "Update).",
+                raw_tail=tail,
+            )
         return RepairResult("DISM", True, "done", f"DISM {action} finished.", raw_tail=tail)
 
     # -- CHKDSK (read-only scan) -------------------------------------------
 
-    def run_chkdsk_scan(self, drive: str = "C",
-                        cancel_event: "threading.Event | None" = None) -> RepairResult:
+    def run_chkdsk_scan(self, drive: str = "C", cancel_event: "threading.Event | None" = None) -> RepairResult:
         """Run chkdsk scan helper. Returns RepairResult(...). Windows-only; returns a safe default elsewhere.
 
         Args:
@@ -223,25 +248,26 @@ class SystemRepair:
         RepairResult: Result of the operation.
         """
         if out is None:
-            return RepairResult("CHKDSK", False, "error",
-                                "Could not run CHKDSK (Administrator required).")
+            return RepairResult("CHKDSK", False, "error", "Could not run CHKDSK (Administrator required).")
         low = out.lower()
         tail = "\n".join(l for l in out.splitlines() if l.strip())[-600:]
         if "found no problems" in low or "no further action is required" in low:
-            return RepairResult("CHKDSK", True, "clean",
-                                f"Drive {letter}: has no filesystem errors.", raw_tail=tail)
+            return RepairResult("CHKDSK", True, "clean", f"Drive {letter}: has no filesystem errors.", raw_tail=tail)
         if "errors" in low and ("found" in low or "detected" in low):
-            return RepairResult("CHKDSK", True, "errors",
-                                f"Drive {letter}: has filesystem errors. Schedule a full "
-                                "check with repair (chkdsk /F) which runs at next reboot.",
-                                needs_reboot=True, raw_tail=tail)
-        return RepairResult("CHKDSK", True, "done",
-                            f"CHKDSK finished scanning {letter}:.", raw_tail=tail)
+            return RepairResult(
+                "CHKDSK",
+                True,
+                "errors",
+                f"Drive {letter}: has filesystem errors. Schedule a full "
+                "check with repair (chkdsk /F) which runs at next reboot.",
+                needs_reboot=True,
+                raw_tail=tail,
+            )
+        return RepairResult("CHKDSK", True, "done", f"CHKDSK finished scanning {letter}:.", raw_tail=tail)
 
     # -- helper -------------------------------------------------------------
 
-    def _run(self, args: list[str], timeout: int,
-            cancel_event: "threading.Event | None" = None) -> str | None:
+    def _run(self, args: list[str], timeout: int, cancel_event: "threading.Event | None" = None) -> str | None:
         """Run helper (spawns a subprocess). Returns text.
 
         Args:
@@ -258,7 +284,10 @@ class SystemRepair:
             # kills the whole process tree on either - never the calling thread
             # (see core/proc.py for why that distinction matters).
             proc = _proc.run(
-                args, timeout=timeout, cancel_event=cancel_event, creationflags=_NO_WINDOW,
+                args,
+                timeout=timeout,
+                cancel_event=cancel_event,
+                creationflags=_NO_WINDOW,
             )
             # SFC/DISM emit UTF-16LE with embedded NULs on the Windows console;
             # decode robustly and strip NULs so parsing works.

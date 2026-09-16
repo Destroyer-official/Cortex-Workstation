@@ -84,14 +84,15 @@ from typing import Callable, List, Optional, Tuple
 
 from cortex_unified.system_tools.restore_point import RestorePointManager
 
-
 # ---------------------------------------------------------------------------
 # Data structures
 # ---------------------------------------------------------------------------
 
+
 @dataclass(frozen=True, slots=True)
 class ComponentStoreInfo:
     """Parsed output of `DISM /AnalyzeComponentStore`."""
+
     explorer_reported_size_gb: float
     actual_size_gb: float
     shared_with_windows_gb: float
@@ -114,6 +115,7 @@ class ComponentStoreInfo:
 @dataclass(frozen=True, slots=True)
 class CleanupResult:
     """Cleanup Result data container."""
+
     success: bool
     before: ComponentStoreInfo
     after: ComponentStoreInfo
@@ -126,6 +128,7 @@ class CleanupResult:
 @dataclass(frozen=True, slots=True)
 class PackageInfo:
     """Single package from `dism /get-packages`."""
+
     name: str
     state: str  # Installed, Staged, Superseded, Install Pending, etc.
     version: str
@@ -135,6 +138,7 @@ class PackageInfo:
 # ---------------------------------------------------------------------------
 # Core cleaner
 # ---------------------------------------------------------------------------
+
 
 class ComponentStoreCleaner:
     """DISM-based Component Store analyzer and cleaner."""
@@ -169,8 +173,12 @@ class ComponentStoreCleaner:
         self.progress(f"Running: {' '.join(cmd)}")
         try:
             proc = subprocess.run(
-                cmd, capture_output=True, text=True, timeout=timeout,
-                encoding=sys.getdefaultencoding(), errors="replace"
+                cmd,
+                capture_output=True,
+                text=True,
+                timeout=timeout,
+                encoding=sys.getdefaultencoding(),
+                errors="replace",
             )
             return proc.returncode, proc.stdout, proc.stderr
         except subprocess.TimeoutExpired:
@@ -237,12 +245,14 @@ class ComponentStoreCleaner:
             parts = re.split(r"\s{2,}", line)
             if len(parts) >= 4:
                 name, state, rel_type, version = parts[0], parts[1], parts[2], parts[3]
-                packages.append(PackageInfo(
-                    name=name.strip(),
-                    state=state.strip(),
-                    version=version.strip(),
-                    release_type=rel_type.strip(),
-                ))
+                packages.append(
+                    PackageInfo(
+                        name=name.strip(),
+                        state=state.strip(),
+                        version=version.strip(),
+                        release_type=rel_type.strip(),
+                    )
+                )
         return packages
 
     # -- public API
@@ -250,9 +260,7 @@ class ComponentStoreCleaner:
     def analyze(self) -> ComponentStoreInfo:
         """Run `DISM /Online /Cleanup-Image /AnalyzeComponentStore`."""
         self.progress("Analyzing Component Store...")
-        rc, out, err = self._run_dism([
-            "/Online", "/Cleanup-Image", "/AnalyzeComponentStore"
-        ])
+        rc, out, err = self._run_dism(["/Online", "/Cleanup-Image", "/AnalyzeComponentStore"])
         if rc != 0:
             raise RuntimeError(f"DISM analyze failed (rc={rc}): {err}")
         return self._parse_analyze(out)
@@ -337,9 +345,7 @@ class ComponentStoreCleaner:
             self._restore_mgr.create(f"Cortex Cleaner: Remove {target.name}")
 
         # Remove the package
-        rc, out, err = self._run_dism([
-            "/Online", "/Remove-Package", f"/PackageName:{target.name}"
-        ], timeout=1800)
+        rc, out, err = self._run_dism(["/Online", "/Remove-Package", f"/PackageName:{target.name}"], timeout=1800)
         if rc != 0:
             raise RuntimeError(f"Remove-Package failed: {err}")
 
@@ -348,10 +354,9 @@ class ComponentStoreCleaner:
 
     def analyze_offline(self, wim_path: str, index: int = 1) -> ComponentStoreInfo:
         """Analyze component store in offline WIM/VHD/VHDX."""
-        rc, out, err = self._run_dism([
-            "/Image", wim_path, "/Index", str(index),
-            "/Cleanup-Image", "/AnalyzeComponentStore"
-        ])
+        rc, out, err = self._run_dism(
+            ["/Image", wim_path, "/Index", str(index), "/Cleanup-Image", "/AnalyzeComponentStore"]
+        )
         if rc != 0:
             raise RuntimeError(f"Offline analyze failed: {err}")
         return self._parse_analyze(out)
@@ -364,10 +369,7 @@ class ComponentStoreCleaner:
     ) -> CleanupResult:
         """Cleanup component store in offline image."""
         before = self.analyze_offline(wim_path, index)
-        args = [
-            "/Image", wim_path, "/Index", str(index),
-            "/Cleanup-Image", "/StartComponentCleanup"
-        ]
+        args = ["/Image", wim_path, "/Index", str(index), "/Cleanup-Image", "/StartComponentCleanup"]
         if reset_base:
             args.append("/ResetBase")
         t0 = time.time()
@@ -393,6 +395,7 @@ class ComponentStoreCleaner:
     ) -> bool:
         """Register a scheduled task for automatic cleanup (admin required)."""
         import subprocess
+
         # PowerShell to create scheduled task
         ps = f"""
 $action = New-ScheduledTaskAction -Execute '{self.dism}' -Argument '/Online /Cleanup-Image /StartComponentCleanup{" /ResetBase" if reset_base else ""}'

@@ -44,16 +44,17 @@ def _throttle(cb: "Callable[[str], None] | None", interval: float = 0.1):
     if cb is None:
         return None
     import time
+
     last = [0.0]
 
     def wrapped(msg: str) -> None:
         """Wrapped helper.
 
- Internal wrapped-callable helper for guarded execution.
+        Internal wrapped-callable helper for guarded execution.
 
- Args:
- msg (str): Informational or progress status message.
- """
+        Args:
+        msg (str): Informational or progress status message.
+        """
         now = time.monotonic()
         if now - last[0] >= interval:
             last[0] = now
@@ -66,8 +67,8 @@ def _throttle(cb: "Callable[[str], None] | None", interval: float = 0.1):
 class CategoryScan:
     """Category Scan.
 
- Result of scanning one cleanup category.
- """
+    Result of scanning one cleanup category.
+    """
 
     category: CleanupCategory
     entries: list[FileEntry] = field(default_factory=list)
@@ -82,11 +83,11 @@ class CategoryScan:
     def file_count(self) -> int:
         """File count.
 
- Number of files in this category scan.
+        Number of files in this category scan.
 
- Returns:
- int: Result of the operation.
- """
+        Returns:
+        int: Result of the operation.
+        """
         return len(self.entries)
 
     def breakdown(self, limit: int = 200) -> list[dict]:
@@ -98,6 +99,7 @@ class CategoryScan:
         collapse into a readable handful of folders.
         """
         from collections import defaultdict
+
         roots = [str(p) for p in self.category.paths]
         groups: dict[str, list] = defaultdict(lambda: [0, 0, "", False])  # size,count,path,is_dir
         for e in self.entries:
@@ -105,7 +107,7 @@ class CategoryScan:
             grp_path = None
             for r in roots:
                 if ep == r or ep.startswith(r + os.sep) or ep.startswith(r + "/"):
-                    rest = ep[len(r):].lstrip("\\/")
+                    rest = ep[len(r) :].lstrip("\\/")
                     if rest:
                         first = rest.replace("/", "\\").split("\\")[0]
                         grp_path = str(Path(r) / first)
@@ -121,19 +123,21 @@ class CategoryScan:
             g[1] += 1
             g[2] = grp_path
             g[3] = g[3] or is_dir
-        items = [{"path": p, "name": Path(p).name or p, "size": v[0],
-                  "count": v[1], "is_dir": v[3]} for p, v in groups.items()]
+        items = [
+            {"path": p, "name": Path(p).name or p, "size": v[0], "count": v[1], "is_dir": v[3]}
+            for p, v in groups.items()
+        ]
         items.sort(key=lambda x: x["size"], reverse=True)
         return items[:limit]
 
     def to_dict(self) -> dict:
         """To dict.
 
- Serializes scan totals to JSON-safe dict.
+        Serializes scan totals to JSON-safe dict.
 
- Returns:
- dict: Dictionary mapping identifiers to status or values.
- """
+        Returns:
+        dict: Dictionary mapping identifiers to status or values.
+        """
         return {
             "id": self.category.id,
             "label": self.category.label,
@@ -160,44 +164,44 @@ class CleanupReport:
     def total_reclaimable_bytes(self) -> int:
         """Total reclaimable bytes.
 
- Sum of reclaimable bytes across categories.
+        Sum of reclaimable bytes across categories.
 
- Returns:
- int: Result of the operation.
- """
+        Returns:
+        int: Result of the operation.
+        """
         return sum(s.total_bytes for s in self.scans)
 
     @property
     def total_files(self) -> int:
         """Total files.
 
- Sum of files across categories.
+        Sum of files across categories.
 
- Returns:
- int: Result of the operation.
- """
+        Returns:
+        int: Result of the operation.
+        """
         return sum(s.file_count for s in self.scans)
 
     @property
     def cloud_skipped(self) -> int:
         """Total cloud placeholders excluded across all categories.
 
- Count of cloud placeholders skipped as non-reclaimable.
+        Count of cloud placeholders skipped as non-reclaimable.
 
- Returns:
- int: Result of the operation.
- """
+        Returns:
+        int: Result of the operation.
+        """
         return sum(s.cloud_skipped for s in self.scans)
 
     @property
     def cloud_skipped_bytes(self) -> int:
         """Logical size of the excluded placeholders (not local, not reclaimable).
 
- Logical size of skipped placeholders.
+        Logical size of skipped placeholders.
 
- Returns:
- int: Result of the operation.
- """
+        Returns:
+        int: Result of the operation.
+        """
         return sum(s.cloud_skipped_bytes for s in self.scans)
 
     @property
@@ -210,18 +214,20 @@ class CleanupReport:
         n = self.cloud_skipped
         if not n:
             return ""
-        return (f"Skipped {n:,} cloud-only file{'s' if n != 1 else ''}: the content "
-                "isn't stored on this PC, so removing it would free no space and "
-                "would delete your cloud copy.")
+        return (
+            f"Skipped {n:,} cloud-only file{'s' if n != 1 else ''}: the content "
+            "isn't stored on this PC, so removing it would free no space and "
+            "would delete your cloud copy."
+        )
 
     def to_dict(self) -> dict:
         """To dict.
 
- Serializes scan totals to JSON-safe dict.
+        Serializes scan totals to JSON-safe dict.
 
- Returns:
- dict: Dictionary mapping identifiers to status or values.
- """
+        Returns:
+        dict: Dictionary mapping identifiers to status or values.
+        """
         return {
             "total_reclaimable_bytes": self.total_reclaimable_bytes,
             "total_files": self.total_files,
@@ -275,6 +281,7 @@ class CleanerService:
             cancel_event: optional ``threading.Event``; scanning stops when set.
         """
         import time
+
         start = time.perf_counter()
         report = CleanupReport()
         _LOG.info("scan_categories start (max_risk=%s)", max_risk.value)
@@ -286,15 +293,19 @@ class CleanerService:
                 _LOG.info("scan_categories cancelled")
                 break
             if progress is not None:
-                progress(f"Scanning {cat.label}\u2026")   # category change: always show
+                progress(f"Scanning {cat.label}\u2026")  # category change: always show
             scan = self._scan_category(cat, emit, cancel_event)
             _LOG.debug("category %s: %d files, %d bytes", cat.id, scan.file_count, scan.total_bytes)
             if scan.file_count:
                 report.scans.append(scan)
 
         report.duration_seconds = time.perf_counter() - start
-        _LOG.info("scan_categories done in %.2fs: %d files, %d bytes",
-                  report.duration_seconds, report.total_files, report.total_reclaimable_bytes)
+        _LOG.info(
+            "scan_categories done in %.2fs: %d files, %d bytes",
+            report.duration_seconds,
+            report.total_files,
+            report.total_reclaimable_bytes,
+        )
         return report
 
     def scan_custom_roots(
@@ -317,6 +328,7 @@ class CleanerService:
             CleanupReport: Aggregated report containing category scans for the targets.
         """
         import time
+
         start = time.perf_counter()
         report = CleanupReport()
         _LOG.info("scan_custom_roots start (%d roots)", len(roots))
@@ -390,19 +402,42 @@ class CleanerService:
         }
 
         build_dir_names = {
-            "node_modules", "target", "build", "dist", "__pycache__",
-            ".pytest_cache", ".mypy_cache", ".ruff_cache", ".gradle",
-            ".next", ".turbo", ".dart_tool", "bin", "obj",
+            "node_modules",
+            "target",
+            "build",
+            "dist",
+            "__pycache__",
+            ".pytest_cache",
+            ".mypy_cache",
+            ".ruff_cache",
+            ".gradle",
+            ".next",
+            ".turbo",
+            ".dart_tool",
+            "bin",
+            "obj",
         }
         temp_suffixes = {".tmp", ".temp", ".bak", ".swp", ".swo", ".part", ".crdownload"}
         log_suffixes = {".log", ".dmp", ".crash"}
         cruft_names = {"thumbs.db", ".ds_store", "desktop.ini", "ehthumbs.db"}
 
         exclude_dirs = {
-            ".git", ".svn", ".hg", "$RECYCLE.BIN", "$Recycle.Bin", "$recycle.bin",
-            "System Volume Information", "system volume information",
-            "Windows", "windows", "Program Files", "program files",
-            "Program Files (x86)", "program files (x86)", "Recovery", "recovery",
+            ".git",
+            ".svn",
+            ".hg",
+            "$RECYCLE.BIN",
+            "$Recycle.Bin",
+            "$recycle.bin",
+            "System Volume Information",
+            "system volume information",
+            "Windows",
+            "windows",
+            "Program Files",
+            "program files",
+            "Program Files (x86)",
+            "program files (x86)",
+            "Recovery",
+            "recovery",
         }
         opts = WalkOptions(
             exclude_dir_names=frozenset(exclude_dirs),
@@ -484,6 +519,7 @@ class CleanerService:
                 continue
 
             if p.is_dir():
+
                 def _rep(cur_dir: str, seen: int) -> None:
                     """Report traversal progress to caller callback.
 
@@ -516,8 +552,12 @@ class CleanerService:
             report.scans[0].cloud_skipped_bytes = walker.cloud_skipped_bytes
 
         report.duration_seconds = time.perf_counter() - start
-        _LOG.info("scan_custom_roots done in %.2fs: %d files, %d bytes",
-                  report.duration_seconds, report.total_files, report.total_reclaimable_bytes)
+        _LOG.info(
+            "scan_custom_roots done in %.2fs: %d files, %d bytes",
+            report.duration_seconds,
+            report.total_files,
+            report.total_reclaimable_bytes,
+        )
         return report
 
     def clean_categories(
@@ -539,8 +579,7 @@ class CleanerService:
         # Reuse sizes already gathered during the scan so deletion doesn't
         # re-stat every file just to report freed bytes.
         sizes = {str(e.path): e.size for scan in report.scans for e in scan.entries}
-        return deleter.delete_many(paths, method, progress=progress,
-                                   cancel_event=cancel_event, sizes=sizes)
+        return deleter.delete_many(paths, method, progress=progress, cancel_event=cancel_event, sizes=sizes)
 
     # -- ad-hoc analysis ----------------------------------------------------
 
@@ -564,17 +603,19 @@ class CleanerService:
         emit = _throttle(progress)
         entries: list[tuple[Path, int]] = []
         for root in roots:
+
             def _rep(cur_dir, seen):
                 """Rep helper.
 
- Per-category report builder.
+                Per-category report builder.
 
- Args:
- cur_dir: The cur dir parameter.
- seen: The seen parameter.
- """
+                Args:
+                cur_dir: The cur dir parameter.
+                seen: The seen parameter.
+                """
                 if emit is not None:
                     emit(f"Indexing files: {len(entries) + seen}\u2026")
+
             for e in walker.iter_files(root, progress=_rep):
                 if extensions is not None and e.path.suffix.lower() not in extensions:
                     continue
@@ -585,14 +626,15 @@ class CleanerService:
         def _hprog(done, total):
             """Hprog helper.
 
- Progress callback helper for category scans.
+            Progress callback helper for category scans.
 
- Args:
- done: The done parameter.
- total: The total parameter.
- """
+            Args:
+            done: The done parameter.
+            total: The total parameter.
+            """
             if emit is not None:
                 emit(f"Hashing {done}/{total}\u2026")
+
         return DuplicateFinderEngine().find(entries, progress=_hprog)
 
     def find_large_files(
@@ -605,18 +647,18 @@ class CleanerService:
     ) -> list[FileEntry]:
         """Return the largest files under *root* above *min_mb*, biggest first.
 
- Walks root returning files above min_mb sorted biggest-first.
+        Walks root returning files above min_mb sorted biggest-first.
 
- Args:
- root (str | Path): Filesystem path to the target file or directory.
- min_mb (float): The min mb parameter.
- limit (int): The limit parameter.
- progress ('Callable[[str], None] | None'): The progress parameter.
- cancel_event: Threading event or callable to check for cancellation.
+        Args:
+        root (str | Path): Filesystem path to the target file or directory.
+        min_mb (float): The min mb parameter.
+        limit (int): The limit parameter.
+        progress ('Callable[[str], None] | None'): The progress parameter.
+        cancel_event: Threading event or callable to check for cancellation.
 
- Returns:
- list[FileEntry]: List of processed items or identifiers.
- """
+        Returns:
+        list[FileEntry]: List of processed items or identifiers.
+        """
         opts = WalkOptions(min_size=int(min_mb * 1024 * 1024))
         walker = FastWalker(opts)
         if cancel_event is not None:
@@ -627,14 +669,15 @@ class CleanerService:
         def _rep(cur_dir, seen):
             """Rep helper.
 
- Per-category report builder.
+            Per-category report builder.
 
- Args:
- cur_dir: The cur dir parameter.
- seen: The seen parameter.
- """
+            Args:
+            cur_dir: The cur dir parameter.
+            seen: The seen parameter.
+            """
             if emit is not None:
                 emit(f"Scanning: {seen} files ({len(entries)} large)\u2026")
+
         for e in walker.iter_files(root, progress=_rep):
             entries.append(e)
         entries.sort(key=lambda e: e.size, reverse=True)
@@ -647,15 +690,15 @@ class CleanerService:
     ) -> tuple[list[Path], list[Path]]:
         """Return (empty_files, empty_dirs) under *root*.
 
- Walks root returning empty files and directories.
+        Walks root returning empty files and directories.
 
- Args:
- root (str | Path): Filesystem path to the target file or directory.
- cancel_event: Threading event or callable to check for cancellation.
+        Args:
+        root (str | Path): Filesystem path to the target file or directory.
+        cancel_event: Threading event or callable to check for cancellation.
 
- Returns:
- tuple[list[Path], list[Path]]: List of processed items or identifiers.
- """
+        Returns:
+        tuple[list[Path], list[Path]]: List of processed items or identifiers.
+        """
         walker = FastWalker()
         if cancel_event is not None:
             walker._cancel = cancel_event
@@ -668,16 +711,16 @@ class CleanerService:
     ) -> list[CleanupCategory]:
         """Select categories.
 
- Filters the category registry by id and platform.
+        Filters the category registry by id and platform.
 
- Args:
- ids (list[str] | None): The ids parameter.
- max_risk (RiskLevel): The max risk parameter.
- include_disabled (bool): The include disabled parameter.
+        Args:
+        ids (list[str] | None): The ids parameter.
+        max_risk (RiskLevel): The max risk parameter.
+        include_disabled (bool): The include disabled parameter.
 
- Returns:
- list[CleanupCategory]: List of processed items or identifiers.
- """
+        Returns:
+        list[CleanupCategory]: List of processed items or identifiers.
+        """
         cats = default_categories()
         if ids is not None:
             idset = set(ids)
@@ -724,13 +767,13 @@ class CleanerService:
             def _report(cur_dir, seen, _label=cat.label):
                 """Report helper.
 
- Aggregates category reports into a final summary.
+                Aggregates category reports into a final summary.
 
- Args:
- cur_dir: The cur dir parameter.
- seen: The seen parameter.
- _label: The label parameter.
- """
+                Args:
+                cur_dir: The cur dir parameter.
+                seen: The seen parameter.
+                _label: The label parameter.
+                """
                 if progress is not None:
                     progress(f"Scanning {_label}: {scan.file_count + seen} files\u2026")
 
@@ -750,14 +793,15 @@ class CleanerService:
 def _matches_any(name: str, globs: tuple[str, ...]) -> bool:
     """Matches any.
 
- True when the path matches any configured pattern.
+    True when the path matches any configured pattern.
 
- Args:
- name (str): The name parameter.
- globs (tuple[str, ..]): The globs parameter.
+    Args:
+    name (str): The name parameter.
+    globs (tuple[str, ..]): The globs parameter.
 
- Returns:
- bool: True if the operation succeeded, False otherwise.
- """
+    Returns:
+    bool: True if the operation succeeded, False otherwise.
+    """
     import fnmatch
+
     return any(fnmatch.fnmatch(name, g) for g in globs)

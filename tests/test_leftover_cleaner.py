@@ -31,13 +31,14 @@ from cortex_unified.system_tools.leftover_cleaner import (
     match_string_to_product,
 )
 
-
 # =====================================================================
 #  Matcher
 # =====================================================================
 
+
 class TestEditDistance:
     """Group testeditdistance tests covering identical strings cost zero; empty inputs; known distances; early exit exceeds bound."""
+
     def test_identical_strings_cost_zero(self):
         """Verify identical strings cost zero via edit_distance."""
         assert edit_distance("sublime", "sublime") == 0
@@ -48,13 +49,16 @@ class TestEditDistance:
         assert edit_distance("abc", "") == 3
         assert edit_distance("", "") == 0
 
-    @pytest.mark.parametrize("a,b,expected", [
-        ("abcdef", "abcxef", 1),   # one substitution
-        ("abcdef", "abdxf", 2),    # substitution + deletion
-        ("kitten", "sitting", 3),  # classic Levenshtein example
-        ("flaw", "lawn", 2),
-        ("copy", "copy", 0),
-    ])
+    @pytest.mark.parametrize(
+        "a,b,expected",
+        [
+            ("abcdef", "abcxef", 1),  # one substitution
+            ("abcdef", "abdxf", 2),  # substitution + deletion
+            ("kitten", "sitting", 3),  # classic Levenshtein example
+            ("flaw", "lawn", 2),
+            ("copy", "copy", 0),
+        ],
+    )
     def test_known_distances(self, a, b, expected):
         """Verify known distances via pytest.mark.parametrize, edit_distance.
 
@@ -72,6 +76,7 @@ class TestEditDistance:
 
 class TestMatchStringToProduct:
     """Group testmatchstringtoproduct tests covering perfect match; near match off by one; substring containment; short names never match; unrelated names rejected; distance beyond one third cutoff."""
+
     def test_perfect_match(self):
         """Verify perfect match via match_string_to_product."""
         assert match_string_to_product("sublime text", "Sublime Text") == 0
@@ -101,6 +106,7 @@ class TestMatchStringToProduct:
 
 class TestBuildTokens:
     """Group testbuildtokens tests covering noise suffixes removed; generic publishers excluded; specific publisher included; short tokens dropped."""
+
     def test_noise_suffixes_removed(self):
         """Verify noise suffixes removed via build_tokens."""
         tokens = build_tokens("AppX (64-bit) Free Edition")
@@ -129,6 +135,7 @@ class TestBuildTokens:
 
 class TestConfidenceLevels:
     """Group testconfidencelevels tests covering mapping."""
+
     def test_mapping(self):
         """Verify mapping via confidence_level."""
         assert confidence_level(-1) == BAD
@@ -143,7 +150,7 @@ class TestConfidenceLevels:
 def test_detect_installer_type():
     """Verify detect installer type via detect_installer_type."""
     guid = "{9A25302D-30CA-406E-8F5C-4A0B0B6A2F3A}"
-    assert detect_installer_type(guid, 'MsiExec.exe /I{...}') == "msi"
+    assert detect_installer_type(guid, "MsiExec.exe /I{...}") == "msi"
     assert detect_installer_type("MyApp_is1", '"C:\\x\\unins000.exe"') == "inno"
     assert detect_installer_type("MyApp", '"C:\\x\\uninst.exe" /S') == "nsis"
     assert detect_installer_type("WeirdKey", "something.exe") == "unknown"
@@ -153,10 +160,11 @@ def test_detect_installer_type():
 #  Safety gates
 # =====================================================================
 
+
 class TestSafetyPolicy:
     """Group testsafetypolicy tests covering known folder roots are prohibited but children allowed; own paths protected."""
-    def test_known_folder_roots_are_prohibited_but_children_allowed(
-            self, monkeypatch, tmp_path):
+
+    def test_known_folder_roots_are_prohibited_but_children_allowed(self, monkeypatch, tmp_path):
         """Verify known folder roots are prohibited but children allowed via SafetyPolicy.build, monkeypatch.setenv, policy.is_prohibited.
 
         Args:
@@ -176,8 +184,7 @@ class TestSafetyPolicy:
         Args:
             tmp_path: Filesystem path to the target file or directory.
         """
-        policy = SafetyPolicy(protected_paths=frozenset(),
-                              own_paths=(str(tmp_path),))
+        policy = SafetyPolicy(protected_paths=frozenset(), own_paths=(str(tmp_path),))
         assert policy.is_prohibited(tmp_path)
         assert not policy.is_prohibited(tmp_path / "child")
 
@@ -185,6 +192,7 @@ class TestSafetyPolicy:
 # =====================================================================
 #  Scanner - filesystem sweep on a synthetic tree
 # =====================================================================
+
 
 @pytest.fixture
 def fake_env(monkeypatch, tmp_path):
@@ -224,6 +232,7 @@ def _scanner(apps=()):
 
 class TestFilesystemSweep:
     """Group testfilesystemsweep tests covering empty leftover folder scores very good; blacklisted directory never flagged; executables present penalized; product still installed penalized; live sibling app claiming name penalized."""
+
     def test_empty_leftover_folder_scores_very_good(self, fake_env):
         """Verify empty leftover folder scores very good via scanner.scan_app, InstalledApp, p.lower.
 
@@ -233,13 +242,11 @@ class TestFilesystemSweep:
         target = fake_env / "roaming" / "ZetaSoft ZetaEditor"
         target.mkdir()
         scanner = _scanner()
-        app = InstalledApp(name="ZetaEditor", publisher="ZetaSoft",
-                           install_location=r"C:\Program Files\ZetaEditor")
+        app = InstalledApp(name="ZetaEditor", publisher="ZetaSoft", install_location=r"C:\Program Files\ZetaEditor")
         findings = scanner.scan_app(app)
         paths = {f.path for f in findings}
         assert str(target).lower() in {p.lower() for p in paths}
-        best = next(f for f in findings
-                    if f.path.lower() == str(target).lower())
+        best = next(f for f in findings if f.path.lower() == str(target).lower())
         assert best.level == VERY_GOOD
         assert any("empty" in r for r in best.reasons)
 
@@ -253,8 +260,7 @@ class TestFilesystemSweep:
         target.mkdir()
         app = InstalledApp(name="Microsoft Office", publisher="Microsoft")
         findings = _scanner().scan_app(app)
-        assert all("microsoft" != Path(f.path).name.lower()
-                   for f in findings if f.kind == "folder")
+        assert all("microsoft" != Path(f.path).name.lower() for f in findings if f.kind == "folder")
 
     def test_executables_present_penalized(self, fake_env):
         """Verify executables present penalized via InstalledApp, f.path.lower, scan_app.
@@ -267,8 +273,7 @@ class TestFilesystemSweep:
         (target / "zeta.exe").write_bytes(b"MZ")
         app = InstalledApp(name="ZetaEditor")
         findings = _scanner().scan_app(app)
-        best = next(f for f in findings
-                    if f.path.lower() == str(target).lower())
+        best = next(f for f in findings if f.path.lower() == str(target).lower())
         assert any("executables present" in r for r in best.reasons)
         # depth bonus (+2) and leaf bonus (+2) must not outrank the
         # executables penalty (-4): the net score stays non-positive.
@@ -282,13 +287,11 @@ class TestFilesystemSweep:
         """
         target = fake_env / "roaming" / "ZetaEditor"
         target.mkdir()
-        live = InstalledApp(name="ZetaEditor", publisher="ZetaSoft",
-                            install_location=str(fake_env / "pf" / "Live"))
+        live = InstalledApp(name="ZetaEditor", publisher="ZetaSoft", install_location=str(fake_env / "pf" / "Live"))
         (fake_env / "pf" / "Live").mkdir()
         app = InstalledApp(name="ZetaEditor", publisher="ZetaSoft")
         findings = _scanner(apps=[live]).scan_app(app)
-        best = next(f for f in findings
-                    if f.path.lower() == str(target).lower())
+        best = next(f for f in findings if f.path.lower() == str(target).lower())
         assert any("still installed" in r for r in best.reasons)
         # The -4 penalty must keep this out of the top confidence tier.
         assert best.level != VERY_GOOD
@@ -301,13 +304,11 @@ class TestFilesystemSweep:
         """
         target = fake_env / "roaming" / "ZetaEditorPro"
         target.mkdir()
-        live = InstalledApp(name="ZetaEditorPro", publisher="OtherCorp",
-                            install_location=str(fake_env / "pf" / "Live"))
+        live = InstalledApp(name="ZetaEditorPro", publisher="OtherCorp", install_location=str(fake_env / "pf" / "Live"))
         (fake_env / "pf" / "Live").mkdir()
         app = InstalledApp(name="ZetaEditor", publisher="ZetaSoft")
         findings = _scanner(apps=[live]).scan_app(app)
-        best = next(f for f in findings
-                    if f.path.lower() == str(target).lower())
+        best = next(f for f in findings if f.path.lower() == str(target).lower())
         assert any("installed app" in r for r in best.reasons)
 
     def test_nested_cache_inside_matched_vendor_found(self, fake_env):
@@ -337,8 +338,8 @@ class TestFilesystemSweep:
         if os.name == "nt":
             # Junctions need no admin privileges, unlike symlinks.
             import subprocess as sp
-            r = sp.run(["cmd", "/c", "mklink", "/J", str(link), str(real)],
-                       capture_output=True)
+
+            r = sp.run(["cmd", "/c", "mklink", "/J", str(link), str(real)], capture_output=True)
             made = r.returncode == 0
         else:
             try:
@@ -360,8 +361,7 @@ class TestFilesystemSweep:
         """
         orphan = fake_env / "pf" / "GhostApp"
         orphan.mkdir()
-        live = InstalledApp(name="PresentApp",
-                            install_location=str(fake_env / "pf" / "Present"))
+        live = InstalledApp(name="PresentApp", install_location=str(fake_env / "pf" / "Present"))
         (fake_env / "pf" / "Present").mkdir()
         findings = _scanner(apps=[live]).scan_orphans()
         names = {Path(f.path).name.lower() for f in findings}
@@ -372,6 +372,7 @@ class TestFilesystemSweep:
 # =====================================================================
 #  Registry sweep with a stubbed winreg
 # =====================================================================
+
 
 class FakeRegKey:
     """Helper fakeregkey."""
@@ -400,20 +401,24 @@ def fake_registry(monkeypatch):
     OpenKey semantics mirror the real API: given a hive constant it resolves
     an absolute path; given a key object it resolves a direct child name.
     """
-    zeta_key = FakeRegKey(values={
-        "InstallLocation": r"C:\Program Files\ZetaEditor",
-        "Language": "en",
-    })
-    zetasoft = FakeRegKey(subkeys={
-        "ZetaEditor": zeta_key,
-        "Unrelated": FakeRegKey(),
-    })
+    zeta_key = FakeRegKey(
+        values={
+            "InstallLocation": r"C:\Program Files\ZetaEditor",
+            "Language": "en",
+        }
+    )
+    zetasoft = FakeRegKey(
+        subkeys={
+            "ZetaEditor": zeta_key,
+            "Unrelated": FakeRegKey(),
+        }
+    )
     software = FakeRegKey(subkeys={"ZetaSoft": zetasoft})
-    roots = {"SOFTWARE": software,
-             r"SOFTWARE\Wow6432Node": FakeRegKey(subkeys={"ZetaSoft": zetasoft})}
+    roots = {"SOFTWARE": software, r"SOFTWARE\Wow6432Node": FakeRegKey(subkeys={"ZetaSoft": zetasoft})}
 
     class FakeWinreg:
         """Helper fakewinreg using roots.get, OSError, key.children."""
+
         HKEY_LOCAL_MACHINE = "hklm"
         HKEY_CURRENT_USER = "hkcu"
         KEY_READ = 0x20019
@@ -429,7 +434,7 @@ def fake_registry(monkeypatch):
                 reserved: The reserved parameter.
                 access: The access parameter.
             """
-            if isinstance(key, str):          # hive -> absolute branch
+            if isinstance(key, str):  # hive -> absolute branch
                 target = roots.get(path)
                 if target is None:
                     raise OSError(f"missing {path}")
@@ -485,6 +490,7 @@ def fake_registry(monkeypatch):
             return (name, value, 1)
 
     import cortex_unified.system_tools.leftover_cleaner as lc
+
     monkeypatch.setattr(lc, "winreg", FakeWinreg)
     monkeypatch.setattr(lc, "HAS_WINREG", True)
     return roots
@@ -492,16 +498,15 @@ def fake_registry(monkeypatch):
 
 class TestRegistrySweep:
     """Group testregistrysweep tests covering matching software key found with explicit pointer; walk skips blacklisted branches."""
-    def test_matching_software_key_found_with_explicit_pointer(
-            self, fake_env, fake_registry):
+
+    def test_matching_software_key_found_with_explicit_pointer(self, fake_env, fake_registry):
         """Verify matching software key found with explicit pointer via InstalledApp, f.path.endswith, scan_app.
 
         Args:
             fake_env: The fake env parameter.
             fake_registry: The fake registry parameter.
         """
-        app = InstalledApp(name="ZetaEditor", publisher="ZetaSoft",
-                           install_location=r"C:\Program Files\ZetaEditor")
+        app = InstalledApp(name="ZetaEditor", publisher="ZetaSoft", install_location=r"C:\Program Files\ZetaEditor")
         findings = _scanner().scan_app(app)
         reg_hits = [f for f in findings if f.kind == "registry"]
         assert any(f.path.endswith("ZetaEditor") for f in reg_hits)
@@ -518,18 +523,18 @@ class TestRegistrySweep:
         """
         app = InstalledApp(name="Classes")  # blacklisted walk name
         findings = _scanner().scan_app(app)
-        assert all(not f.path.endswith("\\Classes") for f in findings
-                   if f.kind == "registry")
+        assert all(not f.path.endswith("\\Classes") for f in findings if f.kind == "registry")
 
 
 # =====================================================================
 #  Cleaner
 # =====================================================================
 
+
 class TestCleaner:
     """Group testcleaner tests covering recycle via send2trash and journal; recycle failure surfaced not hidden; registry clean exports backup then deletes; protected paths are skipped; empty clean writes no journal."""
-    def test_recycle_via_send2trash_and_journal(self, fake_env, tmp_path,
-                                                monkeypatch):
+
+    def test_recycle_via_send2trash_and_journal(self, fake_env, tmp_path, monkeypatch):
         """Verify recycle via send2trash and journal via monkeypatch.setattr, LeftoverCleaner, cleaner.clean.
 
         Args:
@@ -550,10 +555,10 @@ class TestCleaner:
             calls.append(path)
 
         import send2trash
+
         monkeypatch.setattr(send2trash, "send2trash", fake_send2trash)
         cleaner = LeftoverCleaner(backup_root=tmp_path / "backups")
-        outcome = cleaner.clean([
-            LeftoverFinding(kind="folder", path=str(target))])
+        outcome = cleaner.clean([LeftoverFinding(kind="folder", path=str(target))])
         assert outcome[0].ok is True
         assert outcome[0].disposition == "recycled"
         assert calls == [str(target)]
@@ -562,8 +567,7 @@ class TestCleaner:
         payload = json.loads(journals[0].read_text(encoding="utf-8"))
         assert payload["ok_count"] == 1
 
-    def test_recycle_failure_surfaced_not_hidden(self, fake_env, tmp_path,
-                                                 monkeypatch):
+    def test_recycle_failure_surfaced_not_hidden(self, fake_env, tmp_path, monkeypatch):
         """Verify recycle failure surfaced not hidden via monkeypatch.setattr, LeftoverCleaner, cleaner.clean.
 
         Args:
@@ -583,14 +587,14 @@ class TestCleaner:
             raise PermissionError("would be permanently deleted")
 
         import send2trash
+
         monkeypatch.setattr(send2trash, "send2trash", boom)
         cleaner = LeftoverCleaner(backup_root=tmp_path / "b")
         outcome = cleaner.clean([LeftoverFinding(kind="folder", path=str(target))])
         assert outcome[0].ok is False
         assert "permanently deleted" in outcome[0].detail
 
-    def test_registry_clean_exports_backup_then_deletes(self, tmp_path,
-                                                        monkeypatch):
+    def test_registry_clean_exports_backup_then_deletes(self, tmp_path, monkeypatch):
         """Verify registry clean exports backup then deletes via monkeypatch.setattr, LeftoverCleaner, LeftoverFinding.
 
         Args:
@@ -609,20 +613,22 @@ class TestCleaner:
             if cmd[0] == "reg" and cmd[1] == "export":
                 # reg export <key> <file> /y  -> backup file is cmd[3]
                 Path(cmd[3]).write_text("Windows Registry Editor Version 5.00")
+
             class R:
                 """Helper r."""
+
                 returncode = 0
                 stderr = ""
+
             return R()
 
         monkeypatch.setattr("subprocess.run", fake_run)
         cleaner = LeftoverCleaner(backup_root=tmp_path / "b")
-        finding = LeftoverFinding(kind="registry",
-                                  path=r"HKCU\SOFTWARE\ZetaSoft\ZetaEditor")
+        finding = LeftoverFinding(kind="registry", path=r"HKCU\SOFTWARE\ZetaSoft\ZetaEditor")
         outcome = cleaner.clean([finding])
         assert outcome[0].ok is True
         assert outcome[0].disposition == "registry_deleted"
-        assert ran[0][0:2] == ["reg", "export"]      # backup FIRST
+        assert ran[0][0:2] == ["reg", "export"]  # backup FIRST
         assert ran[1][0:2] == ["reg", "delete"]
         backups = list((tmp_path / "b").rglob("*.reg"))
         assert len(backups) == 1
@@ -635,8 +641,7 @@ class TestCleaner:
         """
         protected = SafetyPolicy.build(extra_protected=[str(tmp_path / "keep")])
         cleaner = LeftoverCleaner(backup_root=tmp_path / "b", policy=protected)
-        outcome = cleaner.clean([
-            LeftoverFinding(kind="folder", path=str(tmp_path / "keep"))])
+        outcome = cleaner.clean([LeftoverFinding(kind="folder", path=str(tmp_path / "keep"))])
         assert outcome[0].disposition == "skipped"
 
     def test_empty_clean_writes_no_journal(self, tmp_path):
@@ -654,10 +659,11 @@ class TestCleaner:
 #  COM / InnoSetup log / services / scheduled tasks
 # =====================================================================
 
+
 class TestComSweep:
     """Group testcomsweep tests covering clsid pointing into dead install is flagged."""
-    def test_clsid_pointing_into_dead_install_is_flagged(
-            self, fake_env, monkeypatch):
+
+    def test_clsid_pointing_into_dead_install_is_flagged(self, fake_env, monkeypatch):
         """A CLSID whose InprocServer32 lives in the dead install location
         must be reported; OS GUIDs (-0000-) and foreign paths must not."""
         import cortex_unified.system_tools.leftover_cleaner as lc
@@ -676,7 +682,7 @@ class TestComSweep:
             server = FakeRegKey(values={"": str(server_path)})
             return FakeRegKey(subkeys={"InprocServer32": server})
 
-        os_guid = "{12345678-0000-0000-0000-000000000000}"   # OS-shaped
+        os_guid = "{12345678-0000-0000-0000-000000000000}"  # OS-shaped
         app_guid = "{AAAAAAAA-BBBB-CCCC-DDDD-EEEEEEEEEEEE}"
         foreign_guid = "{11111111-2222-3333-4444-555555555555}"
 
@@ -684,14 +690,17 @@ class TestComSweep:
         foreign.parent.mkdir(parents=True)
         foreign.write_bytes(b"MZ")
 
-        classes = FakeRegKey(subkeys={
-            os_guid: clsid_key(str(dll)),
-            app_guid: clsid_key(str(dll)),
-            foreign_guid: clsid_key(str(foreign)),
-        })
+        classes = FakeRegKey(
+            subkeys={
+                os_guid: clsid_key(str(dll)),
+                app_guid: clsid_key(str(dll)),
+                foreign_guid: clsid_key(str(foreign)),
+            }
+        )
 
         class ComWinreg:
             """Helper comwinreg using OSError, key.children, get."""
+
             HKEY_LOCAL_MACHINE = "hklm"
             HKEY_CURRENT_USER = "hkcu"
             KEY_READ = 0x20019
@@ -767,11 +776,9 @@ class TestComSweep:
         monkeypatch.setattr(lc, "winreg", ComWinreg)
         monkeypatch.setattr(lc, "HAS_WINREG", True)
 
-        app = InstalledApp(name="ZetaEditor",
-                           install_location=str(install))
+        app = InstalledApp(name="ZetaEditor", install_location=str(install))
         findings = LeftoverScanner().scan_app(app)
-        com_hits = [f for f in findings
-                    if f.kind == "registry" and "CLSID" in f.path]
+        com_hits = [f for f in findings if f.kind == "registry" and "CLSID" in f.path]
         paths = [f.path for f in com_hits]
         # The fake serves both HKLM and HKCU identically, so the mirrored
         # pair is correct; OS/foreign GUIDs must never appear.
@@ -783,8 +790,8 @@ class TestComSweep:
 
 class TestInnoLog:
     """Group testinnolog tests covering paths from unins000 dat that still exist are flagged."""
-    def test_paths_from_unins000_dat_that_still_exist_are_flagged(
-            self, fake_env):
+
+    def test_paths_from_unins000_dat_that_still_exist_are_flagged(self, fake_env):
         """Verify paths from unins000 dat that still exist are flagged via InstalledApp, LeftoverScanner, scan_app.
 
         Args:
@@ -797,8 +804,7 @@ class TestInnoLog:
         leftover_file.write_bytes(b"x" * 10)
 
         # Build a fake unins000.dat: absolute paths as UTF-16LE runs.
-        entries = [str(leftover_file), str(install / "ghost.txt"),
-                   r"D:\unrelated\other.dll"]
+        entries = [str(leftover_file), str(install / "ghost.txt"), r"D:\unrelated\other.dll"]
         blob = "".join(e + "\x00" for e in entries).encode("utf-16-le")
         # Even-length magic so UTF-16LE decoding stays aligned (the real
         # file's header is also a whole number of 2-byte chars).
@@ -808,8 +814,7 @@ class TestInnoLog:
         findings = LeftoverScanner().scan_app(app)
         hits = {f.path: f for f in findings}
         assert str(leftover_file) in hits
-        assert any("InnoSetup uninstall log" in r
-                   for r in hits[str(leftover_file)].reasons)
+        assert any("InnoSetup uninstall log" in r for r in hits[str(leftover_file)].reasons)
         # Listed but already-deleted files are NOT reported.
         assert str(install / "ghost.txt") not in hits
         # Paths outside the install dir are ignored entirely.
@@ -818,8 +823,8 @@ class TestInnoLog:
 
 class TestServiceAndTaskClean:
     """Group testserviceandtaskclean tests covering service clean backs up then sc deletes; task clean backs up xml then schtasks deletes; task sweep finds command in dead install."""
-    def test_service_clean_backs_up_then_sc_deletes(self, tmp_path,
-                                                    monkeypatch):
+
+    def test_service_clean_backs_up_then_sc_deletes(self, tmp_path, monkeypatch):
         """Verify service clean backs up then sc deletes via monkeypatch.setattr, LeftoverCleaner, LeftoverFinding.
 
         Args:
@@ -836,29 +841,29 @@ class TestServiceAndTaskClean:
             """
             ran.append(list(cmd))
             if cmd[0] == "reg":
-                Path(cmd[3]).write_text("bak")   # reg export <key> <file> /y
+                Path(cmd[3]).write_text("bak")  # reg export <key> <file> /y
+
             class R:
                 """Helper r."""
+
                 returncode = 0
                 stderr = ""
                 stdout = ""
+
             return R()
 
         monkeypatch.setattr("subprocess.run", fake_run)
         cleaner = LeftoverCleaner(backup_root=tmp_path / "b")
-        finding = LeftoverFinding(
-            kind="service",
-            path=r"HKLM\SYSTEM\CurrentControlSet\Services\ZetaSvc")
+        finding = LeftoverFinding(kind="service", path=r"HKLM\SYSTEM\CurrentControlSet\Services\ZetaSvc")
         outcome = cleaner.clean([finding])
         assert outcome[0].ok is True
         assert outcome[0].disposition == "service_deleted"
         kinds = [(c[0], c[1]) for c in ran]
-        assert ("reg", "export") == kinds[0]          # backup FIRST
-        assert ("sc.exe", "stop") == kinds[1]         # stop best-effort
+        assert ("reg", "export") == kinds[0]  # backup FIRST
+        assert ("sc.exe", "stop") == kinds[1]  # stop best-effort
         assert ("sc.exe", "delete") == kinds[2]
 
-    def test_task_clean_backs_up_xml_then_schtasks_deletes(
-            self, fake_env, tmp_path, monkeypatch):
+    def test_task_clean_backs_up_xml_then_schtasks_deletes(self, fake_env, tmp_path, monkeypatch):
         """Verify task clean backs up xml then schtasks deletes via monkeypatch.setenv, monkeypatch.setattr, LeftoverCleaner.
 
         Args:
@@ -866,12 +871,9 @@ class TestServiceAndTaskClean:
             tmp_path: Filesystem path to the target file or directory.
             monkeypatch: The monkeypatch parameter.
         """
-        task_file = (fake_env / "winsys" / "System32" / "Tasks" / "Zeta"
-                     / "update.xml")
+        task_file = fake_env / "winsys" / "System32" / "Tasks" / "Zeta" / "update.xml"
         task_file.parent.mkdir(parents=True)
-        task_file.write_text(
-            "<Task><Actions><Command>C:\\dead\\app\\svc.exe</Command>"
-            "</Actions></Task>")
+        task_file.write_text("<Task><Actions><Command>C:\\dead\\app\\svc.exe</Command>" "</Actions></Task>")
         monkeypatch.setenv("SystemRoot", str(fake_env / "winsys"))
 
         ran = []
@@ -883,17 +885,19 @@ class TestServiceAndTaskClean:
                 cmd: The cmd parameter.
             """
             ran.append(list(cmd))
+
             class R:
                 """Helper r."""
+
                 returncode = 0
                 stderr = ""
                 stdout = ""
+
             return R()
 
         monkeypatch.setattr("subprocess.run", fake_run)
         cleaner = LeftoverCleaner(backup_root=tmp_path / "b")
-        outcome = cleaner.clean([LeftoverFinding(kind="task",
-                                                 path=r"Zeta\update")])
+        outcome = cleaner.clean([LeftoverFinding(kind="task", path=r"Zeta\update")])
         assert outcome[0].ok is True
         assert outcome[0].disposition == "task_deleted"
         assert ["schtasks", "/end", "/tn", "Zeta\\update"] in ran
@@ -901,8 +905,7 @@ class TestServiceAndTaskClean:
         backups = list((tmp_path / "b").rglob("*.xml"))
         assert len(backups) == 1
 
-    def test_task_sweep_finds_command_in_dead_install(self, fake_env,
-                                                      monkeypatch):
+    def test_task_sweep_finds_command_in_dead_install(self, fake_env, monkeypatch):
         """Verify task sweep finds command in dead install via monkeypatch.setenv, InstalledApp, LeftoverScanner.
 
         Args:
@@ -910,15 +913,13 @@ class TestServiceAndTaskClean:
             monkeypatch: The monkeypatch parameter.
         """
         monkeypatch.setenv("SystemRoot", str(fake_env / "winsys"))
-        task_file = (fake_env / "winsys" / "System32" / "Tasks" / "ZetaUpdate")
+        task_file = fake_env / "winsys" / "System32" / "Tasks" / "ZetaUpdate"
         task_file.parent.mkdir(parents=True)
         dead_exe = fake_env / "pf" / "ZetaApp" / "svc.exe"
         dead_exe.parent.mkdir(parents=True)
-        task_file.write_text(
-            f"<Task><Actions><Command>{dead_exe}</Command></Actions></Task>")
+        task_file.write_text(f"<Task><Actions><Command>{dead_exe}</Command></Actions></Task>")
 
-        app = InstalledApp(name="ZetaApp",
-                           install_location=str(fake_env / "pf" / "ZetaApp"))
+        app = InstalledApp(name="ZetaApp", install_location=str(fake_env / "pf" / "ZetaApp"))
         findings = LeftoverScanner().scan_app(app)
         tasks = [f for f in findings if f.kind == "task"]
         assert len(tasks) == 1
@@ -927,6 +928,7 @@ class TestServiceAndTaskClean:
 
 class TestTokenStopwords:
     """Group testtokenstopwords tests covering generic words never become tokens; product identity survives."""
+
     def test_generic_words_never_become_tokens(self):
         """Verify generic words never become tokens via build_tokens."""
         tokens = build_tokens("Definitely Not Installed XYZ Setup")
@@ -938,18 +940,22 @@ class TestTokenStopwords:
         tokens = build_tokens("ZetaEditor Update")
         assert "zetaeditor" in tokens or "zetaeditorupdate" in tokens
 
+
 # =====================================================================
 #  Inventory helpers
 # =====================================================================
 
+
 class TestInventory:
     """Group testinventory tests covering read installed apps runs without error; find residual keys api exists."""
+
     def test_read_installed_apps_runs_without_error(self):
         # Read-only enumeration of the real machine; must never raise.
         """Verify read installed apps runs without error via read_installed_apps."""
         from cortex_unified.system_tools.leftover_cleaner import (
             read_installed_apps,
         )
+
         apps = read_installed_apps()
         assert isinstance(apps, list)
         for app in apps:

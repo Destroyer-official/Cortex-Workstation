@@ -31,8 +31,7 @@ def test_scan_defaults_match_the_legacy_baseline():
     scan = ScanConfig()
     for key in _SAFETY_KEYS:
         assert getattr(scan, key) == DEFAULT_CONFIG[key], (
-            f"{key} diverged between config.DEFAULT_CONFIG and "
-            f"config_v2.ScanConfig; derive it, don't restate it."
+            f"{key} diverged between config.DEFAULT_CONFIG and " f"config_v2.ScanConfig; derive it, don't restate it."
         )
 
 

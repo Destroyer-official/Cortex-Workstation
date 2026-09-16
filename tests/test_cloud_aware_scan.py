@@ -49,11 +49,14 @@ def cloud_attrs(monkeypatch):
 
 # -- classification ---------------------------------------------------------
 
+
 def test_dehydrated_detects_all_recall_flags():
     """Verify dehydrated detects all recall flags via winattrs.is_dehydrated."""
-    for bit in (winattrs.FILE_ATTRIBUTE_OFFLINE,
-                winattrs.FILE_ATTRIBUTE_RECALL_ON_OPEN,
-                winattrs.FILE_ATTRIBUTE_RECALL_ON_DATA_ACCESS):
+    for bit in (
+        winattrs.FILE_ATTRIBUTE_OFFLINE,
+        winattrs.FILE_ATTRIBUTE_RECALL_ON_OPEN,
+        winattrs.FILE_ATTRIBUTE_RECALL_ON_DATA_ACCESS,
+    ):
         assert winattrs.is_dehydrated(bit) is True
     assert winattrs.is_dehydrated(0) is False
     # A plain reparse point on its own is not a placeholder.
@@ -63,8 +66,8 @@ def test_dehydrated_detects_all_recall_flags():
 def test_cloud_tag_covers_the_provider_range():
     """Verify cloud tag covers the provider range via winattrs.is_cloud_tag."""
     assert winattrs.is_cloud_tag(0x9000001A) is True
-    assert winattrs.is_cloud_tag(0x9000101A) is True   # provider variant 1
-    assert winattrs.is_cloud_tag(0x9000F01A) is True   # provider variant 15
+    assert winattrs.is_cloud_tag(0x9000101A) is True  # provider variant 1
+    assert winattrs.is_cloud_tag(0x9000F01A) is True  # provider variant 15
     assert winattrs.is_cloud_tag(winattrs.IO_REPARSE_TAG_SYMLINK) is False
 
 
@@ -97,9 +100,10 @@ def test_describe_explains_special_entries():
 
 # -- FileEntry honesty ------------------------------------------------------
 
+
 def test_placeholder_entry_reclaims_nothing():
     """Verify placeholder entry reclaims nothing via FileEntry, Path."""
-    e = FileEntry(Path("x"), size=5 * 1024 ** 3, mtime=0.0, attrs=ONLINE)
+    e = FileEntry(Path("x"), size=5 * 1024**3, mtime=0.0, attrs=ONLINE)
     assert e.is_cloud_placeholder is True
     # A 5 GB online-only file frees zero local bytes.
     assert e.reclaimable_size == 0
@@ -107,8 +111,7 @@ def test_placeholder_entry_reclaims_nothing():
 
 def test_measured_on_disk_size_wins_over_logical():
     """Verify measured on disk size wins over logical via FileEntry, Path."""
-    sparse = FileEntry(Path("x"), size=1_000_000, mtime=0.0,
-                       attrs=winattrs.FILE_ATTRIBUTE_SPARSE_FILE, on_disk=4096)
+    sparse = FileEntry(Path("x"), size=1_000_000, mtime=0.0, attrs=winattrs.FILE_ATTRIBUTE_SPARSE_FILE, on_disk=4096)
     assert sparse.reclaimable_size == 4096
     plain = FileEntry(Path("y"), size=1000, mtime=0.0)
     assert plain.reclaimable_size == 1000
@@ -122,6 +125,7 @@ def test_to_dict_reports_cloud_state():
 
 
 # -- walker policy ----------------------------------------------------------
+
 
 def test_walker_skips_placeholders_and_reports_the_omission(tmp_path, cloud_attrs):
     """Verify walker skips placeholders and reports the omission via FastWalker, WalkOptions, scan.
@@ -139,7 +143,7 @@ def test_walker_skips_placeholders_and_reports_the_omission(tmp_path, cloud_attr
 
     names = {f.path.name for f in result.files}
     assert "real.bin" in names
-    assert "online.bin" not in names        # never handed to hashing or deletion
+    assert "online.bin" not in names  # never handed to hashing or deletion
     assert result.cloud_skipped == 1
     assert result.cloud_skipped_bytes == 64
     # Totals must not claim bytes that aren't on this disk.
@@ -158,8 +162,7 @@ def test_placeholders_can_be_included_on_request(tmp_path, cloud_attrs):
     online.write_bytes(b"b" * 64)
     _mark_as_online(online)
 
-    walker = FastWalker(WalkOptions(skip_cloud_placeholders=False,
-                                    measure_on_disk=False))
+    walker = FastWalker(WalkOptions(skip_cloud_placeholders=False, measure_on_disk=False))
     result = walker.scan(tmp_path)
     assert {f.path.name for f in result.files} == {"real.bin", "online.bin"}
     assert result.cloud_skipped == 0
@@ -203,6 +206,7 @@ def test_walker_still_reports_plain_trees_unchanged(tmp_path):
 
 # -- allocated size ---------------------------------------------------------
 
+
 @pytest.mark.skipif(os.name != "nt", reason="allocated size query is Windows-specific")
 def test_on_disk_size_for_a_plain_file(tmp_path):
     """Verify on disk size for a plain file via pytest.mark.skipif, winattrs.on_disk_size.
@@ -222,6 +226,7 @@ def test_on_disk_size_falls_back_when_the_path_is_gone():
 
 # -- shredder refuses placeholders -----------------------------------------
 
+
 def test_shredder_refuses_to_overwrite_a_placeholder(tmp_path, monkeypatch):
     """Verify shredder refuses to overwrite a placeholder via monkeypatch.setattr, SecureDeleter, deleter.delete.
 
@@ -234,12 +239,10 @@ def test_shredder_refuses_to_overwrite_a_placeholder(tmp_path, monkeypatch):
 
     target = tmp_path / "doc.docx"
     target.write_bytes(b"x" * 32)
-    monkeypatch.setattr(SecureDeleter, "_is_cloud_placeholder",
-                        staticmethod(lambda p: True))
+    monkeypatch.setattr(SecureDeleter, "_is_cloud_placeholder", staticmethod(lambda p: True))
 
     deleter = SecureDeleter()
-    res = deleter.delete(target, method=DeletionMethod.OVERWRITE,
-                         force_overwrite_on_flash=True)
+    res = deleter.delete(target, method=DeletionMethod.OVERWRITE, force_overwrite_on_flash=True)
     assert res.outcome is DeletionOutcome.SKIPPED_UNSAFE
     assert "cloud placeholder" in res.reason
     assert target.exists()  # refused, not silently destroyed

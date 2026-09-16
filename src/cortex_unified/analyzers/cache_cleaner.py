@@ -210,9 +210,7 @@ class CacheCleaner:
             bool: True if the operation succeeded, False otherwise.
         """
         name = path.name.lower()
-        return any(
-            name.endswith(suf) for suf in self.ARCHIVE_SUFFIXES
-        ) or name.endswith(".tar.gz")
+        return any(name.endswith(suf) for suf in self.ARCHIVE_SUFFIXES) or name.endswith(".tar.gz")
 
     def _should_exclude_path(self, path: Path) -> bool:
         """True when *path* hits an excluded directory name or pattern.
@@ -311,15 +309,8 @@ class CacheCleaner:
             try:
                 for dirpath, dirnames, filenames in os.walk(root_path):
                     # prune excluded dirs + .git etc.
-                    dirnames[:] = [
-                        d
-                        for d in dirnames
-                        if d not in self.exclude_dirs and d != ".git"
-                    ]
-                    if (
-                        cancel_event
-                        and getattr(cancel_event, "is_set", lambda: False)()
-                    ):
+                    dirnames[:] = [d for d in dirnames if d not in self.exclude_dirs and d != ".git"]
+                    if cancel_event and getattr(cancel_event, "is_set", lambda: False)():
                         break
                     if self._should_exclude_path(Path(dirpath)):
                         dirnames[:] = []
@@ -350,9 +341,7 @@ class CacheCleaner:
         found.sort(key=lambda x: x[1], reverse=True)
         return found
 
-    def find_cache_files(
-        self, custom_paths: List[str] = None
-    ) -> tuple[List[Path], List[Path]]:
+    def find_cache_files(self, custom_paths: List[str] = None) -> tuple[List[Path], List[Path]]:
         """Find cache and log files.
 
         Args:

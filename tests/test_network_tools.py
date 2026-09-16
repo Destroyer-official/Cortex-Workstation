@@ -46,6 +46,7 @@ Trace complete.
 
 class TestPingParse:
     """Group testpingparse tests covering windows success; nix success; loss; unreachable."""
+
     def test_windows_success(self):
         """Verify windows success via NetworkTools._parse_ping."""
         r = NetworkTools._parse_ping("google.com", WIN_PING)
@@ -76,6 +77,7 @@ class TestPingParse:
 
 class TestTracerouteParse:
     """Group testtracerouteparse tests covering parses hops; timeout hop; hop to dict avg."""
+
     def test_parses_hops(self):
         """Verify parses hops via NetworkTools._parse_traceroute."""
         hops = NetworkTools._parse_traceroute(WIN_TRACERT)
@@ -98,6 +100,7 @@ class TestTracerouteParse:
 
 class TestDNS:
     """Group testdns tests covering localhost resolves; bad host empty; reverse loopback."""
+
     def test_localhost_resolves(self):
         """Verify localhost resolves via NetworkTools.dns_lookup, ip.startswith."""
         ips = NetworkTools.dns_lookup("localhost")
@@ -115,6 +118,7 @@ class TestDNS:
 
 class TestPorts:
     """Group testports tests covering closed high port false; invalid port; scan returns all common ports."""
+
     def test_closed_high_port_false(self):
         # A very high port on localhost is almost certainly closed.
         """Verify closed high port false via NetworkTools.check_port."""
@@ -127,6 +131,7 @@ class TestPorts:
     def test_scan_returns_all_common_ports(self):
         """Verify scan returns all common ports via COMMON_PORTS.keys, NetworkTools, res.keys."""
         from cortex_unified.system_tools.network_tools import COMMON_PORTS
+
         res = NetworkTools().scan_common_ports("127.0.0.1", timeout=0.1)
         assert set(res.keys()) == set(COMMON_PORTS.keys())
         assert all(isinstance(v, bool) for v in res.values())
@@ -134,6 +139,7 @@ class TestPorts:
 
 class TestIpInfo:
     """Group testipinfo tests covering public; private; loopback; ipv6; invalid."""
+
     def test_public(self):
         """Verify public via NetworkTools.ip_info."""
         info = NetworkTools.ip_info("8.8.8.8")

@@ -117,11 +117,13 @@ def _SecondaryButton(text: str, parent=None) -> QPushButton:
 # 1. DRIVER STORE EXPLORER PAGE
 # ===========================================================================
 
+
 class DriverStoreCleanerPage(_Page):
     """Driver Store page with enumerate/export/delete buttons and a drivers table.
 
-        Backed by DriverStoreCleaner, QMessageBox, QFileDialog; builds tables, buttons, and dialogs for the actions below.
+    Backed by DriverStoreCleaner, QMessageBox, QFileDialog; builds tables, buttons, and dialogs for the actions below.
     """
+
     def __init__(self, win: PremiumMainWindow):
         """Build the Driver Store page with enumerate/export/delete buttons and a drivers table.
 
@@ -131,7 +133,12 @@ class DriverStoreCleanerPage(_Page):
             win (PremiumMainWindow): Parent window or shell controller instance.
         """
         super().__init__(win)
-        self.v.addWidget(title_block("Driver Store Explorer (RAPR)", "Enumerate, backup, and delete superseded third-party driver packages (oem*.inf)."))
+        self.v.addWidget(
+            title_block(
+                "Driver Store Explorer (RAPR)",
+                "Enumerate, backup, and delete superseded third-party driver packages (oem*.inf).",
+            )
+        )
 
         card = Card(self.p)
         cl = QVBoxLayout(card)
@@ -173,7 +180,7 @@ class DriverStoreCleanerPage(_Page):
     def _on_scan(self):
         """Enumerate driver packages on the worker runtime.
 
-            Uses DriverStoreCleaner; updates self.scan_btn, self.table, self._drivers.
+        Uses DriverStoreCleaner; updates self.scan_btn, self.table, self._drivers.
         """
         self.scan_btn.setEnabled(False)
         self.table.setRowCount(0)
@@ -212,7 +219,7 @@ class DriverStoreCleanerPage(_Page):
     def _on_export(self):
         """Pick a folder and export all drivers into it.
 
-            Uses DriverStoreCleaner, QMessageBox.
+        Uses DriverStoreCleaner, QMessageBox.
         """
         folder = QFileDialog.getExistingDirectory(self, "Select Driver Backup Folder")
         if folder:
@@ -225,7 +232,7 @@ class DriverStoreCleanerPage(_Page):
     def _on_delete_superseded(self):
         """Confirm and force-delete all superseded driver packages, then rescan.
 
-            Uses DriverStoreCleaner, QMessageBox; updates self._drivers, self._on_scan.
+        Uses DriverStoreCleaner, QMessageBox; updates self._drivers, self._on_scan.
         """
         superseded = [d for d in self._drivers if d.is_superseded]
         if not superseded:
@@ -233,7 +240,8 @@ class DriverStoreCleanerPage(_Page):
             return
 
         confirm = QMessageBox.question(
-            self, "Confirm Driver Deletion",
+            self,
+            "Confirm Driver Deletion",
             f"Delete {len(superseded)} superseded driver packages from the Driver Store?\n\n(Requires Administrator privileges)",
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
         )
@@ -251,11 +259,13 @@ class DriverStoreCleanerPage(_Page):
 # 2. SHELLBAGS & JUMPLISTS PRIVACY PURGER PAGE
 # ===========================================================================
 
+
 class ShellbagsCleanerPage(_Page):
     """Shellbags page with scan/clean buttons and a traces table.
 
-        Backed by ShellbagsPrivacyCleaner, QMessageBox; builds tables, buttons, and dialogs for the actions below.
+    Backed by ShellbagsPrivacyCleaner, QMessageBox; builds tables, buttons, and dialogs for the actions below.
     """
+
     def __init__(self, win: PremiumMainWindow):
         """Build the Shellbags page with scan/clean buttons and a traces table.
 
@@ -265,7 +275,12 @@ class ShellbagsCleanerPage(_Page):
             win (PremiumMainWindow): Parent window or shell controller instance.
         """
         super().__init__(win)
-        self.v.addWidget(title_block("Shellbags & JumpLists Activity Purger", "Sanitize Explorer folder view history (BagMRU), Recent Items, and JumpLists."))
+        self.v.addWidget(
+            title_block(
+                "Shellbags & JumpLists Activity Purger",
+                "Sanitize Explorer folder view history (BagMRU), Recent Items, and JumpLists.",
+            )
+        )
 
         card = Card(self.p)
         cl = QVBoxLayout(card)
@@ -301,7 +316,7 @@ class ShellbagsCleanerPage(_Page):
     def _on_scan(self):
         """Scan shell activity traces on the worker runtime.
 
-            Uses ShellbagsPrivacyCleaner; updates self.scan_btn, self.table, self._targets.
+        Uses ShellbagsPrivacyCleaner; updates self.scan_btn, self.table, self._targets.
         """
         self.scan_btn.setEnabled(False)
         self.table.setRowCount(0)
@@ -335,20 +350,25 @@ class ShellbagsCleanerPage(_Page):
     def _on_clean(self):
         """Confirm and purge all discovered activity traces, then rescan.
 
-            Uses ShellbagsPrivacyCleaner, QMessageBox; updates self._targets, self._on_scan.
+        Uses ShellbagsPrivacyCleaner, QMessageBox; updates self._targets, self._on_scan.
         """
         if not self._targets:
             QMessageBox.information(self, "Activity Purger", "Please scan for activity traces first.")
             return
 
         confirm = QMessageBox.question(
-            self, "Confirm Purge",
+            self,
+            "Confirm Purge",
             "Purge Shellbag folder histories, Recent shortcuts, and JumpLists?",
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
         )
         if confirm == QMessageBox.StandardButton.Yes:
             res = ShellbagsPrivacyCleaner.clean_shell_activity(self._targets)
-            QMessageBox.information(self, "Purge Complete", f"Cleared {res.registry_keys_cleared} registry keys, {res.files_deleted} shortcuts ({_fmt_bytes(res.bytes_freed)} freed).")
+            QMessageBox.information(
+                self,
+                "Purge Complete",
+                f"Cleared {res.registry_keys_cleared} registry keys, {res.files_deleted} shortcuts ({_fmt_bytes(res.bytes_freed)} freed).",
+            )
             self._on_scan()
 
 
@@ -356,11 +376,13 @@ class ShellbagsCleanerPage(_Page):
 # 3. POWER PLAN & CPU THROTTLE OPTIMIZER PAGE
 # ===========================================================================
 
+
 class PowerPlanOptimizerPage(_Page):
     """Power Plan page with status line, refresh/unlock/hibernate buttons, and a schemes table.
 
-        Backed by PowerPlanOptimizer, QMessageBox; builds tables, buttons, and dialogs for the actions below.
+    Backed by PowerPlanOptimizer, QMessageBox; builds tables, buttons, and dialogs for the actions below.
     """
+
     def __init__(self, win: PremiumMainWindow):
         """Build the Power Plan page with status line, refresh/unlock/hibernate buttons, and a schemes table.
 
@@ -370,7 +392,12 @@ class PowerPlanOptimizerPage(_Page):
             win (PremiumMainWindow): Parent window or shell controller instance.
         """
         super().__init__(win)
-        self.v.addWidget(title_block("Windows Power Scheme & Performance Optimizer", "Unlock Ultimate Performance mode and optimize CPU throttling and hibernation."))
+        self.v.addWidget(
+            title_block(
+                "Windows Power Scheme & Performance Optimizer",
+                "Unlock Ultimate Performance mode and optimize CPU throttling and hibernation.",
+            )
+        )
 
         card = Card(self.p)
         cl = QVBoxLayout(card)
@@ -432,7 +459,7 @@ class PowerPlanOptimizerPage(_Page):
     def _on_unlock_ultimate(self):
         """Unlock the hidden Ultimate Performance power plan, then refresh.
 
-            Uses PowerPlanOptimizer, QMessageBox; updates self._refresh.
+        Uses PowerPlanOptimizer, QMessageBox; updates self._refresh.
         """
         ok, msg = PowerPlanOptimizer.unlock_ultimate_performance_plan()
         if ok:
@@ -444,7 +471,7 @@ class PowerPlanOptimizerPage(_Page):
     def _on_reduce_hiber(self):
         """Shrink the hibernation file to 40% of RAM, then refresh.
 
-            Uses PowerPlanOptimizer, QMessageBox; updates self._refresh.
+        Uses PowerPlanOptimizer, QMessageBox; updates self._refresh.
         """
         ok, msg = PowerPlanOptimizer.set_reduced_hibernation()
         if ok:
@@ -458,11 +485,13 @@ class PowerPlanOptimizerPage(_Page):
 # 4. HOSTS ANTI-TELEMETRY SHIELD PAGE
 # ===========================================================================
 
+
 class HostsFileManagerPage(_Page):
     """Hosts page with reload/shield buttons and an entries table.
 
-        Backed by HostsFileManager, QMessageBox; builds tables, buttons, and dialogs for the actions below.
+    Backed by HostsFileManager, QMessageBox; builds tables, buttons, and dialogs for the actions below.
     """
+
     def __init__(self, win: PremiumMainWindow):
         """Build the Hosts page with reload/shield buttons and an entries table.
 
@@ -472,7 +501,12 @@ class HostsFileManagerPage(_Page):
             win (PremiumMainWindow): Parent window or shell controller instance.
         """
         super().__init__(win)
-        self.v.addWidget(title_block("Hosts File Editor & Anti-Telemetry Shield", "Inspect and edit DNS host mappings and inject Windows anti-telemetry blocks."))
+        self.v.addWidget(
+            title_block(
+                "Hosts File Editor & Anti-Telemetry Shield",
+                "Inspect and edit DNS host mappings and inject Windows anti-telemetry blocks.",
+            )
+        )
 
         card = Card(self.p)
         cl = QVBoxLayout(card)
@@ -507,7 +541,7 @@ class HostsFileManagerPage(_Page):
     def _on_load(self):
         """Parse the hosts file and list its entries.
 
-            Uses HostsFileManager; updates self.table.
+        Uses HostsFileManager; updates self.table.
         """
         entries = HostsFileManager.parse_hosts_file()
         self.table.setRowCount(len(entries))
@@ -520,10 +554,11 @@ class HostsFileManagerPage(_Page):
     def _on_apply_shield(self):
         """Confirm and add telemetry blocking entries to the hosts file, then reload.
 
-            Uses HostsFileManager, QMessageBox; updates self._on_load.
+        Uses HostsFileManager, QMessageBox; updates self._on_load.
         """
         confirm = QMessageBox.question(
-            self, "Confirm Shield",
+            self,
+            "Confirm Shield",
             "Block known Windows telemetry and diagnostics tracking servers via Hosts file?\n\n(A backup will be created automatically)",
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
         )
@@ -540,11 +575,13 @@ class HostsFileManagerPage(_Page):
 # 5. ACTION CENTER NOTIFICATION CLEANER PAGE
 # ===========================================================================
 
+
 class NotificationCleanerPage(_Page):
     """Notification Cleaner page with status line and refresh/clean buttons.
 
-        Backed by NotificationCleaner, QMessageBox; builds tables, buttons, and dialogs for the actions below.
+    Backed by NotificationCleaner, QMessageBox; builds tables, buttons, and dialogs for the actions below.
     """
+
     def __init__(self, win: PremiumMainWindow):
         """Build the Notification Cleaner page with status line and refresh/clean buttons.
 
@@ -554,7 +591,12 @@ class NotificationCleanerPage(_Page):
             win (PremiumMainWindow): Parent window or shell controller instance.
         """
         super().__init__(win)
-        self.v.addWidget(title_block("Action Center Notification Database Cleaner", "Purge stale push notification databases (wpndatabase.db) and badge caches."))
+        self.v.addWidget(
+            title_block(
+                "Action Center Notification Database Cleaner",
+                "Purge stale push notification databases (wpndatabase.db) and badge caches.",
+            )
+        )
 
         card = Card(self.p)
         cl = QVBoxLayout(card)
@@ -596,10 +638,11 @@ class NotificationCleanerPage(_Page):
     def _on_clean(self):
         """Confirm and purge notification history and badges, then refresh.
 
-            Uses NotificationCleaner, QMessageBox; updates self._refresh.
+        Uses NotificationCleaner, QMessageBox; updates self._refresh.
         """
         confirm = QMessageBox.question(
-            self, "Confirm Notification Purge",
+            self,
+            "Confirm Notification Purge",
             "Purge Action Center notification history and badge caches?",
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
         )
@@ -616,11 +659,13 @@ class NotificationCleanerPage(_Page):
 # 6. FILE MAGIC HEADER FORENSIC SNIFFER PAGE
 # ===========================================================================
 
+
 class FileSignatureSnifferPage(_Page):
     """Signature Sniffer page with folder picker, spoof filter, and results table.
 
-        Backed by FileSignatureSniffer, QFileDialog; builds tables, buttons, and dialogs for the actions below.
+    Backed by FileSignatureSniffer, QFileDialog; builds tables, buttons, and dialogs for the actions below.
     """
+
     def __init__(self, win: PremiumMainWindow):
         """Build the Signature Sniffer page with folder picker, spoof filter, and results table.
 
@@ -630,7 +675,12 @@ class FileSignatureSnifferPage(_Page):
             win (PremiumMainWindow): Parent window or shell controller instance.
         """
         super().__init__(win)
-        self.v.addWidget(title_block("File Magic Header & Forensics Sniffer", "Detect spoofed file extensions and verify binary file signatures against 100+ magic bytes."))
+        self.v.addWidget(
+            title_block(
+                "File Magic Header & Forensics Sniffer",
+                "Detect spoofed file extensions and verify binary file signatures against 100+ magic bytes.",
+            )
+        )
 
         card = Card(self.p)
         cl = QVBoxLayout(card)
@@ -653,7 +703,9 @@ class FileSignatureSnifferPage(_Page):
         cl.addLayout(row)
 
         self.table = QTableWidget(0, 5)
-        self.table.setHorizontalHeaderLabels(["Filename", "Declared Ext", "Actual Magic Format", "Header Hex", "Status"])
+        self.table.setHorizontalHeaderLabels(
+            ["Filename", "Declared Ext", "Actual Magic Format", "Header Hex", "Status"]
+        )
         self.table.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.Interactive)
         self.table.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeMode.ResizeToContents)
         self.table.horizontalHeader().setSectionResizeMode(2, QHeaderView.ResizeMode.Interactive)
@@ -670,7 +722,7 @@ class FileSignatureSnifferPage(_Page):
     def _on_choose_folder(self):
         """Pick the directory to sniff.
 
-            Uses QFileDialog; updates self._scan_path.
+        Uses QFileDialog; updates self._scan_path.
         """
         folder = QFileDialog.getExistingDirectory(self, "Select Folder to Scan")
         if folder:
@@ -679,7 +731,7 @@ class FileSignatureSnifferPage(_Page):
     def _on_scan(self):
         """Scan the chosen folder recursively for spoofed files.
 
-            Uses FileSignatureSniffer; updates self.scan_btn, self.table, self._scan_path.
+        Uses FileSignatureSniffer; updates self.scan_btn, self.table, self._scan_path.
         """
         self.scan_btn.setEnabled(False)
         self.table.setRowCount(0)
@@ -722,11 +774,13 @@ class FileSignatureSnifferPage(_Page):
 # 7. BINARY & HEX FILE DIFFER PAGE
 # ===========================================================================
 
+
 class BinaryDifferPage(_Page):
     """Binary Differ page with File A/B pickers, compare button, and a hex diff table.
 
-        Backed by BinaryDiffer, QMessageBox, QFileDialog; builds tables, buttons, and dialogs for the actions below.
+    Backed by BinaryDiffer, QMessageBox, QFileDialog; builds tables, buttons, and dialogs for the actions below.
     """
+
     def __init__(self, win: PremiumMainWindow):
         """Build the Binary Differ page with File A/B pickers, compare button, and a hex diff table.
 
@@ -736,7 +790,11 @@ class BinaryDifferPage(_Page):
             win (PremiumMainWindow): Parent window or shell controller instance.
         """
         super().__init__(win)
-        self.v.addWidget(title_block("Binary & Hex File Differ", "Side-by-side byte-level binary comparison and discrepancy offset viewer."))
+        self.v.addWidget(
+            title_block(
+                "Binary & Hex File Differ", "Side-by-side byte-level binary comparison and discrepancy offset viewer."
+            )
+        )
 
         card = Card(self.p)
         cl = QVBoxLayout(card)
@@ -789,7 +847,7 @@ class BinaryDifferPage(_Page):
     def _on_select_a(self):
         """Pick the first file to compare.
 
-            Uses QFileDialog; updates self._path_a, self.file_a_label.
+        Uses QFileDialog; updates self._path_a, self.file_a_label.
         """
         f, _ = QFileDialog.getOpenFileName(self, "Select First File (A)")
         if f:
@@ -799,7 +857,7 @@ class BinaryDifferPage(_Page):
     def _on_select_b(self):
         """Pick the second file to compare.
 
-            Uses QFileDialog; updates self._path_b, self.file_b_label.
+        Uses QFileDialog; updates self._path_b, self.file_b_label.
         """
         f, _ = QFileDialog.getOpenFileName(self, "Select Second File (B)")
         if f:
@@ -809,7 +867,7 @@ class BinaryDifferPage(_Page):
     def _on_diff(self):
         """Compare the two chosen files in the background.
 
-            Uses BinaryDiffer, QMessageBox; updates self._path_a, self._path_b, self.diff_btn.
+        Uses BinaryDiffer, QMessageBox; updates self._path_a, self._path_b, self.diff_btn.
         """
         if not self._path_a or not self._path_b:
             QMessageBox.information(self, "Binary Differ", "Please select both File A and File B.")
@@ -841,7 +899,9 @@ class BinaryDifferPage(_Page):
             self.diff_summary_label.setText(
                 f"Similarity: {rep.matching_percentage}%  •  "
                 f"Discrepancies: {rep.total_differences_bytes:,} bytes  •  "
-                f"First Difference: Offset {rep.first_difference_offset}" if rep.first_difference_offset is not None else "Files are 100% byte-identical"
+                f"First Difference: Offset {rep.first_difference_offset}"
+                if rep.first_difference_offset is not None
+                else "Files are 100% byte-identical"
             )
 
             self.table.setRowCount(len(rep.diff_chunks))
@@ -859,11 +919,13 @@ class BinaryDifferPage(_Page):
 # 8. NTFS USN CHANGE JOURNAL SCANNER PAGE
 # ===========================================================================
 
+
 class UsnJournalPage(_Page):
     """USN Journal page with volume combo, query button, and an info label.
 
-        Backed by UsnJournalScanner; builds tables, buttons, and dialogs for the actions below.
+    Backed by UsnJournalScanner; builds tables, buttons, and dialogs for the actions below.
     """
+
     def __init__(self, win: PremiumMainWindow):
         """Build the USN Journal page with volume combo, query button, and an info label.
 
@@ -873,7 +935,12 @@ class UsnJournalPage(_Page):
             win (PremiumMainWindow): Parent window or shell controller instance.
         """
         super().__init__(win)
-        self.v.addWidget(title_block("NTFS USN Change Journal Scanner", "Inspect volume change journal state and sub-millisecond MFT update sequence records."))
+        self.v.addWidget(
+            title_block(
+                "NTFS USN Change Journal Scanner",
+                "Inspect volume change journal state and sub-millisecond MFT update sequence records.",
+            )
+        )
 
         card = Card(self.p)
         cl = QVBoxLayout(card)
@@ -904,7 +971,7 @@ class UsnJournalPage(_Page):
     def _on_query(self):
         """Query the selected volume's USN journal and show its state.
 
-            Uses UsnJournalScanner; updates self.drive_combo, self.info_label.
+        Uses UsnJournalScanner; updates self.drive_combo, self.info_label.
         """
         drive = self.drive_combo.currentText()
         st = UsnJournalScanner.query_volume_journal(drive)
@@ -925,11 +992,13 @@ class UsnJournalPage(_Page):
 # 9. PAR2 PARITY INTEGRITY TOOL PAGE
 # ===========================================================================
 
+
 class Par2RecoveryPage(_Page):
     """PAR2 page with an open button, summary label, and protected-files table.
 
-        Backed by Par2RecoveryEngine, QMessageBox, QFileDialog; builds tables, buttons, and dialogs for the actions below.
+    Backed by Par2RecoveryEngine, QMessageBox, QFileDialog; builds tables, buttons, and dialogs for the actions below.
     """
+
     def __init__(self, win: PremiumMainWindow):
         """Build the PAR2 page with an open button, summary label, and protected-files table.
 
@@ -939,7 +1008,12 @@ class Par2RecoveryPage(_Page):
             win (PremiumMainWindow): Parent window or shell controller instance.
         """
         super().__init__(win)
-        self.v.addWidget(title_block("PAR2 (Parchive) Parity & Packet Validator", "Inspect Reed-Solomon PAR2 recovery sets, slice hashes, and file protection packets."))
+        self.v.addWidget(
+            title_block(
+                "PAR2 (Parchive) Parity & Packet Validator",
+                "Inspect Reed-Solomon PAR2 recovery sets, slice hashes, and file protection packets.",
+            )
+        )
 
         card = Card(self.p)
         cl = QVBoxLayout(card)
@@ -972,7 +1046,7 @@ class Par2RecoveryPage(_Page):
     def _on_open_par2(self):
         """Open and parse a .par2 file, listing its recovery set and protected files.
 
-            Uses Par2RecoveryEngine, QMessageBox; updates self.summary_label, self.table.
+        Uses Par2RecoveryEngine, QMessageBox; updates self.summary_label, self.table.
         """
         f, _ = QFileDialog.getOpenFileName(self, "Open PAR2 File", "", "PAR2 Files (*.par2 *.PAR2)")
         if f:
@@ -1000,11 +1074,13 @@ class Par2RecoveryPage(_Page):
 # 10. BATCH IMAGE OPTIMIZER & WEBP TRANSCODER PAGE
 # ===========================================================================
 
+
 class ImageOptimizerPage(_Page):
     """Image Optimizer page with picker, format/quality controls, and results table.
 
-        Backed by ImageOptimizer, QMessageBox, QFileDialog; builds tables, buttons, and dialogs for the actions below.
+    Backed by ImageOptimizer, QMessageBox, QFileDialog; builds tables, buttons, and dialogs for the actions below.
     """
+
     def __init__(self, win: PremiumMainWindow):
         """Build the Image Optimizer page with picker, format/quality controls, and results table.
 
@@ -1014,7 +1090,12 @@ class ImageOptimizerPage(_Page):
             win (PremiumMainWindow): Parent window or shell controller instance.
         """
         super().__init__(win)
-        self.v.addWidget(title_block("Batch Image Optimizer & WebP Transcoder", "Compress images and convert PNG/JPEG/BMP/TIFF to WebP with EXIF/GPS privacy stripping."))
+        self.v.addWidget(
+            title_block(
+                "Batch Image Optimizer & WebP Transcoder",
+                "Compress images and convert PNG/JPEG/BMP/TIFF to WebP with EXIF/GPS privacy stripping.",
+            )
+        )
 
         card = Card(self.p)
         cl = QVBoxLayout(card)
@@ -1070,9 +1151,11 @@ class ImageOptimizerPage(_Page):
     def _on_add_images(self):
         """Pick images to optimize and show the selection count.
 
-            Uses QFileDialog; updates self._images, self.images_label.
+        Uses QFileDialog; updates self._images, self.images_label.
         """
-        files, _ = QFileDialog.getOpenFileNames(self, "Select Images to Optimize", "", "Images (*.png *.jpg *.jpeg *.bmp *.tiff *.webp)")
+        files, _ = QFileDialog.getOpenFileNames(
+            self, "Select Images to Optimize", "", "Images (*.png *.jpg *.jpeg *.bmp *.tiff *.webp)"
+        )
         if files:
             self._images = [Path(f) for f in files]
             self.images_label.setText(f"{len(self._images)} images selected")
@@ -1080,7 +1163,7 @@ class ImageOptimizerPage(_Page):
     def _on_start(self):
         """Run batch optimization with the chosen format and quality.
 
-            Uses ImageOptimizer, QMessageBox; updates self._images, self.start_btn, self.table.
+        Uses ImageOptimizer, QMessageBox; updates self._images, self.start_btn, self.table.
         """
         if not self._images:
             QMessageBox.information(self, "Image Optimizer", "Please select images first.")
@@ -1121,8 +1204,9 @@ class ImageOptimizerPage(_Page):
                 self.table.setItem(r, 4, QTableWidgetItem(f"{res.compression_ratio_pct}%"))
 
             QMessageBox.information(
-                self, "Optimization Complete",
-                f"Optimized {summary.successful_count} images, freed {_fmt_bytes(summary.total_freed_bytes)}."
+                self,
+                "Optimization Complete",
+                f"Optimized {summary.successful_count} images, freed {_fmt_bytes(summary.total_freed_bytes)}.",
             )
 
         self.win.worker_runtime.run(_work, on_result=_done, on_error=lambda err: self.start_btn.setEnabled(True))

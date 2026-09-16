@@ -63,8 +63,7 @@ def _windows_only(page: _Page, feature: str) -> bool:
     """
     if IS_WINDOWS:
         return False
-    note = status_note(
-        page.p, "info", f"{feature} is only available on Windows.")
+    note = status_note(page.p, "info", f"{feature} is only available on Windows.")
     page.v.addWidget(note)
     page.v.addStretch(1)
     return True
@@ -74,9 +73,11 @@ def _windows_only(page: _Page, feature: str) -> bool:
 #  Workers
 # =====================================================================
 
+
 class PrivacyScanWorker(QObject):
     """Background worker that scans browsers and system traces via PrivacyCleaner."""
-    finished = Signal(dict, dict)   # browsers, traces
+
+    finished = Signal(dict, dict)  # browsers, traces
     failed = Signal(str)
 
     def run(self):
@@ -86,6 +87,7 @@ class PrivacyScanWorker(QObject):
         """
         try:
             from cortex_unified.analyzers.privacy_cleaner import PrivacyCleaner
+
             pc = PrivacyCleaner()
             self.finished.emit(pc.scan_browsers(), pc.scan_system_traces())
         except Exception as exc:  # noqa: BLE001
@@ -94,6 +96,7 @@ class PrivacyScanWorker(QObject):
 
 class PrivacyCleanWorker(QObject):
     """Background worker that cleans selected browser items via PrivacyCleaner."""
+
     finished = Signal(bool)
     failed = Signal(str)
 
@@ -117,6 +120,7 @@ class PrivacyCleanWorker(QObject):
         """
         try:
             from cortex_unified.analyzers.privacy_cleaner import PrivacyCleaner
+
             pc = PrivacyCleaner()
             ok = True
             for browser, items in self._to_clean.items():
@@ -131,6 +135,7 @@ class PrivacyCleanWorker(QObject):
 
 class StartupListWorker(QObject):
     """Background worker that lists startup items via StartupManager."""
+
     finished = Signal(list)
     failed = Signal(str)
 
@@ -141,6 +146,7 @@ class StartupListWorker(QObject):
         """
         try:
             from cortex_unified.system_tools.startup_manager import StartupManager
+
             self.finished.emit(StartupManager().list_startup_items())
         except Exception as exc:  # noqa: BLE001
             self.failed.emit(str(exc))
@@ -159,6 +165,7 @@ class TaskSnapshotWorker(QObject):
         """
         try:
             from cortex_unified.system_tools.task_manager import TaskManager
+
             snap = TaskManager.instance().snapshot()
             if "error" in snap:
                 self.failed.emit(snap["error"])
@@ -171,7 +178,7 @@ class TaskSnapshotWorker(QObject):
 class NetworkWorker(QObject):
     """Background worker that snapshots connections via NetworkMonitor."""
 
-    finished = Signal(list, dict)   # (connections, summary)
+    finished = Signal(list, dict)  # (connections, summary)
     failed = Signal(str)
 
     def run(self):
@@ -181,6 +188,7 @@ class NetworkWorker(QObject):
         """
         try:
             from cortex_unified.system_tools.network_monitor import NetworkMonitor
+
             mon = NetworkMonitor()
             conns = mon.connections()
             self.finished.emit([c.to_dict() for c in conns], mon.summarize(conns))
@@ -191,6 +199,7 @@ class NetworkWorker(QObject):
 # =====================================================================
 #  Cross-platform pages
 # =====================================================================
+
 
 class PrivacyPage(_Page):
     """Privacy Shield page with scan/sweep buttons, results tree and state panel."""
@@ -204,10 +213,12 @@ class PrivacyPage(_Page):
             win: Parent window or shell controller instance.
         """
         super().__init__(win)
-        self.v.addWidget(title_block(
-            "Privacy Shield",
-            "Find and clear browser cache/cookies/history and system traces.",
-        ))
+        self.v.addWidget(
+            title_block(
+                "Privacy Shield",
+                "Find and clear browser cache/cookies/history and system traces.",
+            )
+        )
         self._results: dict = {}
 
         row = QHBoxLayout()
@@ -294,7 +305,8 @@ class PrivacyPage(_Page):
         self.sweep_btn.setEnabled(total > 0)
         self.sweep_btn.setText(f"Sweep Selected ({fmt_bytes(total)})" if total else "Sweep Selected")
         self.win.statusBar().showMessage(
-            "No privacy traces found." if total == 0 else f"Found {fmt_bytes(total)} of traces", 5000)
+            "No privacy traces found." if total == 0 else f"Found {fmt_bytes(total)} of traces", 5000
+        )
 
     def _sweep(self):
         """Collect checked tree items and run PrivacyCleanWorker after confirmation."""
@@ -303,18 +315,22 @@ class PrivacyPage(_Page):
         for i in range(self.tree.topLevelItemCount()):
             top = self.tree.topLevelItem(i)
             label = top.text(0)
-            items = [top.child(j).text(0) for j in range(top.childCount())
-                     if top.child(j).checkState(0) == Qt.CheckState.Checked]
+            items = [
+                top.child(j).text(0)
+                for j in range(top.childCount())
+                if top.child(j).checkState(0) == Qt.CheckState.Checked
+            ]
             if not items:
                 continue
             if "System Traces" in label:
                 clean_system = True
             else:
-                to_clean[label.replace("\U0001F310 ", "").strip()] = items
+                to_clean[label.replace("\U0001f310 ", "").strip()] = items
         if not to_clean and not clean_system:
             return
         confirm = QMessageBox.question(
-            self, "Confirm privacy sweep",
+            self,
+            "Confirm privacy sweep",
             "Close your browsers first.\n\nPermanently delete the selected cookies, "
             "cache, history and session data?",
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
@@ -362,10 +378,12 @@ class StartupPage(_Page):
             win: Parent window or shell controller instance.
         """
         super().__init__(win)
-        self.v.addWidget(title_block(
-            "Startup Manager",
-            "See what launches at boot and disable items to speed up startup.",
-        ))
+        self.v.addWidget(
+            title_block(
+                "Startup Manager",
+                "See what launches at boot and disable items to speed up startup.",
+            )
+        )
         row = QHBoxLayout()
         self.refresh_btn = QPushButton("Refresh")
         self.refresh_btn.setObjectName("Primary")
@@ -400,7 +418,7 @@ class StartupPage(_Page):
         self.state.bind_content(self.tbl)
         self.v.addWidget(self.state, 1)
         self._items: list[dict] = []
-        self._autoload = self._load   # lazy-loaded on first visit
+        self._autoload = self._load  # lazy-loaded on first visit
         self._loaded = False
 
     def _load(self):
@@ -441,7 +459,8 @@ class StartupPage(_Page):
             return
         names = [self.tbl.item(r, 0).text() for r in rows]
         confirm = QMessageBox.question(
-            self, "Disable startup items",
+            self,
+            "Disable startup items",
             f"Disable {len(names)} startup item(s)?\n\n" + "\n".join(names[:8]),
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
             QMessageBox.StandardButton.No,
@@ -449,6 +468,7 @@ class StartupPage(_Page):
         if confirm != QMessageBox.StandardButton.Yes:
             return
         from cortex_unified.system_tools.startup_manager import StartupManager
+
         sm = StartupManager()
         done = 0
         for r in rows:
@@ -482,11 +502,13 @@ class ProcessesPage(_Page):
         """Build summary cards, per-core bars, search/live controls and the
         model/view process table."""
         super().__init__(win)
-        self.v.addWidget(title_block(
-            "Task Manager",
-            "Live processes with CPU and memory. The summary reconciles the "
-            "numbers Windows Task Manager leaves unexplained.",
-        ))
+        self.v.addWidget(
+            title_block(
+                "Task Manager",
+                "Live processes with CPU and memory. The summary reconciles the "
+                "numbers Windows Task Manager leaves unexplained.",
+            )
+        )
 
         # -- summary cards --
         cards = QHBoxLayout()
@@ -575,8 +597,10 @@ class ProcessesPage(_Page):
         # Row selection, single selection, read-only, alternating rows, hidden
         # vertical header and the per-column stretch all come from bind_table.
         self.table = bind_table(
-            self.tbl, self._columns(),
-            sort_column=4, sort_order=Qt.SortOrder.DescendingOrder,  # Memory desc
+            self.tbl,
+            self._columns(),
+            sort_column=4,
+            sort_order=Qt.SortOrder.DescendingOrder,  # Memory desc
         )
         # A QTableView has no itemSelectionChanged - the selection model is the
         # equivalent, and it also fires for keyboard navigation.
@@ -613,6 +637,7 @@ class ProcessesPage(_Page):
         old python-side filter looked at - rather than matching stray digits in
         a byte count.
         """
+
         def name_icon(p: dict):
             """Return the process's native exe icon, or a placeholder glyph.
 
@@ -626,15 +651,11 @@ class ProcessesPage(_Page):
 
         return [
             Column("PID", "pid", sort_key=lambda p: p["pid"]),
-            Column("Name", lambda p: p["name"] or "Unknown",
-                   icon=name_icon, stretch=True),
+            Column("Name", lambda p: p["name"] or "Unknown", icon=name_icon, stretch=True),
             Column("Description", lambda p: p.get("desc", ""), stretch=True),
-            Column("CPU %", lambda p: f"{p['cpu']:.1f}",
-                   sort_key=lambda p: p["cpu"], searchable=False),
-            Column("Memory", lambda p: fmt_bytes(p["rss"]),
-                   sort_key=lambda p: p["rss"], searchable=False),
-            Column("Threads", "threads",
-                   sort_key=lambda p: p["threads"], searchable=False),
+            Column("CPU %", lambda p: f"{p['cpu']:.1f}", sort_key=lambda p: p["cpu"], searchable=False),
+            Column("Memory", lambda p: fmt_bytes(p["rss"]), sort_key=lambda p: p["rss"], searchable=False),
+            Column("Threads", "threads", sort_key=lambda p: p["threads"], searchable=False),
             Column("User", "user"),
             Column("Status", "status"),
         ]
@@ -697,8 +718,7 @@ class ProcessesPage(_Page):
         self._has_data = True
 
         self.cpu_card.set_value(f"{cpu['total_percent']:.0f}%  ({cpu['cores']} cores)")
-        self.mem_card.set_value(
-            f"{fmt_bytes(mem['used'])} / {fmt_bytes(mem['total'])} ({mem['percent']:.0f}%)")
+        self.mem_card.set_value(f"{fmt_bytes(mem['used'])} / {fmt_bytes(mem['total'])} ({mem['percent']:.0f}%)")
         self.proc_card.set_value(str(len(self._procs)))
         self.core_bars.set_values(cpu.get("per_core", []))
         self._render_breakdown(mem)
@@ -714,7 +734,8 @@ class ProcessesPage(_Page):
         # Always-visible one-liner (cheap).
         self.mem_summary.setText(
             f"<b>Memory:</b> {fmt_bytes(mem['used'])} in use, "
-            f"{fmt_bytes(mem['available'])} available of {fmt_bytes(mem['total'])} usable.")
+            f"{fmt_bytes(mem['available'])} available of {fmt_bytes(mem['total'])} usable."
+        )
         # Build the detailed explanation, but only push it into the rich-text
         # label when it actually changed AND the section is expanded - a big
         # word-wrapped relayout on every live tick is a needless jank source.
@@ -739,14 +760,16 @@ class ProcessesPage(_Page):
                 "Buffer Size' setting). You can lower it in BIOS to reclaim RAM, or "
                 "raise it for more graphics headroom - it's reversible. Games can "
                 "also borrow more 'shared GPU memory' on demand, which is returned "
-                "afterwards.</span><br><br>")
+                "afterwards.</span><br><br>"
+            )
         parts.append(
             f"<span>Adding up the Memory column ("
             f"{fmt_bytes(mem['sum_process_ws'])} across all processes) won't equal "
             f"'in use'. Working sets <b>double-count shared memory</b> (one DLL "
             "loaded by many apps is counted in each), while the kernel, drivers "
             "and cached memory aren't shown per-process at all. So the column is "
-            "great for ranking hogs, not for totalling.</span>")
+            "great for ranking hogs, not for totalling.</span>"
+        )
         return "".join(parts)
 
     def _toggle_why(self, on: bool):
@@ -757,11 +780,8 @@ class ProcessesPage(_Page):
         Args:
             on (bool): The on parameter.
         """
-        self.why_btn.setText(
-            "Hide the memory explanation" if on
-            else "Why don't these numbers add up?")
-        self.why_btn.setIcon(icons.icon(
-            "chevron-up" if on else "chevron-down", 12, self.p.text_muted))
+        self.why_btn.setText("Hide the memory explanation" if on else "Why don't these numbers add up?")
+        self.why_btn.setIcon(icons.icon("chevron-up" if on else "chevron-down", 12, self.p.text_muted))
         self.breakdown.setVisible(on)
         if on and self._breakdown_html:
             self.breakdown.setText(self._breakdown_html)
@@ -798,7 +818,8 @@ class ProcessesPage(_Page):
         pid = int(record["pid"])
         name = record["name"] or "Unknown"
         confirm = QMessageBox.warning(
-            self, "End task",
+            self,
+            "End task",
             f"End task '{name}' (PID {pid})?\n\nUnsaved work in that program will be lost.",
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
             QMessageBox.StandardButton.No,
@@ -806,6 +827,7 @@ class ProcessesPage(_Page):
         if confirm != QMessageBox.StandardButton.Yes:
             return
         from cortex_unified.system_tools.task_manager import TaskManager
+
         ok, msg = TaskManager.instance().end_process(pid)
         if not ok:
             QMessageBox.warning(self, "Could not end task", msg)
@@ -831,12 +853,14 @@ class NetworkPage(_Page):
         """Build summary cards, search/live controls and the risk-coloured
         connections table."""
         super().__init__(win)
-        self.v.addWidget(title_block(
-            "Network Monitor",
-            "See which programs are talking to the network, where to, over which "
-            "protocol and port. Read-only - it helps you spot suspicious "
-            "connections or exposed services; it doesn't block traffic.",
-        ))
+        self.v.addWidget(
+            title_block(
+                "Network Monitor",
+                "See which programs are talking to the network, where to, over which "
+                "protocol and port. Read-only - it helps you spot suspicious "
+                "connections or exposed services; it doesn't block traffic.",
+            )
+        )
 
         cards = QHBoxLayout()
         cards.setSpacing(14)
@@ -892,8 +916,8 @@ class NetworkPage(_Page):
         # sockets in, which is what this page showed before.
         self.table = bind_table(self.tbl, self._columns())
         self.tbl.selectionModel().selectionChanged.connect(
-            lambda *_: self.kill_btn.setEnabled(
-                self.table.selected_record() is not None))
+            lambda *_: self.kill_btn.setEnabled(self.table.selected_record() is not None)
+        )
         self.v.addWidget(self.tbl, 1)
 
         self.state = StatePanel(self.p)
@@ -977,13 +1001,16 @@ class NetworkPage(_Page):
         self.card_ext.set_value(str(summary.get("external", 0)))
         self.card_pub.set_value(str(summary.get("public_listeners", 0)))
         if not conns:
-            self.hint.setText("No connections listed. Full visibility of every "
-                              "process's sockets needs Administrator.")
+            self.hint.setText(
+                "No connections listed. Full visibility of every " "process's sockets needs Administrator."
+            )
         else:
-            self.hint.setText("Rows in orange listen on all interfaces (network-"
-                              "reachable); rows in red are live connections out to "
-                              "the internet. Neither is automatically bad - just "
-                              "confirm you recognize the program.")
+            self.hint.setText(
+                "Rows in orange listen on all interfaces (network-"
+                "reachable); rows in red are live connections out to "
+                "the internet. Neither is automatically bad - just "
+                "confirm you recognize the program."
+            )
         self._apply_filter()
 
     def _apply_filter(self):
@@ -1066,19 +1093,25 @@ class NetworkPage(_Page):
             # The risk tooltip takes precedence over the process description on
             # this column, which is what the item table did too (it overwrote the
             # description tooltip when the row was risky).
-            Column("Process", lambda c: c["process"] or "?", stretch=True,
-                   icon=self._process_icon,
-                   tooltip=lambda c: tip(c) or (c.get("process_desc") or ""),
-                   foreground=colour),
+            Column(
+                "Process",
+                lambda c: c["process"] or "?",
+                stretch=True,
+                icon=self._process_icon,
+                tooltip=lambda c: tip(c) or (c.get("process_desc") or ""),
+                foreground=colour,
+            ),
             # Numeric sort key, so PID 9 does not sort above PID 100.
-            Column("PID", lambda c: str(c["pid"]) if c["pid"] else "-",
-                   sort_key=lambda c: c["pid"] or 0,
-                   tooltip=tip, foreground=colour),
+            Column(
+                "PID",
+                lambda c: str(c["pid"]) if c["pid"] else "-",
+                sort_key=lambda c: c["pid"] or 0,
+                tooltip=tip,
+                foreground=colour,
+            ),
             Column("Proto", "protocol", tooltip=tip, foreground=colour),
-            Column("Local address", self._local_text,
-                   tooltip=tip, foreground=colour),
-            Column("Remote address", self._remote_text, stretch=True,
-                   tooltip=tip, foreground=colour),
+            Column("Local address", self._local_text, tooltip=tip, foreground=colour),
+            Column("Remote address", self._remote_text, stretch=True, tooltip=tip, foreground=colour),
             Column("State", "status", tooltip=tip, foreground=colour),
             Column("Service", "service", tooltip=tip, foreground=colour),
         ]
@@ -1148,19 +1181,19 @@ class NetworkPage(_Page):
         pid = conn.get("pid")
         name = conn.get("process") or "?"
         if not pid:
-            QMessageBox.information(self, "No owner",
-                                    "This connection has no ownable process (kernel/system).")
+            QMessageBox.information(self, "No owner", "This connection has no ownable process (kernel/system).")
             return
         confirm = QMessageBox.warning(
-            self, "End owning task",
-            f"End '{name}' (PID {pid}) to close its connection(s)?\n\n"
-            "Unsaved work in that program will be lost.",
+            self,
+            "End owning task",
+            f"End '{name}' (PID {pid}) to close its connection(s)?\n\n" "Unsaved work in that program will be lost.",
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
             QMessageBox.StandardButton.No,
         )
         if confirm != QMessageBox.StandardButton.Yes:
             return
         from cortex_unified.system_tools.task_manager import TaskManager
+
         ok, msg = TaskManager.instance().end_process(int(pid))
         if not ok:
             QMessageBox.warning(self, "Could not end task", msg)
@@ -1187,8 +1220,10 @@ class NetworkPage(_Page):
 #  Windows-only workers
 # =====================================================================
 
+
 class UninstallerListWorker(QObject):
     """Background worker that lists installed apps via AppUninstaller."""
+
     finished = Signal(list)
     failed = Signal(str)
 
@@ -1199,6 +1234,7 @@ class UninstallerListWorker(QObject):
         """
         try:
             from cortex_unified.system_tools.app_uninstaller import AppUninstaller
+
             self.finished.emit(AppUninstaller().get_installed_apps())
         except Exception as exc:  # noqa: BLE001
             self.failed.emit(str(exc))
@@ -1207,7 +1243,7 @@ class UninstallerListWorker(QObject):
 class LeftoverScanWorker(QObject):
     """Background worker that scans uninstall leftovers via LeftoverScanner."""
 
-    finished = Signal(list)   # list[dict] findings
+    finished = Signal(list)  # list[dict] findings
     failed = Signal(str)
 
     def __init__(self, apps: list[dict], exclusions=None):
@@ -1223,6 +1259,7 @@ class LeftoverScanWorker(QObject):
         self._apps = apps
         self._exclusions = exclusions
         from threading import Event
+
         self._cancel = Event()
 
     def cancel(self):
@@ -1242,9 +1279,8 @@ class LeftoverScanWorker(QObject):
                 InstalledApp,
                 LeftoverScanner,
             )
-            scanner = LeftoverScanner(installed_apps=[],
-                                      exclusions=self._exclusions,
-                                      cancel_event=self._cancel)
+
+            scanner = LeftoverScanner(installed_apps=[], exclusions=self._exclusions, cancel_event=self._cancel)
             findings: dict[str, dict] = {}
             for record in self._apps:
                 if self._cancel.is_set():
@@ -1259,8 +1295,7 @@ class LeftoverScanWorker(QObject):
                     continue
                 for f in scanner.scan_app(app):
                     findings[f.path] = f.to_dict()
-            self.finished.emit(sorted(findings.values(),
-                                      key=lambda d: -d["score"]))
+            self.finished.emit(sorted(findings.values(), key=lambda d: -d["score"]))
         except Exception as exc:  # noqa: BLE001
             self.failed.emit(str(exc))
 
@@ -1282,6 +1317,7 @@ class OrphanScanWorker(QObject):
         super().__init__()
         self._exclusions = exclusions
         from threading import Event
+
         self._cancel = Event()
 
     def cancel(self):
@@ -1300,11 +1336,9 @@ class OrphanScanWorker(QObject):
             from cortex_unified.system_tools.leftover_cleaner import (
                 LeftoverScanner,
             )
-            scanner = LeftoverScanner(installed_apps=[],
-                                      exclusions=self._exclusions,
-                                      cancel_event=self._cancel)
-            self.finished.emit(
-                [f.to_dict() for f in scanner.scan_orphans()])
+
+            scanner = LeftoverScanner(installed_apps=[], exclusions=self._exclusions, cancel_event=self._cancel)
+            self.finished.emit([f.to_dict() for f in scanner.scan_orphans()])
         except Exception as exc:  # noqa: BLE001
             self.failed.emit(str(exc))
 
@@ -1312,11 +1346,10 @@ class OrphanScanWorker(QObject):
 class LeftoverCleanWorker(QObject):
     """Background worker that cleans leftover findings via LeftoverCleaner."""
 
-    finished = Signal(list)   # list[dict] outcomes
+    finished = Signal(list)  # list[dict] outcomes
     failed = Signal(str)
 
-    def __init__(self, findings: list[dict], create_restore_point: bool = False,
-                 exclusions=None):
+    def __init__(self, findings: list[dict], create_restore_point: bool = False, exclusions=None):
         """Initialize worker.
 
         Initializes the instance and configures internal state.
@@ -1331,6 +1364,7 @@ class LeftoverCleanWorker(QObject):
         self._create_restore_point = create_restore_point
         self._exclusions = exclusions
         from threading import Event
+
         self._cancel = Event()
 
     def cancel(self):
@@ -1350,13 +1384,18 @@ class LeftoverCleanWorker(QObject):
                 LeftoverCleaner,
                 LeftoverFinding,
             )
+
             cleaner = LeftoverCleaner()
-            models = [LeftoverFinding(kind=d["kind"], path=d["path"],
-                                      size_bytes=d.get("size_bytes", 0))
-                      for d in self._findings]
+            models = [
+                LeftoverFinding(kind=d["kind"], path=d["path"], size_bytes=d.get("size_bytes", 0))
+                for d in self._findings
+            ]
             outcomes = cleaner.clean(
-                models, create_restore_point=self._create_restore_point,
-                exclusions=self._exclusions, cancel_event=self._cancel)
+                models,
+                create_restore_point=self._create_restore_point,
+                exclusions=self._exclusions,
+                cancel_event=self._cancel,
+            )
             self.finished.emit([o.to_dict() for o in outcomes])
         except Exception as exc:  # noqa: BLE001
             self.failed.emit(str(exc))
@@ -1364,6 +1403,7 @@ class LeftoverCleanWorker(QObject):
 
 class TelemetryStatusWorker(QObject):
     """Background worker that reads telemetry status via TelemetryBlocker."""
+
     finished = Signal(dict)
     failed = Signal(str)
 
@@ -1374,6 +1414,7 @@ class TelemetryStatusWorker(QObject):
         """
         try:
             from cortex_unified.system_tools.telemetry_blocker import TelemetryBlocker
+
             self.finished.emit(TelemetryBlocker().check_status())
         except Exception as exc:  # noqa: BLE001
             self.failed.emit(str(exc))
@@ -1381,6 +1422,7 @@ class TelemetryStatusWorker(QObject):
 
 class TelemetryApplyWorker(QObject):
     """Background worker that blocks or restores telemetry via TelemetryBlocker."""
+
     finished = Signal(bool)
     failed = Signal(str)
 
@@ -1402,6 +1444,7 @@ class TelemetryApplyWorker(QObject):
         """
         try:
             from cortex_unified.system_tools.telemetry_blocker import TelemetryBlocker
+
             tb = TelemetryBlocker()
             ok = tb.restore_defaults() if self._restore else tb.block_telemetry()
             self.finished.emit(ok)
@@ -1411,6 +1454,7 @@ class TelemetryApplyWorker(QObject):
 
 class RegistryScanWorker(QObject):
     """Background worker that scans orphaned registry entries via RegistryCleaner."""
+
     finished = Signal(list)
     failed = Signal(str)
 
@@ -1421,6 +1465,7 @@ class RegistryScanWorker(QObject):
         """
         try:
             from cortex_unified.system_tools.registry_cleaner import RegistryCleaner
+
             self.finished.emit(RegistryCleaner().scan_orphaned_entries())
         except Exception as exc:  # noqa: BLE001
             self.failed.emit(str(exc))
@@ -1428,7 +1473,8 @@ class RegistryScanWorker(QObject):
 
 class RegistryCleanWorker(QObject):
     """Background worker that backs up then removes registry entries via RegistryCleaner."""
-    finished = Signal(int, str)   # (removed_count, backup_path)
+
+    finished = Signal(int, str)  # (removed_count, backup_path)
     failed = Signal(str)
 
     def __init__(self, entries: list):
@@ -1449,6 +1495,7 @@ class RegistryCleanWorker(QObject):
         """
         try:
             from cortex_unified.system_tools.registry_cleaner import RegistryCleaner
+
             rc = RegistryCleaner()
             backup = rc.backup_registry() or ""
             removed = 0
@@ -1466,17 +1513,17 @@ class RegistryCleanWorker(QObject):
 
 _LEFTOVER_COLUMNS = [
     Column("Type", lambda d: d.get("kind", "?")),
-    Column("Location", lambda d: d.get("path", ""), stretch=True,
-           tooltip=lambda d: "\n".join(d.get("reasons", []))),
-    Column("Size", lambda d: fmt_bytes(d.get("size_bytes", 0)),
-           sort_key=lambda d: d.get("size_bytes", 0)),
-    Column("Confidence", lambda d: _level_label(d.get("level", "")),
-           sort_key=lambda d: d.get("score", 0),
-           foreground=lambda d: _level_color(d.get("level", ""))),
+    Column("Location", lambda d: d.get("path", ""), stretch=True, tooltip=lambda d: "\n".join(d.get("reasons", []))),
+    Column("Size", lambda d: fmt_bytes(d.get("size_bytes", 0)), sort_key=lambda d: d.get("size_bytes", 0)),
+    Column(
+        "Confidence",
+        lambda d: _level_label(d.get("level", "")),
+        sort_key=lambda d: d.get("score", 0),
+        foreground=lambda d: _level_color(d.get("level", "")),
+    ),
 ]
 
-_LEVEL_LABELS = {"VeryGood": "Very good", "Good": "Good",
-                 "Questionable": "Questionable", "Bad": "Poor"}
+_LEVEL_LABELS = {"VeryGood": "Very good", "Good": "Good", "Questionable": "Questionable", "Bad": "Poor"}
 
 
 def _level_label(level: str) -> str:
@@ -1498,8 +1545,10 @@ def _level_color(level: str):
         level (str): The level parameter.
     """
     from PySide6.QtGui import QColor
-    return {"VeryGood": QColor("#3fb950"), "Good": QColor("#8ddb6a"),
-            "Questionable": QColor("#d29922")}.get(level, QColor("#f85149"))
+
+    return {"VeryGood": QColor("#3fb950"), "Good": QColor("#8ddb6a"), "Questionable": QColor("#d29922")}.get(
+        level, QColor("#f85149")
+    )
 
 
 class _LeftoverSection:
@@ -1507,24 +1556,24 @@ class _LeftoverSection:
 
     def _build_leftover_section(self) -> None:
         """Build the leftover scan/clean/keep buttons, table and state panel."""
-        self.v.addWidget(title_block(
-            "Leftover Scanner",
-            "Finds the files, folders, caches, shortcuts and registry keys "
-            "uninstallers leave behind on C:\\. Files go to the Recycle Bin; "
-            "registry keys are exported as .reg backups first. Review every "
-            "item - low-confidence rows may be shared with other software.",
-        ))
+        self.v.addWidget(
+            title_block(
+                "Leftover Scanner",
+                "Finds the files, folders, caches, shortcuts and registry keys "
+                "uninstallers leave behind on C:\\. Files go to the Recycle Bin; "
+                "registry keys are exported as .reg backups first. Review every "
+                "item - low-confidence rows may be shared with other software.",
+            )
+        )
 
         row = QHBoxLayout()
         self.leftover_scan_btn = QPushButton("Scan for Leftovers")
         self.leftover_scan_btn.setObjectName("Primary")
-        self.leftover_scan_btn.setToolTip(
-            "Scan for leftovers of the apps you just uninstalled.")
+        self.leftover_scan_btn.setToolTip("Scan for leftovers of the apps you just uninstalled.")
         self.leftover_scan_btn.clicked.connect(self._scan_leftovers)
         row.addWidget(self.leftover_scan_btn)
         self.orphan_scan_btn = QPushButton("Find Orphan Folders")
-        self.orphan_scan_btn.setToolTip(
-            "Scan Program Files for folders no installed app claims any more.")
+        self.orphan_scan_btn.setToolTip("Scan Program Files for folders no installed app claims any more.")
         self.orphan_scan_btn.clicked.connect(self._scan_orphans)
         row.addWidget(self.orphan_scan_btn)
         self.clean_leftover_btn = QPushButton("Clean Selected")
@@ -1534,8 +1583,8 @@ class _LeftoverSection:
         row.addWidget(self.clean_leftover_btn)
         self.keep_leftover_btn = QPushButton("Keep Selected")
         self.keep_leftover_btn.setToolTip(
-            "Never flag the selected items again (stored per-user in\n"
-            "~/.cortex_cleaner/exclusions.json).")
+            "Never flag the selected items again (stored per-user in\n" "~/.cortex_cleaner/exclusions.json)."
+        )
         self.keep_leftover_btn.setEnabled(False)
         self.keep_leftover_btn.clicked.connect(self._keep_selected)
         row.addWidget(self.keep_leftover_btn)
@@ -1543,15 +1592,14 @@ class _LeftoverSection:
         # touching cleanup. Windows allows at most one point per 24h; a
         # throttled attempt is reported as a note, not raised as an error.
         # The choice persists via SettingsStore.
-        self.restore_point_chk = QCheckBox(
-            "Create a System Restore point first")
+        self.restore_point_chk = QCheckBox("Create a System Restore point first")
         settings = getattr(self.win, "settings", None)
-        self.restore_point_chk.setChecked(
-            settings.leftover_restore_point if settings is not None else True)
+        self.restore_point_chk.setChecked(settings.leftover_restore_point if settings is not None else True)
         self.restore_point_chk.setToolTip(
             "Attempts a System Restore checkpoint before deleting anything.\n"
             "Windows creates at most one point per 24 hours - if one was made "
-            "recently this is noted and cleanup continues.")
+            "recently this is noted and cleanup continues."
+        )
         self.restore_point_chk.toggled.connect(self._persist_restore_pref)
         row.addWidget(self.restore_point_chk)
         self.v.addLayout(row)
@@ -1565,17 +1613,14 @@ class _LeftoverSection:
         self.leftover_tbl.setMinimumHeight(self.LIST_MIN_HEIGHT)
         self.attach_single_scroll(self.leftover_tbl)
         self.leftover_table = bind_table(self.leftover_tbl, _LEFTOVER_COLUMNS)
-        self.leftover_tbl.setSelectionMode(
-            QTableView.SelectionMode.ExtendedSelection)
-        self.leftover_tbl.selectionModel().selectionChanged.connect(
-            self._on_leftover_select)
+        self.leftover_tbl.setSelectionMode(QTableView.SelectionMode.ExtendedSelection)
+        self.leftover_tbl.selectionModel().selectionChanged.connect(self._on_leftover_select)
         self.v.addWidget(self.leftover_table.view, 1)
 
         self.leftover_state = StatePanel(self.p)
         self.leftover_state.bind_content(self.leftover_table.view)
-        self.v.addWidget(self.leftover_state, 1)   # must join the layout to appear
-        self.leftover_state.show_empty(
-            "No scan yet. Uninstall an app, then click 'Scan for Leftovers'.")
+        self.v.addWidget(self.leftover_state, 1)  # must join the layout to appear
+        self.leftover_state.show_empty("No scan yet. Uninstall an app, then click 'Scan for Leftovers'.")
 
     # -- preferences / exclusions -------------------------------------------
 
@@ -1593,6 +1638,7 @@ class _LeftoverSection:
     def _exclusions_store():
         """Return the ExclusionsStore for leftover paths."""
         from cortex_unified.system_tools.leftover_cleaner import ExclusionsStore
+
         return ExclusionsStore()
 
     def _keep_selected(self):
@@ -1604,15 +1650,13 @@ class _LeftoverSection:
         for d in selected:
             store.add(d.get("path", ""))
         paths = {d.get("path") for d in selected}
-        remaining = [d for d in self.leftover_table.model.records
-                     if d.get("path") not in paths]
+        remaining = [d for d in self.leftover_table.model.records if d.get("path") not in paths]
         self.leftover_table.set_records(remaining)
         self.win.statusBar().showMessage(
-            f"{len(selected)} item(s) added to your exclusions - they will "
-            "not be flagged again.", 8000)
+            f"{len(selected)} item(s) added to your exclusions - they will " "not be flagged again.", 8000
+        )
         if not remaining:
-            self.leftover_state.show_empty(
-                "All clear - nothing left to review.")
+            self.leftover_state.show_empty("All clear - nothing left to review.")
 
     # -- scanning -------------------------------------------------------
 
@@ -1638,19 +1682,20 @@ class _LeftoverSection:
         pending = self._pending_apps()
         if not pending:
             QMessageBox.information(
-                self, "Nothing to scan",
+                self,
+                "Nothing to scan",
                 "No recent uninstalls recorded.\n\nUninstall an app on the "
                 "Deep Uninstaller page, finish its uninstaller, then click "
-                "this button.")
+                "this button.",
+            )
             return
         apps = list(pending)
         pending.clear()
         self.leftover_progress.setVisible(True)
-        self.leftover_state.show_loading(
-            f"Scanning leftovers for {len(apps)} app(s)\u2026")
+        self.leftover_state.show_loading(f"Scanning leftovers for {len(apps)} app(s)\u2026")
         self.win.run_worker(
-            LeftoverScanWorker(apps, exclusions=self._exclusions_store()),
-            self._on_leftovers, self._leftover_fail)
+            LeftoverScanWorker(apps, exclusions=self._exclusions_store()), self._on_leftovers, self._leftover_fail
+        )
 
     def _scan_orphans(self):
         """Handle scan orphans for the page widgets and worker state.
@@ -1659,8 +1704,9 @@ class _LeftoverSection:
         """
         self.leftover_progress.setVisible(True)
         self.leftover_state.show_loading("Scanning Program Files orphans\u2026")
-        self.win.run_worker(OrphanScanWorker(exclusions=self._exclusions_store()),
-                            self._on_leftovers, self._leftover_fail)
+        self.win.run_worker(
+            OrphanScanWorker(exclusions=self._exclusions_store()), self._on_leftovers, self._leftover_fail
+        )
 
     def _on_leftovers(self, findings: list):
         """Show leftover findings in the table and update the status bar.
@@ -1670,15 +1716,12 @@ class _LeftoverSection:
         """
         self.leftover_progress.setVisible(False)
         if not findings:
-            self.leftover_state.show_empty(
-                "No leftovers found - the uninstall was clean.")
+            self.leftover_state.show_empty("No leftovers found - the uninstall was clean.")
             return
         self.leftover_state.clear()
         self.leftover_table.set_records(findings)
         total = sum(d.get("size_bytes", 0) for d in findings)
-        self.win.statusBar().showMessage(
-            f"{len(findings)} leftover item(s), {fmt_bytes(total)} reclaimable",
-            8000)
+        self.win.statusBar().showMessage(f"{len(findings)} leftover item(s), {fmt_bytes(total)} reclaimable", 8000)
 
     def _leftover_fail(self, msg: str):
         """Handle an operation failure and notify the user.
@@ -1705,8 +1748,7 @@ class _LeftoverSection:
         indexes = selection.selectedRows() or selection.selectedIndexes()
         out: list[dict] = []
         for row in sorted({i.row() for i in indexes}, reverse=True):
-            source = self.leftover_table.proxy.mapToSource(
-                self.leftover_table.proxy.index(row, 0))
+            source = self.leftover_table.proxy.mapToSource(self.leftover_table.proxy.index(row, 0))
             record = self.leftover_table.model.record_at(source.row())
             if record is not None:
                 out.append(record)
@@ -1729,10 +1771,10 @@ class _LeftoverSection:
         folders = sum(1 for d in selected if d.get("kind") != "registry")
         keys = sum(1 for d in selected if d.get("kind") == "registry")
         restore = self.restore_point_chk.isChecked()
-        restore_line = ("\n  \u2022 A System Restore point will be attempted first"
-                        if restore else "")
+        restore_line = "\n  \u2022 A System Restore point will be attempted first" if restore else ""
         confirm = QMessageBox.question(
-            self, "Clean leftovers",
+            self,
+            "Clean leftovers",
             f"Remove {len(selected)} item(s)?\n\n"
             f"  \u2022 {folders} file/folder item(s) \u2192 moved to the Recycle Bin\n"
             f"  \u2022 {keys} registry key(s) \u2192 exported as .reg backup first"
@@ -1748,9 +1790,10 @@ class _LeftoverSection:
         self.clean_leftover_btn.setEnabled(False)
         self.keep_leftover_btn.setEnabled(False)
         self.win.run_worker(
-            LeftoverCleanWorker(selected, create_restore_point=restore,
-                                exclusions=self._exclusions_store()),
-            self._on_cleaned, self._leftover_fail)
+            LeftoverCleanWorker(selected, create_restore_point=restore, exclusions=self._exclusions_store()),
+            self._on_cleaned,
+            self._leftover_fail,
+        )
 
     def _on_cleaned(self, outcomes: list):
         """Report cleanup outcomes and refresh the leftovers table.
@@ -1765,29 +1808,30 @@ class _LeftoverSection:
         keys = sum(1 for o in ok if o.get("disposition") == "registry_deleted")
         freed = 0
         by_path = {o.get("path"): o for o in outcomes}
-        remaining = [d for d in self.leftover_table.model.records
-                     if by_path.get(d.get("path"), {}).get("ok") is not True]
+        remaining = [
+            d for d in self.leftover_table.model.records if by_path.get(d.get("path"), {}).get("ok") is not True
+        ]
         for d in self.leftover_table.model.records:
-            if by_path.get(d.get("path"), {}).get("ok") is True \
-                    and d.get("kind") != "registry":
+            if by_path.get(d.get("path"), {}).get("ok") is True and d.get("kind") != "registry":
                 freed += d.get("size_bytes", 0)
         self.leftover_table.set_records(remaining)
-        msg = (f"Done: {recycled} item(s) recycled ({fmt_bytes(freed)} to "
-               f"the Recycle Bin), {keys} registry key(s) removed "
-               f"(backups in ~/CortexCleanerBackups/leftovers).")
+        msg = (
+            f"Done: {recycled} item(s) recycled ({fmt_bytes(freed)} to "
+            f"the Recycle Bin), {keys} registry key(s) removed "
+            f"(backups in ~/CortexCleanerBackups/leftovers)."
+        )
         if failed:
             msg += f"\n\n{len(failed)} item(s) failed:"
-            msg += "\n".join(f"\n  \u2022 {o.get('path')}: "
-                             f"{o.get('detail', 'error')}" for o in failed[:5])
+            msg += "\n".join(f"\n  \u2022 {o.get('path')}: " f"{o.get('detail', 'error')}" for o in failed[:5])
         QMessageBox.information(self, "Leftover cleanup", msg)
         if not remaining:
-            self.leftover_state.show_empty(
-                "All clear - nothing left to review.")
+            self.leftover_state.show_empty("All clear - nothing left to review.")
 
 
 # =====================================================================
 #  Windows-only pages
 # =====================================================================
+
 
 class UninstallerPage(_Page):
     """List installed apps and launch their official uninstallers.
@@ -1803,12 +1847,14 @@ class UninstallerPage(_Page):
             win: Parent window or shell controller instance.
         """
         super().__init__(win)
-        self.v.addWidget(title_block(
-            "Deep Uninstaller",
-            "Registry-based app discovery. Launches each app's official "
-            "uninstaller. Select multiple apps (Ctrl/Shift-click) to "
-            "uninstall them one after another.",
-        ))
+        self.v.addWidget(
+            title_block(
+                "Deep Uninstaller",
+                "Registry-based app discovery. Launches each app's official "
+                "uninstaller. Select multiple apps (Ctrl/Shift-click) to "
+                "uninstall them one after another.",
+            )
+        )
         if _windows_only(self, "The Deep Uninstaller"):
             return
         self._apps: list[dict] = []
@@ -1848,8 +1894,10 @@ class UninstallerPage(_Page):
         # Row selection, read-only, alternating rows, hidden vertical header and
         # the per-column stretch all come from bind_table.
         self.table = bind_table(
-            self.tbl, self._columns(),
-            sort_column=0, sort_order=Qt.SortOrder.AscendingOrder,  # Name A-Z
+            self.tbl,
+            self._columns(),
+            sort_column=0,
+            sort_order=Qt.SortOrder.AscendingOrder,  # Name A-Z
         )
         # bind_table's default is SingleSelection; this page deliberately keeps
         # multi-select, because its whole point is queueing several uninstallers
@@ -1864,7 +1912,7 @@ class UninstallerPage(_Page):
         self.state.bind_content(self.tbl)
         self.v.addWidget(self.state, 1)
 
-        self._autoload = self._load   # lazy-loaded on first visit
+        self._autoload = self._load  # lazy-loaded on first visit
         self._loaded = False
 
     # -- columns --
@@ -1954,7 +2002,8 @@ class UninstallerPage(_Page):
             return
         names = "\n".join(f"  \u2022 {a.get('name')}" for a in apps)
         confirm = QMessageBox.question(
-            self, "Confirm uninstall",
+            self,
+            "Confirm uninstall",
             f"Launch the official uninstaller for {len(apps)} app(s)?\n\n{names}\n\n"
             "Each uninstaller opens in turn - complete one before the next appears.\n\n"
             "Afterwards, use the Leftover Scanner (Apps & Security) to remove "
@@ -1977,17 +2026,19 @@ class UninstallerPage(_Page):
             if a.get("name") and a.get("name") not in known:
                 buf.append(dict(a))
         from cortex_unified.system_tools.app_uninstaller import AppUninstaller
+
         uninstaller = AppUninstaller()
         launched = sum(1 for a in apps if uninstaller.uninstall_app(a))
         if launched:
             QMessageBox.information(
-                self, "Uninstaller launched",
+                self,
+                "Uninstaller launched",
                 f"Launched {launched} of {len(apps)} uninstaller(s). "
                 "Complete each one, then open the Leftover Scanner page "
-                "to clean what they left behind.")
+                "to clean what they left behind.",
+            )
         else:
-            QMessageBox.warning(self, "Error",
-                                "Could not launch the uninstaller(s) (may need elevation).")
+            QMessageBox.warning(self, "Error", "Could not launch the uninstaller(s) (may need elevation).")
 
     def _fail(self, msg: str):
         """Handle an operation failure and notify the user.
@@ -1999,6 +2050,7 @@ class UninstallerPage(_Page):
         """
         self.refresh_btn.setEnabled(True)
         self.state.show_error(msg, on_retry=self._load)
+
 
 class LeftoverScannerPage(_Page, _LeftoverSection):
     """Dedicated sidebar page for the post-uninstall leftover scanner.
@@ -2035,10 +2087,12 @@ class TelemetryPage(_Page):
             win: Parent window or shell controller instance.
         """
         super().__init__(win)
-        self.v.addWidget(title_block(
-            "Telemetry Blocker",
-            "Disable Windows diagnostic/tracking features via the registry.",
-        ))
+        self.v.addWidget(
+            title_block(
+                "Telemetry Blocker",
+                "Disable Windows diagnostic/tracking features via the registry.",
+            )
+        )
         if _windows_only(self, "The Telemetry Blocker"):
             return
 
@@ -2069,7 +2123,7 @@ class TelemetryPage(_Page):
         self.state = StatePanel(self.p)
         self.state.bind_content(self.tree)
         self.v.addWidget(self.state, 1)
-        self._autoload = self._refresh   # lazy-loaded on first visit
+        self._autoload = self._refresh  # lazy-loaded on first visit
         self._loaded = False
 
     def _refresh(self):
@@ -2104,9 +2158,9 @@ class TelemetryPage(_Page):
             return
         action = "restore Windows defaults" if restore else "block all telemetry"
         confirm = QMessageBox.question(
-            self, "Confirm",
-            f"This will modify the Windows registry to {action}.\n"
-            "Administrator privileges are required. Proceed?",
+            self,
+            "Confirm",
+            f"This will modify the Windows registry to {action}.\n" "Administrator privileges are required. Proceed?",
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
             QMessageBox.StandardButton.No,
         )
@@ -2153,10 +2207,12 @@ class RegistryPage(_Page):
             win: Parent window or shell controller instance.
         """
         super().__init__(win)
-        self.v.addWidget(title_block(
-            "Registry Cleaner",
-            "Find orphaned entries (missing targets). A .reg backup is exported before removal.",
-        ))
+        self.v.addWidget(
+            title_block(
+                "Registry Cleaner",
+                "Find orphaned entries (missing targets). A .reg backup is exported before removal.",
+            )
+        )
         if _windows_only(self, "The Registry Cleaner"):
             return
         self._entries: list[dict] = []
@@ -2198,8 +2254,10 @@ class RegistryPage(_Page):
         # vertical header and the per-column stretch all come from bind_table.
         # Sorting is worth having here: 'Hive' and 'Reason' group the findings.
         self.table = bind_table(
-            self.tbl, self._columns(),
-            sort_column=0, sort_order=Qt.SortOrder.AscendingOrder,  # Subkey A-Z
+            self.tbl,
+            self._columns(),
+            sort_column=0,
+            sort_order=Qt.SortOrder.AscendingOrder,  # Subkey A-Z
         )
         self.v.addWidget(self.tbl, 1)
 
@@ -2262,7 +2320,8 @@ class RegistryPage(_Page):
         if not require_feature(self, Feature.REGISTRY_CLEANER):
             return
         confirm = QMessageBox.warning(
-            self, "Confirm registry cleanup",
+            self,
+            "Confirm registry cleanup",
             f"Remove {len(self._entries)} orphaned entries?\n\n"
             "A .reg backup is exported first. Administrator privileges may be required.",
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,

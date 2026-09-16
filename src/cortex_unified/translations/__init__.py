@@ -13,22 +13,24 @@ from .settings_integration import I18nManager, I18nSettingsWidget, get_i18n_mana
 __version__ = "1.2.0"
 __all__ = [
     "Translator",
-    "get_translator", 
+    "get_translator",
     "set_global_locale",
     "translate",
     "_",
     "get_available_locales",
     "set_locale",
     "I18nManager",
-    "I18nSettingsWidget", 
-    "get_i18n_manager"
+    "I18nSettingsWidget",
+    "get_i18n_manager",
 ]
+
 
 # Convenience functions
 def get_available_locales():
     """Get available locales from default translator."""
     translator = get_translator()
     return translator.get_available_locales()
+
 
 def set_locale(locale: str):
     """Set active locale."""

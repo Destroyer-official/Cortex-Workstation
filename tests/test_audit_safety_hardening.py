@@ -44,7 +44,9 @@ def test_deleter_refuses_symlink_directory(tmp_path):
     # Attempting to delete the link dir must be refused by the reparse guard
     res = deleter.delete([], [link_dir])
     assert len(deleter.deleted_items) == 0
-    assert any("reparse" in err.get("error", "").lower() or "symlink" in err.get("error", "").lower() for err in deleter.errors)
+    assert any(
+        "reparse" in err.get("error", "").lower() or "symlink" in err.get("error", "").lower() for err in deleter.errors
+    )
     # Real dir must still be intact!
     assert (real_dir / "file.txt").exists()
 
@@ -57,7 +59,9 @@ def test_deleter_refuses_mocked_symlink_directory(tmp_path, monkeypatch):
     deleter = Deleter(dry_run=False)
     deleter.delete([], [dummy_dir])
     assert len(deleter.deleted_items) == 0
-    assert any("reparse" in err.get("error", "").lower() or "symlink" in err.get("error", "").lower() for err in deleter.errors)
+    assert any(
+        "reparse" in err.get("error", "").lower() or "symlink" in err.get("error", "").lower() for err in deleter.errors
+    )
     assert dummy_dir.exists()
 
 
@@ -104,14 +108,12 @@ def test_registry_cleaner_blocks_protected_keys():
         pytest.skip("Windows only")
 
     cleaner = RegistryCleaner()
-    for protected in [r"HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon",
-                      r"HKLM\SYSTEM\CurrentControlSet\Services\LanmanServer",
-                      r"HKLM\SAM"]:
-        entry = {
-            "hive": "HKLM",
-            "path": protected,
-            "type": "uninstall_entry"
-        }
+    for protected in [
+        r"HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon",
+        r"HKLM\SYSTEM\CurrentControlSet\Services\LanmanServer",
+        r"HKLM\SAM",
+    ]:
+        entry = {"hive": "HKLM", "path": protected, "type": "uninstall_entry"}
         res = cleaner.remove_orphaned_entry(entry, auto_backup=False)
         assert res is False, f"Cleaner failed to block protected key {protected}"
 
@@ -125,11 +127,7 @@ def test_registry_cleaner_fail_closed_on_backup_failure(monkeypatch):
     # Force backup_entry to fail
     monkeypatch.setattr(cleaner, "backup_entry", lambda entry: None)
 
-    entry = {
-        "hive": "HKCU",
-        "path": r"Software\TestAppOrphan_NonExistent",
-        "type": "uninstall_entry"
-    }
+    entry = {"hive": "HKCU", "path": r"Software\TestAppOrphan_NonExistent", "type": "uninstall_entry"}
     res = cleaner.remove_orphaned_entry(entry, auto_backup=True)
     assert res is False
 
@@ -137,6 +135,7 @@ def test_registry_cleaner_fail_closed_on_backup_failure(monkeypatch):
 def test_deleter_fail_closed_when_send2trash_missing(monkeypatch):
     """Deleter must fail closed with RuntimeError if use_trash=True but send2trash is unavailable."""
     import cortex_unified.core.deleter as deleter_mod
+
     monkeypatch.setattr(deleter_mod, "HAS_SEND2TRASH", False)
 
     with pytest.raises(RuntimeError, match="send2trash.*unavailable.*irreversible"):
@@ -231,7 +230,10 @@ def test_docstring_coverage_100_percent():
     root_dir = Path(__file__).resolve().parent.parent
     for p in root_dir.rglob("*.py"):
         rel = str(p.relative_to(root_dir))
-        if any(ign in rel for ign in [".git", ".venv", "venv", "__pycache__", "build", "dist", "node_modules", "scratch", ".gemini"]):
+        if any(
+            ign in rel
+            for ign in [".git", ".venv", "venv", "__pycache__", "build", "dist", "node_modules", "scratch", ".gemini"]
+        ):
             continue
         with open(p, "r", encoding="utf-8", errors="ignore") as fp:
             src = fp.read()
@@ -246,4 +248,3 @@ def test_docstring_coverage_100_percent():
                     missing.append(f"{rel}:{node.lineno} -> {type(node).__name__} {node.name}")
 
     assert missing == [], f"Found definitions lacking docstrings: {missing}"
-

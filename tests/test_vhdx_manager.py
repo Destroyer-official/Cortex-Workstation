@@ -45,6 +45,7 @@ def fake_vhdx(tmp_path):
 # VirtualDisk reporting
 # ---------------------------------------------------------------------------
 
+
 def test_saving_is_unknown_without_a_guest_measurement(fake_vhdx):
     """Verify saving is unknown without a guest measurement via VirtualDisk.
 
@@ -64,8 +65,7 @@ def test_saving_is_host_size_minus_guest_usage(fake_vhdx):
     Args:
         fake_vhdx: The fake vhdx parameter.
     """
-    disk = VirtualDisk(fake_vhdx, DiskKind.WSL, "Ubuntu", 8192, 8192,
-                       used_inside_bytes=2048)
+    disk = VirtualDisk(fake_vhdx, DiskKind.WSL, "Ubuntu", 8192, 8192, used_inside_bytes=2048)
     assert disk.potential_saving_bytes == 6144
     assert disk.status_note == "ready to compact"
 
@@ -76,8 +76,7 @@ def test_saving_never_goes_negative(fake_vhdx):
     Args:
         fake_vhdx: The fake vhdx parameter.
     """
-    disk = VirtualDisk(fake_vhdx, DiskKind.WSL, "Ubuntu", 8192, 1024,
-                       used_inside_bytes=99999)
+    disk = VirtualDisk(fake_vhdx, DiskKind.WSL, "Ubuntu", 8192, 1024, used_inside_bytes=99999)
     assert disk.potential_saving_bytes == 0
 
 
@@ -87,8 +86,9 @@ def test_running_disk_names_the_blocking_process(fake_vhdx):
     Args:
         fake_vhdx: The fake vhdx parameter.
     """
-    disk = VirtualDisk(fake_vhdx, DiskKind.DOCKER, "Docker Desktop", 8192, 8192,
-                       running=True, blockers=("com.docker.backend.exe",))
+    disk = VirtualDisk(
+        fake_vhdx, DiskKind.DOCKER, "Docker Desktop", 8192, 8192, running=True, blockers=("com.docker.backend.exe",)
+    )
     assert disk.can_compact is False
     assert "com.docker.backend.exe" in disk.status_note
     assert "close" in disk.status_note
@@ -112,8 +112,8 @@ def test_disk_to_dict_is_json_ready(fake_vhdx):
         fake_vhdx: The fake vhdx parameter.
     """
     import json
-    disk = VirtualDisk(fake_vhdx, DiskKind.WSL, "Ubuntu", 8192, 8192,
-                       used_inside_bytes=1024)
+
+    disk = VirtualDisk(fake_vhdx, DiskKind.WSL, "Ubuntu", 8192, 8192, used_inside_bytes=1024)
     payload = json.loads(json.dumps(disk.to_dict()))
     assert payload["kind"] == "wsl"
     assert payload["potential_saving_bytes"] == 7168
@@ -123,6 +123,7 @@ def test_disk_to_dict_is_json_ready(fake_vhdx):
 # ---------------------------------------------------------------------------
 # Discovery aggregation
 # ---------------------------------------------------------------------------
+
 
 def test_list_disks_dedupes_sorts_and_flags_blockers(monkeypatch, tmp_path):
     """Verify list disks dedupes sorts and flags blockers via VhdxManager, monkeypatch.setattr, mgr.list_disks.
@@ -139,16 +140,23 @@ def test_list_disks_dedupes_sorts_and_flags_blockers(monkeypatch, tmp_path):
     mgr = VhdxManager()
     # The same Docker disk is reachable from both the WSL registry and the
     # Docker folder scan; it must appear once.
-    monkeypatch.setattr(mgr, "_wsl_disks", lambda: [
-        VirtualDisk(small, DiskKind.WSL, "Ubuntu"),
-        VirtualDisk(big, DiskKind.DOCKER, "docker-desktop-data"),
-    ])
-    monkeypatch.setattr(mgr, "_docker_disks", lambda: [
-        VirtualDisk(big, DiskKind.DOCKER, "Docker Desktop (big)"),
-    ])
+    monkeypatch.setattr(
+        mgr,
+        "_wsl_disks",
+        lambda: [
+            VirtualDisk(small, DiskKind.WSL, "Ubuntu"),
+            VirtualDisk(big, DiskKind.DOCKER, "docker-desktop-data"),
+        ],
+    )
+    monkeypatch.setattr(
+        mgr,
+        "_docker_disks",
+        lambda: [
+            VirtualDisk(big, DiskKind.DOCKER, "Docker Desktop (big)"),
+        ],
+    )
     monkeypatch.setattr(mgr, "_hyperv_disks", lambda: [])
-    monkeypatch.setattr(VhdxManager, "_running_processes",
-                        staticmethod(lambda: {"com.docker.backend.exe"}))
+    monkeypatch.setattr(VhdxManager, "_running_processes", staticmethod(lambda: {"com.docker.backend.exe"}))
 
     disks = mgr.list_disks()
     assert len(disks) == 2, "the duplicate path must be collapsed"
@@ -178,6 +186,7 @@ def test_unsupported_platform_returns_empty(monkeypatch):
         monkeypatch: The monkeypatch parameter.
     """
     import cortex_unified.system_tools.vhdx_manager as mod
+
     monkeypatch.setattr(mod, "_IS_WINDOWS", False)
     assert VhdxManager().list_disks() == []
     assert VhdxManager().shutdown_wsl()[0] is False
@@ -186,6 +195,7 @@ def test_unsupported_platform_returns_empty(monkeypatch):
 # ---------------------------------------------------------------------------
 # Compaction safety
 # ---------------------------------------------------------------------------
+
 
 @pytest.mark.skipif(not IS_WINDOWS, reason="compaction is a Windows operation")
 def test_compact_refuses_while_runtime_holds_the_disk(monkeypatch, fake_vhdx):
@@ -196,8 +206,7 @@ def test_compact_refuses_while_runtime_holds_the_disk(monkeypatch, fake_vhdx):
         fake_vhdx: The fake vhdx parameter.
     """
     mgr = VhdxManager()
-    monkeypatch.setattr(VhdxManager, "_running_processes",
-                        staticmethod(lambda: {"wslservice.exe"}))
+    monkeypatch.setattr(VhdxManager, "_running_processes", staticmethod(lambda: {"wslservice.exe"}))
 
     def _boom(*_a, **_k):
         """Boom using AssertionError."""
@@ -234,7 +243,7 @@ def test_compact_reports_measured_delta(monkeypatch, fake_vhdx):
         assert "attach vdisk readonly" in script, "must attach read-only"
         assert "compact vdisk" in script
         assert "detach vdisk" in script
-        fake_vhdx.write_bytes(b"\0" * 2048)   # simulate a real compaction
+        fake_vhdx.write_bytes(b"\0" * 2048)  # simulate a real compaction
         return True, "DiskPart successfully compacted the virtual disk file."
 
     monkeypatch.setattr(mgr, "_run_diskpart", _shrink)
@@ -256,8 +265,9 @@ def test_compact_is_honest_when_nothing_was_reclaimed(monkeypatch, fake_vhdx):
     """
     mgr = VhdxManager()
     monkeypatch.setattr(VhdxManager, "_running_processes", staticmethod(set))
-    monkeypatch.setattr(mgr, "_run_diskpart",
-                        lambda script, timeout, cancel_event=None: (True, "successfully compacted"))
+    monkeypatch.setattr(
+        mgr, "_run_diskpart", lambda script, timeout, cancel_event=None: (True, "successfully compacted")
+    )
 
     result = mgr.compact(VirtualDisk(fake_vhdx, DiskKind.WSL, "Ubuntu"))
     assert result.success is True
@@ -275,8 +285,7 @@ def test_compact_surfaces_permission_failure(monkeypatch, fake_vhdx):
     """
     mgr = VhdxManager()
     monkeypatch.setattr(VhdxManager, "_running_processes", staticmethod(set))
-    monkeypatch.setattr(mgr, "_run_diskpart",
-                        lambda script, timeout, cancel_event=None: (False, "Access is denied."))
+    monkeypatch.setattr(mgr, "_run_diskpart", lambda script, timeout, cancel_event=None: (False, "Access is denied."))
 
     result = mgr.compact(VirtualDisk(fake_vhdx, DiskKind.WSL, "Ubuntu"))
     assert result.success is False
@@ -290,8 +299,7 @@ def test_compact_missing_file_fails_clearly(tmp_path):
     Args:
         tmp_path: Filesystem path to the target file or directory.
     """
-    result = VhdxManager().compact(
-        VirtualDisk(tmp_path / "gone.vhdx", DiskKind.WSL, "Ghost"))
+    result = VhdxManager().compact(VirtualDisk(tmp_path / "gone.vhdx", DiskKind.WSL, "Ghost"))
     assert result.success is False
     assert "no longer exists" in result.message
 
@@ -310,8 +318,7 @@ def test_compact_result_freed_bytes_never_negative(tmp_path):
     Args:
         tmp_path: Filesystem path to the target file or directory.
     """
-    res = CompactResult(tmp_path / "x.vhdx", "X", True,
-                        before_bytes=100, after_bytes=200)
+    res = CompactResult(tmp_path / "x.vhdx", "X", True, before_bytes=100, after_bytes=200)
     assert res.freed_bytes == 0
 
 
@@ -328,7 +335,6 @@ def test_sparse_mode_is_wsl_only(fake_vhdx):
     Args:
         fake_vhdx: The fake vhdx parameter.
     """
-    ok, msg = VhdxManager().set_sparse(
-        VirtualDisk(fake_vhdx, DiskKind.HYPERV, "VM"))
+    ok, msg = VhdxManager().set_sparse(VirtualDisk(fake_vhdx, DiskKind.HYPERV, "VM"))
     assert ok is False
     assert "wsl" in msg.lower()

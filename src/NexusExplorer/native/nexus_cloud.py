@@ -35,6 +35,7 @@ log = logging.getLogger("nexus.cloud")
 
 try:
     import msal
+
     HAS_MSAL = True
 except ImportError:
     HAS_MSAL = False
@@ -44,18 +45,21 @@ try:
     from google.auth.transport.requests import Request as GoogleRequest
     from google_auth_oauthlib.flow import InstalledAppFlow
     from googleapiclient.discovery import build as google_build
+
     HAS_GOOGLE = True
 except ImportError:
     HAS_GOOGLE = False
 
 try:
     import dropbox as dropbox_sdk
+
     HAS_DROPBOX = True
 except ImportError:
     HAS_DROPBOX = False
 
 try:
     import keyring
+
     HAS_KEYRING = True
 except ImportError:
     HAS_KEYRING = False
@@ -74,6 +78,7 @@ def _parse_iso_datetime(iso_str: str) -> int:
         return 0
     try:
         from datetime import datetime, timezone
+
         dt = datetime.fromisoformat(iso_str.replace("Z", "+00:00"))
         return int(dt.timestamp() * 1000)
     except Exception:
@@ -135,8 +140,10 @@ def retry_on_rate_limit(max_retries: int = 4):
     """Decorator factory: retry the wrapped call up to max_retries times
     with exponential backoff (1s, 2s, 4s, ...) on HTTP 429 / rate-limit /
     throttling errors; re-raises the last exception otherwise."""
+
     def decorator(func):
         """Inner decorator capturing func."""
+
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
             """Call func, catching 429-shaped exceptions (code/status attr
@@ -148,27 +155,33 @@ def retry_on_rate_limit(max_retries: int = 4):
                 except Exception as exc:
                     status_code = getattr(exc, "code", None) or getattr(exc, "status", None)
                     if status_code == 429:
-                        wait = 2 ** attempt
+                        wait = 2**attempt
                         log.warning(
                             "Rate limited (attempt %d/%d), retrying in %ds",
-                            attempt + 1, max_retries, wait,
+                            attempt + 1,
+                            max_retries,
+                            wait,
                         )
                         time.sleep(wait)
                         last_exc = exc
                         continue
                     msg = str(exc).lower()
                     if "429" in msg or "rate" in msg or "throttl" in msg:
-                        wait = 2 ** attempt
+                        wait = 2**attempt
                         log.warning(
                             "Rate limited (attempt %d/%d), retrying in %ds",
-                            attempt + 1, max_retries, wait,
+                            attempt + 1,
+                            max_retries,
+                            wait,
                         )
                         time.sleep(wait)
                         last_exc = exc
                         continue
                     raise
             raise last_exc or RuntimeError(f"Rate limit exceeded after {max_retries} retries")
+
         return wrapper
+
     return decorator
 
 
@@ -176,8 +189,10 @@ def retry_on_rate_limit(max_retries: int = 4):
 # Data types
 # ---------------------------------------------------------------------------
 
+
 class CloudProviderType(Enum):
     """Supported cloud storage providers."""
+
     ONEDRIVE = auto()
     GOOGLE_DRIVE = auto()
     DROPBOX = auto()
@@ -186,6 +201,7 @@ class CloudProviderType(Enum):
 
 class SyncStatus(Enum):
     """Local-vs-cloud synchronization states of a cloud file."""
+
     SYNCED = "synced"
     SYNCING = "syncing"
     LOCAL_ONLY = "local_only"
@@ -198,6 +214,7 @@ class SyncStatus(Enum):
 @dataclass
 class CloudFile:
     """Represents a file in cloud storage."""
+
     provider: CloudProviderType
     cloud_id: str
     name: str
@@ -214,6 +231,7 @@ class CloudFile:
 @dataclass
 class CloudAccount:
     """A connected cloud account."""
+
     provider: CloudProviderType
     email: str = ""
     display_name: str = ""
@@ -225,6 +243,7 @@ class CloudAccount:
 # ---------------------------------------------------------------------------
 # Abstract base
 # ---------------------------------------------------------------------------
+
 
 class CloudProvider(ABC):
     """Abstract base class for cloud storage providers."""
@@ -365,7 +384,8 @@ class OneDriveProvider(CloudProvider):
         # Interactive browser auth
         try:
             result = self._app.acquire_token_interactive(
-                _ONEDRIVE_SCOPES, port=8080,
+                _ONEDRIVE_SCOPES,
+                port=8080,
             )
             if result and "access_token" in result:
                 self._token = result["access_token"]
@@ -399,6 +419,7 @@ class OneDriveProvider(CloudProvider):
             raise RuntimeError("OneDrive: not authenticated")
         import urllib.request
         import urllib.error
+
         req = urllib.request.Request(url, headers={"Authorization": f"Bearer {self._token}"})
         with urllib.request.urlopen(req, timeout=30) as resp:
             return json.loads(resp.read().decode("utf-8"))
@@ -433,16 +454,18 @@ class OneDriveProvider(CloudProvider):
             while url and len(files) < max_results:
                 data = self._graph_get(url)
                 for item in data.get("value", []):
-                    files.append(CloudFile(
-                        provider=self.provider_type,
-                        cloud_id=item["id"],
-                        name=item["name"],
-                        path=f"{path.rstrip('/')}/{item['name']}",
-                        is_dir="folder" in item,
-                        size=item.get("size", 0),
-                        modified_ms=_parse_iso_datetime(item.get("lastModifiedDateTime", "")),
-                        mime_type=item.get("file", {}).get("mimeType", ""),
-                    ))
+                    files.append(
+                        CloudFile(
+                            provider=self.provider_type,
+                            cloud_id=item["id"],
+                            name=item["name"],
+                            path=f"{path.rstrip('/')}/{item['name']}",
+                            is_dir="folder" in item,
+                            size=item.get("size", 0),
+                            modified_ms=_parse_iso_datetime(item.get("lastModifiedDateTime", "")),
+                            mime_type=item.get("file", {}).get("mimeType", ""),
+                        )
+                    )
                 url = data.get("@odata.nextLink")
             return files[:max_results]
         except Exception as exc:
@@ -459,16 +482,18 @@ class OneDriveProvider(CloudProvider):
             files: list[CloudFile] = []
             for item in data.get("value", []):
                 parent_path = item.get("parentReference", {}).get("path", "/drive/root:").split(":")[-1]
-                files.append(CloudFile(
-                    provider=self.provider_type,
-                    cloud_id=item["id"],
-                    name=item["name"],
-                    path=f"{parent_path}/{item['name']}",
-                    is_dir="folder" in item,
-                    size=item.get("size", 0),
-                    modified_ms=_parse_iso_datetime(item.get("lastModifiedDateTime", "")),
-                    mime_type=item.get("file", {}).get("mimeType", ""),
-                ))
+                files.append(
+                    CloudFile(
+                        provider=self.provider_type,
+                        cloud_id=item["id"],
+                        name=item["name"],
+                        path=f"{parent_path}/{item['name']}",
+                        is_dir="folder" in item,
+                        size=item.get("size", 0),
+                        modified_ms=_parse_iso_datetime(item.get("lastModifiedDateTime", "")),
+                        mime_type=item.get("file", {}).get("mimeType", ""),
+                    )
+                )
             return files
         except Exception as exc:
             log.warning("OneDrive search failed: %s", exc)
@@ -480,6 +505,7 @@ class OneDriveProvider(CloudProvider):
         file (64 KB chunks) and atomically os.replace it into place."""
         try:
             import urllib.request
+
             url = f"{_ONEDRIVE_GRAPH}/me/drive/items/{cloud_id}/content"
             if not self._ensure_token():
                 return False
@@ -507,6 +533,7 @@ class OneDriveProvider(CloudProvider):
             import io
             import urllib.request
             import urllib.parse
+
             src = Path(local_path)
             if not src.is_file():
                 return False
@@ -518,6 +545,7 @@ class OneDriveProvider(CloudProvider):
             file_size = src.stat().st_size
             chunk_size = 65536
             with open(src, "rb") as f:
+
                 def _upload_chunked():
                     """Repeatedly PUT the next 64 KB chunk of the open file
                     to the Graph content URL until EOF."""
@@ -537,6 +565,7 @@ class OneDriveProvider(CloudProvider):
                         )
                         with urllib.request.urlopen(req, timeout=120):
                             pass
+
                 _upload_chunked()
             return True
         except Exception as exc:
@@ -548,6 +577,7 @@ class OneDriveProvider(CloudProvider):
         """DELETE the drive item by id via Graph."""
         try:
             import urllib.request
+
             url = f"{_ONEDRIVE_GRAPH}/me/drive/items/{cloud_id}"
             if not self._ensure_token():
                 return False
@@ -644,7 +674,8 @@ class GoogleDriveProvider(CloudProvider):
                     return False
                 try:
                     flow = InstalledAppFlow.from_client_secrets_file(
-                        str(self._credentials_file), _GOOGLE_SCOPES,
+                        str(self._credentials_file),
+                        _GOOGLE_SCOPES,
                     )
                     creds = flow.run_local_server(port=0, open_browser=True)
                 except Exception as exc:
@@ -744,16 +775,18 @@ class GoogleDriveProvider(CloudProvider):
             files: list[CloudFile] = []
             for item in results.get("files", []):
                 is_dir = item.get("mimeType") == "application/vnd.google-apps.folder"
-                files.append(CloudFile(
-                    provider=self.provider_type,
-                    cloud_id=item["id"],
-                    name=item["name"],
-                    path=f"{path.rstrip('/')}/{item['name']}",
-                    is_dir=is_dir,
-                    size=int(item.get("size", 0)),
-                    modified_ms=_parse_iso_datetime(item.get("modifiedTime", "")),
-                    mime_type=item.get("mimeType", ""),
-                ))
+                files.append(
+                    CloudFile(
+                        provider=self.provider_type,
+                        cloud_id=item["id"],
+                        name=item["name"],
+                        path=f"{path.rstrip('/')}/{item['name']}",
+                        is_dir=is_dir,
+                        size=int(item.get("size", 0)),
+                        modified_ms=_parse_iso_datetime(item.get("modifiedTime", "")),
+                        mime_type=item.get("mimeType", ""),
+                    )
+                )
             return files
         except Exception as exc:
             log.warning("Google Drive list_files failed: %s", exc)
@@ -780,16 +813,18 @@ class GoogleDriveProvider(CloudProvider):
             files: list[CloudFile] = []
             for item in results.get("files", []):
                 is_dir = item.get("mimeType") == "application/vnd.google-apps.folder"
-                files.append(CloudFile(
-                    provider=self.provider_type,
-                    cloud_id=item["id"],
-                    name=item["name"],
-                    path=f"/{item['name']}",
-                    is_dir=is_dir,
-                    size=int(item.get("size", 0)),
-                    modified_ms=_parse_iso_datetime(item.get("modifiedTime", "")),
-                    mime_type=item.get("mimeType", ""),
-                ))
+                files.append(
+                    CloudFile(
+                        provider=self.provider_type,
+                        cloud_id=item["id"],
+                        name=item["name"],
+                        path=f"/{item['name']}",
+                        is_dir=is_dir,
+                        size=int(item.get("size", 0)),
+                        modified_ms=_parse_iso_datetime(item.get("modifiedTime", "")),
+                        mime_type=item.get("mimeType", ""),
+                    )
+                )
             return files
         except Exception as exc:
             log.warning("Google Drive search failed: %s", exc)
@@ -808,6 +843,7 @@ class GoogleDriveProvider(CloudProvider):
             request = self._service.files().get_media(fileId=cloud_id)
             from googleapiclient.http import MediaIoBaseDownload
             import io
+
             with open(tmp_path, "wb") as f:
                 downloader = MediaIoBaseDownload(f, request, chunksize=65536)
                 done = False
@@ -832,9 +868,12 @@ class GoogleDriveProvider(CloudProvider):
             name = cloud_path.strip("/").split("/")[-1]
             file_metadata = {"name": name}
             from googleapiclient.http import MediaFileUpload
+
             media = MediaFileUpload(str(src), resumable=True, chunksize=65536)
             self._service.files().create(
-                body=file_metadata, media_body=media, fields="id",
+                body=file_metadata,
+                media_body=media,
+                fields="id",
             ).execute()
             return True
         except Exception as exc:
@@ -870,6 +909,7 @@ class GoogleDriveProvider(CloudProvider):
 # ---------------------------------------------------------------------------
 # Dropbox – official SDK
 # ---------------------------------------------------------------------------
+
 
 class DropboxProvider(CloudProvider):
     """Dropbox integration via the official dropbox SDK."""
@@ -1002,23 +1042,27 @@ class DropboxProvider(CloudProvider):
             for match in result.matches:
                 meta = match.metadata.get_metadata()
                 if isinstance(meta, dropbox_sdk.files.FileMetadata):
-                    files.append(CloudFile(
-                        provider=self.provider_type,
-                        cloud_id=meta.id,
-                        name=meta.name,
-                        path=meta.path_display,
-                        is_dir=False,
-                        size=meta.size,
-                        modified_ms=int(meta.server_modified.timestamp() * 1000),
-                    ))
+                    files.append(
+                        CloudFile(
+                            provider=self.provider_type,
+                            cloud_id=meta.id,
+                            name=meta.name,
+                            path=meta.path_display,
+                            is_dir=False,
+                            size=meta.size,
+                            modified_ms=int(meta.server_modified.timestamp() * 1000),
+                        )
+                    )
                 elif isinstance(meta, dropbox_sdk.files.FolderMetadata):
-                    files.append(CloudFile(
-                        provider=self.provider_type,
-                        cloud_id=meta.id,
-                        name=meta.name,
-                        path=meta.path_display,
-                        is_dir=True,
-                    ))
+                    files.append(
+                        CloudFile(
+                            provider=self.provider_type,
+                            cloud_id=meta.id,
+                            name=meta.name,
+                            path=meta.path_display,
+                            is_dir=True,
+                        )
+                    )
             return files
         except Exception as exc:
             log.warning("Dropbox search failed: %s", exc)
@@ -1054,7 +1098,9 @@ class DropboxProvider(CloudProvider):
             if not src.is_file():
                 return False
             dbx_path = cloud_path if cloud_path.startswith("/") else f"/{cloud_path}"
-            write_mode = dropbox_sdk.files.WriteMode.overwrite if mode == "overwrite" else dropbox_sdk.files.WriteMode.add
+            write_mode = (
+                dropbox_sdk.files.WriteMode.overwrite if mode == "overwrite" else dropbox_sdk.files.WriteMode.add
+            )
             chunk_size = 65536
             file_size = src.stat().st_size
             with open(src, "rb") as f:
@@ -1136,6 +1182,7 @@ class S3Provider(CloudProvider):
         the configured bucket via head_bucket."""
         try:
             import boto3
+
             self._s3 = boto3.client("s3", region_name=self._region)
             if self._bucket_name:
                 self._s3.head_bucket(Bucket=self._bucket_name)
@@ -1183,14 +1230,16 @@ class S3Provider(CloudProvider):
                 name = Path(key).name
                 size = obj.get("Size", 0)
                 mtime = int(obj.get("LastModified").timestamp() * 1000) if obj.get("LastModified") else 0
-                files.append(CloudFile(
-                    provider=CloudProviderType.S3,
-                    cloud_id=key,
-                    name=name,
-                    path=f"/{key}",
-                    size=size,
-                    modified_ms=mtime,
-                ))
+                files.append(
+                    CloudFile(
+                        provider=CloudProviderType.S3,
+                        cloud_id=key,
+                        name=name,
+                        path=f"/{key}",
+                        size=size,
+                        modified_ms=mtime,
+                    )
+                )
             return files
         except Exception as exc:
             log.warning("S3 list_files failed: %s", exc)
@@ -1246,6 +1295,7 @@ class S3Provider(CloudProvider):
 # ---------------------------------------------------------------------------
 # CloudManager – unified interface
 # ---------------------------------------------------------------------------
+
 
 class CloudManager(QObject):
     """Unified cloud storage manager supporting multiple providers."""

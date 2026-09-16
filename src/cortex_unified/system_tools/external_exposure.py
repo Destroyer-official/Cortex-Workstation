@@ -28,6 +28,7 @@ class ExternalService:
 
     Manages ExternalService operations and coordinates related state changes for the component.
     """
+
     port: int
     transport: str = "tcp"
     product: str = ""
@@ -44,9 +45,12 @@ class ExternalService:
             dict[str, Any]: Dictionary mapping identifiers to status or values.
         """
         return {
-            "port": self.port, "transport": self.transport,
-            "product": self.product, "version": self.version,
-            "source": self.source, "evidence": list(self.evidence),
+            "port": self.port,
+            "transport": self.transport,
+            "product": self.product,
+            "version": self.version,
+            "source": self.source,
+            "evidence": list(self.evidence),
         }
 
 
@@ -56,6 +60,7 @@ class ExposureResult:
 
     Manages ExposureResult operations and coordinates related state changes for the component.
     """
+
     provider: str
     public_ip: str
     services: tuple[ExternalService, ...]
@@ -70,13 +75,14 @@ class ExposureResult:
             dict[str, Any]: Dictionary mapping identifiers to status or values.
         """
         return {
-            "provider": self.provider, "public_ip": self.public_ip,
+            "provider": self.provider,
+            "public_ip": self.public_ip,
             "services": [item.to_dict() for item in self.services],
             "last_observed": self.last_observed,
             "connectivity_tested": False,
             "notice": (
-                "Provider index data is historical observation, not a live "
-                "reachability or vulnerability test."),
+                "Provider index data is historical observation, not a live " "reachability or vulnerability test."
+            ),
         }
 
 
@@ -94,16 +100,16 @@ def _public_ipv4(value: str) -> str:
     try:
         address = ipaddress.ip_address(str(value))
     except ValueError as exc:
-        raise ExposureLookupError(
-            "external exposure target is not an IP") from exc
+        raise ExposureLookupError("external exposure target is not an IP") from exc
     if not isinstance(address, ipaddress.IPv4Address) or not address.is_global:
-        raise ExposureLookupError(
-            "external exposure lookup requires a globally routable IPv4")
+        raise ExposureLookupError("external exposure lookup requires a globally routable IPv4")
     return str(address)
 
 
 def _default_transport(
-    url: str, headers: Mapping[str, str], timeout: float,
+    url: str,
+    headers: Mapping[str, str],
+    timeout: float,
 ) -> Mapping[str, Any]:
     """_default_transport.
 
@@ -122,12 +128,10 @@ def _default_transport(
         with urllib.request.urlopen(request, timeout=timeout) as response:
             length = response.headers.get("Content-Length")
             if length and int(length) > _MAX_RESPONSE:
-                raise ExposureLookupError(
-                    "provider response exceeds size limit")
+                raise ExposureLookupError("provider response exceeds size limit")
             payload = response.read(_MAX_RESPONSE + 1)
     except (OSError, ValueError, urllib.error.URLError) as exc:
-        raise ExposureLookupError(
-            "external exposure provider request failed") from exc
+        raise ExposureLookupError("external exposure provider request failed") from exc
     if len(payload) > _MAX_RESPONSE:
         raise ExposureLookupError("provider response exceeds size limit")
     try:
@@ -146,7 +150,10 @@ class ExternalExposureClient:
     """
 
     def __init__(
-        self, provider: str, api_key: str, api_secret: str = "",
+        self,
+        provider: str,
+        api_key: str,
+        api_secret: str = "",
         transport: Transport | None = None,
     ) -> None:
         """Initialize External Exposure Client.
@@ -171,7 +178,11 @@ class ExternalExposureClient:
         self._transport = transport or _default_transport
 
     def lookup(
-        self, public_ip: str, *, consent: bool = False, timeout: float = 10.0,
+        self,
+        public_ip: str,
+        *,
+        consent: bool = False,
+        timeout: float = 10.0,
     ) -> ExposureResult:
         """Lookup.
 
@@ -184,29 +195,23 @@ class ExternalExposureClient:
             ExposureResult: Result of the operation.
         """
         if not consent:
-            raise ExposureLookupError(
-                "explicit external lookup consent is required")
+            raise ExposureLookupError("explicit external lookup consent is required")
         address = _public_ipv4(public_ip)
         timeout = min(30.0, max(1.0, float(timeout)))
         if self.provider == "shodan":
             encoded = urllib.parse.quote(address, safe="")
             key = urllib.parse.quote(self.api_key, safe="")
             url = f"https://api.shodan.io/shodan/host/{encoded}?key={key}"
-            payload = self._transport(
-                url, {"Accept": "application/json"}, timeout)
+            payload = self._transport(url, {"Accept": "application/json"}, timeout)
             services = self._parse_shodan(payload)
             last_observed = str(payload.get("last_update", ""))[:64]
         else:
             encoded = urllib.parse.quote(address, safe="")
             url = f"https://search.censys.io/api/v2/hosts/{encoded}"
-            token = base64.b64encode(
-                f"{self.api_key}:{self.api_secret}".encode()).decode("ascii")
-            payload = self._transport(
-                url, {"Accept": "application/json",
-                      "Authorization": f"Basic {token}"}, timeout)
+            token = base64.b64encode(f"{self.api_key}:{self.api_secret}".encode()).decode("ascii")
+            payload = self._transport(url, {"Accept": "application/json", "Authorization": f"Basic {token}"}, timeout)
             services, last_observed = self._parse_censys(payload)
-        return ExposureResult(
-            self.provider, address, tuple(services), last_observed)
+        return ExposureResult(self.provider, address, tuple(services), last_observed)
 
     @staticmethod
     def _parse_shodan(payload: Mapping[str, Any]) -> list[ExternalService]:
@@ -236,9 +241,9 @@ class ExternalExposureClient:
             transport = str(item.get("transport", "tcp"))[:8].lower()
             product = str(item.get("product", ""))[:160]
             version = str(item.get("version", ""))[:80]
-            services.append(ExternalService(
-                port, transport, product, version, "shodan",
-                ("Shodan host-index observation",)))
+            services.append(
+                ExternalService(port, transport, product, version, "shodan", ("Shodan host-index observation",))
+            )
         return _deduplicate(services)
 
     @staticmethod
@@ -278,10 +283,16 @@ class ExternalExposureClient:
                 if isinstance(first, Mapping):
                     product = str(first.get("product", ""))[:160]
                     version = str(first.get("version", ""))[:80]
-            services.append(ExternalService(
-                port, str(item.get("transport_protocol", "tcp"))[:8].lower(),
-                product, version, "censys",
-                ("Censys host-index observation",)))
+            services.append(
+                ExternalService(
+                    port,
+                    str(item.get("transport_protocol", "tcp"))[:8].lower(),
+                    product,
+                    version,
+                    "censys",
+                    ("Censys host-index observation",),
+                )
+            )
         observed = str(result.get("last_updated_at", ""))[:64]
         return _deduplicate(services), observed
 
@@ -297,15 +308,13 @@ def _deduplicate(values: list[ExternalService]) -> list[ExternalService]:
     Returns:
         list[ExternalService]: List of processed items or identifiers.
     """
-    unique = {
-        (item.port, item.transport, item.product, item.version): item
-        for item in values
-    }
-    return sorted(unique.values(), key=lambda item: (
-        item.port, item.transport, item.product, item.version))
+    unique = {(item.port, item.transport, item.product, item.version): item for item in values}
+    return sorted(unique.values(), key=lambda item: (item.port, item.transport, item.product, item.version))
 
 
 __all__ = [
-    "ExposureLookupError", "ExposureResult", "ExternalExposureClient",
+    "ExposureLookupError",
+    "ExposureResult",
+    "ExternalExposureClient",
     "ExternalService",
 ]

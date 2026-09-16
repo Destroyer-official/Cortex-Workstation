@@ -23,9 +23,9 @@ class StorageKind(str, enum.Enum):
     blocks are gone.
     """
 
-    HDD = "hdd"          # rotational; overwrite passes are effective
-    SSD = "ssd"          # solid state; overwrite passes are NOT reliable
-    NVME = "nvme"        # NVMe SSD; same caveat as SSD
+    HDD = "hdd"  # rotational; overwrite passes are effective
+    SSD = "ssd"  # solid state; overwrite passes are NOT reliable
+    NVME = "nvme"  # NVMe SSD; same caveat as SSD
     REMOVABLE = "removable"  # USB / SD; treat like SSD for wiping purposes
     NETWORK = "network"  # network share; no local wiping guarantees
     UNKNOWN = "unknown"
@@ -34,33 +34,33 @@ class StorageKind(str, enum.Enum):
     def overwrite_effective(self) -> bool:
         """True only when physically overwriting bytes reliably destroys data.
 
- Handles overwrite effective for.
+        Handles overwrite effective for.
 
- Returns:
- bool: True if the operation succeeded, False otherwise.
- """
+        Returns:
+        bool: True if the operation succeeded, False otherwise.
+        """
         return self is StorageKind.HDD
 
 
 class DeletionMethod(str, enum.Enum):
     """Deletion Method.
 
- Deletion method enum with safe defaults.
- """
+    Deletion method enum with safe defaults.
+    """
 
-    DRY_RUN = "dry_run"      # report only, touch nothing
-    RECYCLE = "recycle"      # move to OS trash/recycle bin (reversible)
-    DELETE = "delete"        # unlink/rmtree, no overwrite
+    DRY_RUN = "dry_run"  # report only, touch nothing
+    RECYCLE = "recycle"  # move to OS trash/recycle bin (reversible)
+    DELETE = "delete"  # unlink/rmtree, no overwrite
     OVERWRITE = "overwrite"  # overwrite then delete (HDD-effective only)
 
 
 class DeletionOutcome(str, enum.Enum):
     """Deletion Outcome.
 
- Outcome enum for deletion attempts.
- """
+    Outcome enum for deletion attempts.
+    """
 
-    WOULD_DELETE = "would_delete"     # dry-run success
+    WOULD_DELETE = "would_delete"  # dry-run success
     RECYCLED = "recycled"
     DELETED = "deleted"
     OVERWRITTEN = "overwritten"
@@ -96,12 +96,13 @@ class FileEntry:
     def age_days(self) -> float:
         """Age days.
 
- File age in days from mtime for min-age filtering.
+        File age in days from mtime for min-age filtering.
 
- Returns:
- float: Result of the operation.
- """
+        Returns:
+        float: Result of the operation.
+        """
         import time
+
         return max(0.0, (time.time() - self.mtime) / 86400.0)
 
     @property
@@ -112,6 +113,7 @@ class FileEntry:
         and is 0 for cloud placeholders because their bytes are not here.
         """
         from . import winattrs
+
         if winattrs.is_dehydrated(self.attrs):
             return 0
         return self.size if self.on_disk is None else self.on_disk
@@ -120,46 +122,49 @@ class FileEntry:
     def is_cloud_placeholder(self) -> bool:
         """True when the content lives in the cloud, not on this disk.
 
- Detects OneDrive/iCloud-style cloud-only placeholders that must not count as reclaimable.
+        Detects OneDrive/iCloud-style cloud-only placeholders that must not count as reclaimable.
 
- Returns:
- bool: True if the operation succeeded, False otherwise.
- """
+        Returns:
+        bool: True if the operation succeeded, False otherwise.
+        """
         from . import winattrs
+
         return winattrs.is_dehydrated(self.attrs)
 
     @property
     def is_junction(self) -> bool:
         """True for a junction / volume mount point (not a symlink to Python).
 
- Detects junctions and volume mount points separately from symlinks.
+        Detects junctions and volume mount points separately from symlinks.
 
- Returns:
- bool: True if the operation succeeded, False otherwise.
- """
+        Returns:
+        bool: True if the operation succeeded, False otherwise.
+        """
         from . import winattrs
+
         return winattrs.is_junction(self.reparse_tag)
 
     @property
     def special_note(self) -> str:
         """Short human explanation of any special storage behaviour, or ``""``.
 
- Explains cloud, junction, or permission quirks for the UI.
+        Explains cloud, junction, or permission quirks for the UI.
 
- Returns:
- str: Formatted string or path.
- """
+        Returns:
+        str: Formatted string or path.
+        """
         from . import winattrs
+
         return winattrs.describe(self.attrs, self.reparse_tag)
 
     def to_dict(self) -> dict[str, Any]:
         """To dict.
 
- Serializes the model to plain JSON-safe types.
+        Serializes the model to plain JSON-safe types.
 
- Returns:
- dict[str, Any]: Dictionary mapping identifiers to status or values.
- """
+        Returns:
+        dict[str, Any]: Dictionary mapping identifiers to status or values.
+        """
         return {
             "path": str(self.path),
             "size": self.size,
@@ -197,21 +202,21 @@ class ScanResult:
     def error_count(self) -> int:
         """Error count.
 
- Number of errors encountered during the operation.
+        Number of errors encountered during the operation.
 
- Returns:
- int: Result of the operation.
- """
+        Returns:
+        int: Result of the operation.
+        """
         return len(self.errors)
 
     def to_dict(self) -> dict[str, Any]:
         """To dict.
 
- Serializes the model to plain JSON-safe types.
+        Serializes the model to plain JSON-safe types.
 
- Returns:
- dict[str, Any]: Dictionary mapping identifiers to status or values.
- """
+        Returns:
+        dict[str, Any]: Dictionary mapping identifiers to status or values.
+        """
         return {
             "files": [f.to_dict() for f in self.files],
             "dirs": [d.to_dict() for d in self.dirs],
@@ -230,8 +235,8 @@ class ScanResult:
 class DeletionResult:
     """Deletion Result.
 
- Per-file deletion result with success flag and details.
- """
+    Per-file deletion result with success flag and details.
+    """
 
     path: Path
     outcome: DeletionOutcome
@@ -244,21 +249,21 @@ class DeletionResult:
     def succeeded(self) -> bool:
         """Succeeded helper.
 
- True when the outcome indicates success.
+        True when the outcome indicates success.
 
- Returns:
- bool: True if the operation succeeded, False otherwise.
- """
+        Returns:
+        bool: True if the operation succeeded, False otherwise.
+        """
         return self.outcome not in (DeletionOutcome.FAILED, DeletionOutcome.SKIPPED_UNSAFE)
 
     def to_dict(self) -> dict[str, Any]:
         """To dict.
 
- Serializes the model to plain JSON-safe types.
+        Serializes the model to plain JSON-safe types.
 
- Returns:
- dict[str, Any]: Dictionary mapping identifiers to status or values.
- """
+        Returns:
+        dict[str, Any]: Dictionary mapping identifiers to status or values.
+        """
         return {
             "path": str(self.path),
             "outcome": self.outcome.value,

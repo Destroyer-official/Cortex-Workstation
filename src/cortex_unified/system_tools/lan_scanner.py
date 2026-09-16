@@ -28,17 +28,16 @@ _NO_WINDOW = 0x08000000 if _IS_WINDOWS else 0
 
 from cortex_unified.system_tools import oui as _oui
 
-_ARP_RE = re.compile(
-    r"(\d{1,3}(?:\.\d{1,3}){3})\s+([0-9a-fA-F]{2}(?:[-:][0-9a-fA-F]{2}){5})\s+(\w+)"
-)
+_ARP_RE = re.compile(r"(\d{1,3}(?:\.\d{1,3}){3})\s+([0-9a-fA-F]{2}(?:[-:][0-9a-fA-F]{2}){5})\s+(\w+)")
 
 
 @dataclass(slots=True)
 class LanDevice:
     """One LAN host from the ARP cache with IP, MAC, kind, and OUI vendor guess."""
+
     ip: str
     mac: str
-    kind: str          # dynamic / static
+    kind: str  # dynamic / static
     vendor: str = ""
 
     def to_dict(self) -> dict[str, Any]:
@@ -103,10 +102,14 @@ class LanScanner:
             if ip in seen:
                 continue
             seen.add(ip)
-            devices.append(LanDevice(
-                ip=ip, mac=mac, kind=kind.lower(),
-                vendor=cls._vendor_for(mac),
-            ))
+            devices.append(
+                LanDevice(
+                    ip=ip,
+                    mac=mac,
+                    kind=kind.lower(),
+                    vendor=cls._vendor_for(mac),
+                )
+            )
         devices.sort(key=lambda d: tuple(int(x) for x in d.ip.split(".")))
         return devices
 
@@ -118,7 +121,10 @@ class LanScanner:
         """
         try:
             proc = _proc.run(
-                ["arp", "-a"], text=True, timeout=15, creationflags=_NO_WINDOW,
+                ["arp", "-a"],
+                text=True,
+                timeout=15,
+                creationflags=_NO_WINDOW,
             )
             return proc.stdout if proc.returncode == 0 else None
         except (_proc.ProcessCancelled, OSError, subprocess.SubprocessError) as exc:

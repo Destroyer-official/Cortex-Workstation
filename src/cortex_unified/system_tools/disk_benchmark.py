@@ -22,6 +22,7 @@ from typing import Callable, Dict, List, Optional, Tuple
 @dataclass
 class DiskBenchmarkMetric:
     """Disk Benchmark Metric data container."""
+
     test_name: str
     speed_mb_s: float
     iops: float
@@ -31,6 +32,7 @@ class DiskBenchmarkMetric:
 @dataclass
 class DiskBenchmarkReport:
     """Disk Benchmark Report data container."""
+
     target_drive: str
     target_path: str
     test_file_size_mb: int

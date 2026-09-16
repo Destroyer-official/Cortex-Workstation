@@ -56,11 +56,12 @@ class LicensePage(_Page):
             win: Parent window or shell controller instance.
         """
         super().__init__(win)
-        self.v.addWidget(title_block(
-            "License & Tiers",
-            "Activate a key, start the free PRO trial, or compare what each "
-            "tier unlocks.",
-        ))
+        self.v.addWidget(
+            title_block(
+                "License & Tiers",
+                "Activate a key, start the free PRO trial, or compare what each " "tier unlocks.",
+            )
+        )
 
         # -- current entitlement card -------------------------------------
         card = Card(self.p)
@@ -134,8 +135,7 @@ class LicensePage(_Page):
         tl.addWidget(comp_title)
         self.table = QTableWidget(0, 3)
         self.table.setHorizontalHeaderLabels(["Feature", "Minimum tier", "Included"])
-        self.table.horizontalHeader().setSectionResizeMode(
-            0, QHeaderView.ResizeMode.Stretch)
+        self.table.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
         self.table.verticalHeader().setVisible(False)
         self.table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
         self.table.setAlternatingRowColors(True)
@@ -173,8 +173,7 @@ class LicensePage(_Page):
 
         masked = state.to_dict()["key"]
         self.key_label.setText(f"Key: {masked}" if masked else "No key installed")
-        self.features_label.setText(
-            f"{len(state.features)} of {len(FEATURE_MIN_TIER)} features unlocked")
+        self.features_label.setText(f"{len(state.features)} of {len(FEATURE_MIN_TIER)} features unlocked")
 
         trial_available = not state.licensed and not state.trial
         self.trial_btn.setVisible(trial_available)
@@ -190,8 +189,7 @@ class LicensePage(_Page):
         check glyphs: Qt 6 ships no fonts, so codepoints rendered as colour
         emoji or tofu boxes depending on the machine.
         """
-        rows = sorted(FEATURE_MIN_TIER.items(),
-                      key=lambda kv: (kv[1].rank, kv[0].value))
+        rows = sorted(FEATURE_MIN_TIER.items(), key=lambda kv: (kv[1].rank, kv[0].value))
         self.table.setRowCount(len(rows))
         for r, (feature, minimum) in enumerate(rows):
             self.table.setItem(r, 0, QTableWidgetItem(feature.value))
@@ -218,8 +216,7 @@ class LicensePage(_Page):
             QMessageBox.warning(self, "Activation failed", str(exc))
             return
         _LOG.info("activated from GUI: tier=%s", state.tier.value)
-        self.win.statusBar().showMessage(
-            f"Activated \u2014 {state.tier.value.title()} edition.", 6000)
+        self.win.statusBar().showMessage(f"Activated \u2014 {state.tier.value.title()} edition.", 6000)
         self._refresh()
 
     def _start_trial(self) -> None:
@@ -233,16 +230,15 @@ class LicensePage(_Page):
             self._refresh()
             return
         _LOG.info("PRO trial started from GUI (expires %s)", state.expiry)
-        self.win.statusBar().showMessage(
-            f"Free PRO trial started \u2014 expires {state.expiry}.", 6000)
+        self.win.statusBar().showMessage(f"Free PRO trial started \u2014 expires {state.expiry}.", 6000)
         self._refresh()
 
     def _deactivate(self) -> None:
         """Validate the current selection and ask the user to confirm via a message box showing 'Deactivate license'."""
         confirm = QMessageBox.question(
-            self, "Deactivate license",
-            "Remove the license from this machine?\n\n"
-            "The app returns to the Free tier immediately.",
+            self,
+            "Deactivate license",
+            "Remove the license from this machine?\n\n" "The app returns to the Free tier immediately.",
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
             QMessageBox.StandardButton.No,
         )

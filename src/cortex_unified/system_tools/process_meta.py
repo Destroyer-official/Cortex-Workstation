@@ -103,12 +103,12 @@ def file_description(exe_path: str) -> str:
     if _IS_WINDOWS:
         try:
             import win32api
+
             info_path = "\\StringFileInfo\\%04X%04X\\FileDescription"
             langs = win32api.GetFileVersionInfo(exe_path, "\\VarFileInfo\\Translation")
             if langs:
                 lang, codepage = langs[0]
-                desc = win32api.GetFileVersionInfo(
-                    exe_path, info_path % (lang, codepage)) or ""
+                desc = win32api.GetFileVersionInfo(exe_path, info_path % (lang, codepage)) or ""
         except Exception as exc:  # noqa: BLE001 - many system exes have no/blocked info
             _LOG.debug("no version info for %s: %s", exe_path, exc)
     _desc_cache[exe_path] = desc.strip()

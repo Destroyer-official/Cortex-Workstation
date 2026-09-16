@@ -75,14 +75,17 @@ import subprocess
 import sys
 import threading
 import time
+
 try:
     import winreg
 except ImportError:
     winreg = None  # type: ignore
 
 if winreg is None:
+
     class _MockWinreg:
         """Fallback mock implementation of winreg module for non-Windows platforms."""
+
         REG_NONE = 0
         REG_SZ = 1
         REG_EXPAND_SZ = 2
@@ -115,6 +118,7 @@ if winreg is None:
         KEY_CREATE_LINK = 0x0020
         KEY_WOW64_64KEY = 0x0100
         KEY_WOW64_32KEY = 0x0200
+
     winreg = _MockWinreg()  # type: ignore
 from dataclasses import dataclass, field
 from datetime import datetime
@@ -123,14 +127,15 @@ from typing import Callable, Dict, List, Optional, Set, Tuple, Any
 
 from cortex_unified.system_tools.restore_point import RestorePointManager
 
-
 # ---------------------------------------------------------------------------
 # Tweak definition (declarative)
 # ---------------------------------------------------------------------------
 
+
 @dataclass(frozen=True, slots=True)
 class TweakDef:
     """Record holding id, name, description, category, reg_path, reg_value, reg_type, reg_data."""
+
     id: str
     name: str
     description: str = ""
@@ -173,6 +178,7 @@ class TweakDef:
         bool: True if the operation succeeded, False otherwise.
         """
         import platform
+
         build = int(platform.version().split(".")[-1]) if platform.version() else 0
         return self.min_build <= build <= self.max_build
 
@@ -500,6 +506,7 @@ TELEMETRY_TWEAKS: List[TweakDef] = [
 # Privacy Blocker Engine
 # ---------------------------------------------------------------------------
 
+
 class PrivacyBlocker:
     """Groups related helpers: init, reg set, reg get, reg backup, svc set start, svc get start, task set enabled, fw add block. Windows-only; typically requires elevation."""
 
@@ -591,8 +598,7 @@ class PrivacyBlocker:
             hive = getattr(winreg, hive_str)
             subkey_sanitized = subkey.replace("\\", "_")
             backup_file = self._backup_dir / f"reg_{hive_str}_{subkey_sanitized}_{int(time.time())}.reg"
-            subprocess.run(["reg", "export", path, str(backup_file), "/y"],
-                           check=True, capture_output=True)
+            subprocess.run(["reg", "export", path, str(backup_file), "/y"], check=True, capture_output=True)
             return str(backup_file)
         except Exception:
             return None
@@ -612,8 +618,7 @@ class PrivacyBlocker:
         if self.dry_run:
             self.progress(f"[DRY-RUN] Set service {name} start type = {start_type}")
             return True
-        rc, _, _ = subprocess.run(["sc", "config", name, "start=", str(start_type)],
-                                  capture_output=True)
+        rc, _, _ = subprocess.run(["sc", "config", name, "start=", str(start_type)], capture_output=True)
         if rc == 0:
             # Stop if disabling
             if start_type == 4:
@@ -655,8 +660,7 @@ class PrivacyBlocker:
             self.progress(f"[DRY-RUN] Set task {path} enabled = {enabled}")
             return True
         state = "enable" if enabled else "disable"
-        rc = subprocess.run(["schtasks", "/change", "/tn", path, "/" + state],
-                            capture_output=True).returncode
+        rc = subprocess.run(["schtasks", "/change", "/tn", path, "/" + state], capture_output=True).returncode
         return rc == 0
 
     # -- firewall helpers
@@ -676,9 +680,19 @@ class PrivacyBlocker:
         if self.dry_run:
             self.progress(f"[DRY-RUN] Add firewall block rule {name}")
             return True
-        cmd = ["netsh", "advfirewall", "firewall", "add", "rule",
-               "name=" + name, "dir=" + direction, "action=block",
-               "program=" + program, "enable=yes", "profile=any"]
+        cmd = [
+            "netsh",
+            "advfirewall",
+            "firewall",
+            "add",
+            "rule",
+            "name=" + name,
+            "dir=" + direction,
+            "action=block",
+            "program=" + program,
+            "enable=yes",
+            "profile=any",
+        ]
         return subprocess.run(cmd, capture_output=True).returncode == 0
 
     # -- IFEO helpers
@@ -712,8 +726,10 @@ class PrivacyBlocker:
             return True
         path = rf"HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\{target}"
         try:
-            winreg.DeleteKey(getattr(winreg, "HKEY_LOCAL_MACHINE"),
-                             rf"SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\{target}")
+            winreg.DeleteKey(
+                getattr(winreg, "HKEY_LOCAL_MACHINE"),
+                rf"SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\{target}",
+            )
             return True
         except Exception:
             return False
@@ -754,9 +770,9 @@ class PrivacyBlocker:
                 elif tweak.task_path:
                     ok = self._task_set_enabled(tweak.task_path, tweak.task_enabled)
                 elif tweak.firewall_rule_name:
-                    ok = self._fw_add_block(tweak.firewall_rule_name,
-                                            tweak.firewall_direction or "out",
-                                            tweak.firewall_program or "")
+                    ok = self._fw_add_block(
+                        tweak.firewall_rule_name, tweak.firewall_direction or "out", tweak.firewall_program or ""
+                    )
                 elif tweak.ifeo_target:
                     ok = self._ifeo_set(tweak.ifeo_target, tweak.ifeo_debugger)
                 else:
@@ -837,14 +853,14 @@ class PrivacyBlocker:
             try:
                 if tweak.reg_path:
                     current = self._reg_get(tweak.reg_path, tweak.reg_value)
-                    applied = (current == tweak.reg_data)
+                    applied = current == tweak.reg_data
                 elif tweak.service_name:
                     current = self._svc_get_start(tweak.service_name)
-                    applied = (current == tweak.service_start_type)
+                    applied = current == tweak.service_start_type
                 elif tweak.ifeo_target:
                     path = rf"HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\{tweak.ifeo_target}"
                     current = self._reg_get(path, "Debugger")
-                    applied = (current == tweak.ifeo_debugger)
+                    applied = current == tweak.ifeo_debugger
                 else:
                     applied = False
             except Exception:
@@ -883,16 +899,22 @@ class PrivacyBlocker:
             by_category[cat]["total"] += 1
             if status[tid]["applied"]:
                 by_category[cat]["applied"] += 1
-            by_category[cat]["tweaks"].append({
-                "id": tid,
-                "name": tweak.name,
-                "applied": status[tid]["applied"],
-                "risk": tweak.risk,
-                "profiles": tweak.profiles,
-            })
+            by_category[cat]["tweaks"].append(
+                {
+                    "id": tid,
+                    "name": tweak.name,
+                    "applied": status[tid]["applied"],
+                    "risk": tweak.risk,
+                    "profiles": tweak.profiles,
+                }
+            )
         return {
             "timestamp": datetime.now().isoformat(),
-            "summary": {"total": total, "applied": applied, "percentage": round(applied/total*100, 1) if total else 0},
+            "summary": {
+                "total": total,
+                "applied": applied,
+                "percentage": round(applied / total * 100, 1) if total else 0,
+            },
             "by_category": by_category,
         }
 

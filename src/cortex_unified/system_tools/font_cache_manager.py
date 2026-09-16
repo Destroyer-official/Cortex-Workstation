@@ -25,6 +25,7 @@ else:
 @dataclass
 class FontEntry:
     """Font Entry data container."""
+
     name: str
     file_name: str
     file_path: str
@@ -38,6 +39,7 @@ class FontEntry:
 @dataclass
 class FontAnalysisReport:
     """Font Analysis Report data container."""
+
     total_fonts: int
     total_size_bytes: int
     orphaned_count: int
@@ -50,6 +52,7 @@ class FontAnalysisReport:
 @dataclass
 class FontCleanResult:
     """Font Clean Result data container."""
+
     orphans_removed: int
     bytes_freed: int
     errors: List[str]
@@ -71,8 +74,12 @@ class FontCacheManager:
         """Detect font format from file extension."""
         ext = Path(file_name).suffix.lower()
         fmt_map = {
-            ".ttf": "TTF", ".otf": "OTF", ".ttc": "TTC",
-            ".woff": "WOFF", ".woff2": "WOFF2", ".fon": "FON",
+            ".ttf": "TTF",
+            ".otf": "OTF",
+            ".ttc": "TTC",
+            ".woff": "WOFF",
+            ".woff2": "WOFF2",
+            ".fon": "FON",
             ".fnt": "FNT",
         }
         return fmt_map.get(ext, "Unknown")
@@ -104,15 +111,17 @@ class FontCacheManager:
                         size = full_path.stat().st_size if exists else 0
                         fmt = cls._detect_format(file_name)
 
-                        entries.append(FontEntry(
-                            name=name,
-                            file_name=file_name,
-                            file_path=str(full_path),
-                            file_size_bytes=size,
-                            format=fmt,
-                            exists=exists,
-                            is_orphaned=not exists,
-                        ))
+                        entries.append(
+                            FontEntry(
+                                name=name,
+                                file_name=file_name,
+                                file_path=str(full_path),
+                                file_size_bytes=size,
+                                format=fmt,
+                                exists=exists,
+                                is_orphaned=not exists,
+                            )
+                        )
                         idx += 1
                     except OSError:
                         break
@@ -166,8 +175,7 @@ class FontCacheManager:
         errors: List[str] = []
 
         try:
-            with winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, cls.FONTS_REG_KEY,
-                                0, winreg.KEY_SET_VALUE) as key:
+            with winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, cls.FONTS_REG_KEY, 0, winreg.KEY_SET_VALUE) as key:
                 for o in orphans:
                     try:
                         winreg.DeleteValue(key, o.name)

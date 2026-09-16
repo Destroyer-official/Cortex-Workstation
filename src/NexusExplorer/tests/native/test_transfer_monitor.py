@@ -60,8 +60,7 @@ def env(qapp, tmp_path, monkeypatch):
     # park the tab on dst so _paste targets it
     w.navigate(str(dst))
     deadline = time.time() + 5
-    while time.time() < deadline and \
-            Path(w._tab()["path"]) != dst:
+    while time.time() < deadline and Path(w._tab()["path"]) != dst:
         qapp.processEvents()
         time.sleep(0.01)
 
@@ -72,9 +71,7 @@ def env(qapp, tmp_path, monkeypatch):
         for _ in range(384):
             fh.write(chunk)
 
-    yield type("Env", (), {"w": w, "src": src, "dst": dst,
-                           "big": big,
-                           "monitor_cls": TransferMonitorDialog})
+    yield type("Env", (), {"w": w, "src": src, "dst": dst, "big": big, "monitor_cls": TransferMonitorDialog})
     try:
         w.engine.shutdown()
     except Exception:
@@ -106,6 +103,7 @@ def test_monitor_opens_and_completes_copy(env, qapp):
     """
     w = env.w
     from nexus_explorer import _nexus_clipboard
+
     _nexus_clipboard.copy([str(env.big)])
     w._paste()
     qapp.processEvents()
@@ -154,8 +152,7 @@ def test_pause_resume_cancel_through_monitor(env, qapp):
 
     if q.pause(jid) is not True:
         dbg = q.get_job(jid)
-        pytest.fail(f"pause refused state={dbg.state.name} "
-                    f"err={dbg.error!r} handle={dbg.handle}")
+        pytest.fail(f"pause refused state={dbg.state.name} " f"err={dbg.error!r} handle={dbg.handle}")
     job = q.get_job(jid)
     assert job.state.name == "PAUSED"
     frozen = job.progress
@@ -195,8 +192,7 @@ def test_cancel_mid_copy(env, qapp):
         time.sleep(0.005)
     if q.cancel(jid) is not True:
         dbg = q.get_job(jid)
-        pytest.fail(f"cancel refused state={dbg.state.name} "
-                    f"err={dbg.error!r} handle={dbg.handle}")
+        pytest.fail(f"cancel refused state={dbg.state.name} " f"err={dbg.error!r} handle={dbg.handle}")
     qapp.processEvents()
     job = q.get_job(jid)
     assert job.state.name == "CANCELLED"

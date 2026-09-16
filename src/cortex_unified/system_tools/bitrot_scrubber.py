@@ -24,6 +24,7 @@ logger = logging.getLogger("cortex.system_tools.bitrot_scrubber")
 @dataclass
 class ScrubberRecord:
     """Scrubber Record data container."""
+
     path: str
     size: int
     mtime: float
@@ -34,6 +35,7 @@ class ScrubberRecord:
 @dataclass
 class BitRotIssue:
     """Bit Rot Issue data container."""
+
     path: str
     expected_hash: str
     actual_hash: str
@@ -44,6 +46,7 @@ class BitRotIssue:
 @dataclass
 class BitRotScrubReport:
     """Bit Rot Scrub Report data container."""
+
     total_files_scanned: int = 0
     clean_files_count: int = 0
     corrupted_count: int = 0
@@ -71,8 +74,7 @@ class BitRotScrubber:
     def _init_db(self):
         """Initialize integrity database schema."""
         with sqlite3.connect(self._db_path) as conn:
-            conn.execute(
-                """
+            conn.execute("""
                 CREATE TABLE IF NOT EXISTS file_integrity (
                     path TEXT PRIMARY KEY,
                     size INTEGER NOT NULL,
@@ -80,8 +82,7 @@ class BitRotScrubber:
                     sha256 TEXT NOT NULL,
                     last_verified REAL NOT NULL
                 )
-                """
-            )
+                """)
             conn.commit()
 
     @staticmethod

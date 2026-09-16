@@ -37,10 +37,11 @@ class FirewallRule:
 
     Manages FirewallRule operations and coordinates related state changes for the component.
     """
+
     name: str
     display_name: str
-    direction: str        # Inbound / Outbound
-    action: str           # Allow / Block
+    direction: str  # Inbound / Outbound
+    action: str  # Allow / Block
     enabled: bool
     program: str = ""
     remote_address: str = ""
@@ -87,8 +88,7 @@ class FirewallManager:
 
     # -- creation -----------------------------------------------------------
 
-    def block_program(self, program_path: str, direction: str = "Outbound",
-                      label: str = "") -> tuple[bool, str]:
+    def block_program(self, program_path: str, direction: str = "Outbound", label: str = "") -> tuple[bool, str]:
         """Block a program's traffic. Reversible via remove_rule/toggle.
 
         Manages block program operations and coordinates related state changes for the component.
@@ -101,11 +101,9 @@ class FirewallManager:
         Returns:
             tuple[bool, str]: True if the operation succeeded, False otherwise.
         """
-        return self._new_rule(action="Block", program=program_path,
-                              direction=direction, label=label or program_path)
+        return self._new_rule(action="Block", program=program_path, direction=direction, label=label or program_path)
 
-    def allow_program(self, program_path: str, direction: str = "Outbound",
-                      label: str = "") -> tuple[bool, str]:
+    def allow_program(self, program_path: str, direction: str = "Outbound", label: str = "") -> tuple[bool, str]:
         """Allow program.
 
         Manages allow program operations and coordinates related state changes for the component.
@@ -118,11 +116,9 @@ class FirewallManager:
         Returns:
             tuple[bool, str]: True if the operation succeeded, False otherwise.
         """
-        return self._new_rule(action="Allow", program=program_path,
-                              direction=direction, label=label or program_path)
+        return self._new_rule(action="Allow", program=program_path, direction=direction, label=label or program_path)
 
-    def block_remote_address(self, address: str, direction: str = "Outbound",
-                            label: str = "") -> tuple[bool, str]:
+    def block_remote_address(self, address: str, direction: str = "Outbound", label: str = "") -> tuple[bool, str]:
         """Block traffic to/from a remote IP or range.
 
         Manages block remote address operations and coordinates related state changes for the component.
@@ -137,11 +133,11 @@ class FirewallManager:
         """
         if not self._valid_address(address):
             return False, "Invalid IP address or range."
-        return self._new_rule(action="Block", remote_address=address,
-                              direction=direction, label=label or address)
+        return self._new_rule(action="Block", remote_address=address, direction=direction, label=label or address)
 
-    def _new_rule(self, action: str, direction: str, label: str,
-                  program: str = "", remote_address: str = "") -> tuple[bool, str]:
+    def _new_rule(
+        self, action: str, direction: str, label: str, program: str = "", remote_address: str = ""
+    ) -> tuple[bool, str]:
         """_new_rule.
 
         Manages new rule operations and coordinates related state changes for the component.
@@ -163,10 +159,14 @@ class FirewallManager:
         display = f"{_PREFIX} {action} {label}"
         args = [
             "New-NetFirewallRule",
-            "-DisplayName", self._ps_quote(display),
-            "-Direction", self._ps_quote(direction),
-            "-Action", self._ps_quote(action),
-            "-Profile", "Any",
+            "-DisplayName",
+            self._ps_quote(display),
+            "-Direction",
+            self._ps_quote(direction),
+            "-Action",
+            self._ps_quote(action),
+            "-Profile",
+            "Any",
         ]
         if program:
             args += ["-Program", self._ps_quote(program)]
@@ -261,6 +261,7 @@ class FirewallManager:
         if not out:
             return []
         import json
+
         try:
             data = json.loads(out)
         except (ValueError, TypeError):
@@ -272,17 +273,19 @@ class FirewallManager:
             if not isinstance(d, dict):
                 continue
             disp = str(d.get("Disp") or "")
-            rules.append(FirewallRule(
-                name=str(d.get("Name") or ""),
-                display_name=disp,
-                direction=str(d.get("Dir") or ""),
-                action=str(d.get("Act") or ""),
-                enabled=bool(d.get("En")),
-                program=str(d.get("App") or "") if d.get("App") not in (None, "Any") else "",
-                remote_address=str(d.get("Addr") or "") if d.get("Addr") not in (None, "Any") else "",
-                protocol=str(d.get("Proto") or "") if d.get("Proto") else "",
-                managed_by_cortex=disp.startswith(_PREFIX),
-            ))
+            rules.append(
+                FirewallRule(
+                    name=str(d.get("Name") or ""),
+                    display_name=disp,
+                    direction=str(d.get("Dir") or ""),
+                    action=str(d.get("Act") or ""),
+                    enabled=bool(d.get("En")),
+                    program=str(d.get("App") or "") if d.get("App") not in (None, "Any") else "",
+                    remote_address=str(d.get("Addr") or "") if d.get("Addr") not in (None, "Any") else "",
+                    protocol=str(d.get("Proto") or "") if d.get("Proto") else "",
+                    managed_by_cortex=disp.startswith(_PREFIX),
+                )
+            )
         return rules
 
     @staticmethod
@@ -298,6 +301,7 @@ class FirewallManager:
             bool: True if the operation succeeded, False otherwise.
         """
         import ipaddress
+
         addr = (addr or "").strip()
         if not addr:
             return False
@@ -340,7 +344,9 @@ class FirewallManager:
         try:
             proc = _proc.run(
                 ["powershell", "-NoProfile", "-NonInteractive", "-Command", script],
-                text=True, timeout=30, creationflags=_NO_WINDOW,
+                text=True,
+                timeout=30,
+                creationflags=_NO_WINDOW,
             )
             if want_output:
                 return proc.stdout if proc.returncode == 0 else None

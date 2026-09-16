@@ -1,4 +1,5 @@
 """Native core file engine and table model."""
+
 from __future__ import annotations
 
 import sys

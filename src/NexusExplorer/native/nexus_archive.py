@@ -29,6 +29,7 @@ log = logging.getLogger("nexus.archive")
 
 MAX_EXTRACT_SIZE = 10 * 1024 * 1024 * 1024  # 10 GB
 
+
 def _get_7z_search_paths() -> list[str]:
     """Build candidate 7z.exe paths from Program Files-style env vars
     (including LOCALAPPDATA\\Programs) and the standard install dirs on
@@ -47,6 +48,7 @@ def _get_7z_search_paths() -> list[str]:
     # Check all active fixed drives
     try:
         import string
+
         for letter in string.ascii_uppercase:
             drive_root = Path(f"{letter}:/")
             if drive_root.exists():
@@ -84,6 +86,7 @@ def _find_7z() -> str | None:
 
         # 1. Check PATH
         import shutil
+
         found = shutil.which("7z")
         if found:
             _7z_exe = found
@@ -98,6 +101,7 @@ def _find_7z() -> str | None:
         # 3. Check registry
         try:
             import winreg
+
             for hive in (winreg.HKEY_LOCAL_MACHINE, winreg.HKEY_CURRENT_USER):
                 try:
                     key = winreg.OpenKey(hive, r"SOFTWARE\7-Zip")
@@ -125,17 +129,17 @@ def _7z() -> str:
     7-Zip is not installed."""
     exe = _find_7z()
     if not exe:
-        raise FileNotFoundError(
-            "7z.exe not found. Install 7-Zip from https://7-zip.org"
-        )
+        raise FileNotFoundError("7z.exe not found. Install 7-Zip from https://7-zip.org")
     return exe
 
 
 # ── Security ────────────────────────────────────────────────────────────────
 
+
 class ArchiveSecurityError(Exception):
     """Raised when an archive violates extraction safety limits (path
     traversal or oversized payload)."""
+
     pass
     """Raised when an archive violates extraction safety limits (path
     traversal or oversized payload)."""
@@ -157,15 +161,16 @@ def _enforce_total_size(total: int, label: str = "archive"):
     the 10 GB extraction limit."""
     if total > MAX_EXTRACT_SIZE:
         raise ArchiveSecurityError(
-            f"{label} exceeds max size "
-            f"({total / (1024**3):.1f} GB > {MAX_EXTRACT_SIZE / (1024**3):.0f} GB)"
+            f"{label} exceeds max size " f"({total / (1024**3):.1f} GB > {MAX_EXTRACT_SIZE / (1024**3):.0f} GB)"
         )
 
 
 # ── Enums / data ────────────────────────────────────────────────────────────
 
+
 class ArchiveType(Enum):
     """Supported archive format categories."""
+
     ZIP = auto()
     TAR = auto()
     TAR_GZ = auto()
@@ -202,6 +207,7 @@ ARCHIVE_EXTENSIONS = {
 class ArchiveEntry:
     """One entry (file or folder) inside an archive, as parsed from 7z
     listing output."""
+
     archive_path: str
     name: str
     is_dir: bool
@@ -218,6 +224,7 @@ class ArchiveEntry:
 class ArchiveInfo:
     """Summary metadata about an archive (type, counts, sizes,
     encryption)."""
+
     path: str
     archive_type: ArchiveType
     total_entries: int = 0
@@ -247,7 +254,7 @@ def detect_archive_type(path: str) -> ArchiveType | None:
         try:
             with open(path, "rb") as f:
                 magic = f.read(2)
-            if magic == b'\x1f\x8b':
+            if magic == b"\x1f\x8b":
                 return ArchiveType.TAR_GZ
         except OSError:
             pass
@@ -262,6 +269,7 @@ def is_archive(path: str) -> bool:
 
 
 # ── 7z.exe output parser ───────────────────────────────────────────────────
+
 
 def _parse_7z_list(output: str) -> list[ArchiveEntry]:
     """Parse `7z l` output into ArchiveEntry list."""
@@ -316,6 +324,7 @@ def _parse_7z_list(output: str) -> list[ArchiveEntry]:
             modified_ms = 0
             try:
                 from datetime import datetime
+
                 dt = datetime.strptime(f"{date_str} {time_str}", "%Y-%m-%d %H:%M:%S")
                 modified_ms = int(dt.timestamp() * 1000)
             except (ValueError, OverflowError):
@@ -325,15 +334,17 @@ def _parse_7z_list(output: str) -> list[ArchiveEntry]:
             upper_attr = attr.upper()
             encrypted = upper_attr.startswith("C") or "E" in upper_attr
 
-            entries.append(ArchiveEntry(
-                archive_path=name,
-                name=Path(name).name or name.rstrip("/").rstrip("\\"),
-                is_dir=is_dir,
-                size=size,
-                compressed_size=comp_size,
-                modified_ms=modified_ms,
-                encrypted=encrypted,
-            ))
+            entries.append(
+                ArchiveEntry(
+                    archive_path=name,
+                    name=Path(name).name or name.rstrip("/").rstrip("\\"),
+                    is_dir=is_dir,
+                    size=size,
+                    compressed_size=comp_size,
+                    modified_ms=modified_ms,
+                    encrypted=encrypted,
+                )
+            )
         except (ValueError, IndexError):
             continue
 
@@ -362,13 +373,15 @@ def _parse_7z_list_xml(output: str) -> list[ArchiveEntry]:
                 except ValueError:
                     packed = 0
 
-                entries.append(ArchiveEntry(
-                    archive_path=path,
-                    name=Path(path).name or path,
-                    is_dir=is_dir,
-                    size=size,
-                    compressed_size=packed,
-                ))
+                entries.append(
+                    ArchiveEntry(
+                        archive_path=path,
+                        name=Path(path).name or path,
+                        is_dir=is_dir,
+                        size=size,
+                        compressed_size=packed,
+                    )
+                )
                 current = {}
 
     # Don't forget last entry
@@ -383,18 +396,21 @@ def _parse_7z_list_xml(output: str) -> list[ArchiveEntry]:
             packed = int(current.get("Packed Size", "0"))
         except ValueError:
             packed = 0
-        entries.append(ArchiveEntry(
-            archive_path=path,
-            name=Path(path).name or path,
-            is_dir=is_dir,
-            size=size,
-            compressed_size=packed,
-        ))
+        entries.append(
+            ArchiveEntry(
+                archive_path=path,
+                name=Path(path).name or path,
+                is_dir=is_dir,
+                size=size,
+                compressed_size=packed,
+            )
+        )
 
     return entries
 
 
 # ── 7z.exe runner ───────────────────────────────────────────────────────────
+
 
 def _run_7z(
     args: list[str],
@@ -455,6 +471,7 @@ def _has_mmt_flag() -> bool:
 
 
 # ── ArchiveReader (7z.exe backed) ──────────────────────────────────────────
+
 
 class SevenZipCLIReader:
     """Universal archive reader using 7z.exe CLI."""
@@ -546,7 +563,8 @@ class SevenZipCLIReader:
                 if e.size > MAX_READ_SIZE:
                     log.warning(
                         "Entry %s too large (%d bytes), refusing to load into RAM",
-                        entry_path, e.size,
+                        entry_path,
+                        e.size,
                     )
                     return None
                 break
@@ -586,6 +604,7 @@ class SevenZipCLIReader:
 
 # ── Factory ─────────────────────────────────────────────────────────────────
 
+
 def open_archive(path: str, password: str = "") -> SevenZipCLIReader | None:
     """Open an archive for reading via 7z.exe. Returns None on failure."""
     if not is_7z_available():
@@ -601,10 +620,11 @@ def open_archive(path: str, password: str = "") -> SevenZipCLIReader | None:
 
 # ── Background extraction (QThread) ────────────────────────────────────────
 
+
 class _ExtractWorker(QThread):
     """Background extraction using 7z.exe with progress reporting."""
 
-    progress = Signal(int, str)     # percent, current_file
+    progress = Signal(int, str)  # percent, current_file
     finished_signal = Signal(bool)  # success
 
     def __init__(
@@ -696,6 +716,7 @@ class _ExtractWorker(QThread):
 
 # ── Public manager ──────────────────────────────────────────────────────────
 
+
 class ArchiveManager(QObject):
     """High-level archive operations backed by native 7z.exe."""
 
@@ -721,9 +742,7 @@ class ArchiveManager(QObject):
 
     # -- extraction ---------------------------------------------------------
 
-    def extract_all(
-        self, archive_path: str, dest: str, password: str = ""
-    ) -> bool:
+    def extract_all(self, archive_path: str, dest: str, password: str = "") -> bool:
         """Start a background extraction of the whole archive, forwarding
         worker progress/finish signals to extraction_progress/
         extraction_finished; returns True once started."""
@@ -845,12 +864,12 @@ def _compression_level(level: str) -> int:
     'best') into the 7z -mx integer (0/1/5/9); unknown names raise
     ValueError."""
     levels = {
-        "store": 0, "fast": 1, "normal": 5, "best": 9,
+        "store": 0,
+        "fast": 1,
+        "normal": 5,
+        "best": 9,
     }
     key = level.lower()
     if key not in levels:
-        raise ValueError(
-            f"Unknown compression level {level!r}; "
-            f"expected one of: {', '.join(levels)}"
-        )
+        raise ValueError(f"Unknown compression level {level!r}; " f"expected one of: {', '.join(levels)}")
     return levels[key]

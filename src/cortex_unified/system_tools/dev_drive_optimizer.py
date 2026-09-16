@@ -27,6 +27,7 @@ FILE_SUPPORTS_BLOCK_REFCOUNTING = 0x08000000  # Block cloning support flag
 @dataclass
 class DevDriveInfo:
     """Dev Drive Info data container."""
+
     drive_letter: str
     filesystem: str
     is_refs: bool
@@ -41,6 +42,7 @@ class DevDriveInfo:
 @dataclass
 class DevDriveAuditReport:
     """Dev Drive Audit Report data container."""
+
     drives: list[DevDriveInfo] = field(default_factory=list)
     has_dev_drives: bool = False
     recommendations: list[str] = field(default_factory=list)

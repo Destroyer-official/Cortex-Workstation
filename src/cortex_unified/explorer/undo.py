@@ -1,4 +1,5 @@
 """Undo and redo file operation history stack."""
+
 from __future__ import annotations
 
 import sys

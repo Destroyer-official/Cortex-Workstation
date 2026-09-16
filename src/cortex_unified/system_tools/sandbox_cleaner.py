@@ -22,6 +22,7 @@ logger = logging.getLogger("cortex.system_tools.sandbox_cleaner")
 @dataclass
 class VirtualArtifact:
     """Virtual Artifact data container."""
+
     name: str
     path: str
     category: str  # "Windows Sandbox", "Hyper-V", "WSL", "VMware/VBox"
@@ -43,6 +44,7 @@ class VirtualArtifact:
 @dataclass
 class SandboxCleanReport:
     """Sandbox Clean Report data container."""
+
     artifacts: list[VirtualArtifact] = field(default_factory=list)
     total_reclaimable_bytes: int = 0
     categories_found: list[str] = field(default_factory=list)

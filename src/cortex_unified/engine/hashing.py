@@ -49,15 +49,15 @@ elif _HAS_BLAKE3:
 else:
     HASH_ALGORITHM = "blake2b"
 
-_HEAD_BYTES = 65536       # 64 KiB probe for the pre-hash stage
-_CHUNK = 1024 * 1024      # 1 MiB streaming chunk for full hashes
+_HEAD_BYTES = 65536  # 64 KiB probe for the pre-hash stage
+_CHUNK = 1024 * 1024  # 1 MiB streaming chunk for full hashes
 
 
 def _new_hasher():
     """Construct the fastest available hasher (see HASH_ALGORITHM).
 
- Constructs the fastest available hash object per HASH_ALGORITHM.
- """
+    Constructs the fastest available hash object per HASH_ALGORITHM.
+    """
     if _HAS_XXHASH:
         return xxhash.xxh3_64()
     if _HAS_BLAKE3:
@@ -145,16 +145,16 @@ class DuplicateFinderEngine:
     ) -> dict[str, list[Path]]:
         """Group by hash.
 
- Hashes same-size candidates to confirm true duplicate groups.
+        Hashes same-size candidates to confirm true duplicate groups.
 
- Args:
- paths (list[Path]): Filesystem path to the target file or directory.
- limit (int | None): The limit parameter.
- progress (Callable[[int, int], None] | None): The progress parameter.
+        Args:
+        paths (list[Path]): Filesystem path to the target file or directory.
+        limit (int | None): The limit parameter.
+        progress (Callable[[int, int], None] | None): The progress parameter.
 
- Returns:
- dict[str, list[Path]]: List of processed items or identifiers.
- """
+        Returns:
+        dict[str, list[Path]]: List of processed items or identifiers.
+        """
         groups: dict[str, list[Path]] = defaultdict(list)
         total = len(paths)
         done = 0
@@ -174,14 +174,14 @@ class DuplicateFinderEngine:
     def wasted_bytes(groups: dict[str, list[Path]]) -> int:
         """Bytes reclaimable by keeping one copy per duplicate group.
 
- Sums bytes reclaimable by keeping one copy per group.
+        Sums bytes reclaimable by keeping one copy per group.
 
- Args:
- groups (dict[str, list[Path]]): The groups parameter.
+        Args:
+        groups (dict[str, list[Path]]): The groups parameter.
 
- Returns:
- int: Result of the operation.
- """
+        Returns:
+        int: Result of the operation.
+        """
         total = 0
         for paths in groups.values():
             if len(paths) <= 1:

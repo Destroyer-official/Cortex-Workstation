@@ -60,6 +60,7 @@ from cortex_unified.core.utils import normalize_path
 
 try:
     import xxhash  # type: ignore
+
     HAS_XXHASH = True
 except ImportError:
     HAS_XXHASH = False
@@ -68,6 +69,7 @@ except ImportError:
 # ---------------------------------------------------------------------------
 # Bloom filter (LSHBloom-inspired)
 # ---------------------------------------------------------------------------
+
 
 class BloomFilter:
     """Simple Bloom filter with k hash functions.
@@ -156,6 +158,7 @@ class BloomFilter:
 # ---------------------------------------------------------------------------
 # MinHash utilities
 # ---------------------------------------------------------------------------
+
 
 def _shingle_text(text: str, k: int = 5) -> Set[bytes]:
     """Character k-grams (shingles) from text, lower-cased, whitespace-normalized.
@@ -293,9 +296,26 @@ class NearDuplicateFinder:
             bool: True if the operation succeeded, False otherwise.
         """
         return path.suffix.lower() in {
-            ".py", ".js", ".ts", ".java", ".c", ".cpp", ".h", ".cs",
-            ".txt", ".md", ".rst", ".json", ".xml", ".html", ".css",
-            ".go", ".rs", ".rb", ".php", ".sql",
+            ".py",
+            ".js",
+            ".ts",
+            ".java",
+            ".c",
+            ".cpp",
+            ".h",
+            ".cs",
+            ".txt",
+            ".md",
+            ".rst",
+            ".json",
+            ".xml",
+            ".html",
+            ".css",
+            ".go",
+            ".rs",
+            ".rb",
+            ".php",
+            ".sql",
         }
 
     def _minhash(self, shingles: Set[bytes]) -> List[int]:

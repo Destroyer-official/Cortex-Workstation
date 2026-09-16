@@ -28,6 +28,7 @@ from cortex_unified.analyzers.near_duplicate_finder import NearDuplicateFinder
 
 class _NearDupWorker(QObject):
     """Background worker (_NearDupWorker) performing NearDupWorker. Signals finished, progress, failed report status. Configured with root, threshold. Its run() step calls NearDuplicateFinder, finder.find_near_duplicates, emit, str."""
+
     finished = Signal(dict)
     progress = Signal(str)
     failed = Signal(str)
@@ -85,14 +86,22 @@ class NearDuplicatesPage(_Page):
             win: Parent window or shell controller instance.
         """
         super().__init__(win)
-        self.v.addWidget(title_block(
-            "Near Duplicates",
-            "MinHash LSH + Bloom (SEDD/LSHBloom) – finds copy-pasted code with small edits, "
-            "not just byte-identical files. 80% Jaccard threshold, H=128, b=16.",
-        ))
+        self.v.addWidget(
+            title_block(
+                "Near Duplicates",
+                "MinHash LSH + Bloom (SEDD/LSHBloom) – finds copy-pasted code with small edits, "
+                "not just byte-identical files. 80% Jaccard threshold, H=128, b=16.",
+            )
+        )
         from PySide6.QtWidgets import (
-            QFileDialog, QHBoxLayout, QLabel, QProgressBar, QPushButton,
-            QTableWidget, QTableWidgetItem, QVBoxLayout,
+            QFileDialog,
+            QHBoxLayout,
+            QLabel,
+            QProgressBar,
+            QPushButton,
+            QTableWidget,
+            QTableWidgetItem,
+            QVBoxLayout,
         )
         from pathlib import Path
 
@@ -179,7 +188,9 @@ class NearDuplicatesPage(_Page):
         self.progress.setVisible(False)
         self.run_btn.setEnabled(True)
         if not groups:
-            self.state.show_empty("No near-duplicates detected (threshold 80%). Try exact Duplicates page for byte-identical.")
+            self.state.show_empty(
+                "No near-duplicates detected (threshold 80%). Try exact Duplicates page for byte-identical."
+            )
             self.status.setText("No near-duplicates – corpus is diverse.")
             self.win.statusBar().showMessage("No near-duplicates", 5000)
             return
@@ -196,7 +207,9 @@ class NearDuplicatesPage(_Page):
             total = sum(_P(p).stat().st_size for p, _, _ in rows if _P(p).is_file())
         except OSError:
             total = 0
-        self.status.setText(f"{len(groups)} near-duplicate groups, {len(rows)} files – chunked FastCDC adds +15% via Hybrid paper.")
+        self.status.setText(
+            f"{len(groups)} near-duplicate groups, {len(rows)} files – chunked FastCDC adds +15% via Hybrid paper."
+        )
         self.win.statusBar().showMessage(f"{len(groups)} near-duplicate groups", 5000)
 
     def _fail(self, msg):

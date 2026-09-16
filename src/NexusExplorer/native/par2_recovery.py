@@ -22,6 +22,7 @@ class Par2FileInfo:
 
     Stores file id hex, name, size, and MD5 of first 16KB plus full-file MD5.
     """
+
     file_id: str
     file_name: str
     file_size_bytes: int
@@ -35,6 +36,7 @@ class Par2PacketInfo:
 
     Records Main/FileDesc/Recovery-Slice type label, length, recovery set id, and validity.
     """
+
     packet_type: str
     packet_length: int
     recovery_set_id: str
@@ -47,6 +49,7 @@ class Par2ValidationReport:
 
     Holds path, valid flag, set id, slice size, data/recovery slice counts, protected file list, packets, and error.
     """
+
     par2_file_path: str
     is_valid_par2: bool
     recovery_set_id: str
@@ -90,7 +93,9 @@ class Par2RecoveryEngine:
             return Par2ValidationReport(str(p), False, "", 0, 0, 0, 0, [], [], str(exc))
 
         if len(content) < 64:
-            return Par2ValidationReport(str(p), False, "", 0, 0, 0, 0, [], [], "File too small to be a valid PAR2 archive")
+            return Par2ValidationReport(
+                str(p), False, "", 0, 0, 0, 0, [], [], "File too small to be a valid PAR2 archive"
+            )
 
         offset = 0
         set_id = ""
@@ -101,7 +106,7 @@ class Par2RecoveryEngine:
         packets_list: List[Par2PacketInfo] = []
 
         while offset + 64 <= len(content):
-            magic = content[offset:offset + 8]
+            magic = content[offset : offset + 8]
             if magic != cls.PAR2_MAGIC:
                 # Seek next magic or break
                 next_pos = content.find(cls.PAR2_MAGIC, offset + 1)
@@ -110,16 +115,16 @@ class Par2RecoveryEngine:
                 offset = next_pos
                 continue
 
-            packet_len = struct.unpack("<Q", content[offset + 8:offset + 16])[0]
+            packet_len = struct.unpack("<Q", content[offset + 8 : offset + 16])[0]
             if packet_len < 64 or offset + packet_len > len(content):
                 break
 
-            pkt_type_raw = content[offset + 32:offset + 48]
-            curr_set_id = content[offset + 48:offset + 64].hex().upper()
+            pkt_type_raw = content[offset + 32 : offset + 48]
+            curr_set_id = content[offset + 48 : offset + 64].hex().upper()
             if not set_id:
                 set_id = curr_set_id
 
-            pkt_body = content[offset + 64:offset + packet_len]
+            pkt_body = content[offset + 64 : offset + packet_len]
 
             pkt_name = "Unknown Packet"
             if b"Main" in pkt_type_raw:
@@ -149,12 +154,14 @@ class Par2RecoveryEngine:
             elif b"IFSC" in pkt_type_raw:
                 pkt_name = "Input File Slice Checksum"
 
-            packets_list.append(Par2PacketInfo(
-                packet_type=pkt_name,
-                packet_length=packet_len,
-                recovery_set_id=curr_set_id,
-                is_valid=True,
-            ))
+            packets_list.append(
+                Par2PacketInfo(
+                    packet_type=pkt_name,
+                    packet_length=packet_len,
+                    recovery_set_id=curr_set_id,
+                    is_valid=True,
+                )
+            )
 
             offset += packet_len
 

@@ -78,18 +78,21 @@ from typing import (
 # Optional cloud deps
 try:
     import rclone
+
     HAS_RCLONE = True
 except ImportError:
     HAS_RCLONE = False
 
 try:
     import msgraph
+
     HAS_MSGRAPH = True
 except ImportError:
     HAS_MSGRAPH = False
 
 try:
     import boto3
+
     HAS_BOTO3 = True
 except ImportError:
     HAS_BOTO3 = False
@@ -99,12 +102,14 @@ except ImportError:
 # Data structures
 # ---------------------------------------------------------------------------
 
+
 @dataclass(slots=True)
 class FileEntry:
     """Fileentry.
 
     Manages FileEntry operations and coordinates related state changes for the component.
     """
+
     path: str
     size: int
     mtime: float
@@ -125,6 +130,7 @@ class FolderNode:
 
     Manages FolderNode operations and coordinates related state changes for the component.
     """
+
     name: str
     path: str
     size: int = 0
@@ -169,6 +175,7 @@ class FolderNode:
             List[Dict]: List of processed items or identifiers.
         """
         result: List[Dict] = []
+
         def walk(node: "FolderNode", depth: int = 0):
             """Walk.
 
@@ -180,13 +187,20 @@ class FolderNode:
             """
             if depth >= max_depth:
                 return
-            result.append({
-                "name": node.name, "path": node.path, "size": node.size,
-                "file_count": node.file_count, "folder_count": node.folder_count,
-                "depth": depth, "children": list(node.children.keys()),
-            })
+            result.append(
+                {
+                    "name": node.name,
+                    "path": node.path,
+                    "size": node.size,
+                    "file_count": node.file_count,
+                    "folder_count": node.folder_count,
+                    "depth": depth,
+                    "children": list(node.children.keys()),
+                }
+            )
             for child in node.children.values():
                 walk(child, depth + 1)
+
         walk(self)
         return result
 
@@ -202,6 +216,7 @@ class FolderNode:
             List[Dict]: List of processed items or identifiers.
         """
         result: List[Dict] = []
+
         def walk(node: "FolderNode", depth: int = 0, parent: str = ""):
             """Walk.
 
@@ -214,12 +229,18 @@ class FolderNode:
             """
             if depth >= max_depth:
                 return
-            result.append({
-                "id": node.path, "parent": parent, "name": node.name,
-                "value": node.size, "depth": depth,
-            })
+            result.append(
+                {
+                    "id": node.path,
+                    "parent": parent,
+                    "name": node.name,
+                    "value": node.size,
+                    "depth": depth,
+                }
+            )
             for child in node.children.values():
                 walk(child, depth + 1, node.path)
+
         walk(self)
         return result
 
@@ -235,6 +256,7 @@ class FolderNode:
             List[Dict]: List of processed items or identifiers.
         """
         items = []
+
         def walk(node: "FolderNode"):
             """Walk.
 
@@ -247,6 +269,7 @@ class FolderNode:
                 items.append({"path": node.path, "size": node.size, "name": node.name})
             for child in node.children.values():
                 walk(child)
+
         walk(self)
         items.sort(key=lambda x: x["size"], reverse=True)
         return items[:top_n]
@@ -269,13 +292,18 @@ class FolderNode:
 # Scanner base
 # ---------------------------------------------------------------------------
 
+
 class Scanner(ABC):
     """Read-only filesystem scanner yielding FileEntry objects with cancellation and progress.
 
     Launches an asynchronous scan across the target subsystem, showing a loading indicator and disabling triggering controls.
     """
-    def __init__(self, cancel_event: Optional[threading.Event] = None,
-                 progress_cb: Optional[Callable[[int, int, str], None]] = None):
+
+    def __init__(
+        self,
+        cancel_event: Optional[threading.Event] = None,
+        progress_cb: Optional[Callable[[int, int, str], None]] = None,
+    ):
         """Store the cancellation event and progress callback with zeroed counters.
 
         Initializes the instance and configures internal state.
@@ -330,6 +358,7 @@ class Scanner(ABC):
 # NTFS MFT Scanner (Windows)
 # ---------------------------------------------------------------------------
 
+
 class NTFSScanner(Scanner):
     """NTFS scanner that probes raw volume access but scans via os.scandir walk (MFT fast path not yet implemented)."""
 
@@ -351,10 +380,9 @@ class NTFSScanner(Scanner):
         """
         try:
             import ctypes
+
             kernel32 = ctypes.windll.kernel32
-            handle = kernel32.CreateFileW(
-                r"\\.\C:", 0x80000000, 0x00000001, None, 3, 0, None
-            )
+            handle = kernel32.CreateFileW(r"\\.\C:", 0x80000000, 0x00000001, None, 3, 0, None)
             if handle != -1:
                 kernel32.CloseHandle(handle)
                 return True
@@ -438,11 +466,13 @@ class NTFSScanner(Scanner):
 # Posix Scanner (Linux/macOS)
 # ---------------------------------------------------------------------------
 
+
 class PosixScanner(Scanner):
     """Posixscanner.
 
     Manages PosixScanner operations and coordinates related state changes for the component.
     """
+
     def scan(self, root: str) -> Generator[FileEntry, None, None]:
         """Yield entries under root via an iterative scandir walk.
 
@@ -490,11 +520,13 @@ class PosixScanner(Scanner):
 # Cloud Scanner
 # ---------------------------------------------------------------------------
 
+
 class CloudScanner(Scanner):
     """Cloudscanner.
 
     Manages CloudScanner operations and coordinates related state changes for the component.
     """
+
     def __init__(self, *args, providers: Optional[List[str]] = None, **kwargs):
         """Store provider list and verify the rclone binary is usable.
 
@@ -550,6 +582,7 @@ class CloudScanner(Scanner):
             return
         try:
             import subprocess
+
             cmd = ["rclone", "lsf", "--format", "p,s,m,t", "--files-only", "--recursive", remote]
             result = subprocess.run(cmd, capture_output=True, text=True, timeout=300)
             for line in result.stdout.strip().split("\n"):
@@ -586,11 +619,13 @@ class CloudScanner(Scanner):
 # Advanced Disk Analyzer
 # ---------------------------------------------------------------------------
 
+
 class AdvancedDiskAnalyzer:
     """Advanceddiskanalyzer.
 
     Manages AdvancedDiskAnalyzer operations and coordinates related state changes for the component.
     """
+
     def __init__(
         self,
         include_cloud: bool = False,
@@ -626,6 +661,7 @@ class AdvancedDiskAnalyzer:
             Scanner: Result of the operation.
         """
         import sys
+
         if sys.platform == "win32":
             base = NTFSScanner
         else:

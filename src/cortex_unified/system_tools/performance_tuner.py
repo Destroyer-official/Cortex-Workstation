@@ -25,9 +25,7 @@ _NO_WINDOW = 0x08000000 if _IS_WINDOWS else 0
 
 # GUID -> friendly parsing regex for `powercfg /list` lines like:
 #   Power Scheme GUID: 381b4222-f694-41f0-9685-ff5bb260df2e  (Balanced) *
-_SCHEME_RE = re.compile(
-    r"GUID:\s*([0-9a-fA-F-]{36})\s*\(([^)]*)\)\s*(\*?)"
-)
+_SCHEME_RE = re.compile(r"GUID:\s*([0-9a-fA-F-]{36})\s*\(([^)]*)\)\s*(\*?)")
 
 
 @dataclass(slots=True)

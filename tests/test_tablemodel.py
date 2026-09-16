@@ -73,9 +73,7 @@ def binding(app):
         app: The app parameter.
     """
     view = QTableView()
-    bound = bind_table(
-        view, _columns(), sort_column=0, sort_order=Qt.SortOrder.AscendingOrder
-    )
+    bound = bind_table(view, _columns(), sort_column=0, sort_order=Qt.SortOrder.AscendingOrder)
     bound.set_records(_records())
     return bound
 
@@ -92,10 +90,7 @@ def test_model_reports_shape_from_records_and_columns(binding):
     assert binding.proxy.rowCount() == 6
     assert binding.proxy.columnCount() == 3
     model = binding.model
-    assert (
-        model.headerData(0, Qt.Orientation.Horizontal, Qt.ItemDataRole.DisplayRole)
-        == "PID"
-    )
+    assert model.headerData(0, Qt.Orientation.Horizontal, Qt.ItemDataRole.DisplayRole) == "PID"
 
 
 def test_display_supports_field_names_and_callables(binding):
@@ -171,10 +166,7 @@ def test_filter_matches_searchable_columns_only(binding):
         binding: The binding parameter.
     """
     binding.set_filter_text("proc1")
-    visible = {
-        binding.proxy.data(binding.proxy.index(r, 1))
-        for r in range(binding.proxy.rowCount())
-    }
+    visible = {binding.proxy.data(binding.proxy.index(r, 1)) for r in range(binding.proxy.rowCount())}
     assert visible == {"proc1", "proc10", "proc100"}
     # Memory is searchable=False, so its digits must not match.
     binding.set_filter_text("MB")
@@ -308,8 +300,10 @@ def test_works_with_attribute_records_not_just_dicts(app):
     Args:
         app: The app parameter.
     """
+
     class Device:
         """Helper device."""
+
         def __init__(self, ip):
             """__init__.
 

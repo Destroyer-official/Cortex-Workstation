@@ -16,6 +16,7 @@ IS_WINDOWS = platform.system() == "Windows"
 
 class TestParse:
     """Group testparse tests covering empty returns empty list; invalid json returns empty; single object becomes one disk; array of disks; missing reliability counters stay none; garbage numeric fields coerce to none."""
+
     def test_empty_returns_empty_list(self):
         """Verify empty returns empty list via DiskHealthMonitor._parse."""
         assert DiskHealthMonitor._parse(None) == []
@@ -72,17 +73,14 @@ class TestParse:
 
     def test_garbage_numeric_fields_coerce_to_none(self):
         """Verify garbage numeric fields coerce to none via DiskHealthMonitor._parse."""
-        payload = (
-            '{"Name":"X","MediaType":"SSD","Health":"Healthy","Op":"OK",'
-            '"Size":"notanumber","Wear":"n/a"}'
-        )
+        payload = '{"Name":"X","MediaType":"SSD","Health":"Healthy","Op":"OK",' '"Size":"notanumber","Wear":"n/a"}'
         d = DiskHealthMonitor._parse(payload)[0]
-        assert d.size_bytes == 0        # size falls back to 0
+        assert d.size_bytes == 0  # size falls back to 0
         assert d.wear_percent is None
 
     def test_defaults_for_absent_keys(self):
         """Verify defaults for absent keys via DiskHealthMonitor._parse."""
-        d = DiskHealthMonitor._parse('{}')[0]
+        d = DiskHealthMonitor._parse("{}")[0]
         assert d.name == "Unknown"
         assert d.media_type == "Unspecified"
         assert d.health_status == "Unknown"
@@ -91,26 +89,40 @@ class TestParse:
 
 class TestToDict:
     """Group testtodict tests covering to dict roundtrip keys."""
+
     def test_to_dict_roundtrip_keys(self):
         """Verify to dict roundtrip keys via DiskHealth, d.to_dict."""
         d = DiskHealth(
-            name="N", media_type="SSD", health_status="Healthy",
-            operational_status="OK", size_bytes=1024, wear_percent=1,
-            temperature_c=40, reallocated_sectors=0, power_on_hours=10,
+            name="N",
+            media_type="SSD",
+            health_status="Healthy",
+            operational_status="OK",
+            size_bytes=1024,
+            wear_percent=1,
+            temperature_c=40,
+            reallocated_sectors=0,
+            power_on_hours=10,
         )
         out = d.to_dict()
         assert out["name"] == "N"
         assert out["health_status"] == "Healthy"
         assert out["wear_percent"] == 1
         assert set(out) == {
-            "name", "media_type", "health_status", "operational_status",
-            "size_bytes", "wear_percent", "temperature_c",
-            "reallocated_sectors", "power_on_hours",
+            "name",
+            "media_type",
+            "health_status",
+            "operational_status",
+            "size_bytes",
+            "wear_percent",
+            "temperature_c",
+            "reallocated_sectors",
+            "power_on_hours",
         }
 
 
 class TestSupport:
     """Group testsupport tests covering is supported matches platform; get health returns list."""
+
     def test_is_supported_matches_platform(self):
         """Verify is supported matches platform via DiskHealthMonitor.is_supported."""
         assert DiskHealthMonitor.is_supported() == IS_WINDOWS

@@ -128,7 +128,9 @@ class SrumBamCleaner:
         try:
             st = p.stat()
             sz = st.st_size
-            mtime = datetime.datetime.fromtimestamp(st.st_mtime, tz=datetime.timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
+            mtime = datetime.datetime.fromtimestamp(st.st_mtime, tz=datetime.timezone.utc).strftime(
+                "%Y-%m-%d %H:%M:%S UTC"
+            )
         except (OSError, PermissionError):
             sz = 0
             mtime = "Locked"
@@ -175,7 +177,11 @@ class SrumBamCleaner:
                                 num_values = winreg.QueryInfoKey(sid_key)[1]
                                 for val_idx in range(num_values):
                                     val_name, val_data, val_type = winreg.EnumValue(sid_key, val_idx)
-                                    if not val_name or val_name.startswith("SequenceNumber") or val_name.startswith("Version"):
+                                    if (
+                                        not val_name
+                                        or val_name.startswith("SequenceNumber")
+                                        or val_name.startswith("Version")
+                                    ):
                                         continue
 
                                     # Binary payload contains FILETIME

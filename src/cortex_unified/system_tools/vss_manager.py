@@ -24,6 +24,7 @@ logger = logging.getLogger("cortex.system_tools.vss_manager")
 @dataclass
 class ShadowCopyInfo:
     """Record holding shadow_id, original_volume, creation_time, shadow_volume, provider, attributes."""
+
     shadow_id: str
     original_volume: str
     creation_time: str
@@ -35,6 +36,7 @@ class ShadowCopyInfo:
 @dataclass
 class ShadowStorageInfo:
     """Record holding for_volume, on_volume, used_bytes, allocated_bytes, max_bytes."""
+
     for_volume: str
     on_volume: str
     used_bytes: int
@@ -72,6 +74,7 @@ class ShadowStorageInfo:
 @dataclass
 class VssAuditReport:
     """Record holding shadows, storages, total_used_bytes, total_allocated_bytes, error."""
+
     shadows: list[ShadowCopyInfo] = field(default_factory=list)
     storages: list[ShadowStorageInfo] = field(default_factory=list)
     total_used_bytes: int = 0

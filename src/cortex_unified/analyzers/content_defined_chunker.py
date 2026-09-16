@@ -74,6 +74,7 @@ except ImportError:
 # Gear table (256 random 64-bit values, fixed seed for determinism)
 # ---------------------------------------------------------------------------
 
+
 def _build_gear_table(seed: int = 0x9E3779B97F4A7C15) -> List[int]:
     """_build_gear_table.
 
@@ -88,7 +89,9 @@ def _build_gear_table(seed: int = 0x9E3779B97F4A7C15) -> List[int]:
     rnd = random.Random(seed)
     return [rnd.getrandbits(64) for _ in range(256)]
 
+
 _GEAR = _build_gear_table()
+
 
 # Precompute mask bits for common avg sizes to avoid recomputation
 def _mask_for_avg(avg: int) -> int:
@@ -110,9 +113,11 @@ def _mask_for_avg(avg: int) -> int:
     # Clamp to avoid degenerate mask 0
     return (1 << bits) - 1 if bits < 64 else (1 << 63) - 1
 
+
 # ---------------------------------------------------------------------------
 # Data structures
 # ---------------------------------------------------------------------------
+
 
 @dataclass(frozen=True, slots=True)
 class Chunk:
@@ -120,6 +125,7 @@ class Chunk:
 
     Manages Chunk operations and coordinates related state changes for the component.
     """
+
     offset: int
     length: int
     fingerprint: int  # 64-bit
@@ -134,21 +140,25 @@ class Chunk:
         """
         return {"offset": self.offset, "length": self.length, "fp": hex(self.fingerprint)}
 
+
 @dataclass(slots=True)
 class ChunkStats:
     """Chunkstats.
 
     Manages ChunkStats operations and coordinates related state changes for the component.
     """
+
     chunks: int = 0
     bytes: int = 0
     avg_size: float = 0.0
     min_size: int = 0
     max_size: int = 0
 
+
 # ---------------------------------------------------------------------------
 # Core chunker
 # ---------------------------------------------------------------------------
+
 
 def _chunk_hash(data: bytes) -> int:
     """_chunk_hash.
@@ -164,6 +174,7 @@ def _chunk_hash(data: bytes) -> int:
     if HAS_XXHASH:
         return xxhash.xxh64(data, seed=0).intdigest() & 0xFFFFFFFFFFFFFFFF
     return int.from_bytes(hashlib.blake2b(data, digest_size=8).digest(), "little")
+
 
 def gear_chunk(
     data: bytes,
@@ -217,6 +228,7 @@ def gear_chunk(
         chunks.append(Chunk(offset=start, length=len(chunk_data), fingerprint=_chunk_hash(chunk_data)))
     return chunks
 
+
 def file_chunks(
     path: Path | str,
     avg_size: int = 8192,
@@ -245,6 +257,7 @@ def file_chunks(
         raise OSError(f"cannot read {p}: {exc}") from exc
     return gear_chunk(data, avg_size=avg_size, min_size=min_size, max_size=max_size)
 
+
 def jaccard(a: Iterable[int], b: Iterable[int]) -> float:
     """Jaccard.
 
@@ -265,6 +278,7 @@ def jaccard(a: Iterable[int], b: Iterable[int]) -> float:
     inter = len(sa & sb)
     union = len(sa | sb)
     return inter / union if union else 0.0
+
 
 def chunk_similarity(
     data_a: bytes,
@@ -291,9 +305,11 @@ def chunk_similarity(
     cb = gear_chunk(data_b, avg_size, min_size, max_size)
     return jaccard((c.fingerprint for c in ca), (c.fingerprint for c in cb))
 
+
 # ---------------------------------------------------------------------------
 # Finder (file-level, shift-resistant near-duplicate)
 # ---------------------------------------------------------------------------
+
 
 class ContentDefinedChunker:
     """Find shift-resistant near-duplicate files via CDC chunk sets.
@@ -414,7 +430,24 @@ class ContentDefinedChunker:
                     except OSError:
                         continue
                     # Skip already-compressed / media by suffix (same as Fuzzy)
-                    if p.suffix.lower() in {".jpg",".jpeg",".png",".gif",".webp",".mp4",".mkv",".avi",".mov",".mp3",".flac",".zip",".7z",".rar",".gz",".bz2"}:
+                    if p.suffix.lower() in {
+                        ".jpg",
+                        ".jpeg",
+                        ".png",
+                        ".gif",
+                        ".webp",
+                        ".mp4",
+                        ".mkv",
+                        ".avi",
+                        ".mov",
+                        ".mp3",
+                        ".flac",
+                        ".zip",
+                        ".7z",
+                        ".rar",
+                        ".gz",
+                        ".bz2",
+                    }:
                         continue
                     files.append(p)
 
@@ -552,6 +585,7 @@ class ContentDefinedChunker:
 # FAST '25 VectorCDC & FAST '24 IDEA Inverted Index
 # ---------------------------------------------------------------------------
 
+
 def vector_cdc_chunk(
     data: bytes | bytearray | memoryview,
     avg_size: int = 8192,
@@ -608,6 +642,7 @@ class IdeaInvertedIndex:
     Maps chunk fingerprints directly to file postings, enabling O(1) similarity matching
     without all-pairs O(N^2) Jaccard scanning.
     """
+
     def __init__(self) -> None:
         """Initialize the instance and configure internal state.
 

@@ -8,13 +8,35 @@ from typing import List, Dict, Any, Optional, Union
 from datetime import datetime
 
 from PySide6.QtWidgets import (
-    QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLabel,
-    QLineEdit, QCheckBox, QTableWidget, QTableWidgetItem,
-    QProgressBar, QGroupBox, QFormLayout, QFileDialog,
-    QMessageBox, QHeaderView, QListWidget, QRadioButton,
-    QComboBox, QSplitter, QTreeWidget, QTreeWidgetItem, QTextEdit,
-    QSpinBox, QTabWidget, QAbstractItemView, QSizePolicy, QListWidgetItem,
-    QDialog, QDialogButtonBox
+    QWidget,
+    QVBoxLayout,
+    QHBoxLayout,
+    QPushButton,
+    QLabel,
+    QLineEdit,
+    QCheckBox,
+    QTableWidget,
+    QTableWidgetItem,
+    QProgressBar,
+    QGroupBox,
+    QFormLayout,
+    QFileDialog,
+    QMessageBox,
+    QHeaderView,
+    QListWidget,
+    QRadioButton,
+    QComboBox,
+    QSplitter,
+    QTreeWidget,
+    QTreeWidgetItem,
+    QTextEdit,
+    QSpinBox,
+    QTabWidget,
+    QAbstractItemView,
+    QSizePolicy,
+    QListWidgetItem,
+    QDialog,
+    QDialogButtonBox,
 )
 from PySide6.QtCore import QThread, Signal, Qt, QObject, QTimer, QUrl
 from PySide6.QtGui import QIcon, QFont, QTextCursor, QDesktopServices
@@ -37,205 +59,210 @@ class ReportsTab(BaseTab):
     def setup_ui(self):
         """Create the reports tab."""
         main_layout = QVBoxLayout(self)
-        
+
         self.main_tab_widget = QTabWidget()
         main_layout.addWidget(self.main_tab_widget)
-        
+
         # --- TAB 1: Generator ---
         self.generator_tab = QWidget()
         layout = QVBoxLayout(self.generator_tab)
-        
-        title = QLabel('Reports & Analytics')
-        title.setStyleSheet('font-size: 16px; font-weight: bold; margin: 10px;')
+
+        title = QLabel("Reports & Analytics")
+        title.setStyleSheet("font-size: 16px; font-weight: bold; margin: 10px;")
         layout.addWidget(title)
-        
-        generation_group = QGroupBox('Report Generation')
+
+        generation_group = QGroupBox("Report Generation")
         generation_layout = QFormLayout(generation_group)
-        
+
         self.report_type_combo = QComboBox()
-        self.report_type_combo.addItems([
-            'System Analysis Report', 'Disk Usage Report', 
-            'Cleanup Summary Report', 'Performance Report', 
-            'Security Audit Report', 'Scheduled Tasks Report', 'Custom Report'
-        ])
-        generation_layout.addRow('Report Type:', self.report_type_combo)
-        
+        self.report_type_combo.addItems(
+            [
+                "System Analysis Report",
+                "Disk Usage Report",
+                "Cleanup Summary Report",
+                "Performance Report",
+                "Security Audit Report",
+                "Scheduled Tasks Report",
+                "Custom Report",
+            ]
+        )
+        generation_layout.addRow("Report Type:", self.report_type_combo)
+
         self.report_format_combo = QComboBox()
-        self.report_format_combo.addItems(['HTML', 'JSON', 'CSV', 'Text', 'SARIF'])
-        generation_layout.addRow('Format:', self.report_format_combo)
-        
+        self.report_format_combo.addItems(["HTML", "JSON", "CSV", "Text", "SARIF"])
+        generation_layout.addRow("Format:", self.report_format_combo)
+
         self.report_date_range_combo = QComboBox()
-        self.report_date_range_combo.addItems([
-            'Last 24 Hours', 'Last Week', 'Last Month', 
-            'Last 3 Months', 'All Time', 'Custom Range'
-        ])
-        generation_layout.addRow('Date Range:', self.report_date_range_combo)
-        
-        self.include_charts_checkbox = QCheckBox('Include charts and graphs')
+        self.report_date_range_combo.addItems(
+            ["Last 24 Hours", "Last Week", "Last Month", "Last 3 Months", "All Time", "Custom Range"]
+        )
+        generation_layout.addRow("Date Range:", self.report_date_range_combo)
+
+        self.include_charts_checkbox = QCheckBox("Include charts and graphs")
         self.include_charts_checkbox.setChecked(True)
         generation_layout.addRow(self.include_charts_checkbox)
-        
-        self.include_details_checkbox = QCheckBox('Include detailed statistics')
+
+        self.include_details_checkbox = QCheckBox("Include detailed statistics")
         self.include_details_checkbox.setChecked(True)
         generation_layout.addRow(self.include_details_checkbox)
-        
-        self.include_recommendations_checkbox = QCheckBox('Include recommendations')
+
+        self.include_recommendations_checkbox = QCheckBox("Include recommendations")
         self.include_recommendations_checkbox.setChecked(True)
         generation_layout.addRow(self.include_recommendations_checkbox)
-        
+
         layout.addWidget(generation_group)
-        
+
         actions_layout = QHBoxLayout()
-        self.generate_report_button = QPushButton('Generate Report')
+        self.generate_report_button = QPushButton("Generate Report")
         self.generate_report_button.clicked.connect(self.generate_report)
         self.generate_report_button.setMinimumHeight(35)
-        self.generate_report_button.setStyleSheet('QPushButton { font-weight: bold; padding: 5px 20px; }')
+        self.generate_report_button.setStyleSheet("QPushButton { font-weight: bold; padding: 5px 20px; }")
         actions_layout.addWidget(self.generate_report_button)
 
-        self.btn_export_sarif = QPushButton('Export SARIF')
-        self.btn_export_sarif.setToolTip('Export security & system findings in SARIF format')
+        self.btn_export_sarif = QPushButton("Export SARIF")
+        self.btn_export_sarif.setToolTip("Export security & system findings in SARIF format")
         self.btn_export_sarif.setMinimumHeight(35)
         self.btn_export_sarif.clicked.connect(self._export_sarif_direct)
         actions_layout.addWidget(self.btn_export_sarif)
 
-        self.btn_export_csv = QPushButton('Export CSV')
-        self.btn_export_csv.setToolTip('Export telemetry summary as CSV spreadsheet')
+        self.btn_export_csv = QPushButton("Export CSV")
+        self.btn_export_csv.setToolTip("Export telemetry summary as CSV spreadsheet")
         self.btn_export_csv.setMinimumHeight(35)
         self.btn_export_csv.clicked.connect(self._export_csv_direct)
         actions_layout.addWidget(self.btn_export_csv)
 
-        self.btn_export_html = QPushButton('Export HTML')
-        self.btn_export_html.setToolTip('Export self-contained HTML audit report')
+        self.btn_export_html = QPushButton("Export HTML")
+        self.btn_export_html.setToolTip("Export self-contained HTML audit report")
         self.btn_export_html.setMinimumHeight(35)
         self.btn_export_html.clicked.connect(self._export_html_direct)
         actions_layout.addWidget(self.btn_export_html)
-        
-        self.preview_report_button = QPushButton('Open Selected Report')
+
+        self.preview_report_button = QPushButton("Open Selected Report")
         self.preview_report_button.clicked.connect(self.preview_report)
         self.preview_report_button.setMinimumHeight(35)
         self.preview_report_button.setEnabled(False)
         actions_layout.addWidget(self.preview_report_button)
-        
-        self.schedule_report_button = QPushButton('Schedule Report (Pro)')
+
+        self.schedule_report_button = QPushButton("Schedule Report (Pro)")
         self.schedule_report_button.clicked.connect(self.schedule_report)
         self.schedule_report_button.setMinimumHeight(35)
         if allowed(Feature.AUTO_CLEAN_RULES):
             self.schedule_report_button.setEnabled(True)
-            self.schedule_report_button.setToolTip(
-                'Register a recurring HTML report with the OS scheduler.')
+            self.schedule_report_button.setToolTip("Register a recurring HTML report with the OS scheduler.")
         else:
             self.schedule_report_button.setEnabled(False)
             self.schedule_report_button.setToolTip(
-                'Scheduled reporting requires an upgrade to the Pro tier '
-                '(or higher).')
+                "Scheduled reporting requires an upgrade to the Pro tier " "(or higher)."
+            )
         actions_layout.addWidget(self.schedule_report_button)
-        
+
         actions_layout.addStretch()
         layout.addLayout(actions_layout)
-        
+
         self.reports_progress_bar = QProgressBar()
         self.reports_progress_bar.setVisible(False)
-        self.reports_progress_bar.setRange(0, 0) # Indeterminate
+        self.reports_progress_bar.setRange(0, 0)  # Indeterminate
         layout.addWidget(self.reports_progress_bar)
-        
-        recent_group = QGroupBox('Recent Reports')
+
+        recent_group = QGroupBox("Recent Reports")
         recent_layout = QVBoxLayout(recent_group)
-        
-        refresh_reports_button = QPushButton('Refresh Activity Log')
+
+        refresh_reports_button = QPushButton("Refresh Activity Log")
         refresh_reports_button.clicked.connect(self.refresh_reports_list)
         recent_layout.addWidget(refresh_reports_button)
-        
+
         self.reports_table = QTableWidget()
         self.reports_table.setColumnCount(4)
-        self.reports_table.setHorizontalHeaderLabels(['Report Name', 'Generated', 'Size', 'Type'])
+        self.reports_table.setHorizontalHeaderLabels(["Report Name", "Generated", "Size", "Type"])
         self.reports_table.horizontalHeader().setStretchLastSection(True)
         self.reports_table.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
         self.reports_table.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectRows)
         self.reports_table.itemSelectionChanged.connect(self._on_table_selection)
         recent_layout.addWidget(self.reports_table)
-        
+
         layout.addWidget(recent_group)
-        
-        templates_group = QGroupBox('Report Templates')
+
+        templates_group = QGroupBox("Report Templates")
         templates_layout = QVBoxLayout(templates_group)
         templates_buttons_layout = QHBoxLayout()
-        
-        self.save_template_button = QPushButton('Save as Template')
+
+        self.save_template_button = QPushButton("Save as Template")
         self.save_template_button.clicked.connect(self.save_report_template)
         templates_buttons_layout.addWidget(self.save_template_button)
-        
-        self.load_template_button = QPushButton('Load Template')
+
+        self.load_template_button = QPushButton("Load Template")
         self.load_template_button.clicked.connect(self.load_report_template)
         templates_buttons_layout.addWidget(self.load_template_button)
-        
+
         templates_buttons_layout.addStretch()
         templates_layout.addLayout(templates_buttons_layout)
-        
+
         self.templates_list = QListWidget()
         self.templates_list.setMaximumHeight(100)
         self.templates_list.addItem("Default Daily Report")
         self.templates_list.addItem("Monthly Security Log")
         templates_layout.addWidget(self.templates_list)
-        
+
         layout.addWidget(templates_group)
-        self.main_tab_widget.addTab(self.generator_tab, 'Report Generator')
-        
+        self.main_tab_widget.addTab(self.generator_tab, "Report Generator")
+
         # --- TAB 2: Preview ---
         self.preview_tab = QWidget()
         preview_layout = QVBoxLayout(self.preview_tab)
-        
+
         preview_tools = QHBoxLayout()
         self.lbl_preview_title = QLabel("No report loaded.")
         self.lbl_preview_title.setStyleSheet("font-weight: bold;")
         preview_tools.addWidget(self.lbl_preview_title)
         preview_tools.addStretch()
-        
+
         self.btn_zoom_in = QPushButton("🔍 Zoom In")
         self.btn_zoom_in.clicked.connect(self._zoom_in)
         self.btn_zoom_out = QPushButton("🔍 Zoom Out")
         self.btn_zoom_out.clicked.connect(self._zoom_out)
         self.btn_zoom_reset = QPushButton("🔄 Reset Zoom")
         self.btn_zoom_reset.clicked.connect(self._zoom_reset)
-        
+
         preview_tools.addWidget(self.btn_zoom_in)
         preview_tools.addWidget(self.btn_zoom_out)
         preview_tools.addWidget(self.btn_zoom_reset)
         preview_layout.addLayout(preview_tools)
-        
+
         try:
             from PySide6.QtWebEngineWidgets import QWebEngineView
+
             self.web_view = QWebEngineView()
             preview_layout.addWidget(self.web_view)
             self.has_web_engine = True
         except ImportError:
-             self.has_web_engine = False
-             self.fallback_text = QTextEdit()
-             self.fallback_text.setReadOnly(True)
-             preview_layout.addWidget(self.fallback_text)
-             
-        self.main_tab_widget.addTab(self.preview_tab, 'HTML Preview')
-        
+            self.has_web_engine = False
+            self.fallback_text = QTextEdit()
+            self.fallback_text.setReadOnly(True)
+            preview_layout.addWidget(self.fallback_text)
+
+        self.main_tab_widget.addTab(self.preview_tab, "HTML Preview")
+
         # Finally populate reports without risking cross-class AttributeError
         QTimer.singleShot(100, self.refresh_reports_list)
-        
+
     def _zoom_in(self):
         """Increase the embedded web view's zoom factor by 0.15."""
-        if hasattr(self, 'has_web_engine') and self.has_web_engine:
+        if hasattr(self, "has_web_engine") and self.has_web_engine:
             self.web_view.setZoomFactor(self.web_view.zoomFactor() + 0.15)
-            
+
     def _zoom_out(self):
         """Decrease the web view's zoom factor by 0.15 (floor of 0.2)."""
-        if hasattr(self, 'has_web_engine') and self.has_web_engine:
+        if hasattr(self, "has_web_engine") and self.has_web_engine:
             self.web_view.setZoomFactor(max(0.2, self.web_view.zoomFactor() - 0.15))
-            
+
     def _zoom_reset(self):
         """Restore the web view's zoom factor to 1.0."""
-        if hasattr(self, 'has_web_engine') and self.has_web_engine:
+        if hasattr(self, "has_web_engine") and self.has_web_engine:
             self.web_view.setZoomFactor(1.0)
 
     def format_bytes(self, size):
         """Format a byte count as a human-readable string (B up to PB)."""
-        for unit in ['B', 'KB', 'MB', 'GB', 'TB']:
+        for unit in ["B", "KB", "MB", "GB", "TB"]:
             if size < 1024.0:
                 return f"{size:.2f} {unit}"
             size /= 1024.0
@@ -255,8 +282,8 @@ class ReportsTab(BaseTab):
         sys_drive = os.environ.get("SystemDrive", "C:") + "\\"
         try:
             total_b, used_b, free_b = shutil.disk_usage(sys_drive)
-            free_gb = free_b / (1024 ** 3)
-            used_gb = used_b / (1024 ** 3)
+            free_gb = free_b / (1024**3)
+            used_gb = used_b / (1024**3)
         except Exception:
             free_gb, used_gb = 0.0, 0.0
 
@@ -313,43 +340,43 @@ class ReportsTab(BaseTab):
         try:
             data = self.get_live_analytics_data()
             fmt = self.report_format_combo.currentText()
-            if fmt == 'HTML':
+            if fmt == "HTML":
                 self.reports_generator.generate_html_report(data)
-            elif fmt == 'JSON':
+            elif fmt == "JSON":
                 self.reports_generator.generate_json_report(data)
-            elif fmt == 'CSV':
-                data_csv = {"headers": ["Metric", "Value"], "rows": [[str(k), str(v)] for k, v in data["analytics_summary"].items()]}
+            elif fmt == "CSV":
+                data_csv = {
+                    "headers": ["Metric", "Value"],
+                    "rows": [[str(k), str(v)] for k, v in data["analytics_summary"].items()],
+                }
                 self.reports_generator.generate_csv_report(data_csv)
-            elif fmt == 'SARIF':
+            elif fmt == "SARIF":
                 # Generate standard SARIF 2.1.0 output
                 sarif_payload = {
                     "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
                     "version": "2.1.0",
-                    "runs": [{
-                        "tool": {
-                            "driver": {
-                                "name": "Cortex Workstation Reports",
-                                "version": "1.2.0",
-                                "rules": []
-                            }
-                        },
-                        "results": []
-                    }]
+                    "runs": [
+                        {
+                            "tool": {"driver": {"name": "Cortex Workstation Reports", "version": "1.2.0", "rules": []}},
+                            "results": [],
+                        }
+                    ],
                 }
                 ts = datetime.now().strftime("%Y%m%d_%H%M%S")
                 out_p = Path(self.reports_generator.reports_dir) / f"report_{ts}.sarif"
                 import json
+
                 with open(out_p, "w", encoding="utf-8") as fp:
                     json.dump(sarif_payload, fp, indent=2)
             else:
                 self.reports_generator.generate_text_report(data)
 
-            if fmt == 'HTML':
+            if fmt == "HTML":
                 reports = self.reports_generator.list_reports()
                 if reports:
-                    latest = sorted(reports, key=lambda x: str(x.get('modified', '')), reverse=True)[0]
-                    file_path = latest['path']
-                    if hasattr(self, 'has_web_engine') and self.has_web_engine:
+                    latest = sorted(reports, key=lambda x: str(x.get("modified", "")), reverse=True)[0]
+                    file_path = latest["path"]
+                    if hasattr(self, "has_web_engine") and self.has_web_engine:
                         self.web_view.setUrl(QUrl.fromLocalFile(file_path))
                         self.lbl_preview_title.setText(f"Previewing: {Path(file_path).name}")
                         self.main_tab_widget.setCurrentWidget(self.preview_tab)
@@ -371,19 +398,13 @@ class ReportsTab(BaseTab):
             return
         try:
             import json
+
             sarif_data = {
                 "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
                 "version": "2.1.0",
-                "runs": [{
-                    "tool": {
-                        "driver": {
-                            "name": "Cortex Workstation",
-                            "version": "1.2.0",
-                            "rules": []
-                        }
-                    },
-                    "results": []
-                }]
+                "runs": [
+                    {"tool": {"driver": {"name": "Cortex Workstation", "version": "1.2.0", "rules": []}}, "results": []}
+                ],
             }
             with open(file_path, "w", encoding="utf-8") as f:
                 json.dump(sarif_data, f, indent=2)
@@ -393,13 +414,12 @@ class ReportsTab(BaseTab):
 
     def _export_csv_direct(self):
         """Export current analytics summary directly to a CSV spreadsheet."""
-        file_path, _ = QFileDialog.getSaveFileName(
-            self, "Export CSV Report", "cortex_report.csv", "CSV Files (*.csv)"
-        )
+        file_path, _ = QFileDialog.getSaveFileName(self, "Export CSV Report", "cortex_report.csv", "CSV Files (*.csv)")
         if not file_path:
             return
         try:
             import csv
+
             data = self.get_live_analytics_data()
             with open(file_path, "w", newline="", encoding="utf-8") as f:
                 writer = csv.writer(f)
@@ -434,32 +454,32 @@ class ReportsTab(BaseTab):
         row = self.reports_table.currentRow()
         if row < 0:
             return
-            
+
         file_path_item = self.reports_table.item(row, 0)
         file_path = file_path_item.toolTip()
-        
+
         try:
             if not Path(file_path).exists():
                 QMessageBox.warning(self, "Missing", "The report file no longer exists.")
                 return
-            
+
             # If HTML, load directly into the responsive preview tab
-            if str(file_path).lower().endswith('.html'):
-                if hasattr(self, 'has_web_engine') and self.has_web_engine:
+            if str(file_path).lower().endswith(".html"):
+                if hasattr(self, "has_web_engine") and self.has_web_engine:
                     self.web_view.setUrl(QUrl.fromLocalFile(file_path))
                     self.lbl_preview_title.setText(f"Previewing: {Path(file_path).name}")
                     self.main_tab_widget.setCurrentWidget(self.preview_tab)
                     return
-                elif hasattr(self, 'fallback_text'):
+                elif hasattr(self, "fallback_text"):
                     try:
-                        with open(file_path, 'r', encoding='utf-8') as f:
+                        with open(file_path, "r", encoding="utf-8") as f:
                             self.fallback_text.setHtml(f.read())
                         self.lbl_preview_title.setText(f"Previewing (Basic View): {Path(file_path).name}")
                         self.main_tab_widget.setCurrentWidget(self.preview_tab)
                         return
                     except Exception:
                         pass
-                        
+
             # Fallback for non-HTML or missing web engine
             QDesktopServices.openUrl(QUrl.fromLocalFile(file_path))
         except Exception as e:
@@ -468,29 +488,27 @@ class ReportsTab(BaseTab):
     def schedule_report(self):
         """Register a recurring HTML report job with the OS scheduler (Pro)."""
         if not allowed(Feature.AUTO_CLEAN_RULES):
-            QMessageBox.warning(
-                self, "Pro Feature",
-                "Scheduled reporting requires an upgrade to the Pro tier.")
+            QMessageBox.warning(self, "Pro Feature", "Scheduled reporting requires an upgrade to the Pro tier.")
             return
 
         dialog = QDialog(self)
-        dialog.setWindowTitle('Schedule Report')
+        dialog.setWindowTitle("Schedule Report")
         layout = QVBoxLayout(dialog)
         form = QFormLayout()
         frequency_combo = QComboBox()
-        frequency_combo.addItems(['Daily', 'Weekly', 'Monthly'])
-        form.addRow('Frequency:', frequency_combo)
-        format_label = QLabel('Format: HTML')
+        frequency_combo.addItems(["Daily", "Weekly", "Monthly"])
+        form.addRow("Frequency:", frequency_combo)
+        format_label = QLabel("Format: HTML")
         form.addRow(format_label)
         layout.addLayout(form)
         note = QLabel(
-            'A scheduled task will run the Cortex Workstation CLI '
+            "A scheduled task will run the Cortex Workstation CLI "
             "('generate-report --type html') at 02:00 with the chosen "
-            'frequency.')
+            "frequency."
+        )
         note.setWordWrap(True)
         layout.addWidget(note)
-        buttons = QDialogButtonBox(
-            QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel)
+        buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel)
         buttons.accepted.connect(dialog.accept)
         buttons.rejected.connect(dialog.reject)
         layout.addWidget(buttons)
@@ -500,42 +518,39 @@ class ReportsTab(BaseTab):
 
         frequency = frequency_combo.currentText().lower()
         if getattr(sys, "frozen", False):
-            command = (
-                f'"{sys.executable}" --cli '
-                'generate-report --type html --name "Scheduled Report"'
-            )
+            command = f'"{sys.executable}" --cli ' 'generate-report --type html --name "Scheduled Report"'
         else:
             command = (
-                f'"{sys.executable}" -m cortex_unified.cli.cli '
-                'generate-report --type html --name "Scheduled Report"'
+                f'"{sys.executable}" -m cortex_unified.cli.cli ' 'generate-report --type html --name "Scheduled Report"'
             )
 
         scheduler = TaskScheduler(self.config)
-        ok = scheduler.create_scheduled_task(
-            'CortexCleaner ScheduledReport', command, frequency)
+        ok = scheduler.create_scheduled_task("CortexCleaner ScheduledReport", command, frequency)
 
         if ok:
             QMessageBox.information(
-                self, 'Scheduled',
-                f'A {frequency} HTML report task was registered with the '
-                f'OS scheduler:\n{command}')
+                self,
+                "Scheduled",
+                f"A {frequency} HTML report task was registered with the " f"OS scheduler:\n{command}",
+            )
         else:
             QMessageBox.warning(
-                self, 'Scheduling Failed',
-                'Could not create the scheduled task. On Windows this may '
-                'require administrator rights.')
+                self,
+                "Scheduling Failed",
+                "Could not create the scheduled task. On Windows this may " "require administrator rights.",
+            )
 
     def refresh_reports_list(self):
         """Update reports from directory polling."""
         reports = self.reports_generator.list_reports()
         self.reports_table.setRowCount(len(reports))
-        
+
         for i, rep in enumerate(reports):
             # Name
             name_item = QTableWidgetItem(rep["name"])
-            name_item.setToolTip(rep["path"]) # Store absolute path silently here
+            name_item.setToolTip(rep["path"])  # Store absolute path silently here
             self.reports_table.setItem(i, 0, name_item)
-            
+
             # Generated
             try:
                 dt_obj = datetime.fromisoformat(rep["modified"])
@@ -543,20 +558,22 @@ class ReportsTab(BaseTab):
             except (ValueError, KeyError):
                 dt_str = str(rep["modified"])
             self.reports_table.setItem(i, 1, QTableWidgetItem(dt_str))
-            
-            # Size 
+
+            # Size
             size_str = self.format_bytes(rep.get("size_bytes", 0))
             self.reports_table.setItem(i, 2, QTableWidgetItem(size_str))
-            
+
             # Extension/Type
-            ext = str(rep.get("extension", "")).replace('.', '').upper()
-            if not ext: ext = "TEXT"
+            ext = str(rep.get("extension", "")).replace(".", "").upper()
+            if not ext:
+                ext = "TEXT"
             self.reports_table.setItem(i, 3, QTableWidgetItem(ext))
 
     def save_report_template(self):
         """Save current reporting settings to a reusable JSON template."""
         from PySide6.QtWidgets import QInputDialog
         import json
+
         name, ok = QInputDialog.getText(self, "Save Template", "Template Name:")
         if not ok or not name.strip():
             return
@@ -587,6 +604,7 @@ class ReportsTab(BaseTab):
     def load_report_template(self):
         """Load and apply saved report template settings."""
         import json
+
         item = self.templates_list.currentItem()
         if not item:
             return

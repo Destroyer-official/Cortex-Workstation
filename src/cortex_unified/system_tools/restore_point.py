@@ -47,12 +47,12 @@ _VALID_TYPES = {
 class RestoreStatus(str, enum.Enum):
     """Outcome of a restore-point request: created, throttled, disabled, or blocked."""
 
-    CREATED = "created"                      # a new point was verifiably made
-    THROTTLED = "throttled"                  # skipped: one exists in last 24h
+    CREATED = "created"  # a new point was verifiably made
+    THROTTLED = "throttled"  # skipped: one exists in last 24h
     PROTECTION_DISABLED = "protection_disabled"  # System Protection is off
-    NOT_ELEVATED = "not_elevated"            # needs Administrator
-    NOT_SUPPORTED = "not_supported"          # non-Windows
-    FAILED = "failed"                        # other error (message attached)
+    NOT_ELEVATED = "not_elevated"  # needs Administrator
+    NOT_SUPPORTED = "not_supported"  # non-Windows
+    FAILED = "failed"  # other error (message attached)
 
 
 @dataclass(slots=True)
@@ -121,6 +121,7 @@ class RestorePointManager:
             return False
         try:
             import ctypes
+
             return bool(ctypes.windll.shell32.IsUserAnAdmin())
         except Exception:  # noqa: BLE001
             return False
@@ -142,8 +143,7 @@ class RestorePointManager:
         RestorePointResult: Result of the operation.
         """
         if not _IS_WINDOWS:
-            return RestorePointResult(RestoreStatus.NOT_SUPPORTED,
-                                      "System Restore is only available on Windows.")
+            return RestorePointResult(RestoreStatus.NOT_SUPPORTED, "System Restore is only available on Windows.")
         if restore_point_type not in _VALID_TYPES:
             restore_point_type = "MODIFY_SETTINGS"
         if not self.is_elevated():
@@ -237,6 +237,7 @@ class RestorePointManager:
         if not out:
             return []
         import json
+
         try:
             data = json.loads(out)
         except (ValueError, TypeError):
@@ -245,12 +246,14 @@ class RestorePointManager:
             data = [data]
         points: list[dict[str, Any]] = []
         for item in data[:limit]:
-            points.append({
-                "sequence": item.get("SequenceNumber"),
-                "description": item.get("Description", ""),
-                "type": item.get("RestorePointType"),
-                "created": self._parse_wmi_time(item.get("CreationTime")),
-            })
+            points.append(
+                {
+                    "sequence": item.get("SequenceNumber"),
+                    "description": item.get("Description", ""),
+                    "type": item.get("RestorePointType"),
+                    "created": self._parse_wmi_time(item.get("CreationTime")),
+                }
+            )
         return points
 
     # -- helpers ------------------------------------------------------------
@@ -286,7 +289,9 @@ class RestorePointManager:
         try:
             proc = _proc.run(
                 ["powershell", "-NoProfile", "-NonInteractive", "-Command", script],
-                text=True, timeout=timeout, creationflags=_NO_WINDOW,
+                text=True,
+                timeout=timeout,
+                creationflags=_NO_WINDOW,
             )
             if proc.returncode == 0:
                 return proc.stdout

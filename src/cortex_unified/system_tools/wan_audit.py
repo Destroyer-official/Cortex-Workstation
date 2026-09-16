@@ -40,9 +40,7 @@ ProgressFn = Callable[[str], None]
 
 @dataclass(slots=True, frozen=True)
 class InterfaceStatus:
-    """Private IPv4 interface snapshot scoping local LAN trust.
-
-    """
+    """Private IPv4 interface snapshot scoping local LAN trust."""
 
     name: str
     address: str
@@ -61,9 +59,7 @@ class InterfaceStatus:
 
 @dataclass(slots=True, frozen=True)
 class PortMapping:
-    """Single read-only IGD port-mapping entry.
-
-    """
+    """Single read-only IGD port-mapping entry."""
 
     index: int
     remote_host: str
@@ -87,9 +83,7 @@ class PortMapping:
 
 @dataclass(slots=True)
 class WanStatus:
-    """Local-only WAN and IGD audit outcome; never contacts the internet.
-
-    """
+    """Local-only WAN and IGD audit outcome; never contacts the internet."""
 
     external_ip: str = ""
     external_ip_classification: str = "unknown"
@@ -108,6 +102,7 @@ class WanStatus:
             "private_upstream": "rfc1918",
             "unknown": "invalid_or_unknown",
         }.get(self.external_ip_classification, self.external_ip_classification)
+
     dns_servers: list[str] = field(default_factory=list)
     interfaces: list[InterfaceStatus] = field(default_factory=list)
     port_mappings: list[PortMapping] = field(default_factory=list)
@@ -249,8 +244,7 @@ def _child_text(root: ET.Element, name: str) -> str:
     return ""
 
 
-def _is_trusted_url(
-        url: str, networks: Iterable[ipaddress.IPv4Network]) -> bool:
+def _is_trusted_url(url: str, networks: Iterable[ipaddress.IPv4Network]) -> bool:
     """Return whether *url* is an HTTP(S) IPv4 literal on a local LAN.
 
 
@@ -322,9 +316,7 @@ def _bounded_int(value: str, minimum: int, maximum: int) -> int:
 
 
 class WanAuditor:
-    """Read-only local WAN and UPnP IGD auditor bounded to private LANs.
-
-    """
+    """Read-only local WAN and UPnP IGD auditor bounded to private LANs."""
 
     def __init__(
         self,
@@ -342,10 +334,8 @@ class WanAuditor:
             max_mappings (int): The max mappings parameter.
         """
         self.timeout = min(10.0, max(0.1, float(timeout)))
-        self.max_response_bytes = min(
-            _MAX_HTTP_BYTES, max(4096, int(max_response_bytes)))
-        self.max_mappings = min(
-            _MAX_MAPPINGS, max(0, int(max_mappings)))
+        self.max_response_bytes = min(_MAX_HTTP_BYTES, max(4096, int(max_response_bytes)))
+        self.max_mappings = min(_MAX_MAPPINGS, max(0, int(max_mappings)))
 
     def audit(
         self,
@@ -368,18 +358,14 @@ class WanAuditor:
         """
         started = time.monotonic()
         interfaces = self.local_interfaces()
-        networks = [
-            ipaddress.IPv4Network(item.network, strict=False)
-            for item in interfaces
-        ]
+        networks = [ipaddress.IPv4Network(item.network, strict=False) for item in interfaces]
         gateways: list[str] = []
         for raw in gateway_ips:
             try:
                 gateway = ipaddress.IPv4Address(str(raw))
             except ValueError:
                 continue
-            if (any(gateway in private for private in _RFC1918)
-                    and not gateway.is_loopback and not gateway.is_multicast):
+            if any(gateway in private for private in _RFC1918) and not gateway.is_loopback and not gateway.is_multicast:
                 gateways.append(str(gateway))
                 candidate = ipaddress.IPv4Network(f"{gateway}/24", strict=False)
                 if candidate not in networks:
@@ -397,41 +383,29 @@ class WanAuditor:
             if not include_upnp:
                 return status
             if not networks:
-                status.warnings.append(
-                    "No active private IPv4 interface or gateway scope was found.")
+                status.warnings.append("No active private IPv4 interface or gateway scope was found.")
                 return status
-            self._progress(
-                progress,
-                "Discovering a local UPnP Internet Gateway Device")
+            self._progress(progress, "Discovering a local UPnP Internet Gateway Device")
             locations = self.discover_locations(networks, cancel_event)
             for location in locations:
                 if self._cancelled(cancel_event):
                     status.cancelled = True
                     break
                 try:
-                    service_type, control_url = self._load_igd(
-                        location, networks)
+                    service_type, control_url = self._load_igd(location, networks)
                     status.igd_found = True
                     status.location = location
                     status.control_url = control_url
-                    self._read_soap_status(
-                        status, service_type, control_url, networks,
-                        cancel_event, progress)
+                    self._read_soap_status(status, service_type, control_url, networks, cancel_event, progress)
                     break
                 except (OSError, ValueError, http.client.HTTPException) as exc:
-                    _LOG.debug(
-                        "rejected or unreadable IGD at %s: %s", location, exc)
+                    _LOG.debug("rejected or unreadable IGD at %s: %s", location, exc)
             if locations and not status.igd_found and not status.cancelled:
-                status.warnings.append(
-                    "UPnP replies were received, but no safe IGD service "
-                    "was readable."
-                )
+                status.warnings.append("UPnP replies were received, but no safe IGD service " "was readable.")
             elif not locations and not status.cancelled:
-                status.warnings.append(
-                    "No local UPnP Internet Gateway Device replied.")
+                status.warnings.append("No local UPnP Internet Gateway Device replied.")
         finally:
-            status.cancelled = status.cancelled or self._cancelled(
-                cancel_event)
+            status.cancelled = status.cancelled or self._cancelled(cancel_event)
             status.duration_seconds = time.monotonic() - started
         return status
 
@@ -471,8 +445,7 @@ class WanAuditor:
         """
         result: list[InterfaceStatus] = []
         try:
-            records = socket.getaddrinfo(
-                socket.gethostname(), None, socket.AF_INET, socket.SOCK_DGRAM)
+            records = socket.getaddrinfo(socket.gethostname(), None, socket.AF_INET, socket.SOCK_DGRAM)
         except OSError:
             return result
         seen: set[str] = set()
@@ -482,17 +455,18 @@ class WanAuditor:
                 address = ipaddress.IPv4Address(candidate)
             except ValueError:
                 continue
-            if (candidate in seen or address.is_loopback
-                    or not any(address in private for private in _RFC1918)):
+            if candidate in seen or address.is_loopback or not any(address in private for private in _RFC1918):
                 continue
             seen.add(candidate)
             network = ipaddress.IPv4Network(f"{address}/24", strict=False)
-            result.append(InterfaceStatus(
-                name="local",
-                address=str(address),
-                netmask="255.255.255.0",
-                network=str(network),
-            ))
+            result.append(
+                InterfaceStatus(
+                    name="local",
+                    address=str(address),
+                    netmask="255.255.255.0",
+                    network=str(network),
+                )
+            )
         return result
 
     def discover_locations(
@@ -525,18 +499,14 @@ class WanAuditor:
             with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:
                 sock.settimeout(min(0.2, self.timeout))
                 sock.sendto(request, _SSDP_ADDRESS)
-                while (
-                    time.monotonic() < deadline
-                    and not self._cancelled(cancel_event)
-                ):
+                while time.monotonic() < deadline and not self._cancelled(cancel_event):
                     try:
                         payload, _peer = sock.recvfrom(16 * 1024)
                     except socket.timeout:
                         continue
                     headers = _parse_headers(payload)
                     location = headers.get("location", "")
-                    if (location and location not in locations
-                            and _is_trusted_url(location, trusted_networks)):
+                    if location and location not in locations and _is_trusted_url(location, trusted_networks):
                         locations.append(location)
         except OSError as exc:
             _LOG.debug("SSDP discovery failed: %s", exc)
@@ -565,15 +535,12 @@ class WanAuditor:
         for service in root.iter():
             if _local_name(service.tag) != "service":
                 continue
-            values = {
-                _local_name(child.tag): (child.text or "").strip()
-                for child in service
-            }
+            values = {_local_name(child.tag): (child.text or "").strip() for child in service}
             service_type = values.get("serviceType", "")
-            if not (service_type.startswith(
-                    "urn:schemas-upnp-org:service:WANIPConnection:") or
-                    service_type.startswith(
-                    "urn:schemas-upnp-org:service:WANPPPConnection:")):
+            if not (
+                service_type.startswith("urn:schemas-upnp-org:service:WANIPConnection:")
+                or service_type.startswith("urn:schemas-upnp-org:service:WANPPPConnection:")
+            ):
                 continue
             raw_control = values.get("controlURL", "")
             if not raw_control:
@@ -608,16 +575,11 @@ class WanAuditor:
             raise ValueError("untrusted SOAP target")
         self._progress(progress, "Reading the IGD-reported external address")
         try:
-            root = self._soap(
-                control_url,
-                service_type,
-                "GetExternalIPAddress")
+            root = self._soap(control_url, service_type, "GetExternalIPAddress")
             status.external_ip = _child_text(root, "NewExternalIPAddress")
-            status.external_ip_classification = classify_external_ip(
-                status.external_ip)
+            status.external_ip_classification = classify_external_ip(status.external_ip)
         except (OSError, ValueError, http.client.HTTPException) as exc:
-            status.warnings.append(
-                f"The IGD external address could not be read: {exc}")
+            status.warnings.append(f"The IGD external address could not be read: {exc}")
 
         self._progress(progress, "Enumerating read-only IGD port mappings")
         for index in range(self.max_mappings):
@@ -631,22 +593,15 @@ class WanAuditor:
                     "GetGenericPortMappingEntry",
                     {"NewPortMappingIndex": str(index)},
                 )
-                status.port_mappings.append(
-                    self._mapping_from_xml(index, root))
+                status.port_mappings.append(self._mapping_from_xml(index, root))
             except _NoMoreMappings:
                 return
             except (OSError, ValueError, http.client.HTTPException) as exc:
-                status.warnings.append(
-                    "Port mapping enumeration stopped at index "
-                    f"{index}: {exc}"
-                )
+                status.warnings.append("Port mapping enumeration stopped at index " f"{index}: {exc}")
                 return
         if self.max_mappings:
             status.mapping_limit_reached = True
-            status.warnings.append(
-                "Port mapping enumeration was capped at "
-                f"{self.max_mappings} entries."
-            )
+            status.warnings.append("Port mapping enumeration was capped at " f"{self.max_mappings} entries.")
 
     def _soap(
         self,
@@ -668,13 +623,9 @@ class WanAuditor:
         Returns:
             ET.Element: Result of the operation.
         """
-        if action not in {"GetExternalIPAddress",
-                          "GetGenericPortMappingEntry"}:
+        if action not in {"GetExternalIPAddress", "GetGenericPortMappingEntry"}:
             raise ValueError("unsupported SOAP action")
-        argument_xml = "".join(
-            f"<{name}>{_xml_escape(value)}</{name}>"
-            for name, value in (arguments or {}).items()
-        )
+        argument_xml = "".join(f"<{name}>{_xml_escape(value)}</{name}>" for name, value in (arguments or {}).items())
         body = (
             '<?xml version="1.0" encoding="utf-8"?>'
             '<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" '
@@ -695,13 +646,9 @@ class WanAuditor:
         if http_status >= 400 or _child_text(root, "errorCode"):
             error_code = _child_text(root, "errorCode")
             description = _child_text(root, "errorDescription")
-            if action == "GetGenericPortMappingEntry" and error_code in {
-                    "713", "714"}:
+            if action == "GetGenericPortMappingEntry" and error_code in {"713", "714"}:
                 raise _NoMoreMappings
-            raise ValueError(
-                f"SOAP fault {error_code or http_status}: "
-                f"{description or 'unknown error'}"
-            )
+            raise ValueError(f"SOAP fault {error_code or http_status}: " f"{description or 'unknown error'}")
         return root
 
     @staticmethod
@@ -722,18 +669,13 @@ class WanAuditor:
         return PortMapping(
             index=index,
             remote_host=_child_text(root, "NewRemoteHost"),
-            external_port=_bounded_int(
-                _child_text(root, "NewExternalPort"), 0, 65535),
+            external_port=_bounded_int(_child_text(root, "NewExternalPort"), 0, 65535),
             protocol=protocol,
-            internal_port=_bounded_int(
-                _child_text(root, "NewInternalPort"), 0, 65535),
+            internal_port=_bounded_int(_child_text(root, "NewInternalPort"), 0, 65535),
             internal_client=_child_text(root, "NewInternalClient"),
-            enabled=_child_text(
-                root, "NewEnabled").lower() in {
-                "1", "true", "yes"},
+            enabled=_child_text(root, "NewEnabled").lower() in {"1", "true", "yes"},
             description=_child_text(root, "NewPortMappingDescription")[:512],
-            lease_duration=_bounded_int(
-                _child_text(root, "NewLeaseDuration"), 0, 2**31 - 1),
+            lease_duration=_bounded_int(_child_text(root, "NewLeaseDuration"), 0, 2**31 - 1),
         )
 
     def _http_request(
@@ -760,20 +702,16 @@ class WanAuditor:
         if host is None:
             raise ValueError("URL has no host")
         port = parsed.port or (443 if parsed.scheme == "https" else 80)
-        path = urllib.parse.urlunsplit(
-            ("", "", parsed.path or "/", parsed.query, ""))
+        path = urllib.parse.urlunsplit(("", "", parsed.path or "/", parsed.query, ""))
         connection: http.client.HTTPConnection
         if parsed.scheme == "https":
             connection = http.client.HTTPSConnection(
-                host, port, timeout=self.timeout,
-                context=ssl.create_default_context())
+                host, port, timeout=self.timeout, context=ssl.create_default_context()
+            )
         else:
-            connection = http.client.HTTPConnection(
-                host, port, timeout=self.timeout)
+            connection = http.client.HTTPConnection(host, port, timeout=self.timeout)
         try:
-            connection.request(
-                method, path, body=body, headers=dict(
-                    headers or {}))
+            connection.request(method, path, body=body, headers=dict(headers or {}))
             response = connection.getresponse()
             content_length = response.getheader("Content-Length")
             if content_length is not None:
@@ -789,12 +727,8 @@ class WanAuditor:
             if 300 <= response.status < 400:
                 raise ValueError("HTTP redirects are not followed")
             if response.status >= 400 and method == "GET":
-                raise ValueError(
-                    f"HTTP request failed with status {response.status}"
-                )
-            response_headers = {
-                name.lower(): value for name,
-                value in response.getheaders()}
+                raise ValueError(f"HTTP request failed with status {response.status}")
+            response_headers = {name.lower(): value for name, value in response.getheaders()}
             return response.status, response_headers, payload
         finally:
             connection.close()
@@ -807,10 +741,7 @@ class WanAuditor:
         Returns:
             str: Formatted string or path.
         """
-        commands = (
-            ["route", "print", "-4"] if os.name == "nt"
-            else ["ip", "-4", "route", "show", "default"]
-        )
+        commands = ["route", "print", "-4"] if os.name == "nt" else ["ip", "-4", "route", "show", "default"]
         try:
             completed = subprocess.run(
                 commands,
@@ -818,13 +749,14 @@ class WanAuditor:
                 text=True,
                 timeout=3,
                 check=False,
-                creationflags=0x08000000 if os.name == "nt" else 0)
+                creationflags=0x08000000 if os.name == "nt" else 0,
+            )
         except (OSError, subprocess.SubprocessError):
             return ""
         patterns = (
             r"^\s*0\.0\.0\.0\s+0\.0\.0\.0\s+(\d+(?:\.\d+){3})"
-            if os.name == "nt" else
-            r"\bdefault\s+via\s+(\d+(?:\.\d+){3})"
+            if os.name == "nt"
+            else r"\bdefault\s+via\s+(\d+(?:\.\d+){3})"
         )
         match = re.search(patterns, completed.stdout or "", re.MULTILINE)
         if not match:
@@ -847,8 +779,13 @@ class WanAuditor:
         if os.name == "nt":
             try:
                 completed = subprocess.run(
-                    ["ipconfig", "/all"], capture_output=True, text=True,
-                    timeout=4, check=False, creationflags=0x08000000)
+                    ["ipconfig", "/all"],
+                    capture_output=True,
+                    text=True,
+                    timeout=4,
+                    check=False,
+                    creationflags=0x08000000,
+                )
                 text = completed.stdout or ""
             except (OSError, subprocess.SubprocessError):
                 return []
@@ -862,8 +799,7 @@ class WanAuditor:
                     text = handle.read(64 * 1024)
             except OSError:
                 return []
-        candidates = re.findall(
-            r"(?<![\w:])\d{1,3}(?:\.\d{1,3}){3}(?![\w:])", text)
+        candidates = re.findall(r"(?<![\w:])\d{1,3}(?:\.\d{1,3}){3}(?![\w:])", text)
         result: list[str] = []
         for candidate in candidates:
             try:
@@ -876,9 +812,7 @@ class WanAuditor:
 
 
 class _NoMoreMappings(Exception):
-    """Internal signal that IGD port-mapping enumeration is exhausted.
-
-    """
+    """Internal signal that IGD port-mapping enumeration is exhausted."""
 
 
 def _xml_escape(value: str) -> str:
@@ -891,9 +825,13 @@ def _xml_escape(value: str) -> str:
     Returns:
         str: Formatted string or path.
     """
-    return (value.replace("&", "&amp;").replace("<", "&lt;")
-            .replace(">", "&gt;").replace('"', "&quot;")
-            .replace("'", "&apos;"))
+    return (
+        value.replace("&", "&amp;")
+        .replace("<", "&lt;")
+        .replace(">", "&gt;")
+        .replace('"', "&quot;")
+        .replace("'", "&apos;")
+    )
 
 
 def audit_wan(
@@ -923,6 +861,11 @@ def audit_wan(
 
 
 __all__ = [
-    "InterfaceStatus", "PortMapping", "WanAuditor", "WanStatus", "audit_wan",
-    "classify_external_ip", "classify_public_ip",
+    "InterfaceStatus",
+    "PortMapping",
+    "WanAuditor",
+    "WanStatus",
+    "audit_wan",
+    "classify_external_ip",
+    "classify_public_ip",
 ]

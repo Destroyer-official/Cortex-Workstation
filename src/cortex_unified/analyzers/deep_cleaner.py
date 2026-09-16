@@ -16,6 +16,7 @@ from cortex_unified.core.config import Config
 SYSTEM = platform.system()
 HOME = Path.home()
 
+
 def get_path_size_safe(path: Path) -> int:
     """Recursive byte size of *path*; 0 for anything unreadable.
 
@@ -36,6 +37,7 @@ def get_path_size_safe(path: Path) -> int:
     except Exception:
         return 0
 
+
 class DeepCleaner:
     """Cross-platform deep junk scanner over declarative per-OS target tables."""
 
@@ -46,7 +48,7 @@ class DeepCleaner:
                 omitted.
         """
         self.config = config or Config()
-        self.found_items = [] # list of dicts, see find_junk()
+        self.found_items = []  # list of dicts, see find_junk()
 
     def _find_orphaned_app_data(self) -> List[Path]:
         """Find app data folders for apps that are no longer installed.
@@ -73,15 +75,45 @@ class DeepCleaner:
                 if dp.exists():
                     for df in dp.glob("*.desktop"):
                         desktop_apps.add(df.stem.lower())
-            
-            known_system = {"dconf", "gvfs-metadata", "recently-used.xbel", "recently-used",
-                            "sounds", "fonts", "icons", "themes", "applications", "mime",
-                            "pkgconfig", "doc", "man", "locale", "keyrings", "systemd",
-                            "glib-2.0", "tracker", "icc", "color", "xorg", "plasma", "kwin",
-                            "baloo", "akonadi", "gnome", "nautilus", "gedit", "evince", 
-                            "file-manager", "networkmanager", "pulseaudio", "pipewire", 
-                            "bluetooth", "input-sources"}
-            
+
+            known_system = {
+                "dconf",
+                "gvfs-metadata",
+                "recently-used.xbel",
+                "recently-used",
+                "sounds",
+                "fonts",
+                "icons",
+                "themes",
+                "applications",
+                "mime",
+                "pkgconfig",
+                "doc",
+                "man",
+                "locale",
+                "keyrings",
+                "systemd",
+                "glib-2.0",
+                "tracker",
+                "icc",
+                "color",
+                "xorg",
+                "plasma",
+                "kwin",
+                "baloo",
+                "akonadi",
+                "gnome",
+                "nautilus",
+                "gedit",
+                "evince",
+                "file-manager",
+                "networkmanager",
+                "pulseaudio",
+                "pipewire",
+                "bluetooth",
+                "input-sources",
+            }
+
             for base_dir in check_dirs:
                 if not base_dir.exists():
                     continue
@@ -92,8 +124,12 @@ class DeepCleaner:
                         name = item.name.lower()
                         if any(k in name for k in known_system):
                             continue
-                        has_binary = name in installed_binaries or any(b.startswith(name[:4]) for b in installed_binaries if len(name) > 4)
-                        has_desktop = name in desktop_apps or any(d.startswith(name[:4]) for d in desktop_apps if len(name) > 4)
+                        has_binary = name in installed_binaries or any(
+                            b.startswith(name[:4]) for b in installed_binaries if len(name) > 4
+                        )
+                        has_desktop = name in desktop_apps or any(
+                            d.startswith(name[:4]) for d in desktop_apps if len(name) > 4
+                        )
                         if not has_binary and not has_desktop:
                             size = get_path_size_safe(item)
                             if size > 0:
@@ -128,9 +164,12 @@ class DeepCleaner:
             installed = set()
             try:
                 import winreg
+
                 for hive in [winreg.HKEY_CURRENT_USER, winreg.HKEY_LOCAL_MACHINE]:
-                    for sub in [r"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall",
-                                r"SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall"]:
+                    for sub in [
+                        r"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall",
+                        r"SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall",
+                    ]:
                         try:
                             key = winreg.OpenKey(hive, sub)
                             for i in range(winreg.QueryInfoKey(key)[0]):
@@ -144,7 +183,7 @@ class DeepCleaner:
                             pass
             except ImportError:
                 pass
-            
+
             for base_dir in [appdata, localapp]:
                 if not base_dir.exists():
                     continue
@@ -173,30 +212,140 @@ class DeepCleaner:
         targets = {}
         if SYSTEM == "Linux":
             targets = {
-                "🗑️  Trash": {"paths": [HOME / ".local/share/Trash/files", HOME / ".local/share/Trash/info"], "pattern": "*", "desc": "Recycle bin contents", "category": "Temp"},
-                "🌡️  Temp Files": {"paths": [Path("/tmp"), Path("/var/tmp"), HOME / ".cache/tmp"], "pattern": "*", "desc": "Temporary system files", "category": "Temp"},
-                "🖥️  Thumbnail Cache": {"paths": [HOME / ".cache/thumbnails"], "pattern": "*", "desc": "Image preview cache", "category": "Cache"},
-                "📦  APT Package Cache": {"paths": [Path("/var/cache/apt/archives")], "pattern": "*.deb", "desc": "Downloaded .deb package installers", "category": "Cache"},
-                "🐍  Python Bytecode": {"paths": [HOME], "pattern": "__pycache__", "recursive": True, "desc": "Python compiled bytecode folders", "category": "Cache"},
-                "📋  Log Files": {"paths": [HOME / ".local/share", HOME / ".config"], "pattern": "*.log", "recursive": True, "desc": "Log files", "category": "Logs"},
-                "🌐  Browser Cache": {"paths": [HOME / ".cache/google-chrome", HOME / ".cache/chromium", HOME / ".cache/mozilla/firefox"], "pattern": "*", "desc": "Web browser caches", "category": "Cache"},
-                "📦  Package Cache": {"paths": [HOME / ".cache/pip", HOME / ".npm/_cacache", HOME / ".npm/cache"], "pattern": "*", "desc": "Package manager caches", "category": "Cache"},
-                "🔧  VSCode Cache": {"paths": [HOME / ".config/Code/Cache", HOME / ".config/Code/CachedData", HOME / ".config/Code/logs"], "pattern": "*", "desc": "VS Code editor cache", "category": "Cache"},
-                "🎵  Spotify Cache": {"paths": [HOME / ".config/spotify/Storage", HOME / ".cache/spotify"], "pattern": "*", "desc": "Spotify local cache", "category": "Cache"},
-                "⚙️  Recently Used": {"paths": [HOME / ".local/share"], "pattern": "recently-used.xbel", "desc": "Recently opened history", "category": "Other"},
-                "👻  Orphaned Data": {"paths": [], "pattern": "*", "desc": "Uninstalled app data", "is_orphan": True, "category": "Orphaned"}
+                "🗑️  Trash": {
+                    "paths": [HOME / ".local/share/Trash/files", HOME / ".local/share/Trash/info"],
+                    "pattern": "*",
+                    "desc": "Recycle bin contents",
+                    "category": "Temp",
+                },
+                "🌡️  Temp Files": {
+                    "paths": [Path("/tmp"), Path("/var/tmp"), HOME / ".cache/tmp"],
+                    "pattern": "*",
+                    "desc": "Temporary system files",
+                    "category": "Temp",
+                },
+                "🖥️  Thumbnail Cache": {
+                    "paths": [HOME / ".cache/thumbnails"],
+                    "pattern": "*",
+                    "desc": "Image preview cache",
+                    "category": "Cache",
+                },
+                "📦  APT Package Cache": {
+                    "paths": [Path("/var/cache/apt/archives")],
+                    "pattern": "*.deb",
+                    "desc": "Downloaded .deb package installers",
+                    "category": "Cache",
+                },
+                "🐍  Python Bytecode": {
+                    "paths": [HOME],
+                    "pattern": "__pycache__",
+                    "recursive": True,
+                    "desc": "Python compiled bytecode folders",
+                    "category": "Cache",
+                },
+                "📋  Log Files": {
+                    "paths": [HOME / ".local/share", HOME / ".config"],
+                    "pattern": "*.log",
+                    "recursive": True,
+                    "desc": "Log files",
+                    "category": "Logs",
+                },
+                "🌐  Browser Cache": {
+                    "paths": [HOME / ".cache/google-chrome", HOME / ".cache/chromium", HOME / ".cache/mozilla/firefox"],
+                    "pattern": "*",
+                    "desc": "Web browser caches",
+                    "category": "Cache",
+                },
+                "📦  Package Cache": {
+                    "paths": [HOME / ".cache/pip", HOME / ".npm/_cacache", HOME / ".npm/cache"],
+                    "pattern": "*",
+                    "desc": "Package manager caches",
+                    "category": "Cache",
+                },
+                "🔧  VSCode Cache": {
+                    "paths": [
+                        HOME / ".config/Code/Cache",
+                        HOME / ".config/Code/CachedData",
+                        HOME / ".config/Code/logs",
+                    ],
+                    "pattern": "*",
+                    "desc": "VS Code editor cache",
+                    "category": "Cache",
+                },
+                "🎵  Spotify Cache": {
+                    "paths": [HOME / ".config/spotify/Storage", HOME / ".cache/spotify"],
+                    "pattern": "*",
+                    "desc": "Spotify local cache",
+                    "category": "Cache",
+                },
+                "⚙️  Recently Used": {
+                    "paths": [HOME / ".local/share"],
+                    "pattern": "recently-used.xbel",
+                    "desc": "Recently opened history",
+                    "category": "Other",
+                },
+                "👻  Orphaned Data": {
+                    "paths": [],
+                    "pattern": "*",
+                    "desc": "Uninstalled app data",
+                    "is_orphan": True,
+                    "category": "Orphaned",
+                },
             }
         elif SYSTEM == "Darwin":
             targets = {
                 "🗑️  Trash": {"paths": [HOME / ".Trash"], "pattern": "*", "desc": "Trash contents", "category": "Temp"},
-                "🌡️  Temp Files": {"paths": [Path("/tmp"), Path("/var/folders")], "pattern": "*", "desc": "Temporary system files", "category": "Temp"},
-                "🖥️  Thumbnail Cache": {"paths": [HOME / "Library/Caches/com.apple.QuickLook.thumbnailcache"], "pattern": "*", "desc": "Preview thumbnails", "category": "Cache"},
-                "🌐  Browser Cache": {"paths": [HOME / "Library/Caches/com.apple.Safari", HOME / "Library/Caches/Google/Chrome"], "pattern": "*", "desc": "Web browser caches", "category": "Cache"},
-                "📦  Package Cache": {"paths": [HOME / "Library/Caches/pip"], "pattern": "*", "desc": "Package manager caches", "category": "Cache"},
-                "🐍  Python Bytecode": {"paths": [HOME], "pattern": "__pycache__", "recursive": True, "desc": "Python compiled bytecode", "category": "Cache"},
-                "📋  Log Files": {"paths": [HOME / "Library/Logs"], "pattern": "*.log", "recursive": True, "desc": "System and App logs", "category": "Logs"},
-                "⚙️  App Caches": {"paths": [HOME / "Library/Caches"], "pattern": "*", "desc": "General application caches", "category": "Cache"},
-                "👻  Orphaned Data": {"paths": [], "pattern": "*", "desc": "Uninstalled app data", "is_orphan": True, "category": "Orphaned"}
+                "🌡️  Temp Files": {
+                    "paths": [Path("/tmp"), Path("/var/folders")],
+                    "pattern": "*",
+                    "desc": "Temporary system files",
+                    "category": "Temp",
+                },
+                "🖥️  Thumbnail Cache": {
+                    "paths": [HOME / "Library/Caches/com.apple.QuickLook.thumbnailcache"],
+                    "pattern": "*",
+                    "desc": "Preview thumbnails",
+                    "category": "Cache",
+                },
+                "🌐  Browser Cache": {
+                    "paths": [HOME / "Library/Caches/com.apple.Safari", HOME / "Library/Caches/Google/Chrome"],
+                    "pattern": "*",
+                    "desc": "Web browser caches",
+                    "category": "Cache",
+                },
+                "📦  Package Cache": {
+                    "paths": [HOME / "Library/Caches/pip"],
+                    "pattern": "*",
+                    "desc": "Package manager caches",
+                    "category": "Cache",
+                },
+                "🐍  Python Bytecode": {
+                    "paths": [HOME],
+                    "pattern": "__pycache__",
+                    "recursive": True,
+                    "desc": "Python compiled bytecode",
+                    "category": "Cache",
+                },
+                "📋  Log Files": {
+                    "paths": [HOME / "Library/Logs"],
+                    "pattern": "*.log",
+                    "recursive": True,
+                    "desc": "System and App logs",
+                    "category": "Logs",
+                },
+                "⚙️  App Caches": {
+                    "paths": [HOME / "Library/Caches"],
+                    "pattern": "*",
+                    "desc": "General application caches",
+                    "category": "Cache",
+                },
+                "👻  Orphaned Data": {
+                    "paths": [],
+                    "pattern": "*",
+                    "desc": "Uninstalled app data",
+                    "is_orphan": True,
+                    "category": "Orphaned",
+                },
             }
         elif SYSTEM == "Windows":
             windir = Path(os.environ.get("SystemRoot", os.environ.get("WINDIR", r"C:\Windows")))
@@ -204,13 +353,55 @@ class DeepCleaner:
             localapp = Path(os.environ.get("LOCALAPPDATA", HOME / "AppData/Local"))
             temp = Path(os.environ.get("TEMP", HOME / "AppData/Local/Temp"))
             targets = {
-                "🌡️  Temp Files": {"paths": [temp, windir / "Temp"], "pattern": "*", "desc": "Temporary system files", "category": "Temp"},
-                "🌐  Browser Cache": {"paths": [localapp / "Google/Chrome/User Data/Default/Cache", localapp / "Google/Chrome/User Data/Default/Code Cache", localapp / "Microsoft/Edge/User Data/Default/Cache"], "pattern": "*", "desc": "Web browser caches", "category": "Cache"},
-                "📦  Package Cache": {"paths": [localapp / "pip/Cache"], "pattern": "*", "desc": "Python package caches", "category": "Cache"},
-                "🐍  Python Bytecode": {"paths": [HOME], "pattern": "__pycache__", "recursive": True, "desc": "Python bytecode", "category": "Cache"},
-                "🔧  Windows Update Cache": {"paths": [windir / "SoftwareDistribution" / "Download"], "pattern": "*", "desc": "Windows Update downloads", "category": "Cache"},
-                "📋  Log Files": {"paths": [appdata, localapp], "pattern": "*.log", "recursive": True, "desc": "App logs", "category": "Logs"},
-                "👻  Orphaned Data": {"paths": [], "pattern": "*", "desc": "Uninstalled app data", "is_orphan": True, "category": "Orphaned"}
+                "🌡️  Temp Files": {
+                    "paths": [temp, windir / "Temp"],
+                    "pattern": "*",
+                    "desc": "Temporary system files",
+                    "category": "Temp",
+                },
+                "🌐  Browser Cache": {
+                    "paths": [
+                        localapp / "Google/Chrome/User Data/Default/Cache",
+                        localapp / "Google/Chrome/User Data/Default/Code Cache",
+                        localapp / "Microsoft/Edge/User Data/Default/Cache",
+                    ],
+                    "pattern": "*",
+                    "desc": "Web browser caches",
+                    "category": "Cache",
+                },
+                "📦  Package Cache": {
+                    "paths": [localapp / "pip/Cache"],
+                    "pattern": "*",
+                    "desc": "Python package caches",
+                    "category": "Cache",
+                },
+                "🐍  Python Bytecode": {
+                    "paths": [HOME],
+                    "pattern": "__pycache__",
+                    "recursive": True,
+                    "desc": "Python bytecode",
+                    "category": "Cache",
+                },
+                "🔧  Windows Update Cache": {
+                    "paths": [windir / "SoftwareDistribution" / "Download"],
+                    "pattern": "*",
+                    "desc": "Windows Update downloads",
+                    "category": "Cache",
+                },
+                "📋  Log Files": {
+                    "paths": [appdata, localapp],
+                    "pattern": "*.log",
+                    "recursive": True,
+                    "desc": "App logs",
+                    "category": "Logs",
+                },
+                "👻  Orphaned Data": {
+                    "paths": [],
+                    "pattern": "*",
+                    "desc": "Uninstalled app data",
+                    "is_orphan": True,
+                    "category": "Orphaned",
+                },
             }
         return targets
 
@@ -223,30 +414,32 @@ class DeepCleaner:
         """
         self.found_items = []
         targets = self._get_scan_targets()
-        
+
         for name, cfg in targets.items():
             if progress_callback:
                 progress_callback(f"Scanning: {name}")
-                
+
             is_orphan = cfg.get("is_orphan", False)
             cat = cfg.get("category", "Other")
             recursive = cfg.get("recursive", False)
             pattern = cfg.get("pattern", "*")
-            
+
             if is_orphan:
                 orphans = self._find_orphaned_app_data()
                 for p in orphans:
                     size = get_path_size_safe(p)
                     if size > 0:
-                        self.found_items.append({
-                            "category": cat,
-                            "description": f"Orphaned App Data: {p.name}",
-                            "path": p,
-                            "size": size,
-                            "is_orphan": True
-                        })
+                        self.found_items.append(
+                            {
+                                "category": cat,
+                                "description": f"Orphaned App Data: {p.name}",
+                                "path": p,
+                                "size": size,
+                                "is_orphan": True,
+                            }
+                        )
                 continue
-            
+
             for base_path in cfg.get("paths", []):
                 if not base_path.exists():
                     continue
@@ -257,19 +450,21 @@ class DeepCleaner:
                             continue
                         size = get_path_size_safe(p)
                         if size > 0:
-                            self.found_items.append({
-                                "category": cat,
-                                "description": cfg.get("desc", name),
-                                "path": p,
-                                "size": size,
-                                "is_orphan": False
-                            })
+                            self.found_items.append(
+                                {
+                                    "category": cat,
+                                    "description": cfg.get("desc", name),
+                                    "path": p,
+                                    "size": size,
+                                    "is_orphan": False,
+                                }
+                            )
                 except PermissionError:
                     pass
                 except Exception:
                     pass
         return self.found_items
-    
+
     def get_stats(self) -> dict:
         """Summarize found junk items as counts and total reclaimable size.
 
@@ -280,9 +475,9 @@ class DeepCleaner:
         return {
             "items_found": len(self.found_items),
             "total_size_bytes": total_size,
-            "total_size_human": self._format_bytes(total_size)
+            "total_size_human": self._format_bytes(total_size),
         }
-    
+
     def _format_bytes(self, bytes_count: int) -> str:
         """_format_bytes.
 
@@ -294,7 +489,7 @@ class DeepCleaner:
         Returns:
             str: Formatted string or path.
         """
-        for unit in ['B', 'KB', 'MB', 'GB', 'TB']:
+        for unit in ["B", "KB", "MB", "GB", "TB"]:
             if bytes_count < 1024.0:
                 return f"{bytes_count:.1f} {unit}"
             bytes_count /= 1024.0

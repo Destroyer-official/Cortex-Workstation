@@ -13,7 +13,8 @@ REPO = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO / "native"))
 
 pytest.importorskip(
-    "nexus_ffi", reason="nexus_ffi.py present",
+    "nexus_ffi",
+    reason="nexus_ffi.py present",
 )
 nexus_ffi = pytest.importorskip("nexus_ffi")
 

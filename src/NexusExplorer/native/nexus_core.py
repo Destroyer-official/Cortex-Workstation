@@ -53,10 +53,12 @@ from PySide6.QtWidgets import QFileIconProvider
 
 log = logging.getLogger("nexus")
 
-_REPO = Path(os.environ.get(
-    "NEXUS_EXPLORER_ROOT",
-    str(Path(__file__).resolve().parent.parent),
-))
+_REPO = Path(
+    os.environ.get(
+        "NEXUS_EXPLORER_ROOT",
+        str(Path(__file__).resolve().parent.parent),
+    )
+)
 CLI_CANDIDATES = (
     _REPO / "target" / "release" / "nexus-cli.exe",
     _REPO / "target" / "debug" / "nexus-cli.exe",
@@ -73,8 +75,7 @@ def find_cli() -> Path:
         if p.is_file():
             return p
     raise FileNotFoundError(
-        f"nexus-cli.exe not found in any of: {', '.join(str(p) for p in CLI_CANDIDATES)}"
-        " (cargo build --release)"
+        f"nexus-cli.exe not found in any of: {', '.join(str(p) for p in CLI_CANDIDATES)}" " (cargo build --release)"
     )
 
 
@@ -129,18 +130,25 @@ def _parse_search_chunk(proc: QProcess) -> list[dict]:
         if len(parts) == 2:
             name_part = parts[1]
             last_sep = max(name_part.rfind("/"), name_part.rfind("\\"))
-            name = name_part[last_sep + 1:] if last_sep >= 0 else name_part
+            name = name_part[last_sep + 1 :] if last_sep >= 0 else name_part
             dot_idx = name.rfind(".")
-            ext = name[dot_idx + 1:].lower() if dot_idx > 0 else ""
-            rows.append({
-                "isDir": parts[0] == "DIR", "path": parts[1], "name": name,
-                "ext": ext, "size": 0, "modifiedMs": 0,
-            })
+            ext = name[dot_idx + 1 :].lower() if dot_idx > 0 else ""
+            rows.append(
+                {
+                    "isDir": parts[0] == "DIR",
+                    "path": parts[1],
+                    "name": name,
+                    "ext": ext,
+                    "size": 0,
+                    "modifiedMs": 0,
+                }
+            )
     return rows
 
 
 def _guarded(fn):
     """Wrap a QProcess callback so app-exit teardown never raises."""
+
     def run(*a):
         """Invoke the wrapped callback, swallowing RuntimeError raised by
         destroyed Qt objects unless app shutdown is in progress."""
@@ -149,6 +157,7 @@ def _guarded(fn):
         except RuntimeError:
             if not _SHUTTING_DOWN.is_set():
                 raise
+
     return run
 
 
@@ -176,6 +185,7 @@ def _get_marshal() -> _CallMarshal | None:
         if _marshal is None:
             try:
                 from PySide6.QtWidgets import QApplication
+
                 m = _CallMarshal(QApplication.instance())
                 m.result_ready.connect(lambda done, code, rows: done(code, rows))
                 m.dispatch.connect(lambda fn: fn())
@@ -214,6 +224,7 @@ def marshal_call(fn) -> None:
 class _FfiJob(QRunnable):
     """Pool job running an FFI/backend callable; marshals its result back to
     the Engine's home thread via the shared _CallMarshal signal bridge."""
+
     def __init__(self, fn, done) -> None:
         """Store the zero-arg job callable and its done(code, rows) callback."""
         super().__init__()
@@ -241,6 +252,7 @@ class _FfiJob(QRunnable):
         except Exception as exc:
             if not _SHUTTING_DOWN.is_set():
                 log.warning("ffi job callback failed: %s", exc)
+
     """Pool job running an FFI/backend callable; marshals its result back to
     the Engine's home thread via the shared _CallMarshal signal bridge."""
 
@@ -314,8 +326,7 @@ class Engine:
             return self._run_ffi(lambda: (0, self._python_search(root, pattern)), done)
         proc = QProcess()
         rows: list[dict] = []
-        proc.readyReadStandardOutput.connect(
-            lambda: rows.extend(_parse_search_chunk(proc)))
+        proc.readyReadStandardOutput.connect(lambda: rows.extend(_parse_search_chunk(proc)))
         proc.finished.connect(_guarded(lambda code, _s: done(code, rows)))
         proc.finished.connect(proc.deleteLater)
         proc.start(self.cli, ["search", root, pattern, "5000"])
@@ -334,13 +345,15 @@ class Engine:
                     try:
                         st = entry.stat(follow_symlinks=False)
                         is_dir = entry.is_dir(follow_symlinks=False)
-                        rows.append({
-                            "name": entry.name,
-                            "path": entry.path,
-                            "isDir": is_dir,
-                            "size": 0 if is_dir else st.st_size,
-                            "modifiedMs": int(st.st_mtime * 1000),
-                        })
+                        rows.append(
+                            {
+                                "name": entry.name,
+                                "path": entry.path,
+                                "isDir": is_dir,
+                                "size": 0 if is_dir else st.st_size,
+                                "modifiedMs": int(st.st_mtime * 1000),
+                            }
+                        )
                     except OSError:
                         continue
         except OSError:
@@ -365,14 +378,16 @@ class Engine:
                     try:
                         st = os.stat(full_p, follow_symlinks=False)
                         rel = os.path.relpath(full_p, path)
-                        rows.append({
-                            "name": f,
-                            "path": full_p,
-                            "relPath": rel,
-                            "isDir": False,
-                            "size": st.st_size,
-                            "modifiedMs": int(st.st_mtime * 1000),
-                        })
+                        rows.append(
+                            {
+                                "name": f,
+                                "path": full_p,
+                                "relPath": rel,
+                                "isDir": False,
+                                "size": st.st_size,
+                                "modifiedMs": int(st.st_mtime * 1000),
+                            }
+                        )
                         if len(rows) >= max_results:
                             return rows
                     except OSError:
@@ -390,6 +405,7 @@ class Engine:
         and stops at max_results."""
         rows = []
         import fnmatch
+
         pat = f"*{pattern}*" if not any(c in pattern for c in "*?[]") else pattern
         roots = [r.strip() for r in root.split(";") if r.strip() and os.path.exists(r.strip())]
         if not roots and os.path.exists(root):
@@ -404,10 +420,15 @@ class Engine:
                             dp = os.path.join(dirpath, dn)
                             try:
                                 st = os.stat(dp)
-                                rows.append({
-                                    "name": dn, "path": dp, "isDir": True,
-                                    "size": 0, "modifiedMs": int(st.st_mtime * 1000)
-                                })
+                                rows.append(
+                                    {
+                                        "name": dn,
+                                        "path": dp,
+                                        "isDir": True,
+                                        "size": 0,
+                                        "modifiedMs": int(st.st_mtime * 1000),
+                                    }
+                                )
                                 if len(rows) >= max_results:
                                     return rows
                             except OSError:
@@ -418,10 +439,15 @@ class Engine:
                             fp = os.path.join(dirpath, fn)
                             try:
                                 st = os.stat(fp)
-                                rows.append({
-                                    "name": fn, "path": fp, "isDir": False,
-                                    "size": st.st_size, "modifiedMs": int(st.st_mtime * 1000)
-                                })
+                                rows.append(
+                                    {
+                                        "name": fn,
+                                        "path": fp,
+                                        "isDir": False,
+                                        "size": st.st_size,
+                                        "modifiedMs": int(st.st_mtime * 1000),
+                                    }
+                                )
                                 if len(rows) >= max_results:
                                     return rows
                             except OSError:
@@ -436,8 +462,7 @@ class Engine:
         QThreadPool.globalInstance().start(_FfiJob(job, done))
         return None
 
-    def transfer(self, kind: str, sources: list[str], dest: str, parent,
-                 on_done) -> object:
+    def transfer(self, kind: str, sources: list[str], dest: str, parent, on_done) -> object:
         """Copy or move files. Returns a QProcess or dialog handle."""
         if self.ffi is not None:
             return self._transfer_ffi(kind, sources, dest, parent, on_done)
@@ -466,19 +491,18 @@ class Engine:
         control: dict = {}
         state = {"cancelled": False}
 
-        def on_progress(done_b: int, total_b: int, speed: float = 0.0,
-                        eta: float = 0.0) -> None:
+        def on_progress(done_b: int, total_b: int, speed: float = 0.0, eta: float = 0.0) -> None:
             """Engine progress hook: update bar percentage and byte counters
             on the GUI thread via marshal_call (RuntimeError-safe)."""
+
             def apply():
                 """Apply progress: compute percent from done/total and set bar
                 and label text ('kind: done / total')."""
                 if total_b > 0:
                     pct = min(100, int(done_b * 100 / total_b))
                     bar.setValue(pct)
-                    label.setText(
-                        f"{kind}: {human(done_b)} / {human(total_b)}"
-                    )
+                    label.setText(f"{kind}: {human(done_b)} / {human(total_b)}")
+
             try:
                 marshal_call(apply)
             except RuntimeError:
@@ -518,10 +542,8 @@ class Engine:
             """Run ffi.copy/ffi.move with progress/conflict/started hooks on a
             pool thread, then cancel the dialog and deliver on_done(ok, err)
             on the GUI thread; unsupported kinds raise ValueError."""
-            hooks = {"progress": on_progress, "conflict": hooks_conflict,
-                     "started": start}
-            fn = (self.ffi.move if kind == "move"
-                  else self.ffi.copy if kind == "copy" else None)
+            hooks = {"progress": on_progress, "conflict": hooks_conflict, "started": start}
+            fn = self.ffi.move if kind == "move" else self.ffi.copy if kind == "copy" else None
             if fn is None:
                 raise ValueError(f"unsupported transfer kind {kind!r}")
             r = fn(sources, dest, hooks=hooks, control=control)
@@ -586,8 +608,10 @@ class Engine:
         """Pure-Python fallback: shutil.copy2/copytree or move of each source
         into a freshly created dest dir on a pool thread, then cancels the
         dialog and reports on_done(ok, joined errors) on the GUI thread."""
+
         class _TransJob(QRunnable):
             """Pool worker performing the sequential Python transfers."""
+
             def run(self):
                 """Create dest, move/copy each source (tree or file), collect
                 per-source errors, and marshal the final result to the GUI."""
@@ -615,6 +639,7 @@ class Engine:
                 ok = len(errs) == 0
                 msg = "; ".join(errs) if errs else "completed"
                 marshal_call(lambda: (dlg.cancel(), on_done(ok, msg)))
+
             """Pool worker performing the sequential Python transfers."""
 
         QThreadPool.globalInstance().start(_TransJob())
@@ -632,8 +657,10 @@ class Engine:
         """Pure-Python delete on a pool thread: send2trash when not permanent
         (falling back to rmtree/remove), otherwise permanent removal; reports
         on_done(ok, message) via marshal_call."""
+
         class _DelJob(QRunnable):
             """Pool worker performing the deletions."""
+
             def run(self):
                 """Delete each path (trash or permanent), collect per-path
                 errors, and marshal on_done(ok, message) to the GUI thread."""
@@ -643,6 +670,7 @@ class Engine:
                         if not permanent:
                             try:
                                 import send2trash
+
                                 send2trash.send2trash(p)
                             except Exception:
                                 if os.path.isdir(p):
@@ -659,6 +687,7 @@ class Engine:
                 ok = len(errs) == 0
                 msg = "; ".join(errs) if errs else f"Deleted {len(paths)} item(s)"
                 marshal_call(lambda: on_done(ok, msg))
+
             """Pool worker performing the deletions."""
 
         QThreadPool.globalInstance().start(_DelJob())
@@ -694,7 +723,8 @@ class Engine:
             """Run ffi.delete_paths on a pool thread, then cancel the dialog
             and deliver on_done(ok, err) on the GUI thread."""
             r = self.ffi.delete_paths(
-                paths, to_trash=not permanent,
+                paths,
+                to_trash=not permanent,
                 control=control,
             )
             ok = bool(r.get("ok"))
@@ -735,11 +765,15 @@ class Engine:
         if not self.cli or not os.path.exists(self.cli):
             return self._simple_python(args, on_done)
         proc = QProcess()
-        proc.finished.connect(_guarded(lambda code, _s: on_done(
-            code == 0,
-            bytes(proc.readAllStandardOutput()).decode("utf-8", "replace").strip(),
-            bytes(proc.readAllStandardError()).decode("utf-8", "replace").strip(),
-        )))
+        proc.finished.connect(
+            _guarded(
+                lambda code, _s: on_done(
+                    code == 0,
+                    bytes(proc.readAllStandardOutput()).decode("utf-8", "replace").strip(),
+                    bytes(proc.readAllStandardError()).decode("utf-8", "replace").strip(),
+                )
+            )
+        )
         proc.finished.connect(proc.deleteLater)
         proc.start(self.cli, args)
         return proc
@@ -788,6 +822,7 @@ class Engine:
                     if not permanent:
                         try:
                             import send2trash
+
                             send2trash.send2trash(p)
                         except Exception:
                             if os.path.isdir(p):
@@ -808,17 +843,21 @@ class Engine:
         elif cmd == "drives":
             drives = []
             import string
+
             for letter in string.ascii_uppercase:
                 dp = f"{letter}:\\"
                 if os.path.exists(dp):
                     try:
                         import shutil
+
                         usage = shutil.disk_usage(dp)
-                        drives.append({
-                            "path": f"{letter}:",
-                            "totalBytes": usage.total,
-                            "freeBytes": usage.free,
-                        })
+                        drives.append(
+                            {
+                                "path": f"{letter}:",
+                                "totalBytes": usage.total,
+                                "freeBytes": usage.free,
+                            }
+                        )
                     except OSError:
                         drives.append({"path": f"{letter}:", "totalBytes": 0, "freeBytes": 0})
             on_done(True, json.dumps(drives), "")
@@ -826,6 +865,7 @@ class Engine:
             p = args[1]
             try:
                 import hashlib
+
                 h = hashlib.sha256()
                 with open(p, "rb") as f:
                     while chunk := f.read(65536):
@@ -844,10 +884,14 @@ class Engine:
 class _SHFILEINFO(ctypes.Structure):
     """Mirrors the Win32 SHFILEINFOW structure used with SHGetFileInfoW
     (icon handle, attribute, display name, and type name buffers)."""
-    _fields_ = [("hIcon", ctypes.c_void_p), ("iIcon", ctypes.c_int),
-                ("dwAttributes", ctypes.c_uint32),
-                ("szDisplayName", ctypes.c_wchar * 260),
-                ("szTypeName", ctypes.c_wchar * 80)]
+
+    _fields_ = [
+        ("hIcon", ctypes.c_void_p),
+        ("iIcon", ctypes.c_int),
+        ("dwAttributes", ctypes.c_uint32),
+        ("szDisplayName", ctypes.c_wchar * 260),
+        ("szTypeName", ctypes.c_wchar * 80),
+    ]
     """Mirrors the Win32 SHFILEINFOW structure used with SHGetFileInfoW
     (icon handle, attribute, display name, and type name buffers)."""
 
@@ -855,6 +899,7 @@ class _SHFILEINFO(ctypes.Structure):
 class _ICONINFO(ctypes.Structure):
     """Mirrors the Win32 ICONINFO structure returned by GetIconInfo
     (icon/cursor flag, hotspot, and mask/color bitmap handles)."""
+
     _fields_ = [
         ("fIcon", wintypes.BOOL),
         ("xHotspot", wintypes.DWORD),
@@ -869,6 +914,7 @@ class _ICONINFO(ctypes.Structure):
 class _BMIH(ctypes.Structure):
     """Mirrors the Win32 BITMAPINFOHEADER structure used with GetDIBits
     to request top-down 32-bit ARGB pixel conversion."""
+
     _fields_ = [
         ("biSize", wintypes.DWORD),
         ("biWidth", wintypes.LONG),
@@ -903,8 +949,7 @@ def _hicon_to_qicon(hicon, size: int = 32) -> QIcon:
         buf = ctypes.create_string_buffer(size * size * 4)
         hdc = ctypes.windll.user32.GetDC(0)
         try:
-            ctypes.windll.gdi32.GetDIBits(hdc, info.hbmColor, 0, size, buf,
-                                          ctypes.byref(bmi), 0)
+            ctypes.windll.gdi32.GetDIBits(hdc, info.hbmColor, 0, size, buf, ctypes.byref(bmi), 0)
         finally:
             ctypes.windll.user32.ReleaseDC(0, hdc)
         img = QImage(buf, size, size, size * 4, QImage.Format.Format_ARGB32)
@@ -919,6 +964,7 @@ def _hicon_to_qicon(hicon, size: int = 32) -> QIcon:
 
 class IconThumbs:
     """Manages file/folder icons and image thumbnails with an LRU cache."""
+
     THUMB = 96
     _MAX_THUMBS = 2000
     _SHGFI_ICON = 0x100
@@ -992,8 +1038,12 @@ class IconThumbs:
             if ico is None or ico.isNull():
                 sh = _SHFILEINFO()
                 ctypes.windll.shell32.SHGetFileInfoW(
-                    f"a.{key}" if key else "a", 0, ctypes.byref(sh),
-                    ctypes.sizeof(sh), self._SHGFI_ICON | self._SHGFI_SMALLICON)
+                    f"a.{key}" if key else "a",
+                    0,
+                    ctypes.byref(sh),
+                    ctypes.sizeof(sh),
+                    self._SHGFI_ICON | self._SHGFI_SMALLICON,
+                )
                 if sh.hIcon:
                     ico = _hicon_to_qicon(sh.hIcon, 32)
                     ctypes.windll.user32.DestroyIcon(sh.hIcon)
@@ -1023,7 +1073,8 @@ class IconThumbs:
                 src = reader.size()
                 if src.isValid() and src.width() > 0 and src.height() > 0:
                     scaled = src.scaled(
-                        self.THUMB, self.THUMB,
+                        self.THUMB,
+                        self.THUMB,
                         Qt.AspectRatioMode.KeepAspectRatio,
                     )
                     reader.setScaledSize(scaled)
@@ -1032,10 +1083,13 @@ class IconThumbs:
             img = reader.read()
             if img.isNull():
                 return self.ext_icon(ext)
-            if (img.width() > self.THUMB or img.height() > self.THUMB):
-                img = img.scaled(self.THUMB, self.THUMB,
-                                 Qt.AspectRatioMode.KeepAspectRatio,
-                                 Qt.TransformationMode.SmoothTransformation)
+            if img.width() > self.THUMB or img.height() > self.THUMB:
+                img = img.scaled(
+                    self.THUMB,
+                    self.THUMB,
+                    Qt.AspectRatioMode.KeepAspectRatio,
+                    Qt.TransformationMode.SmoothTransformation,
+                )
             ico = QIcon(QPixmap.fromImage(img))
             if len(self._thumbs) >= self._MAX_THUMBS:
                 self._thumbs.popitem(last=False)
@@ -1058,6 +1112,7 @@ class IconThumbs:
 # ---------------------------------------------------------------------------
 class FileTableModel(QAbstractTableModel):
     """Table model for file/directory listings with icon, name, date, type, size columns."""
+
     HEADERS = ["Name", "Modified", "Type", "Size"]
 
     # Cached Qt enums for hot-path performance (avoids repeated attribute lookup)
@@ -1203,11 +1258,7 @@ class FileTableModel(QAbstractTableModel):
         indexes; NoItemFlags otherwise."""
         if not index.isValid():
             return Qt.ItemFlag.NoItemFlags
-        return (
-            Qt.ItemFlag.ItemIsEnabled
-            | Qt.ItemFlag.ItemIsSelectable
-            | Qt.ItemFlag.ItemIsDragEnabled
-        )
+        return Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsSelectable | Qt.ItemFlag.ItemIsDragEnabled
 
     def mimeTypes(self) -> list[str]:
         """Return supported drag MIME types: URI list and plain text."""
@@ -1240,6 +1291,7 @@ class FileTableModel(QAbstractTableModel):
 
 class SortProxy(QSortFilterProxyModel):
     """Sort proxy that keeps directories first and sorts by column-specific logic."""
+
     def __init__(self) -> None:
         """Configure case-insensitive filtering on the Name column."""
         super().__init__()
@@ -1251,11 +1303,7 @@ class SortProxy(QSortFilterProxyModel):
         indexes; NoItemFlags otherwise."""
         if not index.isValid():
             return Qt.ItemFlag.NoItemFlags
-        return (
-            Qt.ItemFlag.ItemIsEnabled
-            | Qt.ItemFlag.ItemIsSelectable
-            | Qt.ItemFlag.ItemIsDragEnabled
-        )
+        return Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsSelectable | Qt.ItemFlag.ItemIsDragEnabled
 
     def supportedDragActions(self) -> Qt.DropAction:
         """Allow both copy and move drag actions."""
@@ -1287,9 +1335,11 @@ class SortProxy(QSortFilterProxyModel):
 # UI helpers — imported by explorer UI modules
 # ---------------------------------------------------------------------------
 
+
 def _draw_transfer(painter, rect, active: bool):
     """Draw transfer indicator icon for painter-based buttons."""
     from PySide6.QtGui import QPen
+
     painter.save()
     painter.setRenderHint(painter.RenderHint.Antialiasing)
     color = QColor("#3daee9") if active else QColor("#888888")
@@ -1541,11 +1591,7 @@ def scaffold_hierarchy(
                 stack.pop()
 
             parent_dir = stack[-1][1]
-            is_dir = (
-                name.endswith("/")
-                or name.endswith("\\")
-                or ("." not in name and not name.startswith("."))
-            )
+            is_dir = name.endswith("/") or name.endswith("\\") or ("." not in name and not name.startswith("."))
             clean_name = name.rstrip("/\\")
             target_path = parent_dir / clean_name
 
@@ -1594,4 +1640,3 @@ def scaffold_hierarchy(
         "created_dirs": created_dirs,
         "errors": errors,
     }
-

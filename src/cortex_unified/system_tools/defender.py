@@ -29,6 +29,7 @@ class DefenderStatus:
 
     Manages DefenderStatus operations and coordinates related state changes for the component.
     """
+
     available: bool
     realtime_protection: bool = False
     antivirus_enabled: bool = False
@@ -48,8 +49,12 @@ class DefenderStatus:
         Returns:
             bool: True if the operation succeeded, False otherwise.
         """
-        return (self.available and self.realtime_protection and self.antivirus_enabled
-                and (self.signature_age_days is None or self.signature_age_days <= 7))
+        return (
+            self.available
+            and self.realtime_protection
+            and self.antivirus_enabled
+            and (self.signature_age_days is None or self.signature_age_days <= 7)
+        )
 
     def to_dict(self) -> dict[str, Any]:
         """To dict.
@@ -201,11 +206,13 @@ class WindowsDefender:
         threats = []
         for t in data:
             if isinstance(t, dict):
-                threats.append({
-                    "time": str(t.get("Time") or ""),
-                    "threat": str(t.get("Threat") or "Unknown"),
-                    "id": t.get("ThreatID"),
-                })
+                threats.append(
+                    {
+                        "time": str(t.get("Time") or ""),
+                        "threat": str(t.get("Threat") or "Unknown"),
+                        "id": t.get("ThreatID"),
+                    }
+                )
         return threats
 
     def start_quick_scan(self) -> tuple[bool, str]:
@@ -218,8 +225,7 @@ class WindowsDefender:
         """
         if not _IS_WINDOWS:
             return False, "Windows only."
-        out = self._run("Start-MpScan -ScanType QuickScan", timeout=60 * 20,
-                        want_returncode=True)
+        out = self._run("Start-MpScan -ScanType QuickScan", timeout=60 * 20, want_returncode=True)
         if out is True:
             return True, "Quick scan completed."
         return False, "Could not run the quick scan (Defender may be managed or disabled)."
@@ -242,6 +248,7 @@ class WindowsDefender:
         if s.startswith("/Date(") and s.endswith(")/"):
             try:
                 import datetime
+
                 ms = int(s[6:-2].split("+")[0].split("-")[0])
                 return datetime.datetime.fromtimestamp(ms / 1000).strftime("%Y-%m-%d %H:%M")
             except (ValueError, OverflowError, OSError):
@@ -264,7 +271,9 @@ class WindowsDefender:
             # (never the calling thread - see core/proc.py).
             proc = _proc.run(
                 ["powershell", "-NoProfile", "-NonInteractive", "-Command", script],
-                text=True, timeout=timeout, creationflags=_NO_WINDOW,
+                text=True,
+                timeout=timeout,
+                creationflags=_NO_WINDOW,
             )
             if want_returncode:
                 return proc.returncode == 0

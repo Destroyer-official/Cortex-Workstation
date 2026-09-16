@@ -15,6 +15,7 @@ _LOG = logging.getLogger("cortex.system_tools.system_info")
 
 try:
     import psutil
+
     _HAS_PSUTIL = True
 except ImportError:  # pragma: no cover
     _HAS_PSUTIL = False
@@ -115,16 +116,18 @@ class SystemInfo:
                 usage = psutil.disk_usage(part.mountpoint)
             except (PermissionError, OSError):
                 continue
-            out.append({
-                "device": part.device,
-                "mountpoint": part.mountpoint,
-                "fstype": part.fstype,
-                "total": usage.total,
-                "total_human": _fmt_bytes(usage.total),
-                "used_human": _fmt_bytes(usage.used),
-                "free_human": _fmt_bytes(usage.free),
-                "used_percent": usage.percent,
-            })
+            out.append(
+                {
+                    "device": part.device,
+                    "mountpoint": part.mountpoint,
+                    "fstype": part.fstype,
+                    "total": usage.total,
+                    "total_human": _fmt_bytes(usage.total),
+                    "used_human": _fmt_bytes(usage.used),
+                    "free_human": _fmt_bytes(usage.free),
+                    "used_percent": usage.percent,
+                }
+            )
         return out
 
     def battery_info(self) -> dict[str, Any] | None:

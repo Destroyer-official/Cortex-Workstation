@@ -28,10 +28,10 @@ from cortex_unified.engine import (
 from cortex_unified.engine.secure_delete import OverwriteNotEffective
 from cortex_unified.engine.storage import StorageInfo, StorageProbe
 
-
 # --------------------------------------------------------------------------
 # Fixtures
 # --------------------------------------------------------------------------
+
 
 @pytest.fixture
 def tree(tmp_path: Path) -> Path:
@@ -44,19 +44,19 @@ def tree(tmp_path: Path) -> Path:
         Path: Result of the operation.
     """
     (tmp_path / "a.txt").write_text("hello world")
-    (tmp_path / "b.log").write_text("hello world")   # duplicate content of a.txt
+    (tmp_path / "b.log").write_text("hello world")  # duplicate content of a.txt
     (tmp_path / "unique.bin").write_bytes(b"\x01\x02\x03\x04\x05")
     (tmp_path / "empty1.txt").touch()
 
     sub = tmp_path / "sub"
     sub.mkdir()
-    (sub / "c.txt").write_text("hello world")        # third duplicate
+    (sub / "c.txt").write_text("hello world")  # third duplicate
     (sub / "big.dat").write_bytes(b"A" * 4096)
 
     (tmp_path / "empty_dir").mkdir()
     nested_empty = tmp_path / "nested" / "deep"
-    nested_empty.mkdir(parents=True)                  # both levels empty
-    (tmp_path / "__pycache__").mkdir()                # excluded by default
+    nested_empty.mkdir(parents=True)  # both levels empty
+    (tmp_path / "__pycache__").mkdir()  # excluded by default
     (tmp_path / "__pycache__" / "junk.pyc").write_text("x")
     return tmp_path
 
@@ -65,8 +65,10 @@ def tree(tmp_path: Path) -> Path:
 # FastWalker
 # --------------------------------------------------------------------------
 
+
 class TestFastWalker:
     """Group testfastwalker tests covering scan counts and bytes; min size filter; excludes glob; find empty; symlinks not followed by default; cancel stops iteration."""
+
     def test_scan_counts_and_bytes(self, tree: Path):
         """Verify scan counts and bytes via FastWalker, scan.
 
@@ -76,7 +78,7 @@ class TestFastWalker:
         result = FastWalker().scan(tree)
         names = {f.path.name for f in result.files}
         assert "a.txt" in names and "big.dat" in names
-        assert "junk.pyc" not in names          # __pycache__ excluded
+        assert "junk.pyc" not in names  # __pycache__ excluded
         assert result.total_bytes > 0
         assert result.files_scanned == len(result.files)
 
@@ -154,8 +156,10 @@ class TestFastWalker:
 # PathGuard
 # --------------------------------------------------------------------------
 
+
 class TestPathGuard:
     """Group testpathguard tests covering sibling name not falsely protected; blocks home root; blocks windows system dirs; blocks posix system dirs; sandbox confinement."""
+
     def test_sibling_name_not_falsely_protected(self, tmp_path: Path):
         """The legacy prefix matcher blocked '/usrdata' because it startswith
         '/usr'. The relationship-based guard must not."""
@@ -207,8 +211,10 @@ class TestPathGuard:
 # Hashing / duplicates
 # --------------------------------------------------------------------------
 
+
 class TestDuplicates:
     """Group testduplicates tests covering hash file stable and none on missing; finds content duplicates; unique sizes not flagged."""
+
     def test_hash_file_stable_and_none_on_missing(self, tmp_path: Path):
         """Verify hash file stable and none on missing via hash_file.
 
@@ -243,7 +249,7 @@ class TestDuplicates:
             tmp_path (Path): Filesystem path to the target file or directory.
         """
         (tmp_path / "one.txt").write_text("aaaa")
-        (tmp_path / "two.txt").write_text("bbbbbb")   # different size
+        (tmp_path / "two.txt").write_text("bbbbbb")  # different size
         entries = [
             (tmp_path / "one.txt", 4),
             (tmp_path / "two.txt", 6),
@@ -255,8 +261,10 @@ class TestDuplicates:
 # Storage detection
 # --------------------------------------------------------------------------
 
+
 class TestStorage:
     """Group teststorage tests covering detect returns storageinfo; overwrite effective only for hdd; probe caches."""
+
     def test_detect_returns_storageinfo(self, tmp_path: Path):
         """Verify detect returns storageinfo via detect_storage.
 
@@ -290,8 +298,10 @@ class TestStorage:
 # SecureDeleter
 # --------------------------------------------------------------------------
 
+
 class _FakeProbe(StorageProbe):
     """Helper fakeprobe using StorageInfo, __init__, super."""
+
     def __init__(self, kind: StorageKind):
         """__init__.
 
@@ -314,6 +324,7 @@ class _FakeProbe(StorageProbe):
 
 class TestSecureDeleter:
     """Group testsecuredeleter tests covering dry run touches nothing; plain delete file; plain delete directory is guarded; guard blocks unsafe; overwrite on hdd wipes; overwrite on ssd refuses honestly."""
+
     def test_dry_run_touches_nothing(self, tmp_path: Path):
         """Verify dry run touches nothing via SecureDeleter, deleter.delete.
 

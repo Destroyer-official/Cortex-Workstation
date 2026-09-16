@@ -1,4 +1,5 @@
 """Exhaustive End-to-End Audit & Edge-Case Verification Suite for NexusExplorer."""
+
 import os
 import sys
 import tempfile
@@ -46,6 +47,7 @@ def test_audit_in_place_copy_protection(qapp):
 
         class _DummyEngine:
             """Helper dummyengine."""
+
             ffi = None
             cli = ""
 
@@ -87,6 +89,7 @@ def test_audit_circular_directory_protection(qapp):
 
         class _DummyEngine:
             """Helper dummyengine."""
+
             ffi = None
             cli = ""
 
@@ -123,6 +126,7 @@ def test_audit_empty_directory_preservation_on_copy(qapp):
 
         class _DummyEngine:
             """Helper dummyengine."""
+
             ffi = None
             cli = ""
 
@@ -155,7 +159,9 @@ def test_audit_tab_management_and_closing(qapp):
         d1 = Path(tmpdir) / "Tab1"
         d2 = Path(tmpdir) / "Tab2"
         d3 = Path(tmpdir) / "Tab3"
-        d1.mkdir(); d2.mkdir(); d3.mkdir()
+        d1.mkdir()
+        d2.mkdir()
+        d3.mkdir()
 
         w = ExplorerWidget(str(d1))
         initial_count = w.tabbar.count()
@@ -202,14 +208,21 @@ def test_audit_engine_python_simple_and_delete(qapp):
 
         # 2. Hash
         hash_results = []
-        engine.simple(["hash", str(Path(tmpdir) / "renamed.txt")], lambda ok, out, err: hash_results.append((ok, out, err)))
+        engine.simple(
+            ["hash", str(Path(tmpdir) / "renamed.txt")], lambda ok, out, err: hash_results.append((ok, out, err))
+        )
         assert len(hash_results) == 1
         assert hash_results[0][0] is True
         assert len(hash_results[0][1]) == 64  # SHA256 hex string
 
         # 3. Delete
         del_results = []
-        engine.delete([str(Path(tmpdir) / "renamed.txt")], permanent=True, parent=None, on_done=lambda ok, msg: del_results.append((ok, msg)))
+        engine.delete(
+            [str(Path(tmpdir) / "renamed.txt")],
+            permanent=True,
+            parent=None,
+            on_done=lambda ok, msg: del_results.append((ok, msg)),
+        )
         start = time.time()
         while not del_results and time.time() - start < 3:
             qapp.processEvents()

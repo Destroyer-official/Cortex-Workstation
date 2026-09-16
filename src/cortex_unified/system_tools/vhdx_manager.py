@@ -35,8 +35,14 @@ _NO_WINDOW = 0x08000000 if _IS_WINDOWS else 0
 #: run, so we name them instead of letting diskpart fail cryptically.
 _BLOCKERS = {
     "wsl": ("wslservice.exe", "wslhost.exe", "vmwp.exe"),
-    "docker": ("com.docker.backend.exe", "Docker Desktop.exe", "dockerd.exe",
-               "com.docker.service", "vmmem", "vmmemWSL"),
+    "docker": (
+        "com.docker.backend.exe",
+        "Docker Desktop.exe",
+        "dockerd.exe",
+        "com.docker.service",
+        "vmmem",
+        "vmmemWSL",
+    ),
     "hyperv": ("vmwp.exe", "vmms.exe"),
 }
 
@@ -56,14 +62,14 @@ class VirtualDisk:
 
     path: Path
     kind: DiskKind
-    label: str                      # distro / VM / component name
-    size_bytes: int = 0             # logical file size on the host
-    on_disk_bytes: int = 0          # allocated bytes (sparse-aware)
+    label: str  # distro / VM / component name
+    size_bytes: int = 0  # logical file size on the host
+    on_disk_bytes: int = 0  # allocated bytes (sparse-aware)
     #: Bytes used *inside* the guest filesystem, when it could be measured
     #: without starting anything. ``None`` means unknown - we then refuse to
     #: guess a reclaim figure rather than invent one.
     used_inside_bytes: int | None = None
-    running: bool = False           # owning runtime currently holds it open
+    running: bool = False  # owning runtime currently holds it open
     blockers: tuple[str, ...] = ()  # process names to close first
 
     @property
@@ -136,7 +142,7 @@ class CompactResult:
     before_bytes: int = 0
     after_bytes: int = 0
     message: str = ""
-    detail: str = ""                # raw tool tail, for the "show details" view
+    detail: str = ""  # raw tool tail, for the "show details" view
 
     @property
     def freed_bytes(self) -> int:
@@ -203,8 +209,7 @@ class VhdxManager:
                 continue
             seen.add(key)
             self._measure(disk)
-            blockers = tuple(n for n in _BLOCKERS.get(disk.kind.value, ())
-                             if n.lower() in running)
+            blockers = tuple(n for n in _BLOCKERS.get(disk.kind.value, ()) if n.lower() in running)
             disk.blockers = blockers
             disk.running = bool(blockers)
             disks.append(disk)
@@ -229,7 +234,7 @@ class VhdxManager:
         try:
             root = winreg.OpenKey(winreg.HKEY_CURRENT_USER, key_path)
         except OSError:
-            return out   # WSL never installed
+            return out  # WSL never installed
 
         with root:
             index = 0
@@ -255,8 +260,7 @@ class VhdxManager:
                 for candidate in ("ext4.vhdx", "system.vhd"):
                     vhd = base_path / candidate
                     if vhd.exists():
-                        kind = (DiskKind.DOCKER if "docker" in name.lower()
-                                else DiskKind.WSL)
+                        kind = DiskKind.DOCKER if "docker" in name.lower() else DiskKind.WSL
                         out.append(VirtualDisk(vhd, kind, name))
                         break
         return out
@@ -272,8 +276,8 @@ class VhdxManager:
         if not local:
             return out
         roots = [
-            Path(local) / "Docker" / "wsl",           # WSL2 backend
-            Path(local) / "Docker" / "vms",           # Hyper-V backend
+            Path(local) / "Docker" / "wsl",  # WSL2 backend
+            Path(local) / "Docker" / "vms",  # Hyper-V backend
             Path(local) / "DockerDesktop" / "vm-data",
         ]
         for root in roots:
@@ -281,8 +285,7 @@ class VhdxManager:
                 continue
             try:
                 for vhd in root.rglob("*.vhdx"):
-                    out.append(VirtualDisk(vhd, DiskKind.DOCKER,
-                                           f"Docker Desktop ({vhd.stem})"))
+                    out.append(VirtualDisk(vhd, DiskKind.DOCKER, f"Docker Desktop ({vhd.stem})"))
             except OSError as exc:
                 self.logger.debug("docker disk scan failed under %s: %s", root, exc)
         return out
@@ -326,6 +329,7 @@ class VhdxManager:
         disk.on_disk_bytes = disk.size_bytes
         try:
             from cortex_unified.engine import winattrs
+
             measured = winattrs.on_disk_size(disk.path, disk.size_bytes)
             if measured is not None and measured > 0:
                 disk.on_disk_bytes = measured
@@ -346,7 +350,8 @@ class VhdxManager:
         try:
             proc = _proc.run(
                 ["wsl", "-d", disk.label, "--", "df", "-B1", "--output=used", "/"],
-                timeout=timeout, creationflags=_NO_WINDOW,
+                timeout=timeout,
+                creationflags=_NO_WINDOW,
             )
         except (_proc.ProcessCancelled, OSError, subprocess.SubprocessError) as exc:
             self.logger.debug("guest df failed for %s: %s", disk.label, exc)
@@ -383,8 +388,9 @@ class VhdxManager:
             return False, self._decode(proc.stderr).strip() or "wsl --shutdown failed."
         return True, "All WSL distributions stopped."
 
-    def compact(self, disk: VirtualDisk, timeout: int = 3600,
-               cancel_event: "threading.Event | None" = None) -> CompactResult:
+    def compact(
+        self, disk: VirtualDisk, timeout: int = 3600, cancel_event: "threading.Event | None" = None
+    ) -> CompactResult:
         """Compact one virtual disk and report the measured space returned.
 
         Uses ``diskpart``: select the vdisk, attach it **read-only** (so the
@@ -396,30 +402,28 @@ class VhdxManager:
         try:
             before = disk.path.stat().st_size
         except OSError:
-            return CompactResult(disk.path, disk.label, False,
-                                 message="The virtual disk file no longer exists.")
+            return CompactResult(disk.path, disk.label, False, message="The virtual disk file no longer exists.")
 
         if not _IS_WINDOWS:
-            return CompactResult(disk.path, disk.label, False, before, before,
-                                 "Windows-only feature.")
+            return CompactResult(disk.path, disk.label, False, before, before, "Windows-only feature.")
 
         running = self._running_processes()
-        blockers = [n for n in _BLOCKERS.get(disk.kind.value, ())
-                    if n.lower() in running]
+        blockers = [n for n in _BLOCKERS.get(disk.kind.value, ()) if n.lower() in running]
         if blockers:
             return CompactResult(
-                disk.path, disk.label, False, before, before,
-                message=("Still in use by " + ", ".join(blockers) +
-                         ". Stop it first, then compact - compacting an attached "
-                         "disk risks corrupting it."),
+                disk.path,
+                disk.label,
+                False,
+                before,
+                before,
+                message=(
+                    "Still in use by " + ", ".join(blockers) + ". Stop it first, then compact - compacting an attached "
+                    "disk risks corrupting it."
+                ),
             )
 
         script = (
-            f'select vdisk file="{disk.path}"\n'
-            "attach vdisk readonly\n"
-            "compact vdisk\n"
-            "detach vdisk\n"
-            "exit\n"
+            f'select vdisk file="{disk.path}"\n' "attach vdisk readonly\n" "compact vdisk\n" "detach vdisk\n" "exit\n"
         )
         ok, out = self._run_diskpart(script, timeout=timeout, cancel_event=cancel_event)
 
@@ -439,27 +443,37 @@ class VhdxManager:
                 "Cancelled. The disk was attached read-only during compaction, so no "
                 "data can have been corrupted, but it may still be attached - if this "
                 "disk fails to mount afterwards, restart Windows to clear it."
-                if cancelled else self._explain_failure(out)
+                if cancelled
+                else self._explain_failure(out)
             )
             return CompactResult(
-                disk.path, disk.label, False, before, after,
-                message=msg, detail=tail,
+                disk.path,
+                disk.label,
+                False,
+                before,
+                after,
+                message=msg,
+                detail=tail,
             )
 
         freed = max(0, before - after)
         if freed == 0:
             # Honest: the operation succeeded but there was nothing to give back.
             return CompactResult(
-                disk.path, disk.label, True, before, after,
-                message=("Compaction completed, but no space was returned - this "
-                         "disk was already as small as its contents allow."),
+                disk.path,
+                disk.label,
+                True,
+                before,
+                after,
+                message=(
+                    "Compaction completed, but no space was returned - this "
+                    "disk was already as small as its contents allow."
+                ),
                 detail=tail,
             )
-        return CompactResult(disk.path, disk.label, True, before, after,
-                             message="Compaction completed.", detail=tail)
+        return CompactResult(disk.path, disk.label, True, before, after, message="Compaction completed.", detail=tail)
 
-    def set_sparse(self, disk: VirtualDisk, enabled: bool = True,
-                   timeout: int = 300) -> tuple[bool, str]:
+    def set_sparse(self, disk: VirtualDisk, enabled: bool = True, timeout: int = 300) -> tuple[bool, str]:
         """Ask WSL to keep a distribution's disk sparse (WSL 2.3+ only).
 
         A sparse VHDX returns free blocks to the host automatically, which
@@ -472,7 +486,8 @@ class VhdxManager:
         try:
             proc = _proc.run(
                 ["wsl", "--manage", disk.label, "--set-sparse", flag],
-                timeout=timeout, creationflags=_NO_WINDOW,
+                timeout=timeout,
+                creationflags=_NO_WINDOW,
             )
         except FileNotFoundError:
             return False, "WSL is not installed on this PC."
@@ -484,8 +499,7 @@ class VhdxManager:
         if proc.returncode == 0:
             return True, f"Sparse mode {'enabled' if enabled else 'disabled'} for {disk.label}."
         if "invalid" in text.lower() or "unknown" in text.lower():
-            return False, ("This version of WSL doesn't support sparse disks. "
-                           "Update WSL (wsl --update) to use it.")
+            return False, ("This version of WSL doesn't support sparse disks. " "Update WSL (wsl --update) to use it.")
         return False, text or "Could not change sparse mode."
 
     # -- helpers ------------------------------------------------------------
@@ -502,20 +516,24 @@ class VhdxManager:
         """
         low = (out or "").lower()
         if "access is denied" in low or "administrator" in low:
-            return ("Administrator rights are required to compact a virtual disk. "
-                    "Restart Cortex as Administrator and try again.")
+            return (
+                "Administrator rights are required to compact a virtual disk. "
+                "Restart Cortex as Administrator and try again."
+            )
         if "in use" in low or "being used" in low:
-            return ("The virtual disk is still attached. Stop WSL / Docker "
-                    "Desktop and try again.")
+            return "The virtual disk is still attached. Stop WSL / Docker " "Desktop and try again."
         if "not have write permission" in low or "read-only" in low:
-            return ("The disk could not be attached read-only for compaction; "
-                    "check that no backup or antivirus tool is holding it.")
+            return (
+                "The disk could not be attached read-only for compaction; "
+                "check that no backup or antivirus tool is holding it."
+            )
         if "could not find" in low or "not found" in low:
             return "diskpart could not open the virtual disk file."
         return "Compaction failed. See the details for diskpart's own output."
 
-    def _run_diskpart(self, script: str, timeout: int,
-                      cancel_event: "threading.Event | None" = None) -> tuple[bool, str]:
+    def _run_diskpart(
+        self, script: str, timeout: int, cancel_event: "threading.Event | None" = None
+    ) -> tuple[bool, str]:
         """Run a diskpart script from a temp file; return (looks_ok, output).
 
         Compaction can run for many minutes, so this polls ``timeout`` and
@@ -530,23 +548,25 @@ class VhdxManager:
             with os.fdopen(fd, "w", encoding="ascii", errors="ignore") as fh:
                 fh.write(script)
             proc = _proc.run(
-                ["diskpart", "/s", tmp], timeout=timeout,
-                cancel_event=cancel_event, creationflags=_NO_WINDOW,
+                ["diskpart", "/s", tmp],
+                timeout=timeout,
+                cancel_event=cancel_event,
+                creationflags=_NO_WINDOW,
             )
             out = self._decode(proc.stdout) + self._decode(proc.stderr)
             low = out.lower()
             # diskpart exits 0 even for some failures, so check the text too.
-            ok = (proc.returncode == 0
-                  and "successfully compacted" in low
-                  and "access is denied" not in low)
+            ok = proc.returncode == 0 and "successfully compacted" in low and "access is denied" not in low
             return ok, out
         except FileNotFoundError:
             return False, "diskpart is not available on this system."
         except _proc.ProcessCancelled:
             return False, ""  # honest cancellation message is built by the caller
         except subprocess.TimeoutExpired:
-            return False, ("Compaction timed out. Very large disks can take a "
-                           "long time; try again when the PC is otherwise idle.")
+            return False, (
+                "Compaction timed out. Very large disks can take a "
+                "long time; try again when the PC is otherwise idle."
+            )
         except (OSError, subprocess.SubprocessError) as exc:
             return False, str(exc)
         finally:
@@ -569,7 +589,9 @@ class VhdxManager:
         try:
             proc = subprocess.run(
                 ["powershell", "-NoProfile", "-NonInteractive", "-Command", script],
-                capture_output=True, timeout=timeout, creationflags=_NO_WINDOW,
+                capture_output=True,
+                timeout=timeout,
+                creationflags=_NO_WINDOW,
             )
         except (OSError, subprocess.SubprocessError) as exc:
             self.logger.debug("powershell failed: %s", exc)
@@ -632,6 +654,7 @@ class VhdxManager:
         """
         try:
             import winreg
+
             value, _ = winreg.QueryValueEx(key, name)
             return str(value)
         except (OSError, ImportError, ValueError):
@@ -650,6 +673,7 @@ class VhdxManager:
         """
         try:
             import winreg
+
             value, _ = winreg.QueryValueEx(key, name)
             return int(value)
         except (OSError, ImportError, ValueError, TypeError):

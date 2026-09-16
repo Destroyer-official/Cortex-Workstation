@@ -39,6 +39,7 @@ from cortex_unified.analyzers.advanced_uninstaller import (
 
 class _UninstallWorker(QObject):
     """Background worker (_UninstallWorker) performing UninstallWorker. Signals finished, progress, failed report status. Configured with app_ids, force, scan_leftovers, max_leftovers_mb, sources. Its run() step calls AdvancedUninstaller, uninstaller.enumerate_all, uninstaller.uninstall_batch, filtered.append."""
+
     finished = Signal(list)
     progress = Signal(str)
     failed = Signal(str)
@@ -115,9 +116,7 @@ class _UninstallWorker(QObject):
                     filtered.append(r)
                 else:
                     # Emit progress for oversized leftovers
-                    self.progress.emit(
-                        f"Skipped {r.app_id}: leftovers {r.leftovers.total_size_mb:.1f} MB > limit"
-                    )
+                    self.progress.emit(f"Skipped {r.app_id}: leftovers {r.leftovers.total_size_mb:.1f} MB > limit")
 
             self.finished.emit(filtered)
         except Exception as exc:  # noqa: BLE001
@@ -195,9 +194,7 @@ class AdvancedUninstallerPage(_Page):
         self.max_leftovers_spin = QSpinBox()
         self.max_leftovers_spin.setRange(0, 10000)
         self.max_leftovers_spin.setValue(50)
-        self.max_leftovers_spin.setToolTip(
-            "Skip apps whose leftover scan exceeds this size"
-        )
+        self.max_leftovers_spin.setToolTip("Skip apps whose leftover scan exceeds this size")
         opts.addWidget(self.max_leftovers_spin)
 
         self.force_check = QCheckBox("Force uninstall if uninstaller missing")
@@ -224,9 +221,7 @@ class AdvancedUninstallerPage(_Page):
 
         # ── Results table ───────────────────────────────────────────────────
         self.tbl = QTableWidget(0, 5)
-        self.tbl.setHorizontalHeaderLabels(
-            ["App Name", "Version", "Source", "Status", "Leftovers (MB)"]
-        )
+        self.tbl.setHorizontalHeaderLabels(["App Name", "Version", "Source", "Status", "Leftovers (MB)"])
         self.tbl.horizontalHeader().setStretchLastSection(True)
         self.tbl.verticalHeader().setVisible(False)
         self.tbl.setAlternatingRowColors(True)
@@ -264,9 +259,7 @@ class AdvancedUninstallerPage(_Page):
 
     def _pick_root(self):
         """Prompt the user with a file dialog (QFileDialog.getExistingDirectory) and apply the chosen path to the page state."""
-        folder = QFileDialog.getExistingDirectory(
-            self, "Select root folder", self._root
-        )
+        folder = QFileDialog.getExistingDirectory(self, "Select root folder", self._root)
         if folder:
             self._root = folder
             self.root_label.setText(folder)
@@ -295,9 +288,7 @@ class AdvancedUninstallerPage(_Page):
             sources=sources,
         )
         self._worker = w
-        self.win.run_worker(
-            w, self._on_scan_done, self._on_fail, on_progress=self._on_progress
-        )
+        self.win.run_worker(w, self._on_scan_done, self._on_fail, on_progress=self._on_progress)
 
     def _on_progress(self, msg: str):
         """_on_progress.
@@ -321,9 +312,7 @@ class AdvancedUninstallerPage(_Page):
         self.progress.setVisible(False)
         self.scan_btn.setEnabled(True)
         if not apps:
-            self.state.show_empty(
-                "No applications found. Try selecting different sources or a different root folder."
-            )
+            self.state.show_empty("No applications found. Try selecting different sources or a different root folder.")
             self.status.setText("No apps found.")
             self.win.statusBar().showMessage("No applications found", 5000)
             return
@@ -346,9 +335,7 @@ class AdvancedUninstallerPage(_Page):
         """Validate the current selection and ask the user to confirm via a message box showing 'No selection'."""
         selected = self._selected_apps()
         if not selected:
-            QMessageBox.information(
-                self, "No selection", "Select one or more apps to uninstall."
-            )
+            QMessageBox.information(self, "No selection", "Select one or more apps to uninstall.")
             return
 
         force = self.force_check.isChecked()
@@ -426,9 +413,7 @@ class AdvancedUninstallerPage(_Page):
             sources=sources,
         )
         self._worker = w
-        self.win.run_worker(
-            w, self._on_uninstall_done, self._on_fail, on_progress=self._on_progress
-        )
+        self.win.run_worker(w, self._on_uninstall_done, self._on_fail, on_progress=self._on_progress)
 
     def _on_uninstall_done(self, results: list[UninstallResult]):
         """_on_uninstall_done.
@@ -476,9 +461,7 @@ class AdvancedUninstallerPage(_Page):
                 failed += 1
             total_leftovers += res.leftovers.total_size_mb
 
-        self.status.setText(
-            f"Uninstalled {success} app(s), {failed} failed. Total leftovers: {total_leftovers:.1f} MB"
-        )
+        self.status.setText(f"Uninstalled {success} app(s), {failed} failed. Total leftovers: {total_leftovers:.1f} MB")
         msg = (
             f"Uninstall complete: {success} succeeded, {failed} failed.\n"
             f"Total leftovers detected: {total_leftovers:.1f} MB\n"
