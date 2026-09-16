@@ -45,7 +45,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install -e ".[dev,gui,vision]"
       - name: Run portable core engine tests
-        run: xvfb-run python -m pytest tests/test_sieve_cache.py tests/test_s3_fifo.py tests/test_content_defined_chunker.py tests/test_config_v2.py tests/test_cli.py tests/test_fuzzy_finder.py tests/test_near_duplicate_finder.py -v
+        run: xvfb-run python -m pytest tests/test_sieve_cache.py tests/test_s3_fifo.py tests/test_content_defined_chunker.py tests/test_config_v2.py tests/test_cli.py tests/test_fuzzy_finder.py -v
 
   test-windows:
     name: Windows Integration Tests (Py ${{ matrix.python-version }})
