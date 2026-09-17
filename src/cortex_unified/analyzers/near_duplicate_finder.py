@@ -29,7 +29,7 @@ exact hashing only.
 
 Usage::
 
-    finder = NearDuplicateFinder(root_path="D:/code", threshold=0.8)
+    finder = NearDuplicateFinder(root_path="./src", threshold=0.8)
     groups = finder.find_near_duplicates()
     # {group_id: [Path, ...]}
 

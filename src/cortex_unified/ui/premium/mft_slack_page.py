@@ -100,7 +100,9 @@ class MftSlackScrubberPage(_Page):
 
         ctrl_lay.addWidget(QLabel("Select Volume:"))
         self.cmb_volume = QComboBox()
-        self.cmb_volume.addItems(["C:", "D:", "E:", "F:"])
+        from cortex_unified.core.utils import get_available_drives
+
+        self.cmb_volume.addItems(get_available_drives())
         self.cmb_volume.currentTextChanged.connect(self._on_volume_changed)
         ctrl_lay.addWidget(self.cmb_volume)
 

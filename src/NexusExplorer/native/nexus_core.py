@@ -186,9 +186,39 @@ def _get_marshal() -> _CallMarshal | None:
             try:
                 from PySide6.QtWidgets import QApplication
 
+                def _safe_done(done, code, rows):
+                    """Invoke callback safely, ignoring RuntimeError if the receiver widget was deleted.
+
+                    Args:
+                        done: Completion callback.
+                        code: Integer status code.
+                        rows: List of returned row dictionaries.
+                    """
+                    try:
+                        done(code, rows)
+                    except RuntimeError as e:
+                        if "already deleted" in str(e).lower() or _SHUTTING_DOWN.is_set():
+                            log.debug("Target Qt object deleted before async job returned: %s", e)
+                        else:
+                            raise
+
+                def _safe_dispatch(fn):
+                    """Invoke callable safely, ignoring RuntimeError if the target widget was deleted.
+
+                    Args:
+                        fn: Callable to dispatch on home thread.
+                    """
+                    try:
+                        fn()
+                    except RuntimeError as e:
+                        if "already deleted" in str(e).lower() or _SHUTTING_DOWN.is_set():
+                            log.debug("Target Qt object deleted before async dispatch: %s", e)
+                        else:
+                            raise
+
                 m = _CallMarshal(QApplication.instance())
-                m.result_ready.connect(lambda done, code, rows: done(code, rows))
-                m.dispatch.connect(lambda fn: fn())
+                m.result_ready.connect(_safe_done)
+                m.dispatch.connect(_safe_dispatch)
                 _marshal = m
             except (ImportError, RuntimeError):
                 return None

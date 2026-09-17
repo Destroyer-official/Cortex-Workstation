@@ -13,15 +13,27 @@ os.environ["QT_QPA_PLATFORM"] = "offscreen"
 
 
 @pytest.fixture(scope="session")
-def qapp():
-    """Provide qapp fixture that provides a shared QApplication."""
-    app = QApplication.instance()
-    if app is None:
-        app = QApplication([])
-    return app
+def app():
+    """Provide app fixture that provides a shared QApplication."""
+    a = QApplication.instance()
+    if a is None:
+        a = QApplication([])
+    return a
 
 
-def test_nexus_clipboard_cut_copy_clear(qapp):
+@pytest.fixture(autouse=True)
+def _cleanup_shelf_clipboard():
+    """Ensure clipboard singleton is cleared after every test to avoid OLE retention."""
+    yield
+    try:
+        from NexusExplorer.native.nexus_explorer import _nexus_clipboard
+
+        _nexus_clipboard.clear()
+    except Exception:
+        pass
+
+
+def test_nexus_clipboard_cut_copy_clear(app):
     """Verify nexus clipboard cut copy clear via clip.copy, NexusClipboard, clip.changed.connect.
 
     Args:
@@ -134,6 +146,11 @@ def test_staging_shelf_paste_requested_signal(qapp):
         assert paths == [shelf._norm(str(f1))]
         assert dest == tmpdir
 
+        shelf.clear_staged()
+        shelf.close()
+        shelf.deleteLater()
+        qapp.processEvents()
+
 
 def test_preview_pane_with_staging_shelf(qapp):
     """Verify preview pane with staging shelf via tempfile.TemporaryDirectory, PreviewPane, preview.set_current_folder.
@@ -206,6 +223,13 @@ def test_staged_item_row_attributes_and_drag(qapp):
         shelf.add_paths([str(f1)])
         assert shelf.list_widget.count() == 1
 
+        shelf.clear_staged()
+        shelf.close()
+        shelf.deleteLater()
+        row.close()
+        row.deleteLater()
+        qapp.processEvents()
+
 
 def test_python_transfer_fallback_copy_and_move(qapp):
     """Verify python transfer fallback copy and move via tempfile.TemporaryDirectory, qapp.processEvents, TransferQueue.
@@ -273,7 +297,9 @@ def test_context_menu_paste_option(qapp):
         while widget._transfer_queue.is_busy and time.time() - start < 3:
             qapp.processEvents()
             time.sleep(0.05)
+        _nexus_clipboard.clear()
         widget._transfer_queue.stop()
+        widget.close()
         widget.deleteLater()
         qapp.processEvents()
 
@@ -474,7 +500,9 @@ def test_staging_shelf_drag_and_drop_onto_empty_state(qapp):
         assert ev.isAccepted() is True
 
         explorer._transfer_queue.stop()
+        explorer.close()
         explorer.deleteLater()
+        qapp.processEvents()
 
 
 def test_file_checksum_dialog(qapp):

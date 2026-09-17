@@ -57,9 +57,11 @@ def clean_qapp_event_filters():
     if "PySide6" in sys.modules:
         try:
             from PySide6.QtWidgets import QApplication
+            from PySide6.QtCore import QEvent
 
             app = QApplication.instance()
             if app is not None:
+                app.sendPostedEvents(None, QEvent.Type.DeferredDelete)
                 app.processEvents()
         except Exception:
             pass
@@ -70,10 +72,12 @@ def pytest_terminal_summary(terminalreporter, exitstatus, config):
     if "PySide6" in sys.modules:
         try:
             from PySide6.QtWidgets import QApplication
+            from PySide6.QtCore import QEvent
 
             app = QApplication.instance()
             if app is not None:
                 app.closeAllWindows()
+                app.sendPostedEvents(None, QEvent.Type.DeferredDelete)
                 app.processEvents()
         except Exception:
             pass

@@ -207,6 +207,16 @@ class _LazyPageRegistry(Mapping):
         """The pages constructed so far - useful for tests and diagnostics."""
         return frozenset(self._built)
 
+    def clear(self) -> None:
+        """Unparent and schedule deletion of all constructed page widgets."""
+        for page in list(self._built.values()):
+            try:
+                page.setParent(None)
+                page.deleteLater()
+            except Exception:
+                pass
+        self._built.clear()
+
 
 class _WorkerTaskSignals(QObject):
     """Signals carrying a worker result or exception to the GUI thread."""
@@ -274,7 +284,7 @@ class PremiumMainWindow(QMainWindow):
             simulation (bool): Unused, preserved for backwards compatibility.
         """
         super().__init__()
-        self.simulation_mode = False
+        self.simulation_mode = bool(simulation)
         self.worker_runtime = WorkerRuntime(self)
         # Durable user preferences (theme, close-to-tray). The store is shared
         # with the entry point when provided so both read/write one file; a
@@ -930,7 +940,8 @@ class PremiumMainWindow(QMainWindow):
         autoload = getattr(page, "_autoload", None) if page is not None else None
         if callable(autoload) and not getattr(page, "_loaded", False):
             page._loaded = True
-            autoload()
+            if not getattr(self, "simulation_mode", False):
+                autoload()
 
     def _fade_in(self, widget: QWidget | None) -> None:
         """Animated fade/rise when a page becomes visible.
@@ -1061,6 +1072,13 @@ class PremiumMainWindow(QMainWindow):
     def eventFilter(self, obj, event):  # noqa: N802
         """App-level filter that handles sidebar hover and frameless resize grip."""
         try:
+            try:
+                import shiboken6
+
+                if not shiboken6.isValid(self):
+                    return False
+            except Exception:
+                pass
             # Check sidebar hover detection first
             if (
                 hasattr(self, "_sidebar")
@@ -1228,6 +1246,11 @@ class PremiumMainWindow(QMainWindow):
         if self._tray is not None:
             self._tray.stop()
         self._shutdown_workers()
+        if hasattr(self, "_pages") and hasattr(self._pages, "clear"):
+            try:
+                self._pages.clear()
+            except Exception:
+                pass
         super().closeEvent(event)
 
     def _shutdown_workers(self) -> None:

@@ -212,7 +212,7 @@ def _enumerate_scheduled_tasks() -> List[StartupEntry]:
     """
     entries: List[StartupEntry] = []
     try:
-        rc = subprocess.run(["schtasks", "/Query", "/FO", "CSV", "/V"], capture_output=True, text=True, timeout=30)
+        rc = subprocess.run(["schtasks", "/Query", "/FO", "CSV", "/V"], capture_output=True, text=True, timeout=5)
         if rc.returncode == 0:
             for line in rc.stdout.splitlines()[1:]:
                 parts = [p.strip('"') for p in line.split('","')]
@@ -309,10 +309,14 @@ class StartupOptimizer:
         """
         entries: List[StartupEntry] = []
         for fn in (_enumerate_registry, _enumerate_startup_folders, _enumerate_scheduled_tasks):
+            if self.cancel.is_set():
+                return entries
             try:
                 entries.extend(fn())
             except Exception as exc:
                 self.progress(f"Enumerate failed {fn.__name__}: {exc}")
+        if self.cancel.is_set():
+            return entries
         # classify
         entries = [_classify_entry(e) for e in entries]
         # load persisted delays

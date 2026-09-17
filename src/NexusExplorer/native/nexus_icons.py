@@ -1717,7 +1717,7 @@ def folder_icon(name: str = "", size: int = 20, color: str = _CLR_DEFAULT) -> QI
     then generic golden folder, then inline Fluent fallback.
     """
     clean_name = name.lower().strip() if name else ""
-    if clean_name in ("c:", "d:", "e:", "f:", "c:\\", "d:\\", "e:\\", "f:\\") or clean_name.endswith(":"):
+    if (len(clean_name) <= 3 and ":" in clean_name) or clean_name.endswith(":"):
         ico = _material_icon("folder-windows", size)
         if not ico.isNull():
             return ico

@@ -862,10 +862,10 @@ def apply_theme(app: "QApplication", theme: str = "dark") -> Palette:
     if _HAS_QT and app is not None:
         load_fonts()
         base = QFont("Segoe UI", 10)
-        curr_style = app.style()
-        if curr_style is None or getattr(curr_style, "objectName", lambda: "")().lower() != "fusion":
+        if not getattr(app, "_fusion_style_installed", False):
             try:
                 app.setStyle("Fusion")  # consistent cross-platform base for QSS
+                app._fusion_style_installed = True
             except Exception:  # noqa: BLE001
                 pass
         app.setStyleSheet(build_stylesheet(palette))

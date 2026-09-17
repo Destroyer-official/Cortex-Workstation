@@ -762,7 +762,9 @@ class PagefileOptimizerPage(_Page):
         opt_row = QHBoxLayout()
         opt_row.addWidget(QLabel("Target Drive:"))
         self.drive_combo = QComboBox()
-        self.drive_combo.addItems(["C:", "D:", "E:"])
+        from cortex_unified.core.utils import get_available_drives
+
+        self.drive_combo.addItems(get_available_drives())
         opt_row.addWidget(self.drive_combo)
 
         opt_row.addWidget(QLabel("Initial (MB):"))

@@ -3,7 +3,7 @@
   "passed": 578,
   "failed": 0,
   "pass_rate_percent": 100.0,
-  "duration_seconds": 9.4,
+  "duration_seconds": 12.88,
   "python_runtime": "3.14.7",
   "files": [
     {
@@ -3722,7 +3722,7 @@
     },
     {
       "path": "src/cortex_unified/core/deleter.py",
-      "loc": 220,
+      "loc": 234,
       "syntax_ok": true,
       "compile_ok": true,
       "import_ok": true,
@@ -3852,7 +3852,7 @@
     },
     {
       "path": "src/cortex_unified/core/temp_cleaner.py",
-      "loc": 427,
+      "loc": 441,
       "syntax_ok": true,
       "compile_ok": true,
       "import_ok": true,
@@ -3871,7 +3871,7 @@
     },
     {
       "path": "src/cortex_unified/core/utils.py",
-      "loc": 860,
+      "loc": 888,
       "syntax_ok": true,
       "compile_ok": true,
       "import_ok": true,
@@ -3932,7 +3932,8 @@
         "get_app_root",
         "get_nexus_native_dir",
         "ensure_nexus_in_sys_path",
-        "get_resource_dir"
+        "get_resource_dir",
+        "get_available_drives"
       ]
     },
     {
@@ -4012,7 +4013,7 @@
     },
     {
       "path": "src/cortex_unified/engine/categories.py",
-      "loc": 980,
+      "loc": 976,
       "syntax_ok": true,
       "compile_ok": true,
       "import_ok": true,
@@ -6932,7 +6933,7 @@
     },
     {
       "path": "src/cortex_unified/system_tools/startup_optimizer.py",
-      "loc": 496,
+      "loc": 500,
       "syntax_ok": true,
       "compile_ok": true,
       "import_ok": true,
@@ -7687,7 +7688,7 @@
     },
     {
       "path": "src/cortex_unified/ui/premium/apex_tools_pages.py",
-      "loc": 1212,
+      "loc": 1214,
       "syntax_ok": true,
       "compile_ok": true,
       "import_ok": true,
@@ -8114,7 +8115,7 @@
     },
     {
       "path": "src/cortex_unified/ui/premium/focus.py",
-      "loc": 127,
+      "loc": 144,
       "syntax_ok": true,
       "compile_ok": true,
       "import_ok": true,
@@ -8240,7 +8241,7 @@
     },
     {
       "path": "src/cortex_unified/ui/premium/mft_slack_page.py",
-      "loc": 260,
+      "loc": 262,
       "syntax_ok": true,
       "compile_ok": true,
       "import_ok": true,
@@ -8282,7 +8283,7 @@
     },
     {
       "path": "src/cortex_unified/ui/premium/more_pages.py",
-      "loc": 3412,
+      "loc": 3413,
       "syntax_ok": true,
       "compile_ok": true,
       "import_ok": true,
@@ -8620,7 +8621,7 @@
     },
     {
       "path": "src/cortex_unified/ui/premium/power_suite_pages.py",
-      "loc": 1287,
+      "loc": 1289,
       "syntax_ok": true,
       "compile_ok": true,
       "import_ok": true,
@@ -9385,7 +9386,7 @@
     },
     {
       "path": "src/cortex_unified/ui/premium/window.py",
-      "loc": 3277,
+      "loc": 3300,
       "syntax_ok": true,
       "compile_ok": true,
       "import_ok": true,
@@ -9397,7 +9398,7 @@
         ],
         [
           "_LazyPageRegistry",
-          7
+          8
         ],
         [
           "_WorkerTaskSignals",
@@ -10642,7 +10643,7 @@
     },
     {
       "path": "src/NexusExplorer/native/nexus_core.py",
-      "loc": 1640,
+      "loc": 1658,
       "syntax_ok": true,
       "compile_ok": true,
       "import_ok": true,
@@ -10728,7 +10729,7 @@
     },
     {
       "path": "src/NexusExplorer/native/nexus_explorer.py",
-      "loc": 9513,
+      "loc": 9655,
       "syntax_ok": true,
       "compile_ok": true,
       "import_ok": true,
@@ -10764,7 +10765,7 @@
         ],
         [
           "_FolderSizeWorker",
-          2
+          3
         ],
         [
           "_TextPreviewReader",
@@ -10808,7 +10809,7 @@
         ],
         [
           "NexusClipboard",
-          10
+          12
         ],
         [
           "StagedItemRow",
@@ -10820,7 +10821,7 @@
         ],
         [
           "StagingShelfWidget",
-          16
+          18
         ],
         [
           "TransferStatusDock",
@@ -11679,7 +11680,7 @@
     },
     {
       "path": "tests/conftest.py",
-      "loc": 78,
+      "loc": 83,
       "syntax_ok": true,
       "compile_ok": true,
       "import_ok": true,
@@ -13511,7 +13512,7 @@
     },
     {
       "path": "tests/test_premium_gui.py",
-      "loc": 1624,
+      "loc": 1627,
       "syntax_ok": true,
       "compile_ok": true,
       "import_ok": true,
@@ -14075,14 +14076,14 @@
     },
     {
       "path": "tests/test_staging_shelf.py",
-      "loc": 511,
+      "loc": 539,
       "syntax_ok": true,
       "compile_ok": true,
       "import_ok": true,
       "error": null,
       "classes": [],
       "functions": [
-        "qapp",
+        "app",
         "test_nexus_clipboard_cut_copy_clear",
         "test_staging_shelf_widget_basic",
         "test_staging_shelf_paste_requested_signal",

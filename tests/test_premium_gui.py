@@ -38,12 +38,15 @@ def window(app):
     if not getattr(app, "_theme_applied", False):
         apply_theme(app, "dark")
         app._theme_applied = True
-    win = PremiumMainWindow("dark")
+    win = PremiumMainWindow("dark", simulation=True)
     win.resize(1180, 760)
     yield win
     win._force_quit = True
     win.close()
     win.deleteLater()
+    from PySide6.QtCore import QEvent
+
+    app.sendPostedEvents(None, QEvent.Type.DeferredDelete)
     app.processEvents()
     gc.collect()
 

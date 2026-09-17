@@ -1,7 +1,7 @@
 # Deep One-By-One Program File Verification Report
 
 > **Audited Files**: 578 | **Passed**: 578 | **Failed**: 0 | **Pass Rate**: 100.0%
-> **Verification Duration**: 9.40 seconds | **Python Runtime**: 3.14.7
+> **Verification Duration**: 12.88 seconds | **Python Runtime**: 3.14.7
 
 ## File-By-File Verification Results
 
@@ -602,7 +602,7 @@
   - **Classes (7)**: `Base` (0 methods), `ScanRun` (3 methods), `DeletedItem` (2 methods), `ScheduledJob` (1 methods)
   - **Functions (2)**: `get_database`, `db_session`
 
-- [ ] **146. [`src/cortex_unified/core/deleter.py`](src/cortex_unified/core/deleter.py)** — **✓ PASS** (220 LOC)
+- [ ] **146. [`src/cortex_unified/core/deleter.py`](src/cortex_unified/core/deleter.py)** — **✓ PASS** (234 LOC)
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Classes (1)**: `Deleter` (5 methods)
 
@@ -633,14 +633,14 @@
   - **Classes (1)**: `SmartSuggester` (11 methods)
   - **Functions (1)**: `featurize`
 
-- [ ] **153. [`src/cortex_unified/core/temp_cleaner.py`](src/cortex_unified/core/temp_cleaner.py)** — **✓ PASS** (427 LOC)
+- [ ] **153. [`src/cortex_unified/core/temp_cleaner.py`](src/cortex_unified/core/temp_cleaner.py)** — **✓ PASS** (441 LOC)
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Classes (2)**: `TempFinding` (0 methods), `TempCleaner` (9 methods)
 
-- [ ] **154. [`src/cortex_unified/core/utils.py`](src/cortex_unified/core/utils.py)** — **✓ PASS** (860 LOC)
+- [ ] **154. [`src/cortex_unified/core/utils.py`](src/cortex_unified/core/utils.py)** — **✓ PASS** (888 LOC)
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Classes (8)**: `DeepCleanerError` (1 methods), `DockerError` (0 methods), `VisualizationError` (0 methods), `HeuristicsError` (0 methods)
-  - **Functions (22)**: `get_system_excludes`, `is_system_directory`, `setup_logging`, `get_component_logger`, `log_operation_start`, `log_operation_end`
+  - **Functions (23)**: `get_system_excludes`, `is_system_directory`, `setup_logging`, `get_component_logger`, `log_operation_start`, `log_operation_end`
 
 - [ ] **155. [`src/cortex_unified/debug/__init__.py`](src/cortex_unified/debug/__init__.py)** — **✓ PASS** (15 LOC)
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
@@ -659,7 +659,7 @@
 - [ ] **159. [`src/cortex_unified/engine/__main__.py`](src/cortex_unified/engine/__main__.py)** — **✓ PASS** (8 LOC)
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
 
-- [ ] **160. [`src/cortex_unified/engine/categories.py`](src/cortex_unified/engine/categories.py)** — **✓ PASS** (980 LOC)
+- [ ] **160. [`src/cortex_unified/engine/categories.py`](src/cortex_unified/engine/categories.py)** — **✓ PASS** (976 LOC)
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Classes (2)**: `RiskLevel` (1 methods), `CleanupCategory` (1 methods)
   - **Functions (2)**: `default_categories`, `categories_by_id`
@@ -1193,7 +1193,7 @@
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Classes (1)**: `StartupManager` (18 methods)
 
-- [ ] **294. [`src/cortex_unified/system_tools/startup_optimizer.py`](src/cortex_unified/system_tools/startup_optimizer.py)** — **✓ PASS** (496 LOC)
+- [ ] **294. [`src/cortex_unified/system_tools/startup_optimizer.py`](src/cortex_unified/system_tools/startup_optimizer.py)** — **✓ PASS** (500 LOC)
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Classes (3)**: `AppType` (0 methods), `StartupEntry` (1 methods), `StartupOptimizer` (10 methods)
 
@@ -1330,7 +1330,7 @@
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Classes (22)**: `DiskAnalyzeWorker` (2 methods), `DiskHealthWorker` (1 methods), `ScheduledTasksWorker` (1 methods), `BootPerfWorker` (1 methods)
 
-- [ ] **328. [`src/cortex_unified/ui/premium/apex_tools_pages.py`](src/cortex_unified/ui/premium/apex_tools_pages.py)** — **✓ PASS** (1212 LOC)
+- [ ] **328. [`src/cortex_unified/ui/premium/apex_tools_pages.py`](src/cortex_unified/ui/premium/apex_tools_pages.py)** — **✓ PASS** (1214 LOC)
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Classes (10)**: `DriverStoreCleanerPage` (4 methods), `ShellbagsCleanerPage` (3 methods), `PowerPlanOptimizerPage` (4 methods), `HostsFileManagerPage` (3 methods)
 
@@ -1395,7 +1395,7 @@
   - **Classes (11)**: `LinksManagerPage` (4 methods), `FastCopierPage` (4 methods), `TimestampTouchPage` (3 methods), `ArchiveManagerPage` (5 methods)
   - **Functions (2)**: `PrimaryButton`, `SecondaryButton`
 
-- [ ] **344. [`src/cortex_unified/ui/premium/focus.py`](src/cortex_unified/ui/premium/focus.py)** — **✓ PASS** (127 LOC)
+- [ ] **344. [`src/cortex_unified/ui/premium/focus.py`](src/cortex_unified/ui/premium/focus.py)** — **✓ PASS** (144 LOC)
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Classes (1)**: `FocusVisibleFilter` (3 methods)
   - **Functions (1)**: `install_focus_visible`
@@ -1424,7 +1424,7 @@
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Classes (1)**: `MemoryStandbyPurgerPage` (7 methods)
 
-- [ ] **351. [`src/cortex_unified/ui/premium/mft_slack_page.py`](src/cortex_unified/ui/premium/mft_slack_page.py)** — **✓ PASS** (260 LOC)
+- [ ] **351. [`src/cortex_unified/ui/premium/mft_slack_page.py`](src/cortex_unified/ui/premium/mft_slack_page.py)** — **✓ PASS** (262 LOC)
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Classes (2)**: `_MftScrubWorker` (3 methods), `MftSlackScrubberPage` (6 methods)
 
@@ -1432,7 +1432,7 @@
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Classes (3)**: `_ScanWorker` (1 methods), `_CleanOrphansWorker` (2 methods), `ModelCachePage` (6 methods)
 
-- [ ] **353. [`src/cortex_unified/ui/premium/more_pages.py`](src/cortex_unified/ui/premium/more_pages.py)** — **✓ PASS** (3412 LOC)
+- [ ] **353. [`src/cortex_unified/ui/premium/more_pages.py`](src/cortex_unified/ui/premium/more_pages.py)** — **✓ PASS** (3413 LOC)
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Classes (21)**: `UpdaterListWorker` (1 methods), `UpgradeWorker` (2 methods), `DriveListWorker` (1 methods), `DriveOptimizeWorker` (2 methods)
 
@@ -1469,7 +1469,7 @@
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Classes (3)**: `_PortableWorker` (3 methods), `_UpdateWorker` (3 methods), `PortableManagerPage` (11 methods)
 
-- [ ] **362. [`src/cortex_unified/ui/premium/power_suite_pages.py`](src/cortex_unified/ui/premium/power_suite_pages.py)** — **✓ PASS** (1287 LOC)
+- [ ] **362. [`src/cortex_unified/ui/premium/power_suite_pages.py`](src/cortex_unified/ui/premium/power_suite_pages.py)** — **✓ PASS** (1289 LOC)
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Classes (10)**: `EnvVariableManagerPage` (4 methods), `WindowsServiceManagerPage` (3 methods), `FontCacheManagerPage` (3 methods), `TempFolderCleanerPage` (3 methods)
 
@@ -1589,9 +1589,9 @@
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Classes (2)**: `_Winapp2Worker` (3 methods), `Winapp2CleanerPage` (6 methods)
 
-- [ ] **390. [`src/cortex_unified/ui/premium/window.py`](src/cortex_unified/ui/premium/window.py)** — **✓ PASS** (3277 LOC)
+- [ ] **390. [`src/cortex_unified/ui/premium/window.py`](src/cortex_unified/ui/premium/window.py)** — **✓ PASS** (3300 LOC)
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
-  - **Classes (16)**: `_TitleBarChrome` (1 methods), `_LazyPageRegistry` (7 methods), `_WorkerTaskSignals` (0 methods), `_WorkerTaskRunnable` (2 methods)
+  - **Classes (16)**: `_TitleBarChrome` (1 methods), `_LazyPageRegistry` (8 methods), `_WorkerTaskSignals` (0 methods), `_WorkerTaskRunnable` (2 methods)
   - **Functions (4)**: `fmt_bytes`, `set_tab_order`, `ensure_focusable`, `run_modal`
 
 - [ ] **391. [`src/cortex_unified/ui/premium/workers.py`](src/cortex_unified/ui/premium/workers.py)** — **✓ PASS** (1070 LOC)
@@ -1790,7 +1790,7 @@
   - **Classes (4)**: `ContentMatch` (0 methods), `ContentSearchResult` (0 methods), `_ContentSearchWorker` (3 methods), `ContentSearchEngine` (4 methods)
   - **Functions (2)**: `is_searchable`, `search_file_content`
 
-- [ ] **440. [`src/NexusExplorer/native/nexus_core.py`](src/NexusExplorer/native/nexus_core.py)** — **✓ PASS** (1640 LOC)
+- [ ] **440. [`src/NexusExplorer/native/nexus_core.py`](src/NexusExplorer/native/nexus_core.py)** — **✓ PASS** (1658 LOC)
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Classes (9)**: `_CallMarshal` (0 methods), `_FfiJob` (2 methods), `Engine` (19 methods), `_SHFILEINFO` (0 methods)
   - **Functions (7)**: `find_cli`, `human`, `fmt_ms`, `marshal_call`, `create_nested_folder`, `create_nested_file`
@@ -1799,7 +1799,7 @@
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Classes (5)**: `DiffStatus` (0 methods), `SyncMode` (0 methods), `DiffEntry` (0 methods), `SyncStats` (1 methods)
 
-- [ ] **442. [`src/NexusExplorer/native/nexus_explorer.py`](src/NexusExplorer/native/nexus_explorer.py)** — **✓ PASS** (9513 LOC)
+- [ ] **442. [`src/NexusExplorer/native/nexus_explorer.py`](src/NexusExplorer/native/nexus_explorer.py)** — **✓ PASS** (9655 LOC)
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Classes (39)**: `DebugOverlay` (4 methods), `CrumbBar` (8 methods), `QuickLookPopup` (3 methods), `BulkRenameDialog` (5 methods)
 
@@ -1931,7 +1931,7 @@
 - [ ] **472. [`tests/__init__.py`](tests/__init__.py)** — **✓ PASS** (1 LOC)
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
 
-- [ ] **473. [`tests/conftest.py`](tests/conftest.py)** — **✓ PASS** (78 LOC)
+- [ ] **473. [`tests/conftest.py`](tests/conftest.py)** — **✓ PASS** (83 LOC)
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Functions (5)**: `temp_dir`, `test_env`, `clean_config`, `clean_qapp_event_filters`, `pytest_terminal_summary`
 
@@ -2223,7 +2223,7 @@
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Functions (12)**: `test_hash_computation`, `test_checksum_manifest_creation_and_verify`, `test_batch_renamer_tokens_and_case`, `test_directory_diff_and_sync`, `test_file_splitter_and_joiner`, `test_file_unlocker_inspect`
 
-- [ ] **543. [`tests/test_premium_gui.py`](tests/test_premium_gui.py)** — **✓ PASS** (1624 LOC)
+- [ ] **543. [`tests/test_premium_gui.py`](tests/test_premium_gui.py)** — **✓ PASS** (1627 LOC)
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Classes (1)**: `_CoopWorker` (1 methods)
   - **Functions (65)**: `app`, `window`, `test_stylesheet_builds_for_both_themes`, `test_all_pages_present`, `test_navigate_every_page`, `test_theme_toggle_does_not_crash`
@@ -2306,9 +2306,9 @@
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Functions (4)**: `test_filetime_conversion`, `test_srum_query`, `test_srum_bam_scan`, `test_clean_bam_empty`
 
-- [ ] **563. [`tests/test_staging_shelf.py`](tests/test_staging_shelf.py)** — **✓ PASS** (511 LOC)
+- [ ] **563. [`tests/test_staging_shelf.py`](tests/test_staging_shelf.py)** — **✓ PASS** (539 LOC)
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
-  - **Functions (15)**: `qapp`, `test_nexus_clipboard_cut_copy_clear`, `test_staging_shelf_widget_basic`, `test_staging_shelf_paste_requested_signal`, `test_preview_pane_with_staging_shelf`, `test_file_table_model_drag_mime_data`
+  - **Functions (15)**: `app`, `test_nexus_clipboard_cut_copy_clear`, `test_staging_shelf_widget_basic`, `test_staging_shelf_paste_requested_signal`, `test_preview_pane_with_staging_shelf`, `test_file_table_model_drag_mime_data`
 
 - [ ] **564. [`tests/test_startup_imports.py`](tests/test_startup_imports.py)** — **✓ PASS** (178 LOC)
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK

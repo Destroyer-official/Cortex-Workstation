@@ -46,7 +46,7 @@ Usage::
     h2 = fuzzy_hash_bytes(data2)
     score = fuzzy_compare(h1, h2)         # 0..100
 
-    finder = FuzzyDuplicateFinder(root_path="D:/bin", threshold=60.0)
+    finder = FuzzyDuplicateFinder(root_path="./bin", threshold=60.0)
     groups = finder.find_fuzzy_duplicates()
     # {group_id: [Path, ...]}
 

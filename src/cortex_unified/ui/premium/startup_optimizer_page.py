@@ -464,8 +464,8 @@ class StartupOptimizerPage(_Page):
         self._visible_entries: list = []
         self._worker = None
 
-        # Auto-scan on first show
-        self._run_scan()
+        # Initial idle state; user clicks Refresh to enumerate
+        self.state.show_empty("Click 'Refresh' to enumerate startup entries.")
 
     # -- scan ---------------------------------------------------------------
 

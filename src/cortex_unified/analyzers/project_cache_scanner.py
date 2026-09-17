@@ -210,7 +210,7 @@ class ProjectCacheScanner:
                         max_depth=None,
                     )
                 )
-            # Also do a shallow sweep of drive roots to catch stray projects outside D:\code
+            # Also do a shallow sweep of drive roots to catch stray projects outside standard code roots
             drive_roots = [r for r in _fixed_drive_roots() if r not in roots]
             for root in drive_roots:
                 if cancel_event and getattr(cancel_event, "is_set", lambda: False)():
@@ -305,8 +305,8 @@ class ProjectCacheScanner:
                 if name.startswith("."):
                     # Allow scanning for .cache/.cargo as patterns but don't descend into random hidden
                     if name not in self._pattern_map and not any(name.endswith(p) for p in self._pattern_map):
-                        # Still descend into e.g. D:\code\project\.venv? That starts with ., so we must NOT skip
-                        # Only skip truly hidden meta dirs like .git
+                        # Still descend into project .venv dirs that start with .
+                        # Only skip truly hidden VCS meta dirs like .git
                         if name in (".git", ".hg", ".svn"):
                             return True
             return False

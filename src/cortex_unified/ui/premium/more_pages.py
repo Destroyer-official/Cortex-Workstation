@@ -2160,7 +2160,8 @@ class ProjectCachesPage(_Page):
             candidates = [
                 Path.home() / "code",
                 Path.home() / "Projects",
-                Path.home() / "Main_projects",
+                Path.home() / "Development",
+                Path.home() / "Documents" / "Projects",
                 Path.home() / "source" / "repos",
                 Path.home() / "workspace",
             ]

@@ -28,7 +28,7 @@ agree to raise precision.
 
 The pipeline mirrors ``NearDuplicateFinder`` so it slots into the same UI:
 
-    finder = PerceptualDuplicateFinder(root_path="D:/Photos", max_distance=10)
+    finder = PerceptualDuplicateFinder(root_path="./Photos", max_distance=10)
     groups = finder.find_perceptual_duplicates()
     # {group_id: [Path, ...]}  – visually-similar photo groups (size >= 2)
 

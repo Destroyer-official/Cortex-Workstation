@@ -345,8 +345,6 @@ def _ai_ide_recording_dirs(home: Path) -> tuple[Path, ...]:
     candidates = [
         home / ".gemini" / "antigravity-ide" / "browser_recordings",
         home / ".gemini" / "antigravity-ide" / "brain",
-        Path("D:/tmp"),
-        Path("D:/code/.tmp"),
     ]
     out: list[Path] = []
     for p in candidates:
@@ -559,7 +557,7 @@ def _windows_categories() -> list[CleanupCategory]:
     cats: list[CleanupCategory] = []
 
     # 1. Temporary files (%TEMP% + Windows\Temp) -----------------------------
-    # Include secondary temp roots on D: (manual-clean hits: D:\tmp 3.86GB, D:\code\.tmp)
+    # Include secondary temp roots dynamically discovered across fixed drives
     extra_temps = _custom_temp_roots()
     temp_paths = _existing(
         {
@@ -757,8 +755,7 @@ def _windows_categories() -> list[CleanupCategory]:
             )
         )
     else:
-        # Register even when absent so UI can show the category with 0 size
-        # and let users pick D:\tmp manually. Use the would-be paths.
+        # Register even when absent so UI can show the category with 0 size.
         cats.append(
             CleanupCategory(
                 id="ai_ide_recordings",
@@ -769,7 +766,6 @@ def _windows_categories() -> list[CleanupCategory]:
                 paths=(
                     home / ".gemini" / "antigravity-ide" / "browser_recordings",
                     home / ".gemini" / "antigravity-ide" / "brain",
-                    Path("D:/tmp"),
                 ),
                 globs=(
                     "*.png",

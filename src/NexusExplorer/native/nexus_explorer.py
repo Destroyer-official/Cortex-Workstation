@@ -18,6 +18,7 @@ import os
 import shutil
 import subprocess
 import sys
+import threading
 import time
 import zipfile
 from datetime import datetime
@@ -1833,6 +1834,11 @@ class _FolderSizeWorker(QThread):
         """
         super().__init__()
         self._path = path
+        self._cancel = threading.Event()
+
+    def cancel(self):
+        """Request cancellation of size calculation."""
+        self._cancel.set()
 
     def run(self):
         """Walk the tree iteratively and emit sizes_done(path, total_bytes).
@@ -1844,10 +1850,12 @@ class _FolderSizeWorker(QThread):
         total = 0
         stack = [self._path]
         try:
-            while stack:
+            while stack and not self._cancel.is_set():
                 current = stack.pop()
                 try:
                     for entry in os.scandir(current):
+                        if self._cancel.is_set():
+                            break
                         try:
                             if entry.is_file(follow_symlinks=False):
                                 total += entry.stat(follow_symlinks=False).st_size
@@ -1859,11 +1867,11 @@ class _FolderSizeWorker(QThread):
                     continue
         except (PermissionError, OSError, ValueError):
             log.exception("folder-size worker failed for %s", self._path)
-        try:
-            self.sizes_done.emit(self._path, total)
-        except RuntimeError:
-            if not _SHUTTING_DOWN.is_set():
-                log.warning("sizes_done emit failed for %s", self._path)
+        if not self._cancel.is_set():
+            try:
+                self.sizes_done.emit(self._path, total)
+            except (RuntimeError, Exception):
+                pass
 
 
 class _TextPreviewReader(QThread):
@@ -2218,6 +2226,11 @@ class FolderSizeCalculator:
         """Cancel pending calculations (e.g. on navigate away)."""
         self._queue.clear()
         self._pending = 0
+        if self._thread is not None and hasattr(self._thread, "cancel"):
+            try:
+                self._thread.cancel()
+            except Exception:
+                pass
 
     def stop(self):
         """Stop active background operations.
@@ -2226,6 +2239,11 @@ class FolderSizeCalculator:
         """
         self._queue.clear()
         self._pending = 0
+        if self._thread is not None and hasattr(self._thread, "cancel"):
+            try:
+                self._thread.cancel()
+            except Exception:
+                pass
         if self._thread and self._thread.isRunning():
             self._thread.quit()
             self._thread.wait(2000)
@@ -2905,7 +2923,39 @@ class NexusClipboard(QObject):
         self._debounce_timer.setSingleShot(True)
         self._debounce_timer.setInterval(150)
         self._debounce_timer.timeout.connect(self._do_external_change)
+        try:
+            self.destroyed.connect(lambda *_: self._disconnect_clipboard())
+        except Exception:
+            pass
         self._get_clipboard()
+
+    def _disconnect_clipboard(self):
+        """Cleanly disconnect from the global system clipboard to avoid stale callbacks."""
+        try:
+            if hasattr(self, "_debounce_timer") and self._debounce_timer is not None:
+                self._debounce_timer.stop()
+        except Exception:
+            pass
+        try:
+            if getattr(self, "_connected", False):
+                self._connected = False
+                app = QApplication.instance()
+                if app is not None:
+                    clip = QApplication.clipboard()
+                    if clip is not None:
+                        try:
+                            clip.dataChanged.disconnect(self._on_data_changed)
+                        except Exception:
+                            pass
+        except Exception:
+            pass
+
+    def __del__(self):
+        """Destructor ensuring clean disconnection from the global clipboard."""
+        try:
+            self._disconnect_clipboard()
+        except Exception:
+            pass
 
     def _get_clipboard(self):
         """Return the system clipboard, connecting dataChanged once.
@@ -2961,6 +3011,12 @@ class NexusClipboard(QObject):
         """Clear staged mode and paths and emit an empty changed signal."""
         self._mode = None
         self._paths = []
+        try:
+            c = self._get_clipboard()
+            if c is not None:
+                c.clear()
+        except Exception:
+            pass
         self.changed.emit("", [])
 
     @property
@@ -2996,9 +3052,19 @@ class NexusClipboard(QObject):
 
     def _on_data_changed(self):
         """Debounce system-clipboard changes (150ms) before importing them."""
+        try:
+            import shiboken6
+
+            if not shiboken6.isValid(self):
+                return
+        except Exception:
+            pass
         if self._syncing:
             return
-        self._debounce_timer.start()
+        try:
+            self._debounce_timer.start()
+        except Exception:
+            pass
 
     def _do_external_change(self):
         """Import an externally-copied file set from the system clipboard.
@@ -3007,6 +3073,13 @@ class NexusClipboard(QObject):
         are existing paths. Imported data always becomes MODE_COPY and
         emits changed() only when the path list actually differs.
         """
+        try:
+            import shiboken6
+
+            if not shiboken6.isValid(self):
+                return
+        except Exception:
+            pass
         if self._syncing:
             return
         try:
@@ -3371,8 +3444,23 @@ class StagingShelfWidget(QFrame):
         self._update_style()
         self._update_ui_state()
 
-        # Connect to clipboard singleton
+        # Connect to clipboard singleton with auto-disconnect on destruction
         _nexus_clipboard.changed.connect(self.set_staged)
+        try:
+            self.destroyed.connect(lambda *_: self._disconnect_clipboard())
+        except Exception:
+            pass
+
+    def _disconnect_clipboard(self):
+        """Disconnect from clipboard singleton to prevent stale signal deliveries."""
+        try:
+            _nexus_clipboard.changed.disconnect(self.set_staged)
+        except Exception:
+            pass
+
+    def __del__(self):
+        """Destructor ensuring clean disconnection from clipboard singleton."""
+        self._disconnect_clipboard()
 
     def _update_style(self):
         """Swap the shelf frame style to highlight an active drag-over."""
@@ -3448,6 +3536,13 @@ class StagingShelfWidget(QFrame):
             mode (str): The mode parameter.
             paths (list[str]): Filesystem path to the target file or directory.
         """
+        try:
+            import shiboken6
+
+            if not shiboken6.isValid(self):
+                return
+        except Exception:
+            pass
         self._mode = "cut" if mode == "cut" else "copy"
         # Deduplicate & filter
         seen = set()
@@ -7216,6 +7311,15 @@ class ExplorerWidget(QWidget):
         Args:
             ev: The Qt event object.
         """
+        self._load_seq += 1
+        if hasattr(self, "_reload_timer"):
+            self._reload_timer.stop()
+        if hasattr(self, "_fps_timer"):
+            self._fps_timer.stop()
+        if hasattr(self, "_folder_sizes"):
+            self._folder_sizes.stop()
+        if hasattr(self, "_transfer_queue"):
+            self._transfer_queue.stop()
         if hasattr(self, "terminal_panel") and self.terminal_panel is not None:
             self.terminal_panel.shutdown()
         super().closeEvent(ev)
@@ -7381,6 +7485,13 @@ class ExplorerWidget(QWidget):
                 rows (list[dict]): Table row index or list of row indices.
                 _seq (int): The  seq parameter.
             """
+            try:
+                import shiboken6
+
+                if not shiboken6.isValid(self):
+                    return
+            except Exception:
+                return
             if _seq == self._load_seq:
                 self._on_rows(code, rows)
 
@@ -7393,6 +7504,13 @@ class ExplorerWidget(QWidget):
             code (int): The code parameter.
             rows (list[dict]): Table row index or list of row indices.
         """
+        try:
+            import shiboken6
+
+            if not shiboken6.isValid(self):
+                return
+        except Exception:
+            return
         self.model.update_rows(rows)
         self._update_status()
         self._log(f"Loaded {len(rows)} items (code={code})")
@@ -7485,6 +7603,13 @@ class ExplorerWidget(QWidget):
             path (str): Filesystem path to the target file or directory.
             size (int): Integer number of bytes to format or process.
         """
+        try:
+            import shiboken6
+
+            if not shiboken6.isValid(self):
+                return
+        except Exception:
+            return
         for row in self.model.rows:
             if row.get("path") == path:
                 row["folderSize"] = size
@@ -8391,8 +8516,18 @@ class ExplorerWidget(QWidget):
         Returns:
             list[dict]: List of processed items or identifiers.
         """
+        try:
+            import shiboken6
+
+            if not shiboken6.isValid(self):
+                return []
+        except Exception:
+            return []
         rows: list[dict] = []
-        src = sender or self.sender()
+        try:
+            src = sender or self.sender()
+        except RuntimeError:
+            src = sender
         if src in (self._right_table, self._right_icon_list):
             if self._right_stack.currentIndex() == 0:
                 for i in self._right_table.selectionModel().selectedRows():
@@ -8457,6 +8592,13 @@ class ExplorerWidget(QWidget):
         Args:
             sender: Widget or object originating the action.
         """
+        try:
+            import shiboken6
+
+            if not shiboken6.isValid(self):
+                return
+        except Exception:
+            return
         total = self.proxy.rowCount()
         folders = sum(1 for r in self.model.rows if r.get("isDir"))
         files = total - folders

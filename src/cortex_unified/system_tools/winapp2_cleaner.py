@@ -328,8 +328,8 @@ class Winapp2Cleaner:
             if resolved == protected.lower() or resolved == (protected.lower() + "\\"):
                 return False
 
-        # Must not be root drive (e.g. C:\)
-        if resolved in ("c:\\", "d:\\", "e:\\", "/"):
+        # Must not be root drive (e.g. C:\ or /)
+        if resolved == "/" or (len(resolved) <= 3 and (resolved.endswith(":\\") or resolved.endswith(":"))):
             return False
 
         return True

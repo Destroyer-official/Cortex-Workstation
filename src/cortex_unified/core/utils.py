@@ -858,3 +858,31 @@ def get_resource_dir(subpath: str = "") -> Path | None:
         except Exception:
             pass
     return None
+
+
+def get_available_drives() -> list[str]:
+    """Return all currently mounted drive letters on Windows (e.g. ['C:', 'D:']).
+
+    Uses the Windows GetLogicalDrives API if available, falling back to probing
+    mounted drive paths. Returns ['C:'] on non-Windows platforms or as a safe fallback.
+
+    Returns:
+        list[str]: Sorted list of uppercase drive letters with colons (e.g. ['C:', 'D:']).
+    """
+    if sys.platform != "win32":
+        return ["C:"]
+    drives: list[str] = []
+    try:
+        import ctypes
+
+        bitmask = ctypes.windll.kernel32.GetLogicalDrives()
+        for i in range(26):
+            if bitmask & (1 << i):
+                drives.append(f"{chr(65 + i)}:")
+    except Exception:
+        import string
+
+        for letter in string.ascii_uppercase:
+            if os.path.exists(f"{letter}:\\"):
+                drives.append(f"{letter}:")
+    return drives or ["C:"]

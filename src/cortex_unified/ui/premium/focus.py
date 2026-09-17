@@ -70,6 +70,13 @@ class FocusVisibleFilter(QObject):
             return False
         self._in_event_filter = True
         try:
+            try:
+                import shiboken6
+
+                if not shiboken6.isValid(obj):
+                    return False
+            except Exception:
+                pass
             et = event.type()
             if et == QEvent.Type.KeyPress:
                 if event.key() in _NAV_KEYS:
@@ -80,7 +87,7 @@ class FocusVisibleFilter(QObject):
                 self._set_visible(obj, self._keyboard)
             elif et == QEvent.Type.FocusOut:
                 self._set_visible(obj, False)
-        except Exception:  # noqa: BLE001 - focus assist must never crash the UI
+        except (RuntimeError, Exception):  # noqa: BLE001 - focus assist must never crash the UI
             pass
         finally:
             self._in_event_filter = False
@@ -94,17 +101,27 @@ class FocusVisibleFilter(QObject):
             obj: The obj parameter.
             visible (bool): The visible parameter.
         """
-        if not isinstance(obj, QWidget):
-            return
-        if bool(obj.property("focusVisible")) == bool(visible):
-            return
-        obj.setProperty("focusVisible", bool(visible))
-        # A dynamic property used in a QSS selector only takes effect after the
-        # widget is re-polished by its style.
-        style = obj.style()
-        if style is not None:
-            style.unpolish(obj)
-            style.polish(obj)
+        try:
+            if not isinstance(obj, QWidget):
+                return
+            try:
+                import shiboken6
+
+                if not shiboken6.isValid(obj):
+                    return
+            except Exception:
+                pass
+            if bool(obj.property("focusVisible")) == bool(visible):
+                return
+            obj.setProperty("focusVisible", bool(visible))
+            # A dynamic property used in a QSS selector only takes effect after the
+            # widget is re-polished by its style.
+            style = obj.style()
+            if style is not None:
+                style.unpolish(obj)
+                style.polish(obj)
+        except (RuntimeError, Exception):
+            pass
 
 
 def install_focus_visible(app: QApplication) -> None:

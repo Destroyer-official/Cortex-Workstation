@@ -950,7 +950,9 @@ class UsnJournalPage(_Page):
         row = QHBoxLayout()
         row.addWidget(QLabel("Target Volume:"))
         self.drive_combo = QComboBox()
-        self.drive_combo.addItems(["C:", "D:", "E:", "F:"])
+        from cortex_unified.core.utils import get_available_drives
+
+        self.drive_combo.addItems(get_available_drives())
         row.addWidget(self.drive_combo)
 
         self.query_btn = _PrimaryButton("Query USN Journal", self.p)

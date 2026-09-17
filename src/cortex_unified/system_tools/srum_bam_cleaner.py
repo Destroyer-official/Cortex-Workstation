@@ -93,7 +93,7 @@ class SrumBamReport:
 class SrumBamCleaner:
     """Forensic scanner and cleaner for Windows BAM/DAM and SRUM stores."""
 
-    SRUM_PATH = Path("C:\\Windows\\System32\\sru\\SRUDB.dat")
+    SRUM_PATH = Path(os.environ.get("SystemRoot", r"C:\Windows")) / "System32" / "sru" / "SRUDB.dat"
 
     @classmethod
     def _filetime_to_datetime(cls, ft_bytes: bytes) -> Tuple[str, float]:
