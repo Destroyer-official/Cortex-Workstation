@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://destroyer-official.github.io/Cortex-Workstation/sitemap.xml
