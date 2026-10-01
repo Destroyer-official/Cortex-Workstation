@@ -197,7 +197,10 @@ class Winapp2Report:
 class Winapp2Cleaner:
     """High-throughput declarative cleaner engine for Windows applications."""
 
-    # Explicit critical directories forbidden from being targeted
+    # Explicit critical directories forbidden from being targeted.
+    # Seeds use C: (harmless when the system lives elsewhere — they simply
+    # never match); :meth:`_all_protected_roots` extends them with the live
+    # system drive / env-resolved locations so non-C: systems are protected.
     PROTECTED_ROOTS = frozenset(
         [
             "C:\\Windows",
@@ -208,6 +211,32 @@ class Winapp2Cleaner:
             "C:\\Users",
         ]
     )
+
+    @classmethod
+    def _all_protected_roots(cls) -> set[str]:
+        """Seed roots plus env-resolved system locations for this machine.
+
+        Returns lowercase-comparable candidate root strings; callers compare
+        case-insensitively after resolving, so missing env vars simply add
+        nothing.
+        """
+        roots = set(cls.PROTECTED_ROOTS)
+        env = os.environ
+        sys_drive = (env.get("SystemDrive", "C:") or "C:").rstrip("\\/")
+        for candidate in (
+            env.get("SystemRoot"),
+            env.get("WINDIR"),
+            env.get("ProgramFiles"),
+            env.get("ProgramFiles(x86)"),
+            env.get("ProgramData") or env.get("ALLUSERSPROFILE"),
+            env.get("PUBLIC"),
+        ):
+            if candidate:
+                roots.add(candidate)
+        if sys_drive:
+            roots.add(sys_drive + "\\Windows")
+            roots.add(sys_drive + "\\Users")
+        return roots
 
     def __init__(self, custom_ini_content: Optional[str] = None) -> None:
         """Initialize Winapp2 Cleaner."""
@@ -324,7 +353,7 @@ class Winapp2Cleaner:
         except Exception:
             return False
 
-        for protected in self.PROTECTED_ROOTS:
+        for protected in self._all_protected_roots():
             if resolved == protected.lower() or resolved == (protected.lower() + "\\"):
                 return False
 

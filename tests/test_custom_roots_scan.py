@@ -207,5 +207,5 @@ class TestCleanupHubPageCustomRoots:
 
         page._custom_roots.clear()
         page._update_roots_status()
-        assert "Active Scan Roots: Default System Partitions" in page.target_roots_label.text()
+        assert "Active Scan Roots: Full Device" in page.target_roots_label.text()
         assert page.btn_clear_roots.isHidden()

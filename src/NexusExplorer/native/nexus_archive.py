@@ -30,6 +30,17 @@ log = logging.getLogger("nexus.archive")
 MAX_EXTRACT_SIZE = 10 * 1024 * 1024 * 1024  # 10 GB
 
 
+def _is_functional_7z(path: str) -> bool:
+    """Verify that path exists, is a file, and successfully runs."""
+    if not path or not os.path.isfile(path):
+        return False
+    try:
+        proc = subprocess.run([path, "i"], capture_output=True, timeout=5)
+        return proc.returncode == 0
+    except Exception:
+        return False
+
+
 def _get_7z_search_paths() -> list[str]:
     """Build candidate 7z.exe paths from Program Files-style env vars
     (including LOCALAPPDATA\\Programs) and the standard install dirs on
@@ -45,6 +56,13 @@ def _get_7z_search_paths() -> list[str]:
                 paths.append(str(Path(val) / "7-Zip" / "7z.exe"))
                 paths.append(str(Path(val) / "AMD" / "CIM" / "Bin64" / "7z.exe"))
                 paths.append(str(Path(val) / "AMD" / "CNext" / "CNext" / "7z.exe"))
+    # Scoop paths
+    try:
+        home = Path.home()
+        paths.append(str(home / "scoop" / "apps" / "7zip" / "current" / "7z.exe"))
+        paths.append(str(home / "scoop" / "shims" / "7z.exe"))
+    except Exception:
+        pass
     # Check all active fixed drives
     try:
         import string
@@ -82,21 +100,22 @@ def _find_7z() -> str | None:
     with _7z_lock:
         if _7z_checked:
             return _7z_exe
-        _7z_checked = True
 
-        # 1. Check PATH
+        # 1. Check known install paths first (and validate)
+        for p in _get_7z_search_paths():
+            if _is_functional_7z(p):
+                _7z_exe = p
+                _7z_checked = True
+                return _7z_exe
+
+        # 2. Check PATH (and validate)
         import shutil
 
-        found = shutil.which("7z")
-        if found:
+        found = shutil.which("7z") or shutil.which("7z.exe")
+        if found and _is_functional_7z(found):
             _7z_exe = found
+            _7z_checked = True
             return _7z_exe
-
-        # 2. Check known install paths
-        for p in _get_7z_search_paths():
-            if os.path.isfile(p):
-                _7z_exe = p
-                return _7z_exe
 
         # 3. Check registry
         try:
@@ -107,20 +126,22 @@ def _find_7z() -> str | None:
                     key = winreg.OpenKey(hive, r"SOFTWARE\7-Zip")
                     val, _ = winreg.QueryValueEx(key, "Path")
                     exe = os.path.join(val, "7z.exe")
-                    if os.path.isfile(exe):
+                    if _is_functional_7z(exe):
                         _7z_exe = exe
+                        _7z_checked = True
                         return _7z_exe
                 except OSError:
                     pass
         except ImportError:
             pass
 
-        log.warning("7z.exe not found — archive operations unavailable")
+        _7z_checked = True
+        log.warning("7z.exe not found — archive operations will use native fallback")
         return None
 
 
 def is_7z_available() -> bool:
-    """Return True when a 7z.exe installation was found."""
+    """Return True when a functional 7z.exe installation was found."""
     return _find_7z() is not None
 
 
@@ -281,13 +302,16 @@ def _parse_7z_list(output: str) -> list[ArchiveEntry]:
     for line in lines:
         stripped = line.strip()
 
-        # Detect data section start (line of dashes)
+        # Detect data section start/end (line of dashes)
         if stripped.startswith("---") and len(stripped) > 10:
+            if in_data:
+                # Reached closing dashes before summary: end of data entries
+                break
             in_data = True
             continue
 
         # Detect summary section
-        if in_data and (stripped.startswith("Ranges") or stripped.startswith("-----")):
+        if in_data and stripped.startswith("Ranges"):
             break
 
         if not in_data:
@@ -420,7 +444,11 @@ def _run_7z(
     encoding: str = "utf-8",
 ) -> tuple[int, str, str]:
     """Run 7z.exe with args. Returns (returncode, stdout, stderr)."""
-    cmd = [_7z()]
+    exe = _7z()
+    # If caller included 7z executable in args, strip it
+    if args and (args[0] == exe or Path(args[0]).name.lower() in ("7z.exe", "7z")):
+        args = args[1:]
+    cmd = [exe]
     if password:
         cmd.append(f"-p{password}")
     cmd.append("-y")  # overwrite without prompt
@@ -601,12 +629,158 @@ class SevenZipCLIReader:
         """Drop the cached entry list so the next list_entries re-parses."""
         self._entries = None
 
+    def close(self) -> None:
+        """Close the reader and release cached data."""
+        self.clear_cache()
+
+
+def _archive_stem(path: str | Path) -> str:
+    """Return the clean folder stem for an archive, stripping compound extensions like .tar.gz."""
+    name = Path(path).name
+    lower = name.lower()
+    for compound in (
+        ".tar.gz",
+        ".tar.bz2",
+        ".tar.xz",
+        ".tar.zst",
+        ".tar.lz4",
+        ".tar.lz",
+        ".tar.sz",
+    ):
+        if lower.endswith(compound):
+            return name[: -len(compound)]
+    return Path(path).stem
+
+
+class TarArchiveReader:
+    """Universal tar archive reader using Python's standard tarfile module.
+
+    Supports .tar, .tar.gz, .tgz, .tar.bz2, .tbz2, .tar.xz, .txz directly.
+    Provides the same list_entries(), extract_entry(), extract_all(), close() API as SevenZipCLIReader.
+    """
+
+    def __init__(self, path: str, password: str = ""):
+        """Open a tar archive for reading; raises FileNotFoundError when unreadable."""
+        self._path = path
+        self._password = password
+        self._entries: list[ArchiveEntry] | None = None
+        import tarfile
+
+        try:
+            with tarfile.open(self._path, "r:*"):
+                pass
+        except Exception as e:
+            raise FileNotFoundError(f"Cannot open tar archive {path}: {e}")
+
+    def list_entries(self) -> list[ArchiveEntry]:
+        """List archive members as ArchiveEntry items (cached after first walk)."""
+        if self._entries is not None:
+            return self._entries
+
+        import tarfile
+
+        entries: list[ArchiveEntry] = []
+        try:
+            with tarfile.open(self._path, "r:*") as tf:
+                for m in tf.getmembers():
+                    norm_path = m.name.replace("\\", "/").lstrip("/")
+                    if m.isdir() and not norm_path.endswith("/"):
+                        norm_path += "/"
+                    name = Path(norm_path.rstrip("/")).name
+                    entries.append(
+                        ArchiveEntry(
+                            archive_path=norm_path,
+                            name=name,
+                            is_dir=m.isdir(),
+                            size=m.size,
+                            modified_ms=int(m.mtime * 1000),
+                        )
+                    )
+        except Exception as e:
+            log.warning("Tar list failed for %s: %s", self._path, e)
+
+        self._entries = entries
+        return entries
+
+    def extract_entry(self, entry_path: str, dest_path: str) -> bool:
+        """Extract one tar member to dest_path; returns True on success, False otherwise."""
+        import tarfile
+
+        validate_extract_path(dest_path, entry_path)
+        os.makedirs(dest_path, exist_ok=True)
+        try:
+            with tarfile.open(self._path, "r:*") as tf:
+                clean_target = entry_path.replace("\\", "/").strip("/")
+                matched = None
+                for m in tf.getmembers():
+                    if m.name.replace("\\", "/").strip("/") == clean_target:
+                        matched = m
+                        break
+                if matched:
+                    if hasattr(tarfile, "data_filter"):
+                        tf.extract(matched, dest_path, filter="data")
+                    else:
+                        tf.extract(matched, dest_path)
+                    return True
+                return False
+        except Exception as e:
+            log.warning("Tar extract failed for %s: %s", entry_path, e)
+            return False
+
+    def extract_all(self, dest_dir: str) -> bool:
+        """Extract all tar members to dest_dir; returns True on success, False otherwise."""
+        import tarfile
+
+        os.makedirs(dest_dir, exist_ok=True)
+        try:
+            with tarfile.open(self._path, "r:*") as tf:
+                if hasattr(tarfile, "data_filter"):
+                    tf.extractall(dest_dir, filter="data")
+                else:
+                    tf.extractall(dest_dir)
+            return True
+        except Exception as e:
+            log.warning("Tar extractall failed: %s", e)
+            return False
+
+    def get_info(self) -> ArchiveInfo:
+        """Summarize tar contents as ArchiveInfo (entry count, total/compressed size)."""
+        entries = self.list_entries()
+        total_size = sum(e.size for e in entries)
+        try:
+            compressed = os.path.getsize(self._path)
+        except OSError:
+            compressed = total_size
+        return ArchiveInfo(
+            path=self._path,
+            archive_type=detect_archive_type(self._path),
+            total_entries=len(entries),
+            total_size=total_size,
+            compressed_size=compressed,
+            is_encrypted=False,
+        )
+
+    def clear_cache(self) -> None:
+        """Drop the cached member list so the next read re-walks the archive."""
+        self._entries = None
+
+    def close(self) -> None:
+        """Release cached state for this reader (no open handles are held)."""
+        self.clear_cache()
+
 
 # ── Factory ─────────────────────────────────────────────────────────────────
 
 
-def open_archive(path: str, password: str = "") -> SevenZipCLIReader | None:
-    """Open an archive for reading via 7z.exe. Returns None on failure."""
+def open_archive(path: str, password: str = "") -> SevenZipCLIReader | TarArchiveReader | None:
+    """Open an archive for reading. Uses native tarfile for compound tarballs, or 7z.exe."""
+    lower = path.lower()
+    if lower.endswith((".tar.gz", ".tgz", ".tar.bz2", ".tbz2", ".tar.xz", ".txz", ".tar")):
+        try:
+            return TarArchiveReader(path, password)
+        except Exception as e:
+            log.debug("TarArchiveReader failed for %s: %s; falling back to 7z", path, e)
+
     if not is_7z_available():
         log.warning("7z.exe not available — cannot open %s", path)
         return None
@@ -616,6 +790,18 @@ def open_archive(path: str, password: str = "") -> SevenZipCLIReader | None:
     except Exception as e:
         log.warning("Failed to open archive %s: %s", path, e)
         return None
+
+
+def create_archive(
+    archive_path: str,
+    files: list[str],
+    format: str = "zip",
+    compression: str = "normal",
+    password: str = "",
+) -> bool:
+    """Convenience helper to create an archive via ArchiveManager."""
+    mgr = ArchiveManager()
+    return mgr.create_archive(archive_path, files, format=format, compression=compression, password=password)
 
 
 # ── Background extraction (QThread) ────────────────────────────────────────
@@ -797,7 +983,7 @@ class ArchiveManager(QObject):
         compression: str = "normal",
         password: str = "",
     ) -> bool:
-        """Create an archive via 7z.exe."""
+        """Create an archive via 7z.exe with native fallback for zip/tar."""
         if not files:
             return False
 
@@ -806,25 +992,75 @@ class ArchiveManager(QObject):
             log.warning("Source files not found: %s", missing)
             return False
 
-        cmd = [_7z(), "a", archive_path]
+        fmt = format.lower()
+
+        # For tar.gz / tgz, native tarfile creates genuine gzip archives in one step
+        if fmt in ("tar.gz", "tgz") and not password:
+            import tarfile
+
+            try:
+                with tarfile.open(archive_path, "w:gz") as tf:
+                    for f in files:
+                        fp = Path(f)
+                        tf.add(fp, arcname=fp.name)
+                return True
+            except Exception as e:
+                log.error("Native tar.gz creation failed: %s", e)
+                return False
+
+        # Native fallback if 7z.exe is not available
+        if not is_7z_available():
+            if fmt == "zip" and not password:
+                import zipfile
+
+                try:
+                    with zipfile.ZipFile(archive_path, "w", compression=zipfile.ZIP_DEFLATED) as zf:
+                        for f in files:
+                            fp = Path(f)
+                            if fp.is_file():
+                                zf.write(fp, fp.name)
+                            elif fp.is_dir():
+                                for root, _, filenames in os.walk(fp):
+                                    for fn in filenames:
+                                        ffp = Path(root) / fn
+                                        zf.write(ffp, str(ffp.relative_to(fp.parent)))
+                    return True
+                except Exception as e:
+                    log.error("Native zip creation failed: %s", e)
+                    return False
+            elif fmt in ("tar", "tar.bz2", "tar.xz") and not password:
+                import tarfile
+
+                mode_map = {"tar": "w", "tar.bz2": "w:bz2", "tar.xz": "w:xz"}
+                mode = mode_map.get(fmt, "w")
+                try:
+                    with tarfile.open(archive_path, mode) as tf:
+                        for f in files:
+                            fp = Path(f)
+                            tf.add(fp, arcname=fp.name)
+                    return True
+                except Exception as e:
+                    log.error("Native tar creation failed: %s", e)
+                    return False
+            else:
+                log.warning("7z.exe not available for format: %s", format)
+                return False
+
+        cmd = ["a", archive_path]
         if password:
             cmd.append(f"-p{password}")
 
         # Format-specific compression
-        fmt = format.lower()
         if fmt == "7z":
             cmd.extend(["-t7z", f"-mx={_compression_level(compression)}"])
         elif fmt == "zip":
             cmd.extend(["-tzip", f"-mx={_compression_level(compression)}"])
-        elif fmt in ("tar", "tar.gz", "tgz", "tar.bz2", "tar.xz"):
-            tar_fmt = {
-                "tar": "tar",
-                "tar.gz": "tar.gz",
-                "tgz": "tar.gz",
-                "tar.bz2": "tar.bz2",
-                "tar.xz": "tar.xz",
-            }[fmt]
-            cmd.extend([f"-t{tar_fmt}"])
+        elif fmt == "tar":
+            cmd.extend(["-ttar"])
+        elif fmt in ("tar.bz2", "tbz2"):
+            cmd.extend(["-ttar.bz2"])
+        elif fmt in ("tar.xz", "txz"):
+            cmd.extend(["-ttar.xz"])
         elif fmt == "rar":
             cmd.extend(["-trar", f"-mx={_compression_level(compression)}"])
         else:
@@ -835,6 +1071,23 @@ class ArchiveManager(QObject):
         rc, out, err = _run_7z(cmd, timeout=600)
         if rc not in (0, 1):
             log.warning("7z create failed: %s", err)
+            if fmt == "zip" and not password:
+                import zipfile
+
+                try:
+                    with zipfile.ZipFile(archive_path, "w", compression=zipfile.ZIP_DEFLATED) as zf:
+                        for f in files:
+                            fp = Path(f)
+                            if fp.is_file():
+                                zf.write(fp, fp.name)
+                            elif fp.is_dir():
+                                for root, _, filenames in os.walk(fp):
+                                    for fn in filenames:
+                                        ffp = Path(root) / fn
+                                        zf.write(ffp, str(ffp.relative_to(fp.parent)))
+                    return True
+                except Exception as e2:
+                    log.error("Native zip fallback failed: %s", e2)
             return False
         return True
 

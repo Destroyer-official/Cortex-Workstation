@@ -1936,16 +1936,14 @@ class _ExtractArchiveWorker(QThread):
         """
         super().__init__()
         self._tasks = tasks
+        self._is_cancelled = False
+
+    def cancel(self):
+        """Cancel the extraction operation."""
+        self._is_cancelled = True
 
     def run(self):
-        """Extract each archive with 7z, parsing stdout for live progress.
-
-        Runs ``7z x <archive> -o<dest> -aoa -mmt=on -bsp1 -bso0`` and reads
-        stdout byte-by-byte, parsing percent lines into progress_update
-        signals. Stops at the first failure (non-zero/one exit code) and
-        emits finished_with_result(False, stderr/exception snippet);
-        otherwise emits (True, "N files extracted") after all tasks.
-        """
+        """Extract each archive with 7z (or native fallback for zip/tar), parsing stdout for live progress."""
         from nexus_archive import _find_7z
         import re
 
@@ -1953,11 +1951,55 @@ class _ExtractArchiveWorker(QThread):
         file_count = 0
 
         for archive_path, dest_dir in self._tasks:
+            if self._is_cancelled:
+                self.finished_with_result.emit(False, "Extraction cancelled")
+                return
             os.makedirs(dest_dir, exist_ok=True)
             exe = _find_7z()
-            if not exe:
-                self.finished_with_result.emit(False, "7z.exe not found")
-                return
+            ext = Path(archive_path).name.lower()
+            if ext.endswith((".tar", ".tar.gz", ".tgz", ".tar.bz2", ".tbz2", ".tar.xz", ".txz")):
+                try:
+                    import tarfile
+
+                    with tarfile.open(archive_path, "r:*") as tf:
+                        members = tf.getmembers()
+                        tot = len(members)
+                        for idx, m in enumerate(members):
+                            if self._is_cancelled:
+                                self.finished_with_result.emit(False, "Extraction cancelled")
+                                return
+                            tf.extract(m, dest_dir, filter="data" if hasattr(tarfile, "data_filter") else None)
+                            file_count += 1
+                            pct = int((idx + 1) / tot * 100) if tot else 100
+                            self.progress_update.emit(pct, m.name, file_count, 0)
+                    continue
+                except Exception as e:
+                    if not exe:
+                        self.finished_with_result.emit(False, f"Native TAR extract error: {e}")
+                        return
+            elif not exe:
+                if ext.endswith(".zip"):
+                    try:
+                        import zipfile
+
+                        with zipfile.ZipFile(archive_path, "r") as zf:
+                            members = zf.infolist()
+                            tot = len(members)
+                            for idx, m in enumerate(members):
+                                if self._is_cancelled:
+                                    self.finished_with_result.emit(False, "Extraction cancelled")
+                                    return
+                                zf.extract(m, dest_dir)
+                                file_count += 1
+                                pct = int((idx + 1) / tot * 100) if tot else 100
+                                self.progress_update.emit(pct, m.filename, file_count, 0)
+                        continue
+                    except Exception as e:
+                        self.finished_with_result.emit(False, f"Native ZIP extract error: {e}")
+                        return
+                else:
+                    self.finished_with_result.emit(False, "7z.exe not found")
+                    return
 
             cmd = [exe, "x", archive_path, f"-o{dest_dir}", "-aoa", "-mmt=on", "-bsp1", "-bso0"]
             try:
@@ -1969,6 +2011,10 @@ class _ExtractArchiveWorker(QThread):
 
                 buf = b""
                 while True:
+                    if self._is_cancelled:
+                        proc.kill()
+                        self.finished_with_result.emit(False, "Extraction cancelled")
+                        return
                     ch = proc.stdout.read(1)
                     if not ch:
                         break
@@ -1988,11 +2034,44 @@ class _ExtractArchiveWorker(QThread):
                     else:
                         buf += ch
 
-                proc.wait()
+                _, stderr_data = proc.communicate()
                 success = proc.returncode in (0, 1)
                 if not success:
-                    err = proc.stderr.read().decode("utf-8", errors="replace").strip()
-                    self.finished_with_result.emit(False, err[:200])
+                    err = (stderr_data or b"").decode("utf-8", errors="replace").strip()
+                    # If 7z failed, try native fallback for zip/tar
+                    ext = Path(archive_path).name.lower()
+                    if ext.endswith(".zip"):
+                        try:
+                            import zipfile
+
+                            with zipfile.ZipFile(archive_path, "r") as zf:
+                                members = zf.infolist()
+                                tot = len(members)
+                                for idx, m in enumerate(members):
+                                    zf.extract(m, dest_dir)
+                                    file_count += 1
+                                    pct = int((idx + 1) / tot * 100) if tot else 100
+                                    self.progress_update.emit(pct, m.filename, file_count, 0)
+                            continue
+                        except Exception:
+                            pass
+                    elif ext.endswith((".tar", ".tar.gz", ".tgz", ".tar.bz2", ".tbz2", ".tar.xz", ".txz")):
+                        try:
+                            import tarfile
+
+                            with tarfile.open(archive_path, "r:*") as tf:
+                                members = tf.getmembers()
+                                tot = len(members)
+                                for idx, m in enumerate(members):
+                                    tf.extract(m, dest_dir, filter="data" if hasattr(tarfile, "data_filter") else None)
+                                    file_count += 1
+                                    pct = int((idx + 1) / tot * 100) if tot else 100
+                                    self.progress_update.emit(pct, m.name, file_count, 0)
+                            continue
+                        except Exception:
+                            pass
+
+                    self.finished_with_result.emit(False, (err or "Extraction failed")[:200])
                     return
             except Exception as e:
                 self.finished_with_result.emit(False, str(e)[:200])
@@ -2002,7 +2081,7 @@ class _ExtractArchiveWorker(QThread):
 
 
 class _ExtractEntryWorker(QThread):
-    """QThread extracting selected archive entries via 7z."""
+    """QThread extracting selected archive entries via 7z or native zipfile."""
 
     progress_update = Signal(int, str, int, int)
     finished_with_result = Signal(bool, str)
@@ -2025,13 +2104,7 @@ class _ExtractEntryWorker(QThread):
         self._password = password
 
     def run(self):
-        """Extract each named entry with 7z, reporting overall progress.
-
-        Spawns one 7z process per entry (with ``-p<password>`` when set) and
-        combines each entry's parsed percent into an overall percent across
-        all entries. Emits finished_with_result(False, ...) and stops on the
-        first error; otherwise (True, "N entries extracted").
-        """
+        """Extract each named entry with 7z, reporting overall progress."""
         from nexus_archive import _find_7z
         import re
 
@@ -2045,7 +2118,39 @@ class _ExtractEntryWorker(QThread):
             self.progress_update.emit(pct, ep, done, 0)
 
             exe = _find_7z()
-            if not exe:
+            lower_arc = self._archive_path.lower()
+            if lower_arc.endswith((".tar", ".tar.gz", ".tgz", ".tar.bz2", ".tbz2", ".tar.xz", ".txz")):
+                try:
+                    import tarfile
+
+                    with tarfile.open(self._archive_path, "r:*") as tf:
+                        clean_target = ep.replace("\\", "/").strip("/")
+                        matched = None
+                        for m in tf.getmembers():
+                            if m.name.replace("\\", "/").strip("/") == clean_target:
+                                matched = m
+                                break
+                        if matched:
+                            if hasattr(tarfile, "data_filter"):
+                                tf.extract(matched, self._dest_dir, filter="data")
+                            else:
+                                tf.extract(matched, self._dest_dir)
+                    continue
+                except Exception as e:
+                    if not exe:
+                        self.finished_with_result.emit(False, str(e)[:200])
+                        return
+            elif not exe:
+                if lower_arc.endswith(".zip"):
+                    try:
+                        import zipfile
+
+                        with zipfile.ZipFile(self._archive_path, "r") as zf:
+                            zf.extract(ep, self._dest_dir)
+                            continue
+                    except Exception as e:
+                        self.finished_with_result.emit(False, str(e)[:200])
+                        return
                 self.finished_with_result.emit(False, "7z.exe not found")
                 return
 
@@ -2071,7 +2176,7 @@ class _ExtractEntryWorker(QThread):
                         buf = b""
                     else:
                         buf += ch
-                proc.wait()
+                proc.communicate()
             except Exception as e:
                 self.finished_with_result.emit(False, str(e)[:200])
                 return
@@ -2080,40 +2185,71 @@ class _ExtractEntryWorker(QThread):
 
 
 class _CompressWorker(QThread):
-    """QThread running a 7z compress command with progress signals."""
+    """QThread running archive compression with progress signals (7z CLI + native fallback)."""
 
     progress_update = Signal(int, str, int, int)
     finished_with_result = Signal(bool, str)
 
-    def __init__(self, cmd, name):
-        """Store the fully-built 7z command line and the archive display name.
+    def __init__(
+        self,
+        cmd: list[str] | None = None,
+        name: str = "",
+        temp_file_path: str | None = None,
+        sources: list[str] | None = None,
+        archive_path: str = "",
+        fmt: str = "ZIP",
+    ):
+        """Store compression configuration and inputs.
 
-        Initializes the instance and configures internal state.
-
-        Args:
-            cmd: The cmd parameter.
-            name: The name parameter.
+        Supports running a 7z command or native Python compression via
+        zipfile/tarfile.
         """
         super().__init__()
         self._cmd = cmd
         self._name = name
+        self._temp_file_path = temp_file_path
+        self._sources = sources or []
+        self._archive_path = archive_path
+        self._fmt = fmt.upper()
+        self._proc: subprocess.Popen | None = None
+        self._is_cancelled = False
+
+    def cancel(self):
+        """Cancel compression by terminating child process or setting cancel flag."""
+        self._is_cancelled = True
+        if self._proc:
+            try:
+                self._proc.kill()
+            except OSError:
+                pass
 
     def run(self):
-        """Run the 7z command, parsing stdout percents into progress signals.
+        """Run compression (7z CLI or native Python zipfile/tarfile)."""
+        if self._cmd:
+            self._run_7z()
+        else:
+            self._run_native()
 
-        Splits "pct% + filename" lines to report each added file. Emits
-        finished_with_result with (True, "Created <name>") on exit codes
-        0/1, else a failure message; exceptions emit (False, error text).
-        """
+    def _run_7z(self):
+        """Stream 7z CLI progress and report completion or cancellation."""
         import re
 
         progress_re = re.compile(r"^\s*(\d+)%")
         try:
-            proc = subprocess.Popen(self._cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            self._proc = subprocess.Popen(
+                self._cmd,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+            )
             buf = b""
             count = 0
             while True:
-                ch = proc.stdout.read(1)
+                if self._is_cancelled:
+                    if self._proc:
+                        self._proc.kill()
+                    self.finished_with_result.emit(False, "Compression cancelled")
+                    return
+                ch = self._proc.stdout.read(1)
                 if not ch:
                     break
                 if ch in (b"\r", b"\n"):
@@ -2131,11 +2267,89 @@ class _CompressWorker(QThread):
                     buf = b""
                 else:
                     buf += ch
-            proc.wait()
-            ok = proc.returncode in (0, 1)
-            self.finished_with_result.emit(ok, f"Created {self._name}" if ok else "Compression failed")
+
+            _, stderr_data = self._proc.communicate()
+            err_text = (stderr_data or b"").decode("utf-8", errors="replace").strip()
+            ok = self._proc.returncode in (0, 1)
+
+            if ok:
+                self.finished_with_result.emit(True, f"Created {self._name}")
+                return
+
+            # If 7z failed and we have sources for ZIP or TAR.GZ, try native fallback
+            if self._sources and self._archive_path and self._fmt in ("ZIP", "TAR.GZ"):
+                log.warning("7z compression failed (%s); trying native fallback", err_text)
+                self._run_native()
+                return
+
+            msg = f"7-Zip compression failed ({err_text[:120]})" if err_text else "Compression failed"
+            self.finished_with_result.emit(False, msg)
         except Exception as e:
+            if self._sources and self._archive_path and self._fmt in ("ZIP", "TAR.GZ"):
+                log.warning("7z exception (%s); trying native fallback", e)
+                self._run_native()
+                return
             self.finished_with_result.emit(False, str(e)[:200])
+        finally:
+            self._proc = None
+            if self._temp_file_path:
+                try:
+                    if os.path.exists(self._temp_file_path):
+                        os.unlink(self._temp_file_path)
+                except OSError:
+                    pass
+
+    def _run_native(self):
+        """Native archive compression using Python zipfile/tarfile."""
+        out_p = Path(self._archive_path).resolve()
+        out_p.parent.mkdir(parents=True, exist_ok=True)
+
+        files_to_add: list[tuple[Path, str]] = []
+        for s in self._sources:
+            sp = Path(s).resolve()
+            if not sp.exists():
+                continue
+            if sp.is_file():
+                files_to_add.append((sp, sp.name))
+            elif sp.is_dir():
+                for root, _, files in os.walk(sp):
+                    for f in files:
+                        fp = Path(root) / f
+                        rel_arc = fp.relative_to(sp.parent)
+                        files_to_add.append((fp, str(rel_arc)))
+
+        total_files = len(files_to_add)
+        if total_files == 0:
+            self.finished_with_result.emit(False, "No files found to archive")
+            return
+
+        try:
+            if self._fmt == "ZIP":
+                import zipfile
+
+                with zipfile.ZipFile(out_p, "w", compression=zipfile.ZIP_DEFLATED, compresslevel=6) as zf:
+                    for idx, (src_file, arcname) in enumerate(files_to_add):
+                        if self._is_cancelled:
+                            self.finished_with_result.emit(False, "Compression cancelled")
+                            return
+                        zf.write(src_file, arcname)
+                        pct = int((idx + 1) / total_files * 100)
+                        self.progress_update.emit(pct, src_file.name, idx + 1, total_files)
+            else:  # TAR.GZ
+                import tarfile
+
+                with tarfile.open(out_p, "w:gz") as tf:
+                    for idx, (src_file, arcname) in enumerate(files_to_add):
+                        if self._is_cancelled:
+                            self.finished_with_result.emit(False, "Compression cancelled")
+                            return
+                        tf.add(src_file, arcname=arcname)
+                        pct = int((idx + 1) / total_files * 100)
+                        self.progress_update.emit(pct, src_file.name, idx + 1, total_files)
+
+            self.finished_with_result.emit(True, f"Created {self._name}")
+        except Exception as e:
+            self.finished_with_result.emit(False, f"Native compression failed: {str(e)[:150]}")
 
 
 # ═════════════════════════════════════════════════════════════════════════════
@@ -6007,6 +6221,7 @@ class NestedFolderDialog(QDialog):
         super().__init__(parent)
         self.setWindowTitle("Create Nested Folders")
         self.setMinimumWidth(540)
+        current_dir = Path(current_dir)
         self.current_dir = current_dir
 
         lay = QVBoxLayout(self)
@@ -6111,6 +6326,7 @@ class NestedFileDialog(QDialog):
         super().__init__(parent)
         self.setWindowTitle("Create New File in Nested Path")
         self.setMinimumWidth(580)
+        current_dir = Path(current_dir)
         self.current_dir = current_dir
 
         lay = QVBoxLayout(self)
@@ -6258,6 +6474,7 @@ class BatchScaffoldDialog(QDialog):
         self.setWindowTitle("Batch Scaffold Project / Directory Hierarchy")
         self.setMinimumWidth(660)
         self.setMinimumHeight(540)
+        current_dir = Path(current_dir)
         self.current_dir = current_dir
 
         lay = QVBoxLayout(self)
@@ -8105,9 +8322,11 @@ class ExplorerWidget(QWidget):
         Args:
             archive_paths (list[str]): Filesystem path to the target file or directory.
         """
+        from nexus_archive import _archive_stem
+
         self._extract_archives_to_dir(
             archive_paths,
-            {ap: str(Path(ap).parent / Path(ap).stem) for ap in archive_paths},
+            {ap: str(Path(ap).parent / _archive_stem(ap)) for ap in archive_paths},
         )
 
     def _extract_archives_to(self, archive_paths: list[str]):
@@ -8116,10 +8335,12 @@ class ExplorerWidget(QWidget):
         Args:
             archive_paths (list[str]): Filesystem path to the target file or directory.
         """
+        from nexus_archive import _archive_stem
+
         dest = QFileDialog.getExistingDirectory(self, "Extract to")
         if not dest:
             return
-        dirs = {ap: str(Path(dest) / Path(ap).stem) for ap in archive_paths}
+        dirs = {ap: str(Path(dest) / _archive_stem(ap)) for ap in archive_paths}
         self._extract_archives_to_dir(archive_paths, dirs)
 
     def _extract_archives_to_dir(self, archive_paths: list[str], dirs: dict):
@@ -8140,6 +8361,24 @@ class ExplorerWidget(QWidget):
             rc, out, _ = _run_7z(["l", "-slt", ap], timeout=60)
             if rc in (0, 1):
                 total_files += sum(1 for line in out.splitlines() if line.startswith("Path = "))
+            else:
+                ext = Path(ap).name.lower()
+                if ext.endswith(".zip"):
+                    try:
+                        import zipfile
+
+                        with zipfile.ZipFile(ap, "r") as zf:
+                            total_files += len(zf.infolist())
+                    except Exception:
+                        pass
+                elif ext.endswith((".tar", ".tar.gz", ".tgz", ".tar.bz2", ".tar.xz")):
+                    try:
+                        import tarfile
+
+                        with tarfile.open(ap, "r:*") as tf:
+                            total_files += len(tf.getmembers())
+                    except Exception:
+                        pass
 
         self._extract_progress.start(Path(tasks[0][0]).name, total_files)
 
@@ -8829,19 +9068,19 @@ class ExplorerWidget(QWidget):
         """Compress selected files/folders into an archive.
 
         Args:
-            fmt (str): The fmt parameter.
+            fmt (str): The format parameter ("ZIP", "7z", "TAR.GZ").
         """
         sel = self._selected_paths()
         if not sel:
             return
-        from nexus_archive import _find_7z, _run_7z
+        from nexus_archive import _find_7z
 
         ext_map = {
-            "ZIP": (".zip", "-tzip"),
-            "7z": (".7z", "-t7z"),
-            "TAR.GZ": (".tar.gz", "-ttar"),
+            "ZIP": ".zip",
+            "7z": ".7z",
+            "TAR.GZ": ".tar.gz",
         }
-        ext, flag = ext_map.get(fmt, (".zip", "-tzip"))
+        ext = ext_map.get(fmt, ".zip")
 
         # Default archive name based on first item
         first = Path(sel[0])
@@ -8864,34 +9103,72 @@ class ExplorerWidget(QWidget):
         self._extract_progress.start(f"Creating {name}")
 
         exe = _find_7z()
-        if not exe:
-            self._extract_progress.finish(False, "7z.exe not found")
-            return
 
-        # Build file list via temp file for many files
-        import tempfile
+        # Handle 7z when 7z.exe is not available
+        if fmt == "7z" and not exe:
+            ans = QMessageBox.question(
+                self,
+                "7-Zip Required",
+                "7-Zip (7z.exe) is required to create .7z archives.\n\n"
+                "Would you like to compress to ZIP (.zip) instead?",
+                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+                QMessageBox.StandardButton.Yes,
+            )
+            if ans == QMessageBox.StandardButton.Yes:
+                fmt = "ZIP"
+                ext = ".zip"
+                if name.endswith(".7z"):
+                    name = name[:-3] + ".zip"
+                archive_path = str(Path(self._tab()["path"]) / name)
+                self._extract_progress.start(f"Creating {name}")
+            else:
+                self._extract_progress.finish(False, "7-Zip not found")
+                return
 
-        filelist = tempfile.NamedTemporaryFile(mode="w", suffix=".txt", delete=False, encoding="utf-8")
-        try:
-            for sp in sel:
-                filelist.write(sp + "\n")
-            filelist.close()
-
-            cmd = [exe, "a", flag, archive_path, f"@{filelist.name}", "-mmt=on", "-bsp1", "-bso0"]
-
-            self._compress_worker = _CompressWorker(cmd, name)
+        # For TAR.GZ or when 7z is not available for ZIP, run native compression directly
+        if fmt == "TAR.GZ" or (fmt == "ZIP" and not exe):
+            self._compress_worker = _CompressWorker(
+                cmd=None,
+                name=name,
+                sources=sel,
+                archive_path=archive_path,
+                fmt=fmt,
+            )
             self._compress_worker.progress_update.connect(
                 lambda pct, f, c, s: self._extract_progress.update_progress(pct, f, c, s)
             )
             self._compress_worker.finished_with_result.connect(
-                lambda ok, msg: (self._extract_progress.finish(ok, msg), self._reload_current())
+                lambda ok_res, msg: (self._extract_progress.finish(ok_res, msg), self._reload_current())
             )
             self._compress_worker.start()
-        finally:
-            try:
-                os.unlink(filelist.name)
-            except OSError:
-                pass
+            return
+
+        # 7z CLI path (for 7z or fast multithreaded ZIP)
+        flag = "-t7z" if fmt == "7z" else "-tzip"
+        import tempfile
+
+        filelist = tempfile.NamedTemporaryFile(mode="w", suffix=".txt", delete=False, encoding="utf-8")
+        for sp in sel:
+            filelist.write(sp + "\n")
+        filelist.close()
+
+        cmd = [exe, "a", flag, archive_path, f"@{filelist.name}", "-mmt=on", "-bsp1", "-bso0"]
+
+        self._compress_worker = _CompressWorker(
+            cmd=cmd,
+            name=name,
+            temp_file_path=filelist.name,
+            sources=sel,
+            archive_path=archive_path,
+            fmt=fmt,
+        )
+        self._compress_worker.progress_update.connect(
+            lambda pct, f, c, s: self._extract_progress.update_progress(pct, f, c, s)
+        )
+        self._compress_worker.finished_with_result.connect(
+            lambda ok_res, msg: (self._extract_progress.finish(ok_res, msg), self._reload_current())
+        )
+        self._compress_worker.start()
 
     def _move_to_folder(self):
         """Move selected items to a user-chosen folder."""

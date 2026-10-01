@@ -482,6 +482,34 @@ def _npm_pip_cache_dirs(home: Path, local: Path) -> tuple[Path, ...]:
     return tuple(out)
 
 
+def _conda_yarn_pnpm_cache_dirs(home: Path, local: Path) -> tuple[Path, ...]:
+    """Conda package caches + Yarn/pnpm content stores (re-downloaded on demand).
+
+    Only existing directories are returned so the registry never advertises
+    missing paths. Covers default install layouts: ``~/.conda/pkgs``,
+    ``~/anaconda3/pkgs``, ``~/miniconda3/pkgs``, ``%LOCALAPPDATA%\\conda\\pkgs``,
+    Yarn v1 cache and the pnpm content-addressable store.
+    """
+    candidates = [
+        home / ".conda" / "pkgs",
+        home / "anaconda3" / "pkgs",
+        home / "miniconda3" / "pkgs",
+        local / "conda" / "pkgs",
+        local / "Yarn" / "Cache",
+        local / "pnpm" / "store",
+        home / ".cache" / "yarn",
+        home / ".pnpm-store",
+    ]
+    out: list[Path] = []
+    for p in candidates:
+        try:
+            if p.exists() and p.is_dir():
+                out.append(p)
+        except OSError:
+            continue
+    return tuple(out)
+
+
 def _wsl_vhdx_dirs(home: Path) -> tuple[Path, ...]:
     """WSL distro ext4.vhdx host files (compactable, not deletable; surfaced for info).
 
@@ -601,6 +629,42 @@ def _windows_categories() -> list[CleanupCategory]:
             risk=RiskLevel.LOW,
             paths=_existing((local / "CrashDumps", windir / "Minidump")),
             globs=("*.dmp",),
+        )
+    )
+
+    # 3b. Kernel memory dump (top-level only — never walks C:\Windows) ---------
+    # MEMORY.DMP is written to the Windows root after a blue-screen and can be
+    # gigabytes. recursive=False restricts the walk to top-level files and the
+    # glob restricts matches to dump files, so system directories are untouched.
+    # The 1-day age floor keeps a brand-new dump around for diagnosis.
+    cats.append(
+        CleanupCategory(
+            id="memory_dump",
+            label="Kernel memory dump",
+            description=f"{windir}\\MEMORY.DMP left after a blue-screen (often gigabytes). Only top-level dump files are matched.",
+            risk=RiskLevel.LOW,
+            paths=(windir,),
+            globs=("MEMORY.DMP", "*.dmp"),
+            min_age_days=1.0,
+            recursive=False,
+            reversible=False,
+        )
+    )
+
+    # 3c. Windows servicing logs (CBS) -----------------------------------------
+    # C:\Windows\Logs\CBS accumulates CBS.log plus persisted .cab/.log history
+    # (tens of GB on long-lived machines). Contained to that single servicing
+    # log directory; the 1-day age floor spares the actively-written log.
+    cats.append(
+        CleanupCategory(
+            id="servicing_logs",
+            label="Windows servicing logs (CBS)",
+            description="Component-Based Servicing logs and persisted history (Logs\\CBS). Diagnostic history; fresh logs keep being written.",
+            risk=RiskLevel.LOW,
+            paths=_existing((windir / "Logs" / "CBS",)),
+            globs=("*.log", "*.cab"),
+            min_age_days=1.0,
+            reversible=False,
         )
     )
 
@@ -837,14 +901,14 @@ def _windows_categories() -> list[CleanupCategory]:
         )
     )
 
-    # 18. npm / pip caches (global package managers) ---------------------------
-    pkg_dirs = _npm_pip_cache_dirs(home, local)
+    # 18. npm / pip / conda / yarn / pnpm caches (global package managers) -----
+    pkg_dirs = _npm_pip_cache_dirs(home, local) + _conda_yarn_pnpm_cache_dirs(home, local)
     if pkg_dirs:
         cats.append(
             CleanupCategory(
                 id="global_package_caches",
-                label="Global package caches (npm/pip)",
-                description="npm-cache, pip cache, Yarn/PNPM store. Re-downloaded on next install.",
+                label="Global package caches (npm/pip/conda/yarn/pnpm)",
+                description="npm-cache, pip cache, conda pkgs, Yarn cache, pnpm store. Re-downloaded on next install.",
                 risk=RiskLevel.LOW,
                 paths=pkg_dirs,
                 reversible=True,

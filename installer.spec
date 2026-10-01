@@ -15,12 +15,19 @@ except Exception:
 
 app_name = f"Cortex-Workstation-v{app_version}-Setup"
 
+dist_zip = f"dist/Cortex-Workstation-v{app_version}-Windows-x64.zip"
+if not os.path.exists(dist_zip):
+    import glob
+    zips = glob.glob("dist/Cortex-Workstation-*.zip")
+    if zips:
+        dist_zip = zips[0]
+
 a = Analysis(
     ['scripts/installer.py'],
     pathex=[src_dir],
     binaries=[],
     datas=[
-        ('dist/Cortex-Workstation-v1.2.0-Windows-x64.zip', '.'),
+        (dist_zip, '.'),
         ('assets/icons/cortex.ico', 'assets/icons'),
         ('assets/icons/cortex.png', 'assets/icons'),
         ('assets/installer/infiltration_bar.html', 'assets/installer'),

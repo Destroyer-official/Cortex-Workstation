@@ -66,11 +66,23 @@ class CleanWorker(QObject):
     progress = Signal(str)
     failed = Signal(str)
 
-    def __init__(self, report: CleanupReport, method: str):
-        """Hold the report to clean, the deletion method, and a cancel event."""
+    def __init__(self, report: CleanupReport, method: str, allow_system: bool = False):
+        """Hold the report to clean, the deletion method, and a cancel event.
+
+        Args:
+            report: CleanupReport to clean.
+            method: DeletionMethod value (e.g. "delete", "recycle").
+            allow_system: when True, system-cache locations under
+                C:\\Windows / C:\\ProgramData (Windows Temp, Update cache,
+                Delivery Optimization, Prefetch, WER) are cleanable.
+                The Hub passes True because those categories are explicitly
+                declared safe (Disk-Cleanup style) and the user confirmed.
+                Defaults to False so other tools keep the strict guard.
+        """
         super().__init__()
         self._report = report
         self._method = method
+        self._allow_system = bool(allow_system)
         self._cancel = threading.Event()
 
     def cancel(self) -> None:
@@ -80,7 +92,12 @@ class CleanWorker(QObject):
     def run(self) -> None:
         """Clean the report's categories, emitting finished (freed, cleaned, skipped) or failed."""
         try:
-            svc = CleanerService()
+            if self._allow_system:
+                from cortex_unified.engine.guard import PathGuard
+
+                svc = CleanerService(guard=PathGuard(allow_system=True))
+            else:
+                svc = CleanerService()
 
             def _prog(done: int, total: int) -> None:
                 """Forward (done, total) counts as a human-readable progress message."""

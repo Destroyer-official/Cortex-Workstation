@@ -1,13 +1,19 @@
-"""Cleanup Hub: unified Storage Sense-style view of all cleanup categories.
+"""Cleanup Hub: unified one-click full-device view of all cleanup categories.
 
-Groups every engine/categories.py CleanupCategory as a card with
-RiskLevel + Reversible badges (reusing CleanupCategory metadata),
-a live reclaimed space estimate (via CleanerService scan), and quick
-actions to trigger targeted cleaning across system partitions and project roots.
+Auto-scans the full device on open (no folder picker needed) — groups every
+engine/categories.py CleanupCategory as a card with RiskLevel + Reversible
+badges (reusing CleanupCategory metadata), a live reclaimed space estimate
+(via CleanerService scan with the system-aware guard so Windows Temp / Update
+cache / Delivery / Prefetch / WER are actually covered), plus:
 
-Cards are grouped like Windows Storage Sense so users recognize the layout,
-and each card links directly to its underlying cleaner (temp, browser, AI
-recordings, Docker FS cache, cargo registry, scoop, WSL compact, etc.).
+- Deep-temp sweep (TempCleaner) with inline trash-safe Clean — no page hop.
+- Whole-project extras: auto-discovered project build caches + large logs,
+  same one-place UI, auto roots, no folder picker.
+- One-click safe clean: pre-ticks all LOW + MEDIUM hits (HIGH stays opt-in),
+  [Clean All Found (Safe)] + [Select Safe] for a true single-place full clean.
+
+Custom folder/file pickers are strictly opt-in buttons; opening the page never
+prompts for a directory.
 """
 
 from __future__ import annotations
@@ -89,17 +95,26 @@ class HubScanWorker(QObject):
     def run(self):
         """Run the category scan or custom root scan and emit the report or a failure.
 
-        Executes core worker logic off the main thread, periodically emitting progress updates and signaling completion or failure.
+        Uses PathGuard(allow_system=True) for system-cache scans so Windows
+        Temp, Update download cache, Delivery Optimization, Prefetch and WER
+        locations (under C:\\Windows / C:\\ProgramData) are actually scanned
+        instead of silently skipped as "protected". Those categories are
+        explicitly declared safe (Disk-Cleanup style); drive roots, the home
+        root and sandbox rules still apply. Custom-root scans keep the strict
+        guard (project folders are never system locations).
         """
         try:
-            svc = CleanerService()
             if self._custom_roots:
+                svc = CleanerService()
                 report = svc.scan_custom_roots(
                     roots=self._custom_roots,
                     progress=self.progress.emit,
                     cancel_event=self._cancel,
                 )
             else:
+                from cortex_unified.engine.guard import PathGuard
+
+                svc = CleanerService(guard=PathGuard(allow_system=True))
                 report = svc.scan_categories(
                     max_risk=RiskLevel(self._max_risk),
                     include_disabled=self._include_disabled,
@@ -165,6 +180,54 @@ class TempScanWorker(QObject):
 # Page
 # ---------------------------------------------------------------------------
 
+
+class RecycleBinWorker(QObject):
+    """Measures or empties the OS Recycle Bin off the UI thread.
+
+    ``mode="measure"`` emits ``finished`` with a ``RecycleBinReport``;
+    ``mode="empty"`` emits ``finished`` with a ``RecycleBinEmptyResult``
+    (``dry_run=False`` only — callers confirm first since emptying is
+    irreversible). Emits ``progress`` with status text or ``failed``.
+    """
+
+    finished = Signal(object)
+    progress = Signal(str)
+    failed = Signal(str)
+
+    def __init__(self, mode: str = "measure", dry_run: bool = True):
+        """Store the worker mode and dry-run flag plus a cancel event.
+
+        Args:
+            mode (str): "measure" or "empty".
+            dry_run (bool): Preview-only for empty mode.
+        """
+        super().__init__()
+        self._mode = mode
+        self._dry_run = dry_run
+        import threading
+
+        self._cancel = threading.Event()
+
+    def cancel(self):
+        """Request cooperative cancellation of the running bin operation."""
+        self._cancel.set()
+
+    def run(self):
+        """Measure or empty the bin and emit the result or a failure."""
+        try:
+            from cortex_unified.system_tools.recycle_bin import RecycleBinManager
+
+            mgr = RecycleBinManager()
+            if self._mode == "empty" and not self._dry_run:
+                self.progress.emit("Emptying Recycle Bin…")
+                self.finished.emit(mgr.empty(dry_run=False))
+            else:
+                self.progress.emit("Measuring Recycle Bin…")
+                self.finished.emit(mgr.measure())
+        except Exception as exc:  # noqa: BLE001
+            self.failed.emit(str(exc))
+
+
 # Risk -> badge color / label
 _RISK_STYLE = {
     RiskLevel.LOW: ("LOW", "#34D399"),
@@ -215,9 +278,10 @@ class CleanupHubPage(_Page):
         self.v.addWidget(
             title_block(
                 "Cleanup Hub",
-                "Unified storage optimizer for system temp, browser caches, developer "
-                "runtimes, application caches, and storage sense categories with "
-                "live safety indicators and reclaim estimates.",
+                "One-click full-device + whole-project cleaner — auto-scans on open (no folder picker). "
+                "System temp, browser/app caches, dev runtimes, Windows update/delivery, deep temp, "
+                "project build caches, large logs and the Recycle Bin — everything cleanable in one place. "
+                "All cleaning recycles (reversible); LOW/MEDIUM pre-ticked, HIGH stays opt-in.",
             )
         )
 
@@ -225,16 +289,21 @@ class CleanupHubPage(_Page):
         ctrl = QHBoxLayout()
         ctrl.setSpacing(8)
 
-        self.scan_btn = QPushButton("Scan All Caches")
+        self.scan_btn = QPushButton("Scan Full Device")
         self.scan_btn.setObjectName("Primary")
         self.scan_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.scan_btn.setToolTip(
+            "Full-device sweep: rescans all default system caches across all drives/AppData. No folder picker needed."
+        )
         self.scan_btn.clicked.connect(self._on_scan_all_clicked)
         ctrl.addWidget(self.scan_btn)
 
-        self.btn_temp = QPushButton("Scan Temp")
+        self.btn_temp = QPushButton("Scan Deep Temp")
         self.btn_temp.setObjectName("btn_scan_temp")
         self.btn_temp.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.btn_temp.setToolTip("Scan OS temp locations for stale files (TempCleaner, age > 1 day).")
+        self.btn_temp.setToolTip(
+            "Deep temp sweep via TempCleaner (stale > 1 day, all temp roots). Result stays in the Hub with a one-click Clean — no need to open another page."
+        )
         self.btn_temp.clicked.connect(self._scan_temp)
         ctrl.addWidget(self.btn_temp)
 
@@ -255,8 +324,16 @@ class CleanupHubPage(_Page):
         self.btn_select_all = QPushButton("Select All")
         self.btn_select_all.setObjectName("Ghost")
         self.btn_select_all.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.btn_select_all.setToolTip("Tick every card, including HIGH-risk (rustup, WSL). Use with care.")
         self.btn_select_all.clicked.connect(lambda: self._select_all_cards(True))
         ctrl.addWidget(self.btn_select_all)
+
+        self.btn_select_safe = QPushButton("Select Safe")
+        self.btn_select_safe.setObjectName("Ghost")
+        self.btn_select_safe.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.btn_select_safe.setToolTip("Tick all LOW + MEDIUM cards with found files. HIGH-risk stays unticked.")
+        self.btn_select_safe.clicked.connect(self._select_safe_cards)
+        ctrl.addWidget(self.btn_select_safe)
 
         self.btn_deselect_all = QPushButton("Deselect All")
         self.btn_deselect_all.setObjectName("Ghost")
@@ -266,9 +343,14 @@ class CleanupHubPage(_Page):
 
         ctrl.addStretch(1)
 
-        self.include_disabled_chk = QCheckBox("Include opt-in (HIGH)")
-        self.include_disabled_chk.setToolTip("Also scan HIGH-risk / disabled categories (rustup toolchains, WSL vhdx).")
+        self.include_disabled_chk = QCheckBox("Include opt-in (HIGH) — full device")
+        self.include_disabled_chk.setToolTip(
+            "Also scan HIGH-risk / disabled categories (rustup toolchains, WSL vhdx). ON = true full-device sweep."
+        )
         self.include_disabled_chk.setCursor(Qt.CursorShape.PointingHandCursor)
+        # Default ON so opening the Hub is a true one-click full-device scan
+        # (scan-only; HIGH cards stay unticked for cleaning until user opts in).
+        self.include_disabled_chk.setChecked(True)
         ctrl.addWidget(self.include_disabled_chk)
 
         self.v.addLayout(ctrl)
@@ -276,13 +358,16 @@ class CleanupHubPage(_Page):
         # Roots summary bar
         roots_row = QHBoxLayout()
         roots_row.setSpacing(8)
-        self.target_roots_label = QLabel("Active Scan Roots: Default System Partitions (C:\\, Temp, AppData)")
+        self.target_roots_label = QLabel(
+            "Active Scan Roots: Full Device (System Caches • All Drives • AppData) — auto-scanned on open"
+        )
         self.target_roots_label.setObjectName("Muted")
         roots_row.addWidget(self.target_roots_label)
 
-        self.btn_clear_roots = QPushButton("Reset to System Caches")
+        self.btn_clear_roots = QPushButton("Reset to Full Device Scan")
         self.btn_clear_roots.setObjectName("Ghost")
         self.btn_clear_roots.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.btn_clear_roots.setToolTip("Clear any custom folder/file target and rescan the full device.")
         self.btn_clear_roots.setVisible(False)
         self.btn_clear_roots.clicked.connect(self._clear_custom_roots)
         roots_row.addWidget(self.btn_clear_roots)
@@ -297,6 +382,23 @@ class CleanupHubPage(_Page):
         self.scan_status = QLabel("")
         self.scan_status.setObjectName("Muted")
         self.v.addWidget(self.scan_status)
+
+        # --- deep-temp inline result (cleanable, stays in the Hub) -----------
+        temp_row = QHBoxLayout()
+        temp_row.setSpacing(8)
+        self.temp_result_label = QLabel("")
+        self.temp_result_label.setObjectName("Muted")
+        self.temp_result_label.setWordWrap(True)
+        temp_row.addWidget(self.temp_result_label, 1)
+        self.btn_clean_temp = QPushButton("Clean Deep Temp")
+        self.btn_clean_temp.setObjectName("Danger")
+        self.btn_clean_temp.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.btn_clean_temp.setToolTip("Move stale deep-temp files to the Recycle Bin (trash-safe).")
+        self.btn_clean_temp.setVisible(False)
+        self.btn_clean_temp.setEnabled(False)
+        self.btn_clean_temp.clicked.connect(self._clean_temp)
+        temp_row.addWidget(self.btn_clean_temp)
+        self.v.addLayout(temp_row)
 
         # --- summary cards --------------------------------------------------
         summary_row = QHBoxLayout()
@@ -325,27 +427,288 @@ class CleanupHubPage(_Page):
         self.state.bind_content(self.scroll)
         self.v.addWidget(self.state, 1)
 
+        # --- whole-project extras (one place, no folder picker) -------------
+        extras = Card(self.p)
+        ex = QVBoxLayout(extras)
+        ex.setContentsMargins(14, 12, 14, 12)
+        ex.setSpacing(8)
+        ex_title = QLabel(
+            "<b>Extra sweeps & quick actions</b> <span style='color:#888'>— auto roots, no folder picker needed</span>"
+        )
+        ex_title.setTextFormat(Qt.TextFormat.RichText)
+        ex.addWidget(ex_title)
+
+        # Project build caches row
+        proj_row = QHBoxLayout()
+        proj_row.setSpacing(8)
+        self.btn_scan_proj = QPushButton("Scan Project Caches")
+        self.btn_scan_proj.setObjectName("Ghost")
+        self.btn_scan_proj.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.btn_scan_proj.setToolTip(
+            "Auto-discovers node_modules, target, __pycache__, build, dist, .next, etc. across code roots — no folder picker."
+        )
+        self.btn_scan_proj.clicked.connect(self._scan_project_caches)
+        proj_row.addWidget(self.btn_scan_proj)
+        self.proj_status = QLabel("Project caches: not scanned yet.")
+        self.proj_status.setObjectName("Muted")
+        self.proj_status.setWordWrap(True)
+        proj_row.addWidget(self.proj_status, 1)
+        self.btn_clean_proj = QPushButton("Clean Project Caches")
+        self.btn_clean_proj.setObjectName("Danger")
+        self.btn_clean_proj.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.btn_clean_proj.setEnabled(False)
+        self.btn_clean_proj.clicked.connect(self._clean_project_caches)
+        proj_row.addWidget(self.btn_clean_proj)
+        ex.addLayout(proj_row)
+
+        # Large logs row
+        log_row = QHBoxLayout()
+        log_row.setSpacing(8)
+        self.btn_scan_logs = QPushButton("Scan Large Logs")
+        self.btn_scan_logs.setObjectName("Ghost")
+        self.btn_scan_logs.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.btn_scan_logs.setToolTip("Finds *.log / *.txt over 20 MB across code roots — archives excluded.")
+        self.btn_scan_logs.clicked.connect(self._scan_extra_logs)
+        log_row.addWidget(self.btn_scan_logs)
+        self.logs_status = QLabel("Large logs: not scanned yet.")
+        self.logs_status.setObjectName("Muted")
+        self.logs_status.setWordWrap(True)
+        log_row.addWidget(self.logs_status, 1)
+        self.btn_clean_logs = QPushButton("Recycle Large Logs")
+        self.btn_clean_logs.setObjectName("Danger")
+        self.btn_clean_logs.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.btn_clean_logs.setEnabled(False)
+        self.btn_clean_logs.clicked.connect(self._clean_extra_logs)
+        log_row.addWidget(self.btn_clean_logs)
+        ex.addLayout(log_row)
+
+        # Large files row (>100 MB, user profile + code roots)
+        large_row = QHBoxLayout()
+        large_row.setSpacing(8)
+        self.btn_scan_large = QPushButton("Scan Large Files")
+        self.btn_scan_large.setObjectName("Ghost")
+        self.btn_scan_large.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.btn_scan_large.setToolTip(
+            "Finds files over 100 MB across code roots + Documents/Downloads — review before recycling."
+        )
+        self.btn_scan_large.clicked.connect(self._scan_large_files)
+        large_row.addWidget(self.btn_scan_large)
+        self.large_status = QLabel("Large files: not scanned yet.")
+        self.large_status.setObjectName("Muted")
+        self.large_status.setWordWrap(True)
+        large_row.addWidget(self.large_status, 1)
+        self.btn_clean_large = QPushButton("Recycle Large Files")
+        self.btn_clean_large.setObjectName("Danger")
+        self.btn_clean_large.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.btn_clean_large.setEnabled(False)
+        self.btn_clean_large.clicked.connect(self._clean_large_files)
+        large_row.addWidget(self.btn_clean_large)
+        ex.addLayout(large_row)
+
+        # Empty files row (code roots — safe, fast)
+        empty_row = QHBoxLayout()
+        empty_row.setSpacing(8)
+        self.btn_scan_empty = QPushButton("Scan Empty Files")
+        self.btn_scan_empty.setObjectName("Ghost")
+        self.btn_scan_empty.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.btn_scan_empty.setToolTip("Finds 0-byte files + empty folders across code roots — safe to recycle.")
+        self.btn_scan_empty.clicked.connect(self._scan_empty_files)
+        empty_row.addWidget(self.btn_scan_empty)
+        self.empty_status = QLabel("Empty files: not scanned yet.")
+        self.empty_status.setObjectName("Muted")
+        self.empty_status.setWordWrap(True)
+        empty_row.addWidget(self.empty_status, 1)
+        self.btn_clean_empty = QPushButton("Recycle Empty")
+        self.btn_clean_empty.setObjectName("Danger")
+        self.btn_clean_empty.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.btn_clean_empty.setEnabled(False)
+        self.btn_clean_empty.clicked.connect(self._clean_empty_files)
+        empty_row.addWidget(self.btn_clean_empty)
+        ex.addLayout(empty_row)
+
+        # Duplicate waste row (scan only — review in tool, never auto-delete)
+        dupe_row = QHBoxLayout()
+        dupe_row.setSpacing(8)
+        self.btn_scan_dupes = QPushButton("Scan Duplicate Waste")
+        self.btn_scan_dupes.setObjectName("Ghost")
+        self.btn_scan_dupes.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.btn_scan_dupes.setToolTip(
+            "Byte-identical duplicates across code roots. Shows reclaimable waste — review in the Duplicates tool, never auto-deleted here."
+        )
+        self.btn_scan_dupes.clicked.connect(self._scan_duplicates)
+        dupe_row.addWidget(self.btn_scan_dupes)
+        self.dupes_status = QLabel("Duplicates: not scanned yet (review-only, never auto-deleted).")
+        self.dupes_status.setObjectName("Muted")
+        self.dupes_status.setWordWrap(True)
+        dupe_row.addWidget(self.dupes_status, 1)
+        self.btn_open_dupes = QPushButton("Review in Tool")
+        self.btn_open_dupes.setObjectName("Ghost")
+        self.btn_open_dupes.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.btn_open_dupes.clicked.connect(lambda: self._open_tool("duplicates"))
+        dupe_row.addWidget(self.btn_open_dupes)
+        ex.addLayout(dupe_row)
+
+        # Recycle Bin row (the loop-closer: every sweep recycles here — measure + empty)
+        bin_row = QHBoxLayout()
+        bin_row.setSpacing(8)
+        self.btn_scan_bin = QPushButton("Measure Bin")
+        self.btn_scan_bin.setObjectName("Ghost")
+        self.btn_scan_bin.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.btn_scan_bin.setToolTip("Measure Recycle Bin size across all drives. Auto-refreshes after every Hub scan.")
+        self.btn_scan_bin.clicked.connect(self._measure_bin)
+        bin_row.addWidget(self.btn_scan_bin)
+        self.bin_status = QLabel("Recycle Bin: not measured yet.")
+        self.bin_status.setObjectName("Muted")
+        self.bin_status.setWordWrap(True)
+        bin_row.addWidget(self.bin_status, 1)
+        self.btn_empty_bin = QPushButton("Empty Recycle Bin")
+        self.btn_empty_bin.setObjectName("Danger")
+        self.btn_empty_bin.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.btn_empty_bin.setToolTip(
+            "Permanently empty the Recycle Bin on all drives. Irreversible — own confirmation, never part of auto-clean."
+        )
+        self.btn_empty_bin.setEnabled(False)
+        self.btn_empty_bin.clicked.connect(self._empty_bin)
+        bin_row.addWidget(self.btn_empty_bin)
+        ex.addLayout(bin_row)
+
+        # Quick hygiene actions (instant, no scan — classic System checkboxes)
+        hyg_row = QHBoxLayout()
+        hyg_row.setSpacing(8)
+        self.btn_flush_dns = QPushButton("Flush DNS")
+        self.btn_flush_dns.setObjectName("Ghost")
+        self.btn_flush_dns.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.btn_flush_dns.setToolTip("Flush the OS DNS resolver cache now (ipconfig /flushdns). Instant, safe.")
+        self.btn_flush_dns.clicked.connect(self._flush_dns_now)
+        hyg_row.addWidget(self.btn_flush_dns)
+        self.btn_clear_clipboard = QPushButton("Clear Clipboard")
+        self.btn_clear_clipboard.setObjectName("Ghost")
+        self.btn_clear_clipboard.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.btn_clear_clipboard.setToolTip("Empty the clipboard text payload now. Instant, safe.")
+        self.btn_clear_clipboard.clicked.connect(self._clear_clipboard_now)
+        hyg_row.addWidget(self.btn_clear_clipboard)
+        self.hygiene_status = QLabel("Hygiene: DNS + clipboard actions run instantly, reported below.")
+        self.hygiene_status.setObjectName("Muted")
+        self.hygiene_status.setWordWrap(True)
+        hyg_row.addWidget(self.hygiene_status, 1)
+        ex.addLayout(hyg_row)
+        self.v.addWidget(extras)
+
+        # --- mission control: one monitor + one master control --------------
+        mission = Card(self.p)
+        mc = QVBoxLayout(mission)
+        mc.setContentsMargins(14, 12, 14, 12)
+        mc.setSpacing(8)
+        mc_title = QLabel(
+            "<b>Mission Control</b> <span style='color:#888'>— every cleaner, one monitor, one control</span>"
+        )
+        mc_title.setTextFormat(Qt.TextFormat.RichText)
+        mc.addWidget(mc_title)
+        mc_row = QHBoxLayout()
+        mc_row.setSpacing(8)
+        self.btn_scan_everything = QPushButton("Scan Everything")
+        self.btn_scan_everything.setObjectName("Primary")
+        self.btn_scan_everything.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.btn_scan_everything.setToolTip(
+            "Runs all fast sweeps at once: system caches + deep temp + project + logs + large + empty + duplicates. No folder picker."
+        )
+        self.btn_scan_everything.clicked.connect(self._scan_everything)
+        mc_row.addWidget(self.btn_scan_everything)
+        self.btn_clean_everything = QPushButton("Clean Everything Safe")
+        self.btn_clean_everything.setObjectName("Danger")
+        self.btn_clean_everything.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.btn_clean_everything.setToolTip(
+            "One confirm, then recycles all safe hits (system LOW+MEDIUM, temp, project, logs, large, empty). Duplicates + HIGH-risk + Recycle Bin never auto-deleted."
+        )
+        self.btn_clean_everything.clicked.connect(self._clean_everything_safe)
+        mc_row.addWidget(self.btn_clean_everything)
+        mc_row.addStretch(1)
+        mc.addLayout(mc_row)
+        self.mission_total = QLabel(
+            "Mission total: scan first — aggregates system + temp + project + logs + large + empty."
+        )
+        self.mission_total.setObjectName("Muted")
+        self.mission_total.setWordWrap(True)
+        mc.addWidget(self.mission_total)
+        self.mission_feed = QLabel("")
+        self.mission_feed.setObjectName("Muted")
+        self.mission_feed.setWordWrap(True)
+        mc.addWidget(self.mission_feed)
+        self.v.addWidget(mission)
+
+        # --- all clean tools in one place (directory with Open buttons) -----
+        self.tools_title = QLabel(
+            "<b>All clean tools</b> <span style='color:#888'>— every cleaner, one directory. Wired rows clean inline above; the rest open in one click.</span>"
+        )
+        self.tools_title.setTextFormat(Qt.TextFormat.RichText)
+        self.tools_title.setWordWrap(True)
+        self.v.addWidget(self.tools_title)
+        self.tools_scroll = QScrollArea()
+        self.tools_scroll.setWidgetResizable(True)
+        self.tools_scroll.setFrameShape(QScrollArea.Shape.NoFrame)
+        self.tools_scroll.setMaximumHeight(260)
+        tools_holder = QWidget()
+        self.tools_grid = QGridLayout(tools_holder)
+        self.tools_grid.setContentsMargins(4, 4, 4, 4)
+        self.tools_grid.setSpacing(8)
+        self.tools_grid.setAlignment(Qt.AlignmentFlag.AlignTop)
+        self.tools_scroll.setWidget(tools_holder)
+        self.attach_single_scroll(self.tools_scroll)
+        self.v.addWidget(self.tools_scroll)
+        self._build_all_tools_grid()
+
         # --- action row -----------------------------------------------------
         self._selected: dict[str, bool] = {}
         self._card_checkboxes: dict[str, QCheckBox] = {}
+        self._card_risks: dict[str, object] = {}
         self._report = None
         self._scan_map: dict[str, object] = {}  # id -> CategoryScan
+        self._temp_findings: list = []
+        self._proj_resources: list = []
+        self._extra_logs: list = []
+        self._large_files: list = []
+        self._empty_files: list = []
+        self._empty_dirs: list = []
+        self._dupe_groups: dict = {}
+        self._dupe_waste: int = 0
+        self._bin_bytes: int = 0
+        self._bin_items: int = 0
+        self._bin_worker = None
+        self._extra_worker = None
+        self._sweep_workers: dict = {}
+        self._silent_sweeps: set = set()
+        self._feed_lines: list = []
+        self._no_confirm: bool = False
 
         action_row = QHBoxLayout()
         self.clean_btn = QPushButton("Clean Selected")
         self.clean_btn.setObjectName("Danger")
         self.clean_btn.setCursor(Qt.CursorShape.PointingHandCursor)
         self.clean_btn.setEnabled(False)
+        self.clean_btn.setToolTip("Clean ticked cards only.")
         self.clean_btn.clicked.connect(self._clean)
         action_row.addWidget(self.clean_btn)
+
+        self.clean_all_btn = QPushButton("Clean All Found (Safe)")
+        self.clean_all_btn.setObjectName("Primary")
+        self.clean_all_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.clean_all_btn.setToolTip(
+            "One click: ticks every LOW + MEDIUM card with found files (HIGH stays unticked) and cleans. Full-device clean in one place."
+        )
+        self.clean_all_btn.setEnabled(False)
+        self.clean_all_btn.clicked.connect(self._clean_all_safe)
+        action_row.addWidget(self.clean_all_btn)
         action_row.addStretch(1)
         hint = QLabel(
-            "LOW = regenerable • MEDIUM = re-download • HIGH = confirm. " "Reversible = safe undo (Recycle Bin / pull)."
+            "LOW = regenerable • MEDIUM = re-download • HIGH = confirm. "
+            "Everything recycles (reversible) — empty the bin below to free the space."
         )
         hint.setObjectName("Muted")
         hint.setWordWrap(True)
         action_row.addWidget(hint, 1)
-        self.v.addLayout(action_row)
+        footer = QWidget()
+        footer.setLayout(action_row)
+        self.pin_footer(footer)
 
         # Custom sweep roots chosen dynamically
         self._custom_roots: list[Path] = []
@@ -357,22 +720,30 @@ class CleanupHubPage(_Page):
     # -- scan ---------------------------------------------------------------
 
     def _on_scan_all_clicked(self):
-        """Reset custom scan targets and scan all default system caches."""
+        """Full-device sweep: reset custom targets and scan all default system caches.
+
+        Never prompts for a folder — one click rescans the whole device in place.
+        """
         self._custom_roots.clear()
+        # Full-device means HIGH-risk categories included in the scan
+        # (cleaning them still needs an explicit card tick + confirm).
+        if not self.include_disabled_chk.isChecked():
+            self.include_disabled_chk.setChecked(True)
         self._update_roots_status()
         self._scan()
 
     def _scan(self):
-        """Disable buttons and start a HubScanWorker (risk level from opt-in checkbox).
+        """Auto full-device scan (no folder prompt; custom roots only if user picked one).
 
         Launches an asynchronous scan across the target subsystem, showing a loading indicator and disabling triggering controls.
         """
         self.scan_btn.setEnabled(False)
         self.clean_btn.setEnabled(False)
+        self.clean_all_btn.setEnabled(False)
         loading_text = (
             f"Scanning target: {self._custom_roots[0].name or self._custom_roots[0]}…"
             if self._custom_roots
-            else "Scanning categories…"
+            else "Scanning full device (all system caches)…"
         )
         self.state.show_loading(loading_text)
         self.progress.setVisible(True)
@@ -408,6 +779,11 @@ class CleanupHubPage(_Page):
         self.scan_btn.setEnabled(True)
         self._report = report
         self._scan_map = {s.category.id: s for s in report.scans}
+        # Keep the bin readout fresh on every scan (it is where all Hub cleaning lands).
+        try:
+            self._measure_bin()
+        except Exception:  # noqa: BLE001
+            pass
 
         # Clear grid
         while self.grid.count():
@@ -417,6 +793,7 @@ class CleanupHubPage(_Page):
                 w.deleteLater()
         self._selected = {}
         self._card_checkboxes = {}
+        self._card_risks = {}
 
         # Summary cards
         self.card_total.set_value(fmt_bytes(report.total_reclaimable_bytes), animate=True)
@@ -537,10 +914,15 @@ class CleanupHubPage(_Page):
         est_row.addStretch(1)
         chk = QCheckBox("Select")
         chk.setCursor(Qt.CursorShape.PointingHandCursor)
-        chk.setChecked(est_bytes > 0 and cat.default_enabled)
+        # One-place full clean: pre-tick every LOW + MEDIUM card with hits.
+        # HIGH-risk (rustup, WSL vhdx) stays unticked — explicit opt-in only.
+        # (Previously gated on cat.default_enabled, so Delivery/Update/Prefetch/
+        # Recent/Docker/Cargo never cleaned unless manually ticked.)
+        chk.setChecked(bool(est_bytes or est_files) and cat.risk != RiskLevel.HIGH)
         cid = cat.id
         self._selected[cid] = chk.isChecked()
         self._card_checkboxes[cid] = chk
+        self._card_risks[cid] = cat.risk
 
         def _on_toggled(checked, _cid=cid):
             """Record the card's selection state and refresh the Clean button.
@@ -565,15 +947,32 @@ class CleanupHubPage(_Page):
             state (bool): The state parameter.
         """
         for cid, chk in self._card_checkboxes.items():
+            chk.blockSignals(True)
             chk.setChecked(state)
+            chk.blockSignals(False)
             self._selected[cid] = state
         self._update_clean_enabled()
 
+    def _select_safe_cards(self):
+        """Tick all LOW + MEDIUM cards with hits; untick HIGH-risk. The one-click safe default."""
+        for cid, chk in self._card_checkboxes.items():
+            safe = self._card_risks.get(cid) != RiskLevel.HIGH
+            scan = self._scan_map.get(cid)
+            has_hits = bool(scan is not None and (scan.total_bytes or scan.file_count))
+            want = bool(has_hits and safe)
+            chk.blockSignals(True)
+            chk.setChecked(want)
+            chk.blockSignals(False)
+            self._selected[cid] = want
+        self._update_clean_enabled()
+
     def _update_clean_enabled(self):
-        """Implement update clean enabled via any, values, setEnabled."""
+        """Enable Clean buttons when at least one card is ticked and the report has files."""
         any_sel = any(self._selected.values())
         report_ok = self._report is not None and self._report.total_files > 0
-        self.clean_btn.setEnabled(any_sel and report_ok)
+        ok = bool(any_sel and report_ok)
+        self.clean_btn.setEnabled(ok)
+        self.clean_all_btn.setEnabled(bool(report_ok))
 
     def _fail(self, msg: str):
         """Handle an operation failure and notify the user.
@@ -587,21 +986,29 @@ class CleanupHubPage(_Page):
         self.progress.setVisible(False)
         self.scan_status.setText("")
         self.scan_btn.setEnabled(True)
+        self.btn_temp.setEnabled(True)
+        self._update_clean_enabled()
         self.state.show_error(msg, on_retry=self._scan)
 
     def _scan_temp(self):
-        """Start a TempScanWorker (stale-temp scan+clean backend) via run_worker.
+        """Deep-temp sweep whose result stays in the Hub with a one-click Clean.
 
         Launches an asynchronous scan across the target subsystem, showing a loading indicator and disabling triggering controls.
         """
         self.btn_temp.setEnabled(False)
-        self.scan_status.setText("Scanning stale temp files…")
+        self.btn_clean_temp.setVisible(False)
+        self.btn_clean_temp.setEnabled(False)
+        self.temp_result_label.setText("Scanning deep temp (stale > 1 day)…")
         w = TempScanWorker(min_age_days=1)
         self._worker = w
-        self.win.run_worker(w, self._on_temp_scanned, self._on_temp_failed, on_progress=self._on_progress)
+        self.win.run_worker(w, self._on_temp_scanned, self._on_temp_failed, on_progress=self._on_temp_progress)
+
+    def _on_temp_progress(self, msg: str):
+        """Show deep-temp progress on its own row (keeps the shared status line flicker-free)."""
+        self.temp_result_label.setText(str(msg))
 
     def _on_temp_scanned(self, findings):
-        """Show stale-temp totals (count + bytes) in status + info dialog.
+        """Store deep-temp findings in the Hub and offer an inline Clean (no page hop).
 
         Args:
             findings: The findings parameter.
@@ -609,14 +1016,56 @@ class CleanupHubPage(_Page):
         self._worker = None
         self.btn_temp.setEnabled(True)
         self.scan_status.setText("")
-        total = sum(int(getattr(f, "size_bytes", 0) or 0) for f in (findings or []))
-        count = len(findings or [])
-        msg = f"Stale temp: {count:,} file(s), {fmt_bytes(total)} reclaimable (age > 1 day)"
+        self._temp_findings = list(findings or [])
+        total = sum(int(getattr(f, "size_bytes", 0) or 0) for f in self._temp_findings)
+        count = len(self._temp_findings)
+        msg = f"Deep temp: {count:,} file(s), {fmt_bytes(total)} reclaimable (stale > 1 day, trash-safe)"
+        self.temp_result_label.setText(msg)
         self.win.statusBar().showMessage(msg, 6000)
         self.scan_status.setText(msg)
-        QMessageBox.information(
-            self, "Stale Temp Scan", msg + "\n\nClean via Deep Cleaner / CLI clean-temp (trash-safe)."
+        has = count > 0
+        self.btn_clean_temp.setVisible(True)
+        self.btn_clean_temp.setEnabled(has)
+        if not has:
+            self.temp_result_label.setText("Deep temp: clean — no stale files found.")
+
+    def _clean_temp(self):
+        """Move stored deep-temp findings to the Recycle Bin, then rescan the Hub."""
+        if not self._temp_findings:
+            QMessageBox.information(self, "Deep Temp", "No stale temp findings to clean — run Scan Deep Temp first.")
+            return
+        total = sum(int(getattr(f, "size_bytes", 0) or 0) for f in self._temp_findings)
+        confirm = QMessageBox.question(
+            self,
+            "Clean deep temp?",
+            f"Move {len(self._temp_findings):,} stale temp file(s) ({fmt_bytes(total)}) to the Recycle Bin?\n\n"
+            "Locked/in-use files are skipped automatically.",
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+            QMessageBox.StandardButton.No,
         )
+        if confirm != QMessageBox.StandardButton.Yes:
+            return
+        try:
+            from cortex_unified.core.temp_cleaner import TempCleaner
+
+            res = TempCleaner(min_age_days=1).clean(self._temp_findings, use_trash=True, dry_run=False)
+            freed = int(res.get("bytes_freed", 0))
+            deleted = int(res.get("deleted", 0))
+            failed = int(res.get("failed", 0))
+            QMessageBox.information(
+                self,
+                "Deep temp cleaned",
+                f"Moved {deleted:,} file(s) to Recycle Bin ({fmt_bytes(freed)})."
+                + (f" {failed} locked/skipped." if failed else ""),
+            )
+            self._temp_findings = []
+            self.btn_clean_temp.setEnabled(False)
+            self.btn_clean_temp.setVisible(False)
+            self.temp_result_label.setText("")
+        except Exception as exc:  # noqa: BLE001
+            QMessageBox.warning(self, "Deep Temp Clean", f"Clean failed:\n{exc}")
+            return
+        self._scan()
 
     def _on_temp_failed(self, msg: str):
         """Re-enable the temp button and surface the scan failure.
@@ -630,6 +1079,870 @@ class CleanupHubPage(_Page):
         self.btn_temp.setEnabled(True)
         self.scan_status.setText("")
         QMessageBox.warning(self, "Stale Temp Scan", f"Temp scan failed:\n{msg}")
+
+    # -- recycle bin (loop-closer: every sweep recycles here) -----------------
+
+    def _measure_bin(self):
+        """Measure Recycle Bin size across all drives (fast, read-only)."""
+        self.btn_scan_bin.setEnabled(False)
+        self.btn_empty_bin.setEnabled(False)
+        self.bin_status.setText("Measuring Recycle Bin…")
+        w = RecycleBinWorker(mode="measure")
+        self._bin_worker = w
+        self.win.run_worker(w, self._on_bin_measured, self._on_bin_failed, on_progress=self._on_bin_progress)
+
+    def _on_bin_progress(self, msg: str):
+        """Show bin progress on its own row."""
+        self.bin_status.setText(str(msg))
+
+    def _on_bin_measured(self, report):
+        """Show bin size and enable Empty when there is anything to free."""
+        self._bin_worker = None
+        self.btn_scan_bin.setEnabled(True)
+        try:
+            self._bin_bytes = int(report.total_bytes)
+            self._bin_items = int(report.total_items)
+        except Exception:  # noqa: BLE001
+            self._bin_bytes, self._bin_items = 0, 0
+        if self._bin_items:
+            self.bin_status.setText(
+                f"Recycle Bin: {self._bin_items:,} item(s), {fmt_bytes(self._bin_bytes)} — empty to actually free this space."
+            )
+            self.btn_empty_bin.setEnabled(True)
+        else:
+            self.bin_status.setText("Recycle Bin: empty.")
+            self.btn_empty_bin.setEnabled(False)
+        self._update_mission_total()
+
+    def _empty_bin(self):
+        """Permanently empty the Recycle Bin after its own confirmation (never auto-cleaned)."""
+        if not self._bin_items:
+            QMessageBox.information(self, "Recycle Bin", "The bin is already empty — nothing to do.")
+            return
+        confirm = QMessageBox.question(
+            self,
+            "Empty Recycle Bin?",
+            f"PERMANENTLY delete {self._bin_items:,} item(s) ({fmt_bytes(self._bin_bytes)}) from the Recycle Bin on all drives?\n\n"
+            "This cannot be undone. It is never part of automatic cleaning.",
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+            QMessageBox.StandardButton.No,
+        )
+        if confirm != QMessageBox.StandardButton.Yes:
+            return
+        self.btn_scan_bin.setEnabled(False)
+        self.btn_empty_bin.setEnabled(False)
+        w = RecycleBinWorker(mode="empty", dry_run=False)
+        self._bin_worker = w
+        self.win.run_worker(w, self._on_bin_emptied, self._on_bin_failed, on_progress=self._on_bin_progress)
+
+    def _on_bin_emptied(self, result):
+        """Report the empty outcome, refresh the measurement and the mission total."""
+        self._bin_worker = None
+        self.btn_scan_bin.setEnabled(True)
+        try:
+            freed = int(result.freed_bytes)
+            ok = bool(result.emptied)
+            msg = str(result.message)
+        except Exception:  # noqa: BLE001
+            freed, ok, msg = 0, False, "Unexpected result."
+        if ok:
+            self._feed(f"Recycle Bin emptied: {fmt_bytes(freed)} actually freed.")
+            QMessageBox.information(
+                self, "Recycle Bin emptied", f"{msg}\n\n{fmt_bytes(freed)} of disk space actually freed."
+            )
+        else:
+            QMessageBox.warning(self, "Empty Recycle Bin", msg)
+        self._measure_bin()
+
+    def _on_bin_failed(self, msg: str):
+        """Re-enable bin buttons and surface the failure."""
+        self._bin_worker = None
+        self.btn_scan_bin.setEnabled(True)
+        self.bin_status.setText("Recycle Bin: measurement failed.")
+        QMessageBox.warning(self, "Recycle Bin", f"Operation failed:\n{msg}")
+
+    # -- quick hygiene actions (instant, no scan) -----------------------------
+
+    def _run_hygiene(self, kind: str):
+        """Run one instant hygiene action and report it on its row + feed."""
+        try:
+            from cortex_unified.system_tools.hygiene_actions import clear_clipboard, flush_dns
+
+            result = flush_dns() if kind == "dns" else clear_clipboard()
+        except Exception as exc:  # noqa: BLE001
+            self.hygiene_status.setText(f"Hygiene action failed: {exc}")
+            return
+        self.hygiene_status.setText(result.message)
+        self._feed(result.message)
+        self.win.statusBar().showMessage(result.message, 5000)
+        if not result.success:
+            QMessageBox.warning(self, "Hygiene action", result.message)
+
+    def _flush_dns_now(self):
+        """Flush the DNS resolver cache now (instant)."""
+        self._run_hygiene("dns")
+
+    def _clear_clipboard_now(self):
+        """Clear the clipboard text payload now (instant)."""
+        self._run_hygiene("clipboard")
+
+    # -- whole-project extras -------------------------------------------------
+
+    def _scan_project_caches(self):
+        """Auto-discover project build caches across code roots (no folder picker)."""
+        self.btn_scan_proj.setEnabled(False)
+        self.btn_clean_proj.setEnabled(False)
+        self.proj_status.setText("Scanning project caches across code roots…")
+        from .workers import AutoProjectCacheWorker
+
+        w = AutoProjectCacheWorker(keep_recent_days=7)
+        self._extra_worker = w
+        self.win.run_worker(
+            w, self._on_project_scanned, self._on_extra_failed, on_progress=self._on_extra_proj_progress
+        )
+
+    def _on_extra_proj_progress(self, msg: str, _items: int, _size: object):
+        """Show auto-discovery progress inline."""
+        self.proj_status.setText(str(msg))
+
+    def _on_project_scanned(self, resources: list):
+        """Show discovered project-cache totals and enable one-click Clean."""
+        self._extra_worker = None
+        self.btn_scan_proj.setEnabled(True)
+        self._proj_resources = list(resources or [])
+        total = sum(int(r.get("size_bytes", 0) or 0) for r in self._proj_resources)
+        if not self._proj_resources:
+            self.proj_status.setText("Project caches: clean — nothing found.")
+            self.btn_clean_proj.setEnabled(False)
+        else:
+            self.proj_status.setText(
+                f"Project caches: {len(self._proj_resources):,} item(s), {fmt_bytes(total)} reclaimable."
+            )
+            self.btn_clean_proj.setEnabled(True)
+        self.win.statusBar().showMessage(self.proj_status.text(), 5000)
+
+    def _clean_project_caches(self):
+        """Recycle discovered project caches after confirm."""
+        if not self._proj_resources:
+            return
+        total = sum(int(r.get("size_bytes", 0) or 0) for r in self._proj_resources)
+        confirm = QMessageBox.question(
+            self,
+            "Clean project caches?",
+            f"Remove {len(self._proj_resources):,} project cache item(s) ({fmt_bytes(total)})?\n\n"
+            "Regenerable via npm install / cargo fetch / rebuild. Locked files are skipped.",
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+            QMessageBox.StandardButton.No,
+        )
+        if confirm != QMessageBox.StandardButton.Yes:
+            return
+        from .workers import ProjectCacheCleanWorker
+
+        self.btn_clean_proj.setEnabled(False)
+        w = ProjectCacheCleanWorker(list(self._proj_resources), dry_run=False)
+        self._extra_worker = w
+        self.win.run_worker(
+            w, self._on_project_cleaned, self._on_extra_failed, on_progress=self._on_extra_clean_progress
+        )
+
+    def _on_extra_clean_progress(self, _done: int, _total: int, _freed: object):
+        """Show project-clean progress inline."""
+        try:
+            self.proj_status.setText(f"Cleaning project caches… {_done:,}/{_total:,}")
+        except Exception:  # noqa: BLE001
+            pass
+
+    def _on_project_cleaned(self, results: dict):
+        """Report project-clean outcome and reset the row."""
+        self._extra_worker = None
+        self.btn_scan_proj.setEnabled(True)
+        freed = int((results or {}).get("total_freed_bytes", (results or {}).get("freed_bytes", 0)) or 0)
+        cleaned = int((results or {}).get("cleaned_count", (results or {}).get("deleted", 0)) or 0)
+        QMessageBox.information(self, "Project caches cleaned", f"Removed {cleaned:,} item(s) ({fmt_bytes(freed)}).")
+        self._proj_resources = []
+        self.btn_clean_proj.setEnabled(False)
+        self.proj_status.setText("Project caches: clean — nothing found.")
+        self._scan()
+
+    def _scan_extra_logs(self):
+        """Find large logs across auto code roots (no folder picker)."""
+        roots = self._auto_log_roots()
+        if not roots:
+            QMessageBox.information(self, "No roots", "No code roots found to sweep for logs.")
+            return
+        self.btn_scan_logs.setEnabled(False)
+        self.btn_clean_logs.setEnabled(False)
+        self.logs_status.setText(f"Scanning {len(roots)} root(s) for large logs…")
+        from .workers import CacheLogSweepWorker
+
+        w = CacheLogSweepWorker([str(r) for r in roots], min_size_mb=20.0)
+        self._extra_worker = w
+        self.win.run_worker(w, self._on_extra_logs_done, self._on_extra_failed, on_progress=self._on_extra_log_progress)
+
+    def _on_extra_log_progress(self, msg: str):
+        """Show log-sweep progress inline."""
+        self.logs_status.setText(str(msg))
+
+    def _on_extra_logs_done(self, results: list):
+        """Show large-log totals and enable one-click Recycle."""
+        self._extra_worker = None
+        self.btn_scan_logs.setEnabled(True)
+        self._extra_logs = list(results or [])
+        total = sum(int(sz) for _, sz in self._extra_logs)
+        if not self._extra_logs:
+            self.logs_status.setText("Large logs: clean — nothing over 20 MB found.")
+            self.btn_clean_logs.setEnabled(False)
+        else:
+            self.logs_status.setText(f"Large logs: {len(self._extra_logs):,} file(s), {fmt_bytes(total)} reclaimable.")
+            self.btn_clean_logs.setEnabled(True)
+
+    def _clean_extra_logs(self):
+        """Move selected large logs to the Recycle Bin."""
+        if not self._extra_logs:
+            return
+        total = sum(int(sz) for _, sz in self._extra_logs)
+        confirm = QMessageBox.question(
+            self,
+            "Recycle large logs?",
+            f"Move {len(self._extra_logs):,} log(s) ({fmt_bytes(total)}) to the Recycle Bin?",
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+            QMessageBox.StandardButton.No,
+        )
+        if confirm != QMessageBox.StandardButton.Yes:
+            return
+        from .workers import DeleteSelectedWorker
+
+        paths = [str(p) for p, _ in self._extra_logs]
+        self.btn_clean_logs.setEnabled(False)
+        self.win.run_worker(DeleteSelectedWorker(paths, "recycle"), self._on_extra_logs_cleaned, self._on_extra_failed)
+
+    def _on_extra_logs_cleaned(self, freed: int, ok: int, blocked: int):
+        """Report log-recycle outcome and rescan the row."""
+        self.btn_scan_logs.setEnabled(True)
+        QMessageBox.information(
+            self,
+            "Done",
+            f"Recycled {ok} log(s), freed {fmt_bytes(freed)}." + (f" {blocked} blocked." if blocked else ""),
+        )
+        self._extra_logs = []
+        self.btn_clean_logs.setEnabled(False)
+        self.logs_status.setText("Large logs: clean — nothing over 20 MB found.")
+
+    def _on_extra_failed(self, msg: str):
+        """Re-enable extra-sweep buttons and surface the failure."""
+        self._extra_worker = None
+        self._sweep_workers.clear()
+        self.btn_scan_proj.setEnabled(True)
+        self.btn_scan_logs.setEnabled(True)
+        self.btn_scan_large.setEnabled(True)
+        self.btn_scan_empty.setEnabled(True)
+        self.btn_scan_dupes.setEnabled(True)
+        self.btn_scan_bin.setEnabled(True)
+        QMessageBox.warning(self, "Extra sweep failed", str(msg))
+
+    # -- file-sweep roots / monitor / master control / tool directory --------
+
+    def _sweep_roots(self) -> list[Path]:
+        """Auto roots for file sweeps: code roots + Documents/Downloads (no picker, no AppData walk)."""
+        roots: list[Path] = []
+        try:
+            from cortex_unified.analyzers.project_cache_scanner import _known_code_roots
+
+            for p in _known_code_roots():
+                try:
+                    if p.is_dir() and p not in roots:
+                        roots.append(p)
+                except OSError:
+                    continue
+                if len(roots) >= 6:
+                    break
+        except Exception:  # noqa: BLE001
+            pass
+        home = Path.home()
+        for sub in ("Documents", "Downloads", "code", "Projects", "workspace", "dev"):
+            p = home / sub
+            try:
+                if p.is_dir() and p not in roots:
+                    roots.append(p)
+            except OSError:
+                continue
+            if len(roots) >= 8:
+                break
+        return roots
+
+    def _feed(self, msg: str):
+        """Append a monitor event to the mission feed (keeps last 3)."""
+        self._feed_lines.append(str(msg))
+        self._feed_lines = self._feed_lines[-3:]
+        self.mission_feed.setText("\n".join(self._feed_lines))
+        self._update_mission_total()
+
+    def _sweep_bytes(self, kind: str) -> int:
+        """Reclaimable bytes for one sweep kind (for the mission total)."""
+        try:
+            if kind == "system":
+                return int(self._report.total_reclaimable_bytes) if self._report else 0
+            if kind == "temp":
+                return sum(int(getattr(f, "size_bytes", 0) or 0) for f in self._temp_findings)
+            if kind == "project":
+                return sum(int(r.get("size_bytes", 0) or 0) for r in self._proj_resources)
+            if kind == "logs":
+                return sum(int(sz) for _, sz in self._extra_logs)
+            if kind == "large":
+                return sum(int(getattr(e, "size", 0) or 0) for e in self._large_files)
+            if kind == "empty":
+                # Empty files/folders hold no bytes by definition — tracked as item counts.
+                return 0
+        except Exception:  # noqa: BLE001
+            return 0
+        return 0
+
+    def _update_mission_total(self):
+        """Aggregate monitor: system + temp + project + logs + large (empty ~0 B, dupes review-only)."""
+        sys_b = self._sweep_bytes("system")
+        tmp_b = self._sweep_bytes("temp")
+        proj_b = self._sweep_bytes("project")
+        log_b = self._sweep_bytes("logs")
+        large_b = self._sweep_bytes("large")
+        total = sys_b + tmp_b + proj_b + log_b + large_b
+        n_files = 0
+        try:
+            n_files += int(self._report.total_files) if self._report else 0
+            n_files += (
+                len(self._temp_findings)
+                + len(self._proj_resources)
+                + len(self._extra_logs)
+                + len(self._large_files)
+                + len(self._empty_files)
+            )
+        except Exception:  # noqa: BLE001
+            pass
+        dupe_note = f" + {fmt_bytes(self._dupe_waste)} duplicates (review-only)" if self._dupe_waste else ""
+        bin_note = (
+            f" + {fmt_bytes(self._bin_bytes)} sitting in the Recycle Bin (empty separately to free it)"
+            if self._bin_bytes
+            else ""
+        )
+        self.mission_total.setText(
+            f"Mission total: {fmt_bytes(total)} across {n_files:,} item(s) "
+            f"(system {fmt_bytes(sys_b)} • temp {fmt_bytes(tmp_b)} • project {fmt_bytes(proj_b)} • "
+            f"logs {fmt_bytes(log_b)} • large {fmt_bytes(large_b)} • empty {len(self._empty_files)+len(self._empty_dirs)} items){dupe_note}{bin_note}."
+        )
+
+    def _scan_large_files(self):
+        """Find files over 100 MB across sweep roots (review before recycling)."""
+        roots = self._sweep_roots()
+        if not roots:
+            QMessageBox.information(self, "No roots", "No sweep roots found for large files.")
+            return
+        self.btn_scan_large.setEnabled(False)
+        self.btn_clean_large.setEnabled(False)
+        self.large_status.setText(f"Scanning {len(roots)} root(s) for files over 100 MB…")
+        self._feed("Large-file scan started…")
+        from .workers import LargeFilesWorker
+
+        # Fan out per root (worker takes one root); aggregate on completion.
+        self._large_files = []
+        self._large_pending = len(roots)
+        for r in roots:
+            w = LargeFilesWorker(str(r), 100.0)
+            self._sweep_workers[f"large:{r}"] = w
+            self.win.run_worker(w, self._on_large_chunk, self._on_extra_failed, on_progress=self._on_large_progress)
+
+    def _on_large_progress(self, msg: str):
+        """Show large-file progress inline."""
+        self.large_status.setText(str(msg))
+
+    def _on_large_chunk(self, entries: list):
+        """Aggregate one root's large files; finalize when all roots report."""
+        self._large_files.extend(entries or [])
+        self._large_pending = max(0, getattr(self, "_large_pending", 1) - 1)
+        if self._large_pending:
+            self.large_status.setText(f"Scanning large files… {len(self._large_files):,} found so far…")
+            return
+        self._sweep_workers = {k: v for k, v in self._sweep_workers.items() if not k.startswith("large:")}
+        self.btn_scan_large.setEnabled(True)
+        total = sum(int(getattr(e, "size", 0) or 0) for e in self._large_files)
+        if not self._large_files:
+            self.large_status.setText("Large files: clean — nothing over 100 MB found.")
+            self.btn_clean_large.setEnabled(False)
+        else:
+            self.large_status.setText(
+                f"Large files: {len(self._large_files):,} file(s), {fmt_bytes(total)} — review before recycling."
+            )
+            self.btn_clean_large.setEnabled(True)
+        self._feed(f"Large files: {len(self._large_files):,} found ({fmt_bytes(total)}).")
+
+    def _clean_large_files(self):
+        """Recycle listed large files after confirm (or silently in master-clean mode)."""
+        if not self._large_files:
+            return
+        if not self._no_confirm:
+            total = sum(int(getattr(e, "size", 0) or 0) for e in self._large_files)
+            confirm = QMessageBox.question(
+                self,
+                "Recycle large files?",
+                f"Move {len(self._large_files):,} large file(s) ({fmt_bytes(total)}) to the Recycle Bin?\n\nReview the list in Large Files Finder first if unsure.",
+                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+                QMessageBox.StandardButton.No,
+            )
+            if confirm != QMessageBox.StandardButton.Yes:
+                return
+        from .workers import DeleteSelectedWorker
+
+        paths = [str(getattr(e, "path", e)) for e in self._large_files]
+        self.btn_clean_large.setEnabled(False)
+        self.win.run_worker(DeleteSelectedWorker(paths, "recycle"), self._on_large_cleaned, self._on_extra_failed)
+
+    def _on_large_cleaned(self, freed: int, ok: int, blocked: int):
+        """Report large-file recycle outcome."""
+        self.btn_scan_large.setEnabled(True)
+        silent = "large" in self._silent_sweeps
+        self._silent_sweeps.discard("large")
+        if not silent:
+            QMessageBox.information(
+                self,
+                "Done",
+                f"Recycled {ok} large file(s), freed {fmt_bytes(freed)}." + (f" {blocked} blocked." if blocked else ""),
+            )
+        self._feed(f"Large files cleaned: {fmt_bytes(freed)}.")
+        self._large_files = []
+        self.large_status.setText("Large files: clean — nothing over 100 MB found.")
+        self._update_mission_total()
+
+    def _scan_empty_files(self):
+        """Find 0-byte files + empty folders across code roots (safe, fast)."""
+        roots = self._sweep_roots()[:6]
+        if not roots:
+            QMessageBox.information(self, "No roots", "No sweep roots found for empty files.")
+            return
+        self.btn_scan_empty.setEnabled(False)
+        self.btn_clean_empty.setEnabled(False)
+        self.empty_status.setText(f"Scanning {len(roots)} root(s) for empty files…")
+        self._feed("Empty-file scan started…")
+        from .workers import EmptyWorker
+
+        self._empty_files = []
+        self._empty_dirs = []
+        self._empty_pending = len(roots)
+        for r in roots:
+            w = EmptyWorker(str(r))
+            self._sweep_workers[f"empty:{r}"] = w
+            self.win.run_worker(w, self._on_empty_chunk, self._on_extra_failed)
+
+    def _on_empty_chunk(self, files: list, dirs: list):
+        """Aggregate one root's empty results; finalize when all roots report."""
+        self._empty_files.extend(files or [])
+        self._empty_dirs.extend(dirs or [])
+        self._empty_pending = max(0, getattr(self, "_empty_pending", 1) - 1)
+        if self._empty_pending:
+            return
+        self._sweep_workers = {k: v for k, v in self._sweep_workers.items() if not k.startswith("empty:")}
+        self.btn_scan_empty.setEnabled(True)
+        n = len(self._empty_files) + len(self._empty_dirs)
+        if not n:
+            self.empty_status.setText("Empty files: clean — nothing found.")
+            self.btn_clean_empty.setEnabled(False)
+        else:
+            self.empty_status.setText(
+                f"Empty: {len(self._empty_files):,} file(s) + {len(self._empty_dirs):,} folder(s) — safe to recycle."
+            )
+            self.btn_clean_empty.setEnabled(True)
+        self._feed(f"Empty scan: {n:,} item(s).")
+
+    def _clean_empty_files(self):
+        """Recycle empty files/folders (or silently in master-clean mode)."""
+        if not (self._empty_files or self._empty_dirs):
+            return
+        if not self._no_confirm:
+            confirm = QMessageBox.question(
+                self,
+                "Recycle empty items?",
+                f"Move {len(self._empty_files):,} empty file(s) + {len(self._empty_dirs):,} empty folder(s) to the Recycle Bin?",
+                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+                QMessageBox.StandardButton.No,
+            )
+            if confirm != QMessageBox.StandardButton.Yes:
+                return
+        from .workers import DeleteSelectedWorker
+
+        paths = [str(p) for p in ([*self._empty_files, *self._empty_dirs])]
+        self.btn_clean_empty.setEnabled(False)
+        self.win.run_worker(DeleteSelectedWorker(paths, "recycle"), self._on_empty_cleaned, self._on_extra_failed)
+
+    def _on_empty_cleaned(self, freed: int, ok: int, blocked: int):
+        """Report empty recycle outcome."""
+        self.btn_scan_empty.setEnabled(True)
+        silent = "empty" in self._silent_sweeps
+        self._silent_sweeps.discard("empty")
+        if not silent:
+            QMessageBox.information(
+                self, "Done", f"Recycled {ok} empty item(s)." + (f" {blocked} blocked." if blocked else "")
+            )
+        self._feed(f"Empty cleaned: {ok:,} item(s).")
+        self._empty_files = []
+        self._empty_dirs = []
+        self.empty_status.setText("Empty files: clean — nothing found.")
+        self._update_mission_total()
+
+    def _scan_duplicates(self):
+        """Estimate byte-identical duplicate waste (review-only, never auto-deleted)."""
+        roots = self._sweep_roots()[:6]
+        if not roots:
+            QMessageBox.information(self, "No roots", "No sweep roots found for duplicates.")
+            return
+        self.btn_scan_dupes.setEnabled(False)
+        self.dupes_status.setText(f"Hashing duplicates across {len(roots)} root(s)…")
+        self._feed("Duplicate scan started…")
+        from .workers import DuplicateWorker
+
+        w = DuplicateWorker([str(r) for r in roots])
+        self._sweep_workers["dupes"] = w
+        self.win.run_worker(w, self._on_dupes_done, self._on_extra_failed, on_progress=self._on_dupes_progress)
+
+    def _on_dupes_progress(self, msg: str):
+        """Show duplicate-scan progress inline."""
+        self.dupes_status.setText(str(msg))
+
+    def _on_dupes_done(self, groups: dict):
+        """Show duplicate waste (review-only)."""
+        self._sweep_workers.pop("dupes", None)
+        self.btn_scan_dupes.setEnabled(True)
+        self._dupe_groups = dict(groups or {})
+        waste = 0
+        n_dupes = 0
+        try:
+            from pathlib import Path as _P
+
+            for _h, paths in self._dupe_groups.items():
+                if len(paths) < 2:
+                    continue
+                try:
+                    sz = _P(paths[0]).stat().st_size
+                except OSError:
+                    continue
+                waste += sz * (len(paths) - 1)
+                n_dupes += len(paths) - 1
+        except Exception:  # noqa: BLE001
+            pass
+        self._dupe_waste = int(waste)
+        if not n_dupes:
+            self.dupes_status.setText("Duplicates: clean — no byte-identical copies found.")
+        else:
+            self.dupes_status.setText(
+                f"Duplicates: {n_dupes:,} redundant copie(s), {fmt_bytes(waste)} waste — Review in Tool (never auto-deleted)."
+            )
+        self._feed(f"Duplicates: {fmt_bytes(waste)} waste.")
+        self._update_mission_total()
+
+    def _scan_everything(self):
+        """Master scan: all fast sweeps at once, no folder picker."""
+        self._feed("Scan Everything started…")
+        self._scan()
+        try:
+            self._scan_temp()
+        except Exception:  # noqa: BLE001
+            pass
+        try:
+            self._scan_project_caches()
+        except Exception:  # noqa: BLE001
+            pass
+        try:
+            self._scan_extra_logs()
+        except Exception:  # noqa: BLE001
+            pass
+        try:
+            self._scan_large_files()
+        except Exception:  # noqa: BLE001
+            pass
+        try:
+            self._scan_empty_files()
+        except Exception:  # noqa: BLE001
+            pass
+        try:
+            self._scan_duplicates()
+        except Exception:  # noqa: BLE001
+            pass
+
+    def _clean_everything_safe(self):
+        """Master clean: one confirm, then all safe hits (dupes + HIGH + bin never auto-deleted)."""
+        sys_b = self._sweep_bytes("system")
+        tmp_b = self._sweep_bytes("temp")
+        proj_b = sum(int(r.get("size_bytes", 0) or 0) for r in self._proj_resources)
+        log_b = sum(int(sz) for _, sz in self._extra_logs)
+        large_b = sum(int(getattr(e, "size", 0) or 0) for e in self._large_files)
+        total = sys_b + tmp_b + proj_b + log_b + large_b
+        n = 0
+        try:
+            n += int(self._report.total_files) if self._report else 0
+            n += (
+                len(self._temp_findings)
+                + len(self._proj_resources)
+                + len(self._extra_logs)
+                + len(self._large_files)
+                + len(self._empty_files)
+                + len(self._empty_dirs)
+            )
+        except Exception:  # noqa: BLE001
+            pass
+        if not total and not n:
+            QMessageBox.information(self, "Nothing to clean", "Run Scan Everything first — no safe hits found yet.")
+            return
+        confirm = QMessageBox.question(
+            self,
+            "Clean everything safe?",
+            f"Recycle {n:,} safe item(s) ({fmt_bytes(total)}) across system caches, temp, project, logs, large + empty?\n\n"
+            "Everything above moves to the Recycle Bin (reversible) — empty the bin below to free the space. "
+            "Duplicates and HIGH-risk items are NEVER auto-deleted — review them in their tools. "
+            "The Recycle Bin is never auto-emptied either."
+            + (
+                f"\n\nDuplicate waste seen: {fmt_bytes(self._dupe_waste)} (left untouched)." if self._dupe_waste else ""
+            ),
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+            QMessageBox.StandardButton.No,
+        )
+        if confirm != QMessageBox.StandardButton.Yes:
+            return
+        self._no_confirm = True
+        self._silent_sweeps = set()
+        self._feed("Clean Everything started…")
+        try:
+            if self._report and self._report.total_files:
+                self._select_safe_cards()
+                self._silent_sweeps.add("system")
+                self._clean_silent_system()
+        except Exception:  # noqa: BLE001
+            pass
+        try:
+            if self._temp_findings:
+                self._do_temp_clean_silent()
+        except Exception:  # noqa: BLE001
+            pass
+        try:
+            if self._proj_resources:
+                self._do_proj_clean_silent()
+        except Exception:  # noqa: BLE001
+            pass
+        try:
+            if self._extra_logs:
+                self._do_logs_clean_silent()
+        except Exception:  # noqa: BLE001
+            pass
+        try:
+            if self._large_files:
+                self._silent_sweeps.add("large")
+                self._clean_large_files()
+        except Exception:  # noqa: BLE001
+            pass
+        try:
+            if self._empty_files or self._empty_dirs:
+                self._silent_sweeps.add("empty")
+                self._clean_empty_files()
+        except Exception:  # noqa: BLE001
+            pass
+        self._no_confirm = False
+        self._feed("Clean Everything dispatched — each sweep reports as it finishes.")
+
+    def _clean_silent_system(self):
+        """System safe-clean without a second confirm (master already confirmed)."""
+        from cortex_unified.engine.service import CleanupReport
+
+        selected_ids = [cid for cid, on in self._selected.items() if on]
+        if not selected_ids:
+            return
+        filtered = CleanupReport(
+            scans=[s for s in self._report.scans if s.category.id in selected_ids],
+            duration_seconds=self._report.duration_seconds,
+        )
+        if not filtered.total_files:
+            return
+        from cortex_unified.engine import DeletionMethod
+
+        self.clean_btn.setEnabled(False)
+        self.clean_all_btn.setEnabled(False)
+        self.progress.setVisible(True)
+        self.scan_status.setText("Cleaning selected categories…")
+        from .workers import CleanWorker
+
+        w = CleanWorker(filtered, DeletionMethod.RECYCLE.value, allow_system=True)
+        self.win.run_worker(w, self._on_cleaned, self._fail, on_progress=self._on_progress)
+
+    def _do_temp_clean_silent(self):
+        """Deep-temp clean without dialogs (master mode)."""
+        from cortex_unified.core.temp_cleaner import TempCleaner
+
+        res = TempCleaner(min_age_days=1).clean(self._temp_findings, use_trash=True, dry_run=False)
+        self._feed(f"Temp cleaned: {fmt_bytes(int(res.get('bytes_freed', 0)))}.")
+        self._temp_findings = []
+        self.btn_clean_temp.setEnabled(False)
+        self.btn_clean_temp.setVisible(False)
+        self.temp_result_label.setText("")
+        self._update_mission_total()
+
+    def _do_proj_clean_silent(self):
+        """Project-cache clean without dialogs (master mode)."""
+        from .workers import ProjectCacheCleanWorker
+
+        self.btn_clean_proj.setEnabled(False)
+        w = ProjectCacheCleanWorker(list(self._proj_resources), dry_run=False)
+        self._sweep_workers["proj_clean"] = w
+        self.win.run_worker(w, self._on_proj_master_cleaned, self._on_extra_failed)
+
+    def _on_proj_master_cleaned(self, results: dict):
+        """Master-mode project-clean completion (no dialog, feed only)."""
+        self._sweep_workers.pop("proj_clean", None)
+        self.btn_scan_proj.setEnabled(True)
+        freed = int((results or {}).get("total_freed_bytes", (results or {}).get("freed_bytes", 0)) or 0)
+        self._feed(f"Project caches cleaned: {fmt_bytes(freed)}.")
+        self._proj_resources = []
+        self.proj_status.setText("Project caches: clean — nothing found.")
+        self._update_mission_total()
+
+    def _do_logs_clean_silent(self):
+        """Large-log clean without dialogs (master mode)."""
+        from .workers import DeleteSelectedWorker
+
+        paths = [str(p) for p, _ in self._extra_logs]
+        self.btn_clean_logs.setEnabled(False)
+        self.win.run_worker(DeleteSelectedWorker(paths, "recycle"), self._on_logs_master_cleaned, self._on_extra_failed)
+
+    def _on_logs_master_cleaned(self, freed: int, ok: int, _blocked: int):
+        """Master-mode log-clean completion (no dialog, feed only)."""
+        self.btn_scan_logs.setEnabled(True)
+        self._feed(f"Logs cleaned: {fmt_bytes(freed)}.")
+        self._extra_logs = []
+        self.logs_status.setText("Large logs: clean — nothing over 20 MB found.")
+        self._update_mission_total()
+
+    def _open_tool(self, page_id: str):
+        """Jump to any cleaner tool in one click."""
+        try:
+            self.win._select(page_id)
+        except Exception as exc:  # noqa: BLE001
+            QMessageBox.warning(self, "Navigation", f"Could not open {page_id}:\n{exc}")
+
+    def _build_all_tools_grid(self):
+        """Build the all-clean-tools directory (Open buttons, grouped)."""
+        try:
+            from .registry import PAGES
+        except Exception:  # noqa: BLE001
+            return
+        # Clear
+        while self.tools_grid.count():
+            item = self.tools_grid.takeAt(0)
+            w = item.widget()
+            if w:
+                w.deleteLater()
+        wanted_groups = ("cleanup", "maintenance", "system", "activity", "apps", "security")
+        specs = [p for p in PAGES if p.group in wanted_groups and p.id != "cleanuphub"]
+        # Keep to clean-related ids (57 max) to avoid stuffing file/network tools here.
+        keep = {
+            "duplicates",
+            "photos",
+            "dupfolders",
+            "large",
+            "empty",
+            "analyzer",
+            "brokenlinks",
+            "logsweep",
+            "packages",
+            "projcaches",
+            "modelcache",
+            "neardup",
+            "perceptual",
+            "registryai",
+            "fuzzyhash",
+            "audio",
+            "video",
+            "cdc",
+            "cloud",
+            "portable",
+            "crashdumps",
+            "eventlogs",
+            "devcleaner",
+            "browserdeep",
+            "imgopt",
+            "fonts",
+            "tempcleaner",
+            "vdisks",
+            "wsl",
+            "compactos",
+            "compstore",
+            "systemcache",
+            "startupopt",
+            "privacy",
+            "shellbags",
+            "diagdata",
+            "uninstaller",
+            "advanced_uninstaller",
+            "leftovers",
+            "telemetry",
+            "registry",
+            "privacyblock",
+            "winupdate",
+            "winrepair",
+            "diskanalyzer",
+            "vssmanager",
+            "sandbox",
+            "shadercache",
+            "aitelemetry",
+            "vsshealth",
+            "devpackage",
+            "winapp2",
+            "srumbam",
+            "delivery",
+            "oldfiles",
+            "residuals",
+        }
+        specs = [p for p in specs if p.id in keep]
+        order = {"cleanup": 0, "apps": 1, "activity": 2, "system": 3, "maintenance": 4, "security": 5}
+        specs.sort(key=lambda p: (order.get(p.group, 9), p.title))
+        wired = {"tempcleaner", "logsweep", "packages", "projcaches", "duplicates", "large", "empty"}
+        cols = 3
+        for idx, spec in enumerate(specs):
+            card = Card(self.p)
+            lay = QVBoxLayout(card)
+            lay.setContentsMargins(10, 8, 10, 8)
+            lay.setSpacing(4)
+            t = QLabel(f"<b>{spec.title}</b>")
+            t.setTextFormat(Qt.TextFormat.RichText)
+            t.setWordWrap(True)
+            lay.addWidget(t)
+            sub = QLabel("Wired above — live status" if spec.id in wired else spec.group.capitalize())
+            sub.setObjectName("Muted")
+            lay.addWidget(sub)
+            btn = QPushButton("Open")
+            btn.setObjectName("Ghost")
+            btn.setCursor(Qt.CursorShape.PointingHandCursor)
+            btn.clicked.connect(lambda _c=False, pid=spec.id: self._open_tool(pid))
+            lay.addWidget(btn)
+            r, c = divmod(idx, cols)
+            self.tools_grid.addWidget(card, r, c)
+        self.tools_title.setText(
+            f"<b>All clean tools</b> <span style='color:#888'>— {len(specs)} cleaners, one directory. "
+            "Wired rows clean inline above; the rest open in one click.</span>"
+        )
+
+    def _auto_log_roots(self) -> list[Path]:
+        """Code roots for the log sweep (auto, no picker)."""
+        try:
+            from cortex_unified.analyzers.project_cache_scanner import _known_code_roots
+
+            known = [p for p in _known_code_roots() if p.is_dir()]
+            if known:
+                return known[:12]
+        except Exception:  # noqa: BLE001
+            pass
+        out: list[Path] = []
+        home = Path.home()
+        for sub in ("code", "Projects", "source/repos", "workspace", "dev"):
+            p = home / sub
+            try:
+                if p.is_dir():
+                    out.append(p)
+            except OSError:
+                continue
+        return out[:12]
 
     # -- pickers ------------------------------------------------------------
 
@@ -660,13 +1973,23 @@ class CleanupHubPage(_Page):
         if self._custom_roots:
             roots_str = ", ".join(str(r) for r in self._custom_roots)
             self.target_roots_label.setText(f"Active Scan Target: {roots_str}")
-            self.btn_clear_roots.setText("Reset to System Caches")
+            self.btn_clear_roots.setText("Reset to Full Device Scan")
             self.btn_clear_roots.setVisible(True)
         else:
-            self.target_roots_label.setText("Active Scan Roots: Default System Partitions (C:\\, Temp, AppData)")
+            self.target_roots_label.setText(
+                "Active Scan Roots: Full Device (System Caches • All Drives • AppData) — auto-scanned on open"
+            )
             self.btn_clear_roots.setVisible(False)
 
     # -- clean --------------------------------------------------------------
+
+    def _clean_all_safe(self):
+        """One-click full-device clean: tick all LOW+MEDIUM hits, leave HIGH unticked, then clean."""
+        if self._report is None or self._report.total_files == 0:
+            QMessageBox.information(self, "Nothing to clean", "Scan first — no reclaimable files found yet.")
+            return
+        self._select_safe_cards()
+        self._clean()
 
     def _clean(self):
         """Confirm selection, then run CleanWorker on the selected categories (Recycle-Bin-safe delete).
@@ -687,12 +2010,14 @@ class CleanupHubPage(_Page):
             duration_seconds=self._report.duration_seconds,
         )
         total = filtered.total_reclaimable_bytes
+        high_sel = sum(1 for s in filtered.scans if s.category.risk == RiskLevel.HIGH)
+        high_note = f"\n\n⚠ Includes {high_sel} HIGH-risk categor(ies) — confirm carefully." if high_sel else ""
         confirm = QMessageBox.question(
             self,
             "Confirm cleanup",
-            f"Clean {len(filtered.scans)} category(ies), {filtered.total_files:,} file(s), "
-            f"{fmt_bytes(total)}?\n\nFiles go to the Recycle Bin where possible (reversible). "
-            "HIGH-risk items are excluded unless you included them.",
+            f"Move {len(filtered.scans)} category(ies), {filtered.total_files:,} file(s), "
+            f"{fmt_bytes(total)} to the Recycle Bin?\n\nReversible — restore from the bin if anything was needed. "
+            f"Locked/in-use files are skipped. Empty the Recycle Bin row below afterwards to free the space.{high_note}",
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
             QMessageBox.StandardButton.No,
         )
@@ -701,12 +2026,19 @@ class CleanupHubPage(_Page):
         from cortex_unified.engine import DeletionMethod
 
         self.clean_btn.setEnabled(False)
+        self.clean_all_btn.setEnabled(False)
         self.progress.setVisible(True)
         self.scan_status.setText("Cleaning selected categories…")
         from .workers import CleanWorker
 
-        # Use DELETE (goes to recycle via SecureDeleter probe) for safety; user can pick SHRED elsewhere
-        w = CleanWorker(filtered, DeletionMethod.DELETE.value)
+        # Use RECYCLE so every Hub clean is reversible and consistent with the
+        # temp/project/logs/large/empty sweeps (all recycle). allow_system=True
+        # so Windows Temp / Update cache / Delivery / Prefetch / WER (scanned
+        # with the system-aware guard) are actually recyclable — otherwise
+        # they'd scan fine and then be reported as blocked/skipped.
+        # Custom-root scans never contain system paths, so the flag is harmless there.
+        # Disk space is freed for real when the Recycle Bin row below is emptied.
+        w = CleanWorker(filtered, DeletionMethod.RECYCLE.value, allow_system=True)
         self.win.run_worker(w, self._on_cleaned, self._fail, on_progress=self._on_progress)
 
     def _on_cleaned(self, freed: int, items: int, skipped: int):
@@ -719,7 +2051,20 @@ class CleanupHubPage(_Page):
         """
         self.progress.setVisible(False)
         self.scan_btn.setEnabled(True)
-        extra = f" {skipped} blocked/skipped." if skipped else ""
-        QMessageBox.information(self, "Cleanup done", f"Freed {fmt_bytes(freed)} across {items} item(s).{extra}")
-        self.win.statusBar().showMessage(f"Cleanup done: {fmt_bytes(freed)} freed", 6000)
+        silent = "system" in self._silent_sweeps
+        self._silent_sweeps.discard("system")
+        extra = (
+            f" {skipped} locked/protected/skipped (in-use files, cloud placeholders, or HIGH-risk left unticked)."
+            if skipped
+            else ""
+        )
+        done_msg = (
+            f"Moved {fmt_bytes(freed)} ({items} item(s)) to the Recycle Bin.{extra}\n\n"
+            "Space is freed for real once the Recycle Bin row below is emptied."
+        )
+        if silent:
+            self._feed(f"System caches recycled: {fmt_bytes(freed)} (empty the bin to free it).")
+        else:
+            QMessageBox.information(self, "Cleanup done — check the Recycle Bin", done_msg)
+        self.win.statusBar().showMessage(f"Recycled {fmt_bytes(freed)} to bin — empty the bin to free it", 6000)
         self._scan()

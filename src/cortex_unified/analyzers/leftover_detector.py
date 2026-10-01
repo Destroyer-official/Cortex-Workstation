@@ -144,7 +144,7 @@ class LeftoverDetector:
                     Path(os.environ.get("TEMP", "C:\\Windows\\Temp")),
                     Path(os.environ.get("TMP", "C:\\Windows\\Temp")),
                 ],
-                "user_profile": [Path(os.environ.get("USERPROFILE", "C:\\Users\\Default"))],
+                "user_profile": [Path(os.environ.get("USERPROFILE") or str(Path.home()))],
             }
         elif sys.platform == "darwin":  # macOS
             home = Path.home()

@@ -28,8 +28,8 @@ Usage::
 
     from cortex_unified.system_tools.compact_os import CompactOSManager
     m = CompactOSManager()
-    candidates = m.find_compressible_folders("C:/Users/admin")  # [{...}]
-    m.compact_folder("C:/Users/admin/Downloads/old-log-archive")
+    candidates = m.find_compressible_folders("%USERPROFILE%")  # [{...}]
+    m.compact_folder("%USERPROFILE%/Downloads/old-log-archive")
 
 The manager never compresses on its own - callers (a UI page) decide.
 
