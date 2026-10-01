@@ -67,6 +67,10 @@ jobs:
       - name: Run Full Test Suite on Windows Native
         env:
           QT_QPA_PLATFORM: offscreen
+          PYTHONIOENCODING: utf-8
         run: python -m pytest tests/ --ignore=tests/test_gui_pages_e2e.py -v
       - name: Run Full Production Diagnostics Suite
+        env:
+          QT_QPA_PLATFORM: offscreen
+          PYTHONIOENCODING: utf-8
         run: python scripts/verify_production_readiness.py

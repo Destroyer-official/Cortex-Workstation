@@ -29,6 +29,32 @@ SRC_DIR = REPO_ROOT / "src"
 if str(SRC_DIR) not in sys.path:
     sys.path.insert(0, str(SRC_DIR))
 
+# Reconfigure standard streams to UTF-8 on Windows consoles if possible
+if hasattr(sys.stdout, "reconfigure"):
+    try:
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
+if hasattr(sys.stderr, "reconfigure"):
+    try:
+        sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
+
+
+def _safe_sym(sym: str, fallback: str) -> str:
+    """Return symbol if encodable by stdout, else fallback."""
+    try:
+        enc = getattr(sys.stdout, "encoding", None) or "utf-8"
+        sym.encode(enc)
+        return sym
+    except Exception:
+        return fallback
+
+
+CHECK_SYM = _safe_sym("✓", "[PASS]")
+CROSS_SYM = _safe_sym("✗", "[FAIL]")
+
 # Color helpers
 USE_COLOR = sys.stdout.isatty() or os.environ.get("FORCE_COLOR") == "1"
 
@@ -868,9 +894,11 @@ class DiagnosticRunner:
             sec (DiagnosticSection): The sec parameter.
         """
         if sec.is_success:
-            print(f"  {green('✓')} {sec.title}: All {sec.passed}/{sec.total} checks passed ({sec.duration_ms:.1f}ms)")
+            print(
+                f"  {green(CHECK_SYM)} {sec.title}: All {sec.passed}/{sec.total} checks passed ({sec.duration_ms:.1f}ms)"
+            )
         else:
-            print(f"  {red('✗')} {sec.title}: {sec.failed}/{sec.total} checks failed ({sec.duration_ms:.1f}ms)")
+            print(f"  {red(CROSS_SYM)} {sec.title}: {sec.failed}/{sec.total} checks failed ({sec.duration_ms:.1f}ms)")
             for it in sec.items:
                 if it.status == "FAIL":
                     print(f"    - {red(it.name)}: {it.message}")

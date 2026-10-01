@@ -23,6 +23,16 @@ if str(SRC_DIR) not in sys.path:
 from cortex_unified.debug.runner import main
 
 if __name__ == "__main__":
+    if hasattr(sys.stdout, "reconfigure"):
+        try:
+            sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+        except Exception:
+            pass
+    if hasattr(sys.stderr, "reconfigure"):
+        try:
+            sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+        except Exception:
+            pass
     code = main()
     sys.stdout.flush()
     sys.stderr.flush()
