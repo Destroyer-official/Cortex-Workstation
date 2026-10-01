@@ -161,7 +161,7 @@ class ShaderCacheCleaner:
                                 loc_info.file_count += 1
                                 loc_info.total_bytes += sz
 
-                                is_stale = (now - stat.st_mtime) >= age_threshold_sec
+                                is_stale = min_age_days <= 0 or (now - stat.st_mtime) >= age_threshold_sec
                                 if is_stale:
                                     loc_info.stale_file_count += 1
                                     loc_info.stale_bytes += sz
@@ -195,7 +195,7 @@ class ShaderCacheCleaner:
                         fp = Path(root) / f
                         try:
                             stat = fp.stat()
-                            if (now - stat.st_mtime) >= age_threshold_sec:
+                            if min_age_days <= 0 or (now - stat.st_mtime) >= age_threshold_sec:
                                 sz = stat.st_size
                                 if not dry_run:
                                     fp.unlink()
