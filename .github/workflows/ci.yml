@@ -68,7 +68,7 @@ jobs:
         env:
           QT_QPA_PLATFORM: offscreen
           PYTHONIOENCODING: utf-8
-        run: python -m pytest tests/ --ignore=tests/test_gui_pages_e2e.py -v
+        run: python -m pytest tests/ --ignore=tests/test_gui_pages_e2e.py --capture=sys -v
       - name: Run Full Production Diagnostics Suite
         env:
           QT_QPA_PLATFORM: offscreen
