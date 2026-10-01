@@ -1,19 +1,8 @@
 """Cleanup Hub: unified one-click full-device view of all cleanup categories.
 
-Auto-scans the full device on open (no folder picker needed) — groups every
-engine/categories.py CleanupCategory as a card with RiskLevel + Reversible
-badges (reusing CleanupCategory metadata), a live reclaimed space estimate
-(via CleanerService scan with the system-aware guard so Windows Temp / Update
-cache / Delivery / Prefetch / WER are actually covered), plus:
-
-- Deep-temp sweep (TempCleaner) with inline trash-safe Clean — no page hop.
-- Whole-project extras: auto-discovered project build caches + large logs,
-  same one-place UI, auto roots, no folder picker.
-- One-click safe clean: pre-ticks all LOW + MEDIUM hits (HIGH stays opt-in),
-  [Clean All Found (Safe)] + [Select Safe] for a true single-place full clean.
-
-Custom folder/file pickers are strictly opt-in buttons; opening the page never
-prompts for a directory.
+A state-of-the-art, storage sense-style central hub that provides upfront target
+selection (Full Device, System Drive, or Custom Folder/File), real-time traversal
+telemetry, itemized file origin inspection, and one-click reversible cleanup.
 """
 
 from __future__ import annotations
@@ -50,10 +39,34 @@ from cortex_unified.engine import CleanerService, RiskLevel
 from cortex_unified.engine.categories import CleanupCategory, default_categories
 
 from .states import StatePanel
-from .widgets import Card, StatCard, status_note, title_block
+from .widgets import Card, StatCard, title_block
 from .window import _Page, fmt_bytes
 
 IS_WINDOWS = sys.platform == "win32"
+
+_CATEGORY_ICONS = {
+    "windows_temp": "🔥",
+    "user_temp": "🔥",
+    "deep_temp": "🔥",
+    "update_cache": "🔄",
+    "delivery_opt": "🚀",
+    "prefetch": "⚡",
+    "wer_reports": "📋",
+    "recent_files": "🕒",
+    "thumbnail_cache": "🖼️",
+    "browser_caches": "🌐",
+    "docker_cache": "🐳",
+    "wsl_vhdx": "🐧",
+    "rustup_toolchains": "🦀",
+    "cargo_cache": "📦",
+    "npm_cache": "📦",
+    "pip_cache": "🐍",
+    "custom_build_caches": "🛠️",
+    "custom_temp_files": "📄",
+    "custom_log_files": "📜",
+    "custom_cruft_files": "🧹",
+    "custom_empty_files": "📁",
+}
 
 
 # ---------------------------------------------------------------------------
@@ -80,8 +93,6 @@ class HubScanWorker(QObject):
     ):
         """Store max-risk level, disabled-category flag, custom roots, and a cancel event.
 
-        Initializes the instance and configures internal state.
-
         Args:
             max_risk (str): The max risk parameter.
             include_disabled (bool): The include disabled parameter.
@@ -96,23 +107,11 @@ class HubScanWorker(QObject):
         self._cancel = threading.Event()
 
     def cancel(self):
-        """Request cooperative cancellation of the running scan.
-
-        Sets the internal cancellation event to cooperatively stop worker execution at the next safe boundary.
-        """
+        """Request cooperative cancellation of the running scan."""
         self._cancel.set()
 
     def run(self):
-        """Run the category scan or custom root scan and emit the report or a failure.
-
-        Uses PathGuard(allow_system=True) for system-cache scans so Windows
-        Temp, Update download cache, Delivery Optimization, Prefetch and WER
-        locations (under C:\\Windows / C:\\ProgramData) are actually scanned
-        instead of silently skipped as "protected". Those categories are
-        explicitly declared safe (Disk-Cleanup style); drive roots, the home
-        root and sandbox rules still apply. Custom-root scans keep the strict
-        guard (project folders are never system locations).
-        """
+        """Run the category scan or custom root scan and emit the report or a failure."""
         try:
             if self._custom_roots:
                 svc = CleanerService()
@@ -148,13 +147,7 @@ class TempScanWorker(QObject):
     failed = Signal(str)
 
     def __init__(self, min_age_days: int = 1):
-        """Store the age floor and a cancel event (TempCleaner walks anyway).
-
-        Initializes the instance and configures internal state.
-
-        Args:
-            min_age_days (int): The min age days parameter.
-        """
+        """Store the age floor and a cancel event."""
         super().__init__()
         self._min_age_days = min_age_days
         import threading
@@ -162,17 +155,11 @@ class TempScanWorker(QObject):
         self._cancel = threading.Event()
 
     def cancel(self):
-        """Request cooperative cancellation of the running scan.
-
-        Sets the internal cancellation event to cooperatively stop worker execution at the next safe boundary.
-        """
+        """Request cooperative cancellation of the running scan."""
         self._cancel.set()
 
     def run(self):
-        """Run the stale-temp scan and emit findings or a failure.
-
-        Executes core worker logic off the main thread, periodically emitting progress updates and signaling completion or failure.
-        """
+        """Run the stale-temp scan and emit findings or a failure."""
         try:
             from cortex_unified.core.temp_cleaner import TempCleaner
 
@@ -186,18 +173,11 @@ class TempScanWorker(QObject):
             self.failed.emit(str(exc))
 
 
-# ---------------------------------------------------------------------------
-# Page
-# ---------------------------------------------------------------------------
-
-
 class RecycleBinWorker(QObject):
     """Measures or empties the OS Recycle Bin off the UI thread.
 
     ``mode="measure"`` emits ``finished`` with a ``RecycleBinReport``;
-    ``mode="empty"`` emits ``finished`` with a ``RecycleBinEmptyResult``
-    (``dry_run=False`` only — callers confirm first since emptying is
-    irreversible). Emits ``progress`` with status text or ``failed``.
+    ``mode="empty"`` emits ``finished`` with a ``RecycleBinEmptyResult``.
     """
 
     finished = Signal(object)
@@ -205,12 +185,6 @@ class RecycleBinWorker(QObject):
     failed = Signal(str)
 
     def __init__(self, mode: str = "measure", dry_run: bool = True):
-        """Store the worker mode and dry-run flag plus a cancel event.
-
-        Args:
-            mode (str): "measure" or "empty".
-            dry_run (bool): Preview-only for empty mode.
-        """
         super().__init__()
         self._mode = mode
         self._dry_run = dry_run
@@ -247,27 +221,18 @@ _RISK_STYLE = {
 
 
 def _risk_label(risk: RiskLevel) -> str:
-    """Return the display label ("LOW"/"MEDIUM"/"HIGH") for a risk level.
-
-    Args:
-        risk (RiskLevel): The risk parameter.
-
-    Returns:
-        str: Formatted string or path.
-    """
+    """Return the display label ("LOW"/"MEDIUM"/"HIGH") for a risk level."""
     return _RISK_STYLE[risk][0]
 
 
 def _risk_color(risk: RiskLevel) -> str:
-    """Return the badge hex color for a risk level.
-
-    Args:
-        risk (RiskLevel): The risk parameter.
-
-    Returns:
-        str: Formatted string or path.
-    """
+    """Return the badge hex color for a risk level."""
     return _RISK_STYLE[risk][1]
+
+
+# ---------------------------------------------------------------------------
+# Dialog: Itemized Category Inspection
+# ---------------------------------------------------------------------------
 
 
 class CategoryFilesDialog(QDialog):
@@ -276,37 +241,40 @@ class CategoryFilesDialog(QDialog):
     def __init__(self, parent: QWidget | None, scan, cat: CleanupCategory):
         super().__init__(parent)
         self.setWindowTitle(f"Discovered Files — {cat.label}")
-        self.resize(920, 560)
+        self.resize(960, 580)
         self.scan = scan
         self.cat = cat
         self._entries = list(scan.entries) if scan else []
         self._filtered = list(self._entries)
 
+        palette = getattr(parent, "p", None)
+
         layout = QVBoxLayout(self)
-        layout.setContentsMargins(18, 16, 18, 16)
-        layout.setSpacing(12)
+        layout.setContentsMargins(20, 18, 20, 18)
+        layout.setSpacing(14)
 
         # Header card
-        hdr = Card(self)
+        hdr = Card(palette, "HeroCard", self) if palette else Card(self)
         h_lay = QVBoxLayout(hdr)
-        h_lay.setContentsMargins(14, 12, 14, 12)
-        h_lay.setSpacing(6)
+        h_lay.setContentsMargins(16, 14, 16, 14)
+        h_lay.setSpacing(8)
 
         t_row = QHBoxLayout()
-        t_lbl = QLabel(f"<b>{cat.label}</b>")
+        icon = _CATEGORY_ICONS.get(cat.id, "💾")
+        t_lbl = QLabel(f"<span style='font-size:16px;'>{icon}</span> <b>{cat.label}</b>")
         t_lbl.setTextFormat(Qt.TextFormat.RichText)
         t_row.addWidget(t_lbl)
         t_row.addStretch(1)
 
         risk_txt, risk_col = _risk_label(cat.risk), _risk_color(cat.risk)
         risk_lbl = QLabel(
-            f"<span style='background:{risk_col}; color:#111; padding:2px 6px; border-radius:6px; font-size:11px'><b>{risk_txt}</b></span>"
+            f"<span style='background:{risk_col}; color:#111; padding:3px 8px; border-radius:6px; font-size:11px; font-weight:700;'>{risk_txt}</span>"
         )
         risk_lbl.setTextFormat(Qt.TextFormat.RichText)
         t_row.addWidget(risk_lbl)
 
         rev_lbl = QLabel(
-            f"<span style='border:1px solid #6b7280; padding:1px 6px; border-radius:6px; font-size:11px'>{'↩ Reversible' if cat.reversible else 'Irreversible'}</span>"
+            f"<span style='border:1px solid #4B5563; padding:2px 8px; border-radius:6px; font-size:11px;'>{'↩ Reversible' if cat.reversible else 'Irreversible'}</span>"
         )
         rev_lbl.setTextFormat(Qt.TextFormat.RichText)
         t_row.addWidget(rev_lbl)
@@ -318,7 +286,7 @@ class CategoryFilesDialog(QDialog):
         h_lay.addWidget(desc)
 
         stats_lbl = QLabel(
-            f"<b>{len(self._entries):,}</b> file(s) found &middot; <b>{fmt_bytes(scan.total_bytes if scan else 0)}</b> reclaimable"
+            f"<b>{len(self._entries):,}</b> file(s) found &middot; <b>{fmt_bytes(scan.total_bytes if scan else 0)}</b> reclaimable storage space"
         )
         stats_lbl.setTextFormat(Qt.TextFormat.RichText)
         h_lay.addWidget(stats_lbl)
@@ -326,7 +294,7 @@ class CategoryFilesDialog(QDialog):
 
         # Search filter
         s_row = QHBoxLayout()
-        s_row.setSpacing(8)
+        s_row.setSpacing(10)
         self.search_input = QLineEdit()
         self.search_input.setPlaceholderText("Filter files by name or source directory…")
         self.search_input.setClearButtonEnabled(True)
@@ -351,6 +319,7 @@ class CategoryFilesDialog(QDialog):
         btn_row = QHBoxLayout()
         self.btn_reveal = QPushButton("Reveal in Explorer")
         self.btn_reveal.setObjectName("Ghost")
+        self.btn_reveal.setCursor(Qt.CursorShape.PointingHandCursor)
         self.btn_reveal.clicked.connect(self._reveal_selected)
         btn_row.addWidget(self.btn_reveal)
         btn_row.addStretch(1)
@@ -361,6 +330,7 @@ class CategoryFilesDialog(QDialog):
 
         btn_close = QPushButton("Close")
         btn_close.setObjectName("Primary")
+        btn_close.setCursor(Qt.CursorShape.PointingHandCursor)
         btn_close.clicked.connect(self.accept)
         btn_row.addWidget(btn_close)
         layout.addLayout(btn_row)
@@ -421,21 +391,19 @@ class CategoryFilesDialog(QDialog):
             subprocess.Popen(f'explorer "{os.path.dirname(fp)}"')
 
 
-class CleanupHubPage(_Page):
-    """Storage Sense-style hub: every CleanupCategory as a card with estimates.
+# ---------------------------------------------------------------------------
+# Page: CleanupHubPage
+# ---------------------------------------------------------------------------
 
-    Permanently purges or removes specified target items, reclaiming storage space and logging actions taken.
-    """
+
+class CleanupHubPage(_Page):
+    """Storage Sense-style hub: every CleanupCategory as a card with estimates."""
 
     def __init__(self, win):
-        """Build the Cleanup Hub: scan controls, summary cards, and a card grid.
-
-        Initializes the instance and configures internal state.
-
-        Args:
-            win: Parent window or shell controller instance.
-        """
+        """Build the Cleanup Hub: scan controls, summary cards, findings, and tool suites."""
         super().__init__(win)
+
+        # Header Title
         self.v.addWidget(
             title_block(
                 "Cleanup Hub",
@@ -445,49 +413,62 @@ class CleanupHubPage(_Page):
             )
         )
 
-        # --- Target Scope & Scan Controls ----------------------------------
-        target_card = Card(self.p)
+        # Modular visual sections
+        self._build_command_center()
+        self._build_telemetry_feed()
+        self._build_metrics_bar()
+        self._build_findings_workbench()
+        self._build_extra_sweeps_grid()
+        self._build_mission_control_card()
+        self._build_all_tools_section()
+
+        # Operational state
+        self._selected: dict[str, bool] = {}
+        self._card_checkboxes: dict[str, QCheckBox] = {}
+        self._card_risks: dict[str, object] = {}
+        self._report = None
+        self._scan_map: dict[str, object] = {}
+        self._temp_findings: list = []
+        self._proj_resources: list = []
+        self._extra_logs: list = []
+        self._large_files: list = []
+        self._empty_files: list = []
+        self._empty_dirs: list = []
+        self._dupe_groups: dict = {}
+        self._dupe_waste: int = 0
+        self._bin_bytes: int = 0
+        self._bin_items: int = 0
+        self._bin_worker = None
+        self._extra_worker = None
+        self._sweep_workers: dict = {}
+        self._silent_sweeps: set = set()
+        self._feed_lines: list = []
+        self._no_confirm: bool = False
+        self._custom_roots: list[Path] = []
+        self._worker = None
+        self._loaded = False
+        self._autoload = None
+
+        self._build_action_footer()
+        self._show_initial_ready_state()
+
+    # -----------------------------------------------------------------------
+    # Section Builders
+    # -----------------------------------------------------------------------
+
+    def _build_command_center(self):
+        """Construct the Command Center card with Target Scope pills and scan triggers."""
+        target_card = Card(self.p, "HeroCard")
         t_card_lay = QVBoxLayout(target_card)
-        t_card_lay.setContentsMargins(14, 12, 14, 12)
-        t_card_lay.setSpacing(10)
+        t_card_lay.setContentsMargins(18, 16, 18, 16)
+        t_card_lay.setSpacing(12)
 
-        # Scope selector buttons
-        scope_row = QHBoxLayout()
-        scope_row.setSpacing(8)
-
-        lbl_target_prefix = QLabel("<b>Scan Target:</b>")
-        lbl_target_prefix.setTextFormat(Qt.TextFormat.RichText)
-        scope_row.addWidget(lbl_target_prefix)
-
-        self.btn_target_full = QPushButton("Full Device (All Partitions)")
-        self.btn_target_full.setObjectName("Primary")
-        self.btn_target_full.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.btn_target_full.setToolTip("Scan all default system caches and partitions across the entire device.")
-        self.btn_target_full.clicked.connect(self._select_target_full_device)
-        scope_row.addWidget(self.btn_target_full)
-
-        self.btn_target_sys = QPushButton("System Drive (C:)")
-        self.btn_target_sys.setObjectName("Ghost")
-        self.btn_target_sys.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.btn_target_sys.setToolTip("Focus scan strictly on the Windows system drive.")
-        self.btn_target_sys.clicked.connect(self._select_target_system_drive)
-        scope_row.addWidget(self.btn_target_sys)
-
-        self.btn_select_dir = QPushButton("Choose Custom Folder…")
-        self.btn_select_dir.setObjectName("Ghost")
-        self.btn_select_dir.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.btn_select_dir.setToolTip("Select any custom drive or directory to scan.")
-        self.btn_select_dir.clicked.connect(self._pick_custom_folder)
-        scope_row.addWidget(self.btn_select_dir)
-
-        self.btn_select_file = QPushButton("Choose Custom File…")
-        self.btn_select_file.setObjectName("Ghost")
-        self.btn_select_file.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.btn_select_file.setToolTip("Select a specific file or file location to inspect.")
-        self.btn_select_file.clicked.connect(self._pick_custom_file)
-        scope_row.addWidget(self.btn_select_file)
-
-        scope_row.addStretch(1)
+        # Header within command center
+        cc_top = QHBoxLayout()
+        cc_lbl = QLabel("<b>Scan Target Scope</b>")
+        cc_lbl.setTextFormat(Qt.TextFormat.RichText)
+        cc_top.addWidget(cc_lbl)
+        cc_top.addStretch(1)
 
         self.include_disabled_chk = QCheckBox("Include opt-in (HIGH)")
         self.include_disabled_chk.setToolTip(
@@ -495,18 +476,53 @@ class CleanupHubPage(_Page):
         )
         self.include_disabled_chk.setCursor(Qt.CursorShape.PointingHandCursor)
         self.include_disabled_chk.setChecked(True)
-        scope_row.addWidget(self.include_disabled_chk)
+        cc_top.addWidget(self.include_disabled_chk)
+        t_card_lay.addLayout(cc_top)
+
+        # Scope selector buttons row
+        scope_row = QHBoxLayout()
+        scope_row.setSpacing(8)
+
+        self.btn_target_full = QPushButton("🖥️ Full Device (All Partitions)")
+        self.btn_target_full.setObjectName("Primary")
+        self.btn_target_full.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.btn_target_full.setToolTip("Scan all default system caches and partitions across the entire device.")
+        self.btn_target_full.clicked.connect(self._select_target_full_device)
+        scope_row.addWidget(self.btn_target_full)
+
+        self.btn_target_sys = QPushButton("💽 System Drive (C:)")
+        self.btn_target_sys.setObjectName("Ghost")
+        self.btn_target_sys.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.btn_target_sys.setToolTip("Focus scan strictly on the Windows system drive.")
+        self.btn_target_sys.clicked.connect(self._select_target_system_drive)
+        scope_row.addWidget(self.btn_target_sys)
+
+        self.btn_select_dir = QPushButton("📁 Choose Custom Folder…")
+        self.btn_select_dir.setObjectName("Ghost")
+        self.btn_select_dir.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.btn_select_dir.setToolTip("Select any custom drive or directory to scan.")
+        self.btn_select_dir.clicked.connect(self._pick_custom_folder)
+        scope_row.addWidget(self.btn_select_dir)
+
+        self.btn_select_file = QPushButton("📄 Choose Custom File…")
+        self.btn_select_file.setObjectName("Ghost")
+        self.btn_select_file.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.btn_select_file.setToolTip("Select a specific file or file location to inspect.")
+        self.btn_select_file.clicked.connect(self._pick_custom_file)
+        scope_row.addWidget(self.btn_select_file)
+
+        scope_row.addStretch(1)
         t_card_lay.addLayout(scope_row)
 
         # Active target indicator + Start & Cancel buttons
         action_bar = QHBoxLayout()
-        action_bar.setSpacing(8)
+        action_bar.setSpacing(10)
 
         self.target_roots_label = QLabel("Active Scan Roots: Full Device (System Caches • All Drives • AppData)")
         self.target_roots_label.setObjectName("Muted")
         action_bar.addWidget(self.target_roots_label, 1)
 
-        self.btn_clear_roots = QPushButton("Reset to Full Device Scan")
+        self.btn_clear_roots = QPushButton("↺ Reset to Full Device Scan")
         self.btn_clear_roots.setObjectName("Ghost")
         self.btn_clear_roots.setCursor(Qt.CursorShape.PointingHandCursor)
         self.btn_clear_roots.setToolTip("Clear any custom folder/file target and reset to Full Device.")
@@ -532,51 +548,17 @@ class CleanupHubPage(_Page):
         t_card_lay.addLayout(action_bar)
         self.v.addWidget(target_card)
 
-        # Selection helpers and fast sweeps
-        ctrl = QHBoxLayout()
-        ctrl.setSpacing(8)
-
-        self.btn_temp = QPushButton("Scan Deep Temp")
-        self.btn_temp.setObjectName("btn_scan_temp")
-        self.btn_temp.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.btn_temp.setToolTip(
-            "Deep temp sweep via TempCleaner (stale > 1 day, all temp roots). Result stays in the Hub with a one-click Clean."
-        )
-        self.btn_temp.clicked.connect(self._scan_temp)
-        ctrl.addWidget(self.btn_temp)
-
-        self.btn_select_all = QPushButton("Select All")
-        self.btn_select_all.setObjectName("Ghost")
-        self.btn_select_all.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.btn_select_all.setToolTip("Tick every card, including HIGH-risk (rustup, WSL). Use with care.")
-        self.btn_select_all.clicked.connect(lambda: self._select_all_cards(True))
-        ctrl.addWidget(self.btn_select_all)
-
-        self.btn_select_safe = QPushButton("Select Safe")
-        self.btn_select_safe.setObjectName("Ghost")
-        self.btn_select_safe.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.btn_select_safe.setToolTip("Tick all LOW + MEDIUM cards with found files. HIGH-risk stays unticked.")
-        self.btn_select_safe.clicked.connect(self._select_safe_cards)
-        ctrl.addWidget(self.btn_select_safe)
-
-        self.btn_deselect_all = QPushButton("Deselect All")
-        self.btn_deselect_all.setObjectName("Ghost")
-        self.btn_deselect_all.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.btn_deselect_all.clicked.connect(lambda: self._select_all_cards(False))
-        ctrl.addWidget(self.btn_deselect_all)
-
-        ctrl.addStretch(1)
-        self.v.addLayout(ctrl)
-
-        # --- Live Visual Activity Feed -------------------------------------
-        self.scan_feed_card = Card(self.p)
+    def _build_telemetry_feed(self):
+        """Build the live scanning telemetry console card."""
+        self.scan_feed_card = Card(self.p, "HeroCard")
         sfc_lay = QVBoxLayout(self.scan_feed_card)
-        sfc_lay.setContentsMargins(14, 10, 14, 10)
-        sfc_lay.setSpacing(6)
+        sfc_lay.setContentsMargins(16, 12, 16, 12)
+        sfc_lay.setSpacing(8)
 
         sfc_hdr = QHBoxLayout()
         sfc_title = QLabel(
-            "<b>Live Scanning Activity Feed</b> <span style='color:#888'>— real-time directories, folders, and items traversed</span>"
+            "<b>📡 Live Traversal & Execution Telemetry</b> "
+            "<span style='color:#8A93A8'>— real-time directories, paths, and items analyzed</span>"
         )
         sfc_title.setTextFormat(Qt.TextFormat.RichText)
         sfc_hdr.addWidget(sfc_title)
@@ -594,32 +576,17 @@ class CleanupHubPage(_Page):
 
         self.scan_log_text = QTextEdit()
         self.scan_log_text.setReadOnly(True)
-        self.scan_log_text.setMaximumHeight(120)
+        self.scan_log_text.setMaximumHeight(130)
         self.scan_log_text.setStyleSheet(
-            "QTextEdit { font-family: Consolas, 'Cascadia Code', monospace; font-size: 11px; background: rgba(0, 0, 0, 0.25); border-radius: 4px; padding: 4px; }"
+            "QTextEdit { font-family: 'Cascadia Mono', Consolas, monospace; font-size: 11px; "
+            "background: rgba(0, 0, 0, 0.40); border-radius: 6px; padding: 6px; border: 1px solid rgba(255, 255, 255, 0.08); }"
         )
         sfc_lay.addWidget(self.scan_log_text)
         self.scan_feed_card.setVisible(False)
         self.v.addWidget(self.scan_feed_card)
 
-        # --- deep-temp inline result (cleanable, stays in the Hub) -----------
-        temp_row = QHBoxLayout()
-        temp_row.setSpacing(8)
-        self.temp_result_label = QLabel("")
-        self.temp_result_label.setObjectName("Muted")
-        self.temp_result_label.setWordWrap(True)
-        temp_row.addWidget(self.temp_result_label, 1)
-        self.btn_clean_temp = QPushButton("Clean Deep Temp")
-        self.btn_clean_temp.setObjectName("Danger")
-        self.btn_clean_temp.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.btn_clean_temp.setToolTip("Move stale deep-temp files to the Recycle Bin (trash-safe).")
-        self.btn_clean_temp.setVisible(False)
-        self.btn_clean_temp.setEnabled(False)
-        self.btn_clean_temp.clicked.connect(self._clean_temp)
-        temp_row.addWidget(self.btn_clean_temp)
-        self.v.addLayout(temp_row)
-
-        # --- summary cards --------------------------------------------------
+    def _build_metrics_bar(self):
+        """Build high-level stat summary cards."""
         summary_row = QHBoxLayout()
         summary_row.setSpacing(12)
         self.card_total = StatCard(self.p, "Reclaimable", "—")
@@ -629,28 +596,55 @@ class CleanupHubPage(_Page):
             summary_row.addWidget(c)
         self.v.addLayout(summary_row)
 
-        # --- View Switcher Header ------------------------------------------
-        view_hdr = QHBoxLayout()
-        view_hdr.setSpacing(8)
-        self.view_title = QLabel("<b>Findings & Discovered Items</b>")
-        self.view_title.setTextFormat(Qt.TextFormat.RichText)
-        view_hdr.addWidget(self.view_title)
-        view_hdr.addStretch(1)
+    def _build_findings_workbench(self):
+        """Build the findings workbench: view switcher, selection helpers, and view stack."""
+        # Workbench Toolbar Header
+        bench_toolbar = QHBoxLayout()
+        bench_toolbar.setSpacing(10)
 
+        self.view_title = QLabel("<b>Findings & Discovered Storage</b>")
+        self.view_title.setTextFormat(Qt.TextFormat.RichText)
+        bench_toolbar.addWidget(self.view_title)
+
+        bench_toolbar.addStretch(1)
+
+        # Quick selection helpers
+        self.btn_select_safe = QPushButton("✓ Select Safe")
+        self.btn_select_safe.setObjectName("Ghost")
+        self.btn_select_safe.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.btn_select_safe.setToolTip("Tick all LOW + MEDIUM cards with found files. HIGH-risk stays unticked.")
+        self.btn_select_safe.clicked.connect(self._select_safe_cards)
+        bench_toolbar.addWidget(self.btn_select_safe)
+
+        self.btn_select_all = QPushButton("☑ Select All")
+        self.btn_select_all.setObjectName("Ghost")
+        self.btn_select_all.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.btn_select_all.setToolTip("Tick every card, including HIGH-risk (rustup, WSL). Use with care.")
+        self.btn_select_all.clicked.connect(lambda: self._select_all_cards(True))
+        bench_toolbar.addWidget(self.btn_select_all)
+
+        self.btn_deselect_all = QPushButton("☐ Deselect All")
+        self.btn_deselect_all.setObjectName("Ghost")
+        self.btn_deselect_all.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.btn_deselect_all.clicked.connect(lambda: self._select_all_cards(False))
+        bench_toolbar.addWidget(self.btn_deselect_all)
+
+        # View Switcher segmented buttons
         self.btn_view_cards = QPushButton("⊞ Category Cards View")
         self.btn_view_cards.setObjectName("Primary")
         self.btn_view_cards.setCursor(Qt.CursorShape.PointingHandCursor)
         self.btn_view_cards.clicked.connect(self._switch_to_cards_view)
-        view_hdr.addWidget(self.btn_view_cards)
+        bench_toolbar.addWidget(self.btn_view_cards)
 
         self.btn_view_table = QPushButton("☰ Itemized Files Breakdown Table")
         self.btn_view_table.setObjectName("Ghost")
         self.btn_view_table.setCursor(Qt.CursorShape.PointingHandCursor)
         self.btn_view_table.clicked.connect(self._switch_to_table_view)
-        view_hdr.addWidget(self.btn_view_table)
-        self.v.addLayout(view_hdr)
+        bench_toolbar.addWidget(self.btn_view_table)
 
-        # --- Stack containing Cards View and Table View --------------------
+        self.v.addLayout(bench_toolbar)
+
+        # View Stack: Cards View & Table View
         self.view_stack = QStackedWidget()
 
         # Page 0: Cards View (Scrollable Grid)
@@ -681,6 +675,7 @@ class CleanupHubPage(_Page):
 
         self.btn_reveal_table_item = QPushButton("Reveal in Explorer")
         self.btn_reveal_table_item.setObjectName("Ghost")
+        self.btn_reveal_table_item.setCursor(Qt.CursorShape.PointingHandCursor)
         self.btn_reveal_table_item.clicked.connect(self._reveal_all_files_table_item)
         af_filter_row.addWidget(self.btn_reveal_table_item)
         af_lay.addLayout(af_filter_row)
@@ -709,222 +704,344 @@ class CleanupHubPage(_Page):
         self.state.bind_content(self.view_stack)
         self.v.addWidget(self.state, 1)
 
-        # --- whole-project extras (one place, no folder picker) -------------
-        extras = Card(self.p)
-        ex = QVBoxLayout(extras)
-        ex.setContentsMargins(14, 12, 14, 12)
-        ex.setSpacing(8)
+    def _build_extra_sweeps_grid(self):
+        """Construct the 2x4 Bento Grid of specialized sweeps and quick hygiene actions."""
+        extras_section = QWidget()
+        sec_lay = QVBoxLayout(extras_section)
+        sec_lay.setContentsMargins(0, 8, 0, 4)
+        sec_lay.setSpacing(10)
+
         ex_title = QLabel(
-            "<b>Extra sweeps & quick actions</b> <span style='color:#888'>— auto roots, no folder picker needed</span>"
+            "<b>Specialized Fast Sweeps & Quick Hygiene</b> "
+            "<span style='color:#8A93A8'>— independent scans, zero configuration needed</span>"
         )
         ex_title.setTextFormat(Qt.TextFormat.RichText)
-        ex.addWidget(ex_title)
+        sec_lay.addWidget(ex_title)
 
-        # Project build caches row
-        proj_row = QHBoxLayout()
-        proj_row.setSpacing(8)
-        self.btn_scan_proj = QPushButton("Scan Project Caches")
-        self.btn_scan_proj.setObjectName("Ghost")
-        self.btn_scan_proj.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.btn_scan_proj.setToolTip(
-            "Auto-discovers node_modules, target, __pycache__, build, dist, .next, etc. across code roots — no folder picker."
-        )
-        self.btn_scan_proj.clicked.connect(self._scan_project_caches)
-        proj_row.addWidget(self.btn_scan_proj)
+        grid = QGridLayout()
+        grid.setContentsMargins(0, 0, 0, 0)
+        grid.setSpacing(12)
+
+        # Tile 1: Project Build Caches
+        t1 = Card(self.p, "BentoTile")
+        l1 = QVBoxLayout(t1)
+        l1.setContentsMargins(14, 12, 14, 12)
+        l1.setSpacing(6)
+        l1_hdr = QLabel("<b>📦 Developer Build Caches</b>")
+        l1_hdr.setTextFormat(Qt.TextFormat.RichText)
+        l1.addWidget(l1_hdr)
+        l1_sub = QLabel("node_modules, target, __pycache__, dist, .next across code roots.")
+        l1_sub.setObjectName("Muted")
+        l1_sub.setWordWrap(True)
+        l1.addWidget(l1_sub)
         self.proj_status = QLabel("Project caches: not scanned yet.")
         self.proj_status.setObjectName("Muted")
         self.proj_status.setWordWrap(True)
-        proj_row.addWidget(self.proj_status, 1)
-        self.btn_clean_proj = QPushButton("Clean Project Caches")
+        l1.addWidget(self.proj_status)
+        l1.addStretch(1)
+        r1 = QHBoxLayout()
+        self.btn_scan_proj = QPushButton("Scan Caches")
+        self.btn_scan_proj.setObjectName("Ghost")
+        self.btn_scan_proj.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.btn_scan_proj.clicked.connect(self._scan_project_caches)
+        r1.addWidget(self.btn_scan_proj)
+        self.btn_clean_proj = QPushButton("Clean Caches")
         self.btn_clean_proj.setObjectName("Danger")
         self.btn_clean_proj.setCursor(Qt.CursorShape.PointingHandCursor)
         self.btn_clean_proj.setEnabled(False)
         self.btn_clean_proj.clicked.connect(self._clean_project_caches)
-        proj_row.addWidget(self.btn_clean_proj)
-        ex.addLayout(proj_row)
+        r1.addWidget(self.btn_clean_proj)
+        l1.addLayout(r1)
+        grid.addWidget(t1, 0, 0)
 
-        # Large logs row
-        log_row = QHBoxLayout()
-        log_row.setSpacing(8)
-        self.btn_scan_logs = QPushButton("Scan Large Logs")
-        self.btn_scan_logs.setObjectName("Ghost")
-        self.btn_scan_logs.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.btn_scan_logs.setToolTip("Finds *.log / *.txt over 20 MB across code roots — archives excluded.")
-        self.btn_scan_logs.clicked.connect(self._scan_extra_logs)
-        log_row.addWidget(self.btn_scan_logs)
+        # Tile 2: Deep Stale Temp Files
+        t2 = Card(self.p, "BentoTile")
+        l2 = QVBoxLayout(t2)
+        l2.setContentsMargins(14, 12, 14, 12)
+        l2.setSpacing(6)
+        l2_hdr = QLabel("<b>🔥 Deep Stale Temp Files</b>")
+        l2_hdr.setTextFormat(Qt.TextFormat.RichText)
+        l2.addWidget(l2_hdr)
+        l2_sub = QLabel("Deep temp sweep via TempCleaner (stale > 1 day across temp roots).")
+        l2_sub.setObjectName("Muted")
+        l2_sub.setWordWrap(True)
+        l2.addWidget(l2_sub)
+        self.temp_result_label = QLabel("Deep temp: not scanned yet.")
+        self.temp_result_label.setObjectName("Muted")
+        self.temp_result_label.setWordWrap(True)
+        l2.addWidget(self.temp_result_label)
+        l2.addStretch(1)
+        r2 = QHBoxLayout()
+        self.btn_temp = QPushButton("Scan Deep Temp")
+        self.btn_temp.setObjectName("btn_scan_temp")
+        self.btn_temp.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.btn_temp.clicked.connect(self._scan_temp)
+        r2.addWidget(self.btn_temp)
+        self.btn_clean_temp = QPushButton("Clean Deep Temp")
+        self.btn_clean_temp.setObjectName("Danger")
+        self.btn_clean_temp.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.btn_clean_temp.setVisible(False)
+        self.btn_clean_temp.setEnabled(False)
+        self.btn_clean_temp.clicked.connect(self._clean_temp)
+        r2.addWidget(self.btn_clean_temp)
+        l2.addLayout(r2)
+        grid.addWidget(t2, 0, 1)
+
+        # Tile 3: Large Log Files
+        t3 = Card(self.p, "BentoTile")
+        l3 = QVBoxLayout(t3)
+        l3.setContentsMargins(14, 12, 14, 12)
+        l3.setSpacing(6)
+        l3_hdr = QLabel("<b>📜 Large Log Files</b>")
+        l3_hdr.setTextFormat(Qt.TextFormat.RichText)
+        l3.addWidget(l3_hdr)
+        l3_sub = QLabel("Finds *.log & *.txt over 20 MB across code roots.")
+        l3_sub.setObjectName("Muted")
+        l3_sub.setWordWrap(True)
+        l3.addWidget(l3_sub)
         self.logs_status = QLabel("Large logs: not scanned yet.")
         self.logs_status.setObjectName("Muted")
         self.logs_status.setWordWrap(True)
-        log_row.addWidget(self.logs_status, 1)
-        self.btn_clean_logs = QPushButton("Recycle Large Logs")
+        l3.addWidget(self.logs_status)
+        l3.addStretch(1)
+        r3 = QHBoxLayout()
+        self.btn_scan_logs = QPushButton("Scan Logs")
+        self.btn_scan_logs.setObjectName("Ghost")
+        self.btn_scan_logs.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.btn_scan_logs.clicked.connect(self._scan_extra_logs)
+        r3.addWidget(self.btn_scan_logs)
+        self.btn_clean_logs = QPushButton("Recycle Logs")
         self.btn_clean_logs.setObjectName("Danger")
         self.btn_clean_logs.setCursor(Qt.CursorShape.PointingHandCursor)
         self.btn_clean_logs.setEnabled(False)
         self.btn_clean_logs.clicked.connect(self._clean_extra_logs)
-        log_row.addWidget(self.btn_clean_logs)
-        ex.addLayout(log_row)
+        r3.addWidget(self.btn_clean_logs)
+        l3.addLayout(r3)
+        grid.addWidget(t3, 1, 0)
 
-        # Large files row (>100 MB, user profile + code roots)
-        large_row = QHBoxLayout()
-        large_row.setSpacing(8)
-        self.btn_scan_large = QPushButton("Scan Large Files")
-        self.btn_scan_large.setObjectName("Ghost")
-        self.btn_scan_large.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.btn_scan_large.setToolTip(
-            "Finds files over 100 MB across code roots + Documents/Downloads — review before recycling."
-        )
-        self.btn_scan_large.clicked.connect(self._scan_large_files)
-        large_row.addWidget(self.btn_scan_large)
+        # Tile 4: Large Files Hunter
+        t4 = Card(self.p, "BentoTile")
+        l4 = QVBoxLayout(t4)
+        l4.setContentsMargins(14, 12, 14, 12)
+        l4.setSpacing(6)
+        l4_hdr = QLabel("<b>💾 Large Files Hunter</b>")
+        l4_hdr.setTextFormat(Qt.TextFormat.RichText)
+        l4.addWidget(l4_hdr)
+        l4_sub = QLabel("Finds files over 100 MB across code roots + Documents/Downloads.")
+        l4_sub.setObjectName("Muted")
+        l4_sub.setWordWrap(True)
+        l4.addWidget(l4_sub)
         self.large_status = QLabel("Large files: not scanned yet.")
         self.large_status.setObjectName("Muted")
         self.large_status.setWordWrap(True)
-        large_row.addWidget(self.large_status, 1)
-        self.btn_clean_large = QPushButton("Recycle Large Files")
+        l4.addWidget(self.large_status)
+        l4.addStretch(1)
+        r4 = QHBoxLayout()
+        self.btn_scan_large = QPushButton("Scan Large Files")
+        self.btn_scan_large.setObjectName("Ghost")
+        self.btn_scan_large.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.btn_scan_large.clicked.connect(self._scan_large_files)
+        r4.addWidget(self.btn_scan_large)
+        self.btn_clean_large = QPushButton("Recycle Files")
         self.btn_clean_large.setObjectName("Danger")
         self.btn_clean_large.setCursor(Qt.CursorShape.PointingHandCursor)
         self.btn_clean_large.setEnabled(False)
         self.btn_clean_large.clicked.connect(self._clean_large_files)
-        large_row.addWidget(self.btn_clean_large)
-        ex.addLayout(large_row)
+        r4.addWidget(self.btn_clean_large)
+        l4.addLayout(r4)
+        grid.addWidget(t4, 1, 1)
 
-        # Empty files row (code roots — safe, fast)
-        empty_row = QHBoxLayout()
-        empty_row.setSpacing(8)
-        self.btn_scan_empty = QPushButton("Scan Empty Files")
-        self.btn_scan_empty.setObjectName("Ghost")
-        self.btn_scan_empty.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.btn_scan_empty.setToolTip("Finds 0-byte files + empty folders across code roots — safe to recycle.")
-        self.btn_scan_empty.clicked.connect(self._scan_empty_files)
-        empty_row.addWidget(self.btn_scan_empty)
+        # Tile 5: Empty Files & Folders
+        t5 = Card(self.p, "BentoTile")
+        l5 = QVBoxLayout(t5)
+        l5.setContentsMargins(14, 12, 14, 12)
+        l5.setSpacing(6)
+        l5_hdr = QLabel("<b>📁 Empty Files & Folders</b>")
+        l5_hdr.setTextFormat(Qt.TextFormat.RichText)
+        l5.addWidget(l5_hdr)
+        l5_sub = QLabel("0-byte ghost files and empty folders across code roots.")
+        l5_sub.setObjectName("Muted")
+        l5_sub.setWordWrap(True)
+        l5.addWidget(l5_sub)
         self.empty_status = QLabel("Empty files: not scanned yet.")
         self.empty_status.setObjectName("Muted")
         self.empty_status.setWordWrap(True)
-        empty_row.addWidget(self.empty_status, 1)
+        l5.addWidget(self.empty_status)
+        l5.addStretch(1)
+        r5 = QHBoxLayout()
+        self.btn_scan_empty = QPushButton("Scan Empty")
+        self.btn_scan_empty.setObjectName("Ghost")
+        self.btn_scan_empty.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.btn_scan_empty.clicked.connect(self._scan_empty_files)
+        r5.addWidget(self.btn_scan_empty)
         self.btn_clean_empty = QPushButton("Recycle Empty")
         self.btn_clean_empty.setObjectName("Danger")
         self.btn_clean_empty.setCursor(Qt.CursorShape.PointingHandCursor)
         self.btn_clean_empty.setEnabled(False)
         self.btn_clean_empty.clicked.connect(self._clean_empty_files)
-        empty_row.addWidget(self.btn_clean_empty)
-        ex.addLayout(empty_row)
+        r5.addWidget(self.btn_clean_empty)
+        l5.addLayout(r5)
+        grid.addWidget(t5, 2, 0)
 
-        # Duplicate waste row (scan only — review in tool, never auto-delete)
-        dupe_row = QHBoxLayout()
-        dupe_row.setSpacing(8)
-        self.btn_scan_dupes = QPushButton("Scan Duplicate Waste")
-        self.btn_scan_dupes.setObjectName("Ghost")
-        self.btn_scan_dupes.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.btn_scan_dupes.setToolTip(
-            "Byte-identical duplicates across code roots. Shows reclaimable waste — review in the Duplicates tool, never auto-deleted here."
-        )
-        self.btn_scan_dupes.clicked.connect(self._scan_duplicates)
-        dupe_row.addWidget(self.btn_scan_dupes)
-        self.dupes_status = QLabel("Duplicates: not scanned yet (review-only, never auto-deleted).")
+        # Tile 6: Duplicate Waste Finder
+        t6 = Card(self.p, "BentoTile")
+        l6 = QVBoxLayout(t6)
+        l6.setContentsMargins(14, 12, 14, 12)
+        l6.setSpacing(6)
+        l6_hdr = QLabel("<b>👥 Duplicate Waste Finder</b>")
+        l6_hdr.setTextFormat(Qt.TextFormat.RichText)
+        l6.addWidget(l6_hdr)
+        l6_sub = QLabel("Byte-identical duplicates. Review-only, never auto-deleted.")
+        l6_sub.setObjectName("Muted")
+        l6_sub.setWordWrap(True)
+        l6.addWidget(l6_sub)
+        self.dupes_status = QLabel("Duplicates: not scanned yet.")
         self.dupes_status.setObjectName("Muted")
         self.dupes_status.setWordWrap(True)
-        dupe_row.addWidget(self.dupes_status, 1)
+        l6.addWidget(self.dupes_status)
+        l6.addStretch(1)
+        r6 = QHBoxLayout()
+        self.btn_scan_dupes = QPushButton("Scan Dupes")
+        self.btn_scan_dupes.setObjectName("Ghost")
+        self.btn_scan_dupes.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.btn_scan_dupes.clicked.connect(self._scan_duplicates)
+        r6.addWidget(self.btn_scan_dupes)
         self.btn_open_dupes = QPushButton("Review in Tool")
         self.btn_open_dupes.setObjectName("Ghost")
         self.btn_open_dupes.setCursor(Qt.CursorShape.PointingHandCursor)
         self.btn_open_dupes.clicked.connect(lambda: self._open_tool("duplicates"))
-        dupe_row.addWidget(self.btn_open_dupes)
-        ex.addLayout(dupe_row)
+        r6.addWidget(self.btn_open_dupes)
+        l6.addLayout(r6)
+        grid.addWidget(t6, 2, 1)
 
-        # Recycle Bin row (the loop-closer: every sweep recycles here — measure + empty)
-        bin_row = QHBoxLayout()
-        bin_row.setSpacing(8)
-        self.btn_scan_bin = QPushButton("Measure Bin")
-        self.btn_scan_bin.setObjectName("Ghost")
-        self.btn_scan_bin.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.btn_scan_bin.setToolTip("Measure Recycle Bin size across all drives. Auto-refreshes after every Hub scan.")
-        self.btn_scan_bin.clicked.connect(self._measure_bin)
-        bin_row.addWidget(self.btn_scan_bin)
+        # Tile 7: OS Recycle Bin Hub
+        t7 = Card(self.p, "BentoTile")
+        l7 = QVBoxLayout(t7)
+        l7.setContentsMargins(14, 12, 14, 12)
+        l7.setSpacing(6)
+        l7_hdr = QLabel("<b>🗑️ OS Recycle Bin Hub</b>")
+        l7_hdr.setTextFormat(Qt.TextFormat.RichText)
+        l7.addWidget(l7_hdr)
+        l7_sub = QLabel("Measure and permanently empty Recycle Bin on all drives.")
+        l7_sub.setObjectName("Muted")
+        l7_sub.setWordWrap(True)
+        l7.addWidget(l7_sub)
         self.bin_status = QLabel("Recycle Bin: not measured yet.")
         self.bin_status.setObjectName("Muted")
         self.bin_status.setWordWrap(True)
-        bin_row.addWidget(self.bin_status, 1)
+        l7.addWidget(self.bin_status)
+        l7.addStretch(1)
+        r7 = QHBoxLayout()
+        self.btn_scan_bin = QPushButton("Measure Bin")
+        self.btn_scan_bin.setObjectName("Ghost")
+        self.btn_scan_bin.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.btn_scan_bin.clicked.connect(self._measure_bin)
+        r7.addWidget(self.btn_scan_bin)
         self.btn_empty_bin = QPushButton("Empty Recycle Bin")
         self.btn_empty_bin.setObjectName("Danger")
         self.btn_empty_bin.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.btn_empty_bin.setToolTip(
-            "Permanently empty the Recycle Bin on all drives. Irreversible — own confirmation, never part of auto-clean."
-        )
         self.btn_empty_bin.setEnabled(False)
         self.btn_empty_bin.clicked.connect(self._empty_bin)
-        bin_row.addWidget(self.btn_empty_bin)
-        ex.addLayout(bin_row)
+        r7.addWidget(self.btn_empty_bin)
+        l7.addLayout(r7)
+        grid.addWidget(t7, 3, 0)
 
-        # Quick hygiene actions (instant, no scan — classic System checkboxes)
-        hyg_row = QHBoxLayout()
-        hyg_row.setSpacing(8)
+        # Tile 8: Instant System Hygiene
+        t8 = Card(self.p, "BentoTile")
+        l8 = QVBoxLayout(t8)
+        l8.setContentsMargins(14, 12, 14, 12)
+        l8.setSpacing(6)
+        l8_hdr = QLabel("<b>🛡️ Instant System Hygiene</b>")
+        l8_hdr.setTextFormat(Qt.TextFormat.RichText)
+        l8.addWidget(l8_hdr)
+        l8_sub = QLabel("Instant actions: flush DNS resolver cache & clear clipboard.")
+        l8_sub.setObjectName("Muted")
+        l8_sub.setWordWrap(True)
+        l8.addWidget(l8_sub)
+        self.hygiene_status = QLabel("Hygiene: DNS + clipboard actions run instantly.")
+        self.hygiene_status.setObjectName("Muted")
+        self.hygiene_status.setWordWrap(True)
+        l8.addWidget(self.hygiene_status)
+        l8.addStretch(1)
+        r8 = QHBoxLayout()
         self.btn_flush_dns = QPushButton("Flush DNS")
         self.btn_flush_dns.setObjectName("Ghost")
         self.btn_flush_dns.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.btn_flush_dns.setToolTip("Flush the OS DNS resolver cache now (ipconfig /flushdns). Instant, safe.")
         self.btn_flush_dns.clicked.connect(self._flush_dns_now)
-        hyg_row.addWidget(self.btn_flush_dns)
+        r8.addWidget(self.btn_flush_dns)
         self.btn_clear_clipboard = QPushButton("Clear Clipboard")
         self.btn_clear_clipboard.setObjectName("Ghost")
         self.btn_clear_clipboard.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.btn_clear_clipboard.setToolTip("Empty the clipboard text payload now. Instant, safe.")
         self.btn_clear_clipboard.clicked.connect(self._clear_clipboard_now)
-        hyg_row.addWidget(self.btn_clear_clipboard)
-        self.hygiene_status = QLabel("Hygiene: DNS + clipboard actions run instantly, reported below.")
-        self.hygiene_status.setObjectName("Muted")
-        self.hygiene_status.setWordWrap(True)
-        hyg_row.addWidget(self.hygiene_status, 1)
-        ex.addLayout(hyg_row)
-        self.v.addWidget(extras)
+        r8.addWidget(self.btn_clear_clipboard)
+        l8.addLayout(r8)
+        grid.addWidget(t8, 3, 1)
 
-        # --- mission control: one monitor + one master control --------------
-        mission = Card(self.p)
+        sec_lay.addLayout(grid)
+        self.v.addWidget(extras_section)
+
+    def _build_mission_control_card(self):
+        """Construct the Mission Control command deck card."""
+        mission = Card(self.p, "HeroCard")
         mc = QVBoxLayout(mission)
-        mc.setContentsMargins(14, 12, 14, 12)
-        mc.setSpacing(8)
+        mc.setContentsMargins(18, 16, 18, 16)
+        mc.setSpacing(10)
+
         mc_title = QLabel(
-            "<b>Mission Control</b> <span style='color:#888'>— every cleaner, one monitor, one control</span>"
+            "<b>🚀 Mission Control Master Operations</b> "
+            "<span style='color:#8A93A8'>— all fast sweeps at once, orchestrated execution</span>"
         )
         mc_title.setTextFormat(Qt.TextFormat.RichText)
         mc.addWidget(mc_title)
+
         mc_row = QHBoxLayout()
-        mc_row.setSpacing(8)
-        self.btn_scan_everything = QPushButton("Scan Everything")
+        mc_row.setSpacing(10)
+
+        self.btn_scan_everything = QPushButton("⚡ Scan Everything")
         self.btn_scan_everything.setObjectName("Primary")
         self.btn_scan_everything.setCursor(Qt.CursorShape.PointingHandCursor)
         self.btn_scan_everything.setToolTip(
-            "Runs all fast sweeps at once: system caches + deep temp + project + logs + large + empty + duplicates. No folder picker."
+            "Runs all fast sweeps at once: system caches + deep temp + project + logs + large + empty + duplicates."
         )
         self.btn_scan_everything.clicked.connect(self._scan_everything)
         mc_row.addWidget(self.btn_scan_everything)
-        self.btn_clean_everything = QPushButton("Clean Everything Safe")
+
+        self.btn_clean_everything = QPushButton("🛡️ Clean Everything Safe")
         self.btn_clean_everything.setObjectName("Danger")
         self.btn_clean_everything.setCursor(Qt.CursorShape.PointingHandCursor)
         self.btn_clean_everything.setToolTip(
-            "One confirm, then recycles all safe hits (system LOW+MEDIUM, temp, project, logs, large, empty). Duplicates + HIGH-risk + Recycle Bin never auto-deleted."
+            "Recycles all safe hits (system LOW+MEDIUM, temp, project, logs, large, empty). Duplicates + HIGH-risk + Recycle Bin never auto-deleted."
         )
         self.btn_clean_everything.clicked.connect(self._clean_everything_safe)
         mc_row.addWidget(self.btn_clean_everything)
+
         mc_row.addStretch(1)
         mc.addLayout(mc_row)
+
         self.mission_total = QLabel(
             "Mission total: scan first — aggregates system + temp + project + logs + large + empty."
         )
         self.mission_total.setObjectName("Muted")
         self.mission_total.setWordWrap(True)
         mc.addWidget(self.mission_total)
+
         self.mission_feed = QLabel("")
         self.mission_feed.setObjectName("Muted")
         self.mission_feed.setWordWrap(True)
         mc.addWidget(self.mission_feed)
+
         self.v.addWidget(mission)
 
-        # --- all clean tools in one place (directory with Open buttons) -----
+    def _build_all_tools_section(self):
+        """Build the clean tools directory with launcher cards."""
         self.tools_title = QLabel(
-            "<b>All clean tools</b> <span style='color:#888'>— every cleaner, one directory. Wired rows clean inline above; the rest open in one click.</span>"
+            "<b>All Clean Tools Directory</b> "
+            "<span style='color:#8A93A8'>— every cleaner, one directory. Wired rows clean inline above; the rest open in one click.</span>"
         )
         self.tools_title.setTextFormat(Qt.TextFormat.RichText)
         self.tools_title.setWordWrap(True)
         self.v.addWidget(self.tools_title)
+
         self.tools_scroll = QScrollArea()
         self.tools_scroll.setWidgetResizable(True)
         self.tools_scroll.setFrameShape(QScrollArea.Shape.NoFrame)
@@ -939,35 +1056,16 @@ class CleanupHubPage(_Page):
         self.v.addWidget(self.tools_scroll)
         self._build_all_tools_grid()
 
-        # --- action row -----------------------------------------------------
-        self._selected: dict[str, bool] = {}
-        self._card_checkboxes: dict[str, QCheckBox] = {}
-        self._card_risks: dict[str, object] = {}
-        self._report = None
-        self._scan_map: dict[str, object] = {}  # id -> CategoryScan
-        self._temp_findings: list = []
-        self._proj_resources: list = []
-        self._extra_logs: list = []
-        self._large_files: list = []
-        self._empty_files: list = []
-        self._empty_dirs: list = []
-        self._dupe_groups: dict = {}
-        self._dupe_waste: int = 0
-        self._bin_bytes: int = 0
-        self._bin_items: int = 0
-        self._bin_worker = None
-        self._extra_worker = None
-        self._sweep_workers: dict = {}
-        self._silent_sweeps: set = set()
-        self._feed_lines: list = []
-        self._no_confirm: bool = False
-
+    def _build_action_footer(self):
+        """Build the pinned glassmorphism footer with action buttons and safety hints."""
         action_row = QHBoxLayout()
+        action_row.setSpacing(12)
+
         self.clean_btn = QPushButton("Clean Selected")
         self.clean_btn.setObjectName("Danger")
         self.clean_btn.setCursor(Qt.CursorShape.PointingHandCursor)
         self.clean_btn.setEnabled(False)
-        self.clean_btn.setToolTip("Clean ticked cards only.")
+        self.clean_btn.setToolTip("Clean ticked cards only (moves to Recycle Bin).")
         self.clean_btn.clicked.connect(self._clean)
         action_row.addWidget(self.clean_btn)
 
@@ -980,28 +1078,24 @@ class CleanupHubPage(_Page):
         self.clean_all_btn.setEnabled(False)
         self.clean_all_btn.clicked.connect(self._clean_all_safe)
         action_row.addWidget(self.clean_all_btn)
+
         action_row.addStretch(1)
+
         hint = QLabel(
-            "LOW = regenerable • MEDIUM = re-download • HIGH = confirm. "
-            "Everything recycles (reversible) — empty the bin below to free the space."
+            "LOW = auto-regenerated • MEDIUM = re-downloadable • HIGH = requires confirmation. "
+            "Everything moves to the Recycle Bin (reversible) — empty the bin above to free disk space."
         )
         hint.setObjectName("Muted")
         hint.setWordWrap(True)
         action_row.addWidget(hint, 1)
+
         footer = QWidget()
         footer.setLayout(action_row)
         self.pin_footer(footer)
 
-        # Custom sweep roots chosen dynamically
-        # Custom sweep roots chosen dynamically
-        self._custom_roots: list[Path] = []
-
-        self._worker = None
-        self._loaded = False
-        self._autoload = None  # Do NOT auto-scan on open — user controls target and clicks Start Scan
-
-        # Display initial ready state
-        self._show_initial_ready_state()
+    # -----------------------------------------------------------------------
+    # Operational State & Target Scope Handlers
+    # -----------------------------------------------------------------------
 
     def _show_initial_ready_state(self):
         """Display initial ready state prompting user to select target and click Start Scan."""
@@ -1098,26 +1192,21 @@ class CleanupHubPage(_Page):
         self.all_files_table.setSortingEnabled(False)
         self.all_files_table.setRowCount(len(filtered))
         for row, (cat, entry) in enumerate(filtered):
-            # Category
             cat_item = QTableWidgetItem(cat.label)
             self.all_files_table.setItem(row, 0, cat_item)
 
-            # Name
             name_item = QTableWidgetItem(entry.path.name or str(entry.path))
             name_item.setData(Qt.ItemDataRole.UserRole, str(entry.path))
             self.all_files_table.setItem(row, 1, name_item)
 
-            # Size
             sz_item = QTableWidgetItem(fmt_bytes(entry.size))
             sz_item.setTextAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
             self.all_files_table.setItem(row, 2, sz_item)
 
-            # Location / Path
             loc_item = QTableWidgetItem(str(entry.path.parent))
             loc_item.setToolTip(str(entry.path))
             self.all_files_table.setItem(row, 3, loc_item)
 
-            # Date
             try:
                 mod_str = datetime.fromtimestamp(entry.mtime).strftime("%Y-%m-%d %H:%M:%S")
             except (OSError, ValueError):
@@ -1145,13 +1234,12 @@ class CleanupHubPage(_Page):
 
             subprocess.Popen(f'explorer "{os.path.dirname(fp)}"')
 
-    # -- scan ---------------------------------------------------------------
+    # -----------------------------------------------------------------------
+    # Scan Execution
+    # -----------------------------------------------------------------------
 
     def _on_scan_all_clicked(self):
-        """Full-device sweep: reset custom targets and scan all default system caches.
-
-        Never prompts for a folder — one click rescans the whole device in place.
-        """
+        """Full-device sweep: reset custom targets and scan all default system caches."""
         self._custom_roots.clear()
         if not self.include_disabled_chk.isChecked():
             self.include_disabled_chk.setChecked(True)
@@ -1159,10 +1247,7 @@ class CleanupHubPage(_Page):
         self._scan()
 
     def _scan(self):
-        """Auto scan across target (custom roots if chosen, else full device).
-
-        Launches an asynchronous scan across the target subsystem, showing a loading indicator and disabling triggering controls.
-        """
+        """Auto scan across target (custom roots if chosen, else full device)."""
         self.scan_btn.setEnabled(False)
         self.btn_cancel_scan.setEnabled(True)
         self.btn_cancel_scan.setVisible(True)
@@ -1193,13 +1278,7 @@ class CleanupHubPage(_Page):
         self.win.run_worker(w, self._on_scanned, self._fail, on_progress=self._on_progress)
 
     def _on_progress(self, msg: str):
-        """Show worker progress text in the scan status label and live activity feed.
-
-        Updates progress bar widgets, percentage counters, and status indicators with streaming status updates from the running worker.
-
-        Args:
-            msg (str): Informational or progress status message.
-        """
+        """Show worker progress text in the scan status label and live activity feed."""
         self.scan_status.setText(msg)
         self._log_feed(msg)
 
@@ -1212,11 +1291,7 @@ class CleanupHubPage(_Page):
             sb.setValue(sb.maximum())
 
     def _on_scanned(self, report):
-        """Update summary cards, rebuild the category card grid, and populate the all-files table.
-
-        Args:
-            report: The generated report data object from the backend.
-        """
+        """Update summary cards, rebuild the category card grid, and populate the all-files table."""
         self._worker = None
         self.progress.setVisible(False)
         self.scan_status.setText("")
@@ -1230,7 +1305,6 @@ class CleanupHubPage(_Page):
             f"✓ Scan completed in {dur:.2f}s: {report.total_files:,} files found ({fmt_bytes(report.total_reclaimable_bytes)}) across {len(report.scans)} categories."
         )
 
-        # Keep the bin readout fresh on every scan (it is where all Hub cleaning lands).
         try:
             self._measure_bin()
         except Exception:  # noqa: BLE001
@@ -1298,37 +1372,31 @@ class CleanupHubPage(_Page):
         self._update_clean_enabled()
 
     def _make_card(self, cat: CleanupCategory, est_bytes: int, est_files: int) -> Card:
-        """Build one category card: risk/reversible badges, source locations breakdown, estimate, inspect, and checkbox.
-
-        Args:
-            cat (CleanupCategory): The cat parameter.
-            est_bytes (int): The est bytes parameter.
-            est_files (int): The est files parameter.
-
-        Returns:
-            Card: Result of the operation.
-        """
-        card = Card(self.p)
+        """Build one category card: risk/reversible badges, source breakdown, estimate, inspect, and checkbox."""
+        card = Card(self.p, "BentoTile")
         lay = QVBoxLayout(card)
-        lay.setContentsMargins(14, 12, 14, 12)
-        lay.setSpacing(6)
+        lay.setContentsMargins(16, 14, 16, 14)
+        lay.setSpacing(8)
 
         title_row = QHBoxLayout()
-        title = QLabel(f"<b>{cat.label}</b>")
+        icon = _CATEGORY_ICONS.get(cat.id, "💾")
+        title = QLabel(f"<span style='font-size:15px;'>{icon}</span> <b>{cat.label}</b>")
         title.setTextFormat(Qt.TextFormat.RichText)
         title_row.addWidget(title)
         title_row.addStretch(1)
+
         # Risk badge
         risk_txt, risk_col = _risk_label(cat.risk), _risk_color(cat.risk)
         risk_lbl = QLabel(
-            f"<span style='background:{risk_col}; color:#111; padding:2px 6px; border-radius:6px; font-size:11px'><b>{risk_txt}</b></span>"
+            f"<span style='background:{risk_col}; color:#111; padding:2px 8px; border-radius:6px; font-size:11px; font-weight:700;'>{risk_txt}</span>"
         )
         risk_lbl.setTextFormat(Qt.TextFormat.RichText)
         risk_lbl.setToolTip(f"Risk: {cat.risk.value} — {cat.description}")
         title_row.addWidget(risk_lbl)
+
         # Reversible badge
         rev = QLabel(
-            f"<span style='border:1px solid #6b7280; padding:1px 6px; border-radius:6px; font-size:11px'>{'↩ Reversible' if cat.reversible else 'Irreversible'}</span>"
+            f"<span style='border:1px solid #4B5563; padding:2px 8px; border-radius:6px; font-size:11px;'>{'↩ Reversible' if cat.reversible else 'Irreversible'}</span>"
         )
         rev.setTextFormat(Qt.TextFormat.RichText)
         rev.setToolTip(
@@ -1344,7 +1412,7 @@ class CleanupHubPage(_Page):
         desc.setWordWrap(True)
         lay.addWidget(desc)
 
-        # Paths line (first existing, else first declared)
+        # Paths line
         paths = cat.existing_paths()
         path_text = str(paths[0]) if paths else (str(cat.paths[0]) if cat.paths else "—")
         if len(cat.paths) > 1:
@@ -1360,17 +1428,17 @@ class CleanupHubPage(_Page):
             globs_lbl.setObjectName("Muted")
             lay.addWidget(globs_lbl)
 
-        # "What get from what" - Top source directories breakdown
+        # Top source directories breakdown
         scan = self._scan_map.get(cat.id)
         if scan and scan.entries:
             breakdown = scan.breakdown(limit=3)
             if breakdown:
                 source_box = QWidget()
                 sb_lay = QVBoxLayout(source_box)
-                sb_lay.setContentsMargins(8, 6, 8, 6)
-                sb_lay.setSpacing(3)
+                sb_lay.setContentsMargins(10, 8, 10, 8)
+                sb_lay.setSpacing(4)
                 source_box.setStyleSheet(
-                    "background: rgba(255, 255, 255, 0.035); border-radius: 6px; border: 1px solid rgba(255, 255, 255, 0.06);"
+                    "background: rgba(255, 255, 255, 0.035); border-radius: 6px; border: 1px solid rgba(255, 255, 255, 0.07);"
                 )
                 sb_title = QLabel("<b>Source Origin Breakdown:</b>")
                 sb_title.setTextFormat(Qt.TextFormat.RichText)
@@ -1407,10 +1475,6 @@ class CleanupHubPage(_Page):
 
         chk = QCheckBox("Select")
         chk.setCursor(Qt.CursorShape.PointingHandCursor)
-        # One-place full clean: pre-tick every LOW + MEDIUM card with hits.
-        # HIGH-risk (rustup, WSL vhdx) stays unticked — explicit opt-in only.
-        # (Previously gated on cat.default_enabled, so Delivery/Update/Prefetch/
-        # Recent/Docker/Cargo never cleaned unless manually ticked.)
         chk.setChecked(bool(est_bytes or est_files) and cat.risk != RiskLevel.HIGH)
         cid = cat.id
         self._selected[cid] = chk.isChecked()
@@ -1418,12 +1482,6 @@ class CleanupHubPage(_Page):
         self._card_risks[cid] = cat.risk
 
         def _on_toggled(checked, _cid=cid):
-            """Record the card's selection state and refresh the Clean button.
-
-            Args:
-                checked: The checked parameter.
-                _cid: The  cid parameter.
-            """
             self._selected[_cid] = checked
             self._update_clean_enabled()
 
@@ -1434,11 +1492,7 @@ class CleanupHubPage(_Page):
         return card
 
     def _select_all_cards(self, state: bool):
-        """Check or uncheck every category card checkbox at once.
-
-        Args:
-            state (bool): The state parameter.
-        """
+        """Check or uncheck every category card checkbox at once."""
         for cid, chk in self._card_checkboxes.items():
             chk.blockSignals(True)
             chk.setChecked(state)
@@ -1447,7 +1501,7 @@ class CleanupHubPage(_Page):
         self._update_clean_enabled()
 
     def _select_safe_cards(self):
-        """Tick all LOW + MEDIUM cards with hits; untick HIGH-risk. The one-click safe default."""
+        """Tick all LOW + MEDIUM cards with hits; untick HIGH-risk."""
         for cid, chk in self._card_checkboxes.items():
             safe = self._card_risks.get(cid) != RiskLevel.HIGH
             scan = self._scan_map.get(cid)
@@ -1468,13 +1522,7 @@ class CleanupHubPage(_Page):
         self.clean_all_btn.setEnabled(bool(report_ok))
 
     def _fail(self, msg: str):
-        """Handle an operation failure and notify the user.
-
-        Captures error details, displays an informative failure state in the UI, resets progress indicators, and re-enables interactive controls.
-
-        Args:
-            msg (str): Informational or progress status message.
-        """
+        """Handle an operation failure and notify the user."""
         self._worker = None
         self.progress.setVisible(False)
         self.scan_status.setText("Scan failed.")
@@ -1486,11 +1534,12 @@ class CleanupHubPage(_Page):
         self._update_clean_enabled()
         self.state.show_error(msg, on_retry=self._scan)
 
-    def _scan_temp(self):
-        """Deep-temp sweep whose result stays in the Hub with a one-click Clean.
+    # -----------------------------------------------------------------------
+    # Fast Sweeps & System Hygiene Handlers
+    # -----------------------------------------------------------------------
 
-        Launches an asynchronous scan across the target subsystem, showing a loading indicator and disabling triggering controls.
-        """
+    def _scan_temp(self):
+        """Deep-temp sweep whose result stays in the Hub with a one-click Clean."""
         self.btn_temp.setEnabled(False)
         self.btn_clean_temp.setVisible(False)
         self.btn_clean_temp.setEnabled(False)
@@ -1500,15 +1549,9 @@ class CleanupHubPage(_Page):
         self.win.run_worker(w, self._on_temp_scanned, self._on_temp_failed, on_progress=self._on_temp_progress)
 
     def _on_temp_progress(self, msg: str):
-        """Show deep-temp progress on its own row (keeps the shared status line flicker-free)."""
         self.temp_result_label.setText(str(msg))
 
     def _on_temp_scanned(self, findings):
-        """Store deep-temp findings in the Hub and offer an inline Clean (no page hop).
-
-        Args:
-            findings: The findings parameter.
-        """
         self._worker = None
         self.btn_temp.setEnabled(True)
         self.scan_status.setText("")
@@ -1564,22 +1607,13 @@ class CleanupHubPage(_Page):
         self._scan()
 
     def _on_temp_failed(self, msg: str):
-        """Re-enable the temp button and surface the scan failure.
-
-        Captures worker error messages, presents diagnostic feedback to the user, and resets interactive controls for retry.
-
-        Args:
-            msg (str): Informational or progress status message.
-        """
         self._worker = None
         self.btn_temp.setEnabled(True)
         self.scan_status.setText("")
         QMessageBox.warning(self, "Stale Temp Scan", f"Temp scan failed:\n{msg}")
 
-    # -- recycle bin (loop-closer: every sweep recycles here) -----------------
-
     def _measure_bin(self):
-        """Measure Recycle Bin size across all drives (fast, read-only)."""
+        """Measure Recycle Bin size across all drives."""
         self.btn_scan_bin.setEnabled(False)
         self.btn_empty_bin.setEnabled(False)
         self.bin_status.setText("Measuring Recycle Bin…")
@@ -1588,11 +1622,9 @@ class CleanupHubPage(_Page):
         self.win.run_worker(w, self._on_bin_measured, self._on_bin_failed, on_progress=self._on_bin_progress)
 
     def _on_bin_progress(self, msg: str):
-        """Show bin progress on its own row."""
         self.bin_status.setText(str(msg))
 
     def _on_bin_measured(self, report):
-        """Show bin size and enable Empty when there is anything to free."""
         self._bin_worker = None
         self.btn_scan_bin.setEnabled(True)
         try:
@@ -1602,7 +1634,7 @@ class CleanupHubPage(_Page):
             self._bin_bytes, self._bin_items = 0, 0
         if self._bin_items:
             self.bin_status.setText(
-                f"Recycle Bin: {self._bin_items:,} item(s), {fmt_bytes(self._bin_bytes)} — empty to actually free this space."
+                f"Recycle Bin: {self._bin_items:,} item(s), {fmt_bytes(self._bin_bytes)} — empty to free space."
             )
             self.btn_empty_bin.setEnabled(True)
         else:
@@ -1611,7 +1643,7 @@ class CleanupHubPage(_Page):
         self._update_mission_total()
 
     def _empty_bin(self):
-        """Permanently empty the Recycle Bin after its own confirmation (never auto-cleaned)."""
+        """Permanently empty the Recycle Bin after its own confirmation."""
         if not self._bin_items:
             QMessageBox.information(self, "Recycle Bin", "The bin is already empty — nothing to do.")
             return
@@ -1632,7 +1664,6 @@ class CleanupHubPage(_Page):
         self.win.run_worker(w, self._on_bin_emptied, self._on_bin_failed, on_progress=self._on_bin_progress)
 
     def _on_bin_emptied(self, result):
-        """Report the empty outcome, refresh the measurement and the mission total."""
         self._bin_worker = None
         self.btn_scan_bin.setEnabled(True)
         try:
@@ -1651,13 +1682,10 @@ class CleanupHubPage(_Page):
         self._measure_bin()
 
     def _on_bin_failed(self, msg: str):
-        """Re-enable bin buttons and surface the failure."""
         self._bin_worker = None
         self.btn_scan_bin.setEnabled(True)
         self.bin_status.setText("Recycle Bin: measurement failed.")
         QMessageBox.warning(self, "Recycle Bin", f"Operation failed:\n{msg}")
-
-    # -- quick hygiene actions (instant, no scan) -----------------------------
 
     def _run_hygiene(self, kind: str):
         """Run one instant hygiene action and report it on its row + feed."""
@@ -1675,17 +1703,13 @@ class CleanupHubPage(_Page):
             QMessageBox.warning(self, "Hygiene action", result.message)
 
     def _flush_dns_now(self):
-        """Flush the DNS resolver cache now (instant)."""
         self._run_hygiene("dns")
 
     def _clear_clipboard_now(self):
-        """Clear the clipboard text payload now (instant)."""
         self._run_hygiene("clipboard")
 
-    # -- whole-project extras -------------------------------------------------
-
     def _scan_project_caches(self):
-        """Auto-discover project build caches across code roots (no folder picker)."""
+        """Auto-discover project build caches across code roots."""
         self.btn_scan_proj.setEnabled(False)
         self.btn_clean_proj.setEnabled(False)
         self.proj_status.setText("Scanning project caches across code roots…")
@@ -1698,11 +1722,9 @@ class CleanupHubPage(_Page):
         )
 
     def _on_extra_proj_progress(self, msg: str, _items: int, _size: object):
-        """Show auto-discovery progress inline."""
         self.proj_status.setText(str(msg))
 
     def _on_project_scanned(self, resources: list):
-        """Show discovered project-cache totals and enable one-click Clean."""
         self._extra_worker = None
         self.btn_scan_proj.setEnabled(True)
         self._proj_resources = list(resources or [])
@@ -1718,7 +1740,7 @@ class CleanupHubPage(_Page):
         self.win.statusBar().showMessage(self.proj_status.text(), 5000)
 
     def _clean_project_caches(self):
-        """Recycle discovered project caches after confirm."""
+        """Recycle discovered project caches after confirmation."""
         if not self._proj_resources:
             return
         total = sum(int(r.get("size_bytes", 0) or 0) for r in self._proj_resources)
@@ -1742,14 +1764,12 @@ class CleanupHubPage(_Page):
         )
 
     def _on_extra_clean_progress(self, _done: int, _total: int, _freed: object):
-        """Show project-clean progress inline."""
         try:
             self.proj_status.setText(f"Cleaning project caches… {_done:,}/{_total:,}")
         except Exception:  # noqa: BLE001
             pass
 
     def _on_project_cleaned(self, results: dict):
-        """Report project-clean outcome and reset the row."""
         self._extra_worker = None
         self.btn_scan_proj.setEnabled(True)
         freed = int((results or {}).get("total_freed_bytes", (results or {}).get("freed_bytes", 0)) or 0)
@@ -1761,7 +1781,7 @@ class CleanupHubPage(_Page):
         self._scan()
 
     def _scan_extra_logs(self):
-        """Find large logs across auto code roots (no folder picker)."""
+        """Find large logs across auto code roots."""
         roots = self._auto_log_roots()
         if not roots:
             QMessageBox.information(self, "No roots", "No code roots found to sweep for logs.")
@@ -1776,11 +1796,9 @@ class CleanupHubPage(_Page):
         self.win.run_worker(w, self._on_extra_logs_done, self._on_extra_failed, on_progress=self._on_extra_log_progress)
 
     def _on_extra_log_progress(self, msg: str):
-        """Show log-sweep progress inline."""
         self.logs_status.setText(str(msg))
 
     def _on_extra_logs_done(self, results: list):
-        """Show large-log totals and enable one-click Recycle."""
         self._extra_worker = None
         self.btn_scan_logs.setEnabled(True)
         self._extra_logs = list(results or [])
@@ -1813,7 +1831,6 @@ class CleanupHubPage(_Page):
         self.win.run_worker(DeleteSelectedWorker(paths, "recycle"), self._on_extra_logs_cleaned, self._on_extra_failed)
 
     def _on_extra_logs_cleaned(self, freed: int, ok: int, blocked: int):
-        """Report log-recycle outcome and rescan the row."""
         self.btn_scan_logs.setEnabled(True)
         QMessageBox.information(
             self,
@@ -1825,7 +1842,6 @@ class CleanupHubPage(_Page):
         self.logs_status.setText("Large logs: clean — nothing over 20 MB found.")
 
     def _on_extra_failed(self, msg: str):
-        """Re-enable extra-sweep buttons and surface the failure."""
         self._extra_worker = None
         self._sweep_workers.clear()
         self.btn_scan_proj.setEnabled(True)
@@ -1836,10 +1852,8 @@ class CleanupHubPage(_Page):
         self.btn_scan_bin.setEnabled(True)
         QMessageBox.warning(self, "Extra sweep failed", str(msg))
 
-    # -- file-sweep roots / monitor / master control / tool directory --------
-
     def _sweep_roots(self) -> list[Path]:
-        """Auto roots for file sweeps: code roots + Documents/Downloads (no picker, no AppData walk)."""
+        """Auto roots for file sweeps: code roots + Documents/Downloads."""
         roots: list[Path] = []
         try:
             from cortex_unified.analyzers.project_cache_scanner import _known_code_roots
@@ -1867,14 +1881,12 @@ class CleanupHubPage(_Page):
         return roots
 
     def _feed(self, msg: str):
-        """Append a monitor event to the mission feed (keeps last 3)."""
         self._feed_lines.append(str(msg))
         self._feed_lines = self._feed_lines[-3:]
         self.mission_feed.setText("\n".join(self._feed_lines))
         self._update_mission_total()
 
     def _sweep_bytes(self, kind: str) -> int:
-        """Reclaimable bytes for one sweep kind (for the mission total)."""
         try:
             if kind == "system":
                 return int(self._report.total_reclaimable_bytes) if self._report else 0
@@ -1887,14 +1899,13 @@ class CleanupHubPage(_Page):
             if kind == "large":
                 return sum(int(getattr(e, "size", 0) or 0) for e in self._large_files)
             if kind == "empty":
-                # Empty files/folders hold no bytes by definition — tracked as item counts.
                 return 0
         except Exception:  # noqa: BLE001
             return 0
         return 0
 
     def _update_mission_total(self):
-        """Aggregate monitor: system + temp + project + logs + large (empty ~0 B, dupes review-only)."""
+        """Aggregate monitor: system + temp + project + logs + large."""
         sys_b = self._sweep_bytes("system")
         tmp_b = self._sweep_bytes("temp")
         proj_b = self._sweep_bytes("project")
@@ -1926,7 +1937,7 @@ class CleanupHubPage(_Page):
         )
 
     def _scan_large_files(self):
-        """Find files over 100 MB across sweep roots (review before recycling)."""
+        """Find files over 100 MB across sweep roots."""
         roots = self._sweep_roots()
         if not roots:
             QMessageBox.information(self, "No roots", "No sweep roots found for large files.")
@@ -1937,7 +1948,6 @@ class CleanupHubPage(_Page):
         self._feed("Large-file scan started…")
         from .workers import LargeFilesWorker
 
-        # Fan out per root (worker takes one root); aggregate on completion.
         self._large_files = []
         self._large_pending = len(roots)
         for r in roots:
@@ -1946,11 +1956,9 @@ class CleanupHubPage(_Page):
             self.win.run_worker(w, self._on_large_chunk, self._on_extra_failed, on_progress=self._on_large_progress)
 
     def _on_large_progress(self, msg: str):
-        """Show large-file progress inline."""
         self.large_status.setText(str(msg))
 
     def _on_large_chunk(self, entries: list):
-        """Aggregate one root's large files; finalize when all roots report."""
         self._large_files.extend(entries or [])
         self._large_pending = max(0, getattr(self, "_large_pending", 1) - 1)
         if self._large_pending:
@@ -1970,7 +1978,7 @@ class CleanupHubPage(_Page):
         self._feed(f"Large files: {len(self._large_files):,} found ({fmt_bytes(total)}).")
 
     def _clean_large_files(self):
-        """Recycle listed large files after confirm (or silently in master-clean mode)."""
+        """Recycle listed large files after confirmation."""
         if not self._large_files:
             return
         if not self._no_confirm:
@@ -1991,7 +1999,6 @@ class CleanupHubPage(_Page):
         self.win.run_worker(DeleteSelectedWorker(paths, "recycle"), self._on_large_cleaned, self._on_extra_failed)
 
     def _on_large_cleaned(self, freed: int, ok: int, blocked: int):
-        """Report large-file recycle outcome."""
         self.btn_scan_large.setEnabled(True)
         silent = "large" in self._silent_sweeps
         self._silent_sweeps.discard("large")
@@ -2007,7 +2014,7 @@ class CleanupHubPage(_Page):
         self._update_mission_total()
 
     def _scan_empty_files(self):
-        """Find 0-byte files + empty folders across code roots (safe, fast)."""
+        """Find 0-byte files + empty folders across code roots."""
         roots = self._sweep_roots()[:6]
         if not roots:
             QMessageBox.information(self, "No roots", "No sweep roots found for empty files.")
@@ -2027,7 +2034,6 @@ class CleanupHubPage(_Page):
             self.win.run_worker(w, self._on_empty_chunk, self._on_extra_failed)
 
     def _on_empty_chunk(self, files: list, dirs: list):
-        """Aggregate one root's empty results; finalize when all roots report."""
         self._empty_files.extend(files or [])
         self._empty_dirs.extend(dirs or [])
         self._empty_pending = max(0, getattr(self, "_empty_pending", 1) - 1)
@@ -2047,7 +2053,7 @@ class CleanupHubPage(_Page):
         self._feed(f"Empty scan: {n:,} item(s).")
 
     def _clean_empty_files(self):
-        """Recycle empty files/folders (or silently in master-clean mode)."""
+        """Recycle empty files and folders."""
         if not (self._empty_files or self._empty_dirs):
             return
         if not self._no_confirm:
@@ -2067,7 +2073,6 @@ class CleanupHubPage(_Page):
         self.win.run_worker(DeleteSelectedWorker(paths, "recycle"), self._on_empty_cleaned, self._on_extra_failed)
 
     def _on_empty_cleaned(self, freed: int, ok: int, blocked: int):
-        """Report empty recycle outcome."""
         self.btn_scan_empty.setEnabled(True)
         silent = "empty" in self._silent_sweeps
         self._silent_sweeps.discard("empty")
@@ -2082,7 +2087,7 @@ class CleanupHubPage(_Page):
         self._update_mission_total()
 
     def _scan_duplicates(self):
-        """Estimate byte-identical duplicate waste (review-only, never auto-deleted)."""
+        """Estimate byte-identical duplicate waste (review-only)."""
         roots = self._sweep_roots()[:6]
         if not roots:
             QMessageBox.information(self, "No roots", "No sweep roots found for duplicates.")
@@ -2097,11 +2102,9 @@ class CleanupHubPage(_Page):
         self.win.run_worker(w, self._on_dupes_done, self._on_extra_failed, on_progress=self._on_dupes_progress)
 
     def _on_dupes_progress(self, msg: str):
-        """Show duplicate-scan progress inline."""
         self.dupes_status.setText(str(msg))
 
     def _on_dupes_done(self, groups: dict):
-        """Show duplicate waste (review-only)."""
         self._sweep_workers.pop("dupes", None)
         self.btn_scan_dupes.setEnabled(True)
         self._dupe_groups = dict(groups or {})
@@ -2126,13 +2129,13 @@ class CleanupHubPage(_Page):
             self.dupes_status.setText("Duplicates: clean — no byte-identical copies found.")
         else:
             self.dupes_status.setText(
-                f"Duplicates: {n_dupes:,} redundant copie(s), {fmt_bytes(waste)} waste — Review in Tool (never auto-deleted)."
+                f"Duplicates: {n_dupes:,} redundant copies, {fmt_bytes(waste)} waste — Review in Tool."
             )
         self._feed(f"Duplicates: {fmt_bytes(waste)} waste.")
         self._update_mission_total()
 
     def _scan_everything(self):
-        """Master scan: all fast sweeps at once, no folder picker."""
+        """Master scan: all fast sweeps at once."""
         self._feed("Scan Everything started…")
         self._scan()
         try:
@@ -2161,7 +2164,7 @@ class CleanupHubPage(_Page):
             pass
 
     def _clean_everything_safe(self):
-        """Master clean: one confirm, then all safe hits (dupes + HIGH + bin never auto-deleted)."""
+        """Master clean: one confirm, then all safe hits."""
         sys_b = self._sweep_bytes("system")
         tmp_b = self._sweep_bytes("temp")
         proj_b = sum(int(r.get("size_bytes", 0) or 0) for r in self._proj_resources)
@@ -2240,7 +2243,7 @@ class CleanupHubPage(_Page):
         self._feed("Clean Everything dispatched — each sweep reports as it finishes.")
 
     def _clean_silent_system(self):
-        """System safe-clean without a second confirm (master already confirmed)."""
+        """System safe-clean without a second confirm."""
         from cortex_unified.engine.service import CleanupReport
 
         selected_ids = [cid for cid, on in self._selected.items() if on]
@@ -2285,7 +2288,6 @@ class CleanupHubPage(_Page):
         self.win.run_worker(w, self._on_proj_master_cleaned, self._on_extra_failed)
 
     def _on_proj_master_cleaned(self, results: dict):
-        """Master-mode project-clean completion (no dialog, feed only)."""
         self._sweep_workers.pop("proj_clean", None)
         self.btn_scan_proj.setEnabled(True)
         freed = int((results or {}).get("total_freed_bytes", (results or {}).get("freed_bytes", 0)) or 0)
@@ -2303,7 +2305,6 @@ class CleanupHubPage(_Page):
         self.win.run_worker(DeleteSelectedWorker(paths, "recycle"), self._on_logs_master_cleaned, self._on_extra_failed)
 
     def _on_logs_master_cleaned(self, freed: int, ok: int, _blocked: int):
-        """Master-mode log-clean completion (no dialog, feed only)."""
         self.btn_scan_logs.setEnabled(True)
         self._feed(f"Logs cleaned: {fmt_bytes(freed)}.")
         self._extra_logs = []
@@ -2323,7 +2324,6 @@ class CleanupHubPage(_Page):
             from .registry import PAGES
         except Exception:  # noqa: BLE001
             return
-        # Clear
         while self.tools_grid.count():
             item = self.tools_grid.takeAt(0)
             w = item.widget()
@@ -2331,7 +2331,6 @@ class CleanupHubPage(_Page):
                 w.deleteLater()
         wanted_groups = ("cleanup", "maintenance", "system", "activity", "apps", "security")
         specs = [p for p in PAGES if p.group in wanted_groups and p.id != "cleanuphub"]
-        # Keep to clean-related ids (57 max) to avoid stuffing file/network tools here.
         keep = {
             "duplicates",
             "photos",
@@ -2396,9 +2395,9 @@ class CleanupHubPage(_Page):
         wired = {"tempcleaner", "logsweep", "packages", "projcaches", "duplicates", "large", "empty"}
         cols = 3
         for idx, spec in enumerate(specs):
-            card = Card(self.p)
+            card = Card(self.p, "BentoTile")
             lay = QVBoxLayout(card)
-            lay.setContentsMargins(10, 8, 10, 8)
+            lay.setContentsMargins(12, 10, 12, 10)
             lay.setSpacing(4)
             t = QLabel(f"<b>{spec.title}</b>")
             t.setTextFormat(Qt.TextFormat.RichText)
@@ -2415,12 +2414,12 @@ class CleanupHubPage(_Page):
             r, c = divmod(idx, cols)
             self.tools_grid.addWidget(card, r, c)
         self.tools_title.setText(
-            f"<b>All clean tools</b> <span style='color:#888'>— {len(specs)} cleaners, one directory. "
+            f"<b>All Clean Tools Directory</b> <span style='color:#8A93A8'>— {len(specs)} cleaners, one directory. "
             "Wired rows clean inline above; the rest open in one click.</span>"
         )
 
     def _auto_log_roots(self) -> list[Path]:
-        """Code roots for the log sweep (auto, no picker)."""
+        """Code roots for the log sweep."""
         try:
             from cortex_unified.analyzers.project_cache_scanner import _known_code_roots
 
@@ -2440,10 +2439,12 @@ class CleanupHubPage(_Page):
                 continue
         return out[:12]
 
-    # -- pickers ------------------------------------------------------------
+    # -----------------------------------------------------------------------
+    # Directory & File Target Pickers
+    # -----------------------------------------------------------------------
 
     def _pick_custom_folder(self):
-        """Prompt the user with a directory dialog and scan the selected folder."""
+        """Prompt user with a directory dialog and scan the selected folder."""
         folder = QFileDialog.getExistingDirectory(self, "Select Directory to Scan", str(Path.home()))
         if folder:
             self._custom_roots = [Path(folder)]
@@ -2455,7 +2456,7 @@ class CleanupHubPage(_Page):
             self._scan()
 
     def _pick_custom_file(self):
-        """Prompt the user with a file dialog and scan the selected file."""
+        """Prompt user with a file dialog and scan the selected file."""
         file_path, _ = QFileDialog.getOpenFileName(self, "Select File to Scan", str(Path.home()))
         if file_path:
             self._custom_roots = [Path(file_path)]
@@ -2487,7 +2488,9 @@ class CleanupHubPage(_Page):
             self.target_roots_label.setText("Active Scan Roots: Full Device (System Caches • All Drives • AppData)")
             self.btn_clear_roots.setVisible(False)
 
-    # -- clean --------------------------------------------------------------
+    # -----------------------------------------------------------------------
+    # Cleaning Action Triggers
+    # -----------------------------------------------------------------------
 
     def _clean_all_safe(self):
         """One-click full-device clean: tick all LOW+MEDIUM hits, leave HIGH unticked, then clean."""
@@ -2498,17 +2501,14 @@ class CleanupHubPage(_Page):
         self._clean()
 
     def _clean(self):
-        """Confirm selection, then run CleanWorker on the selected categories (Recycle-Bin-safe delete).
-
-        Permanently purges or removes specified target items, reclaiming storage space and logging actions taken.
-        """
+        """Confirm selection, then run CleanWorker on the selected categories (Recycle-Bin-safe delete)."""
         if self._report is None:
             return
         selected_ids = [cid for cid, on in self._selected.items() if on]
         if not selected_ids:
             QMessageBox.information(self, "Nothing selected", "Tick at least one category card first.")
             return
-        # Filter report to selected categories only
+
         from cortex_unified.engine.service import CleanupReport
 
         filtered = CleanupReport(
@@ -2537,24 +2537,11 @@ class CleanupHubPage(_Page):
         self.scan_status.setText("Cleaning selected categories…")
         from .workers import CleanWorker
 
-        # Use RECYCLE so every Hub clean is reversible and consistent with the
-        # temp/project/logs/large/empty sweeps (all recycle). allow_system=True
-        # so Windows Temp / Update cache / Delivery / Prefetch / WER (scanned
-        # with the system-aware guard) are actually recyclable — otherwise
-        # they'd scan fine and then be reported as blocked/skipped.
-        # Custom-root scans never contain system paths, so the flag is harmless there.
-        # Disk space is freed for real when the Recycle Bin row below is emptied.
         w = CleanWorker(filtered, DeletionMethod.RECYCLE.value, allow_system=True)
         self.win.run_worker(w, self._on_cleaned, self._fail, on_progress=self._on_progress)
 
     def _on_cleaned(self, freed: int, items: int, skipped: int):
-        """Report freed bytes and item counts after cleanup finishes.
-
-        Args:
-            freed (int): The freed parameter.
-            items (int): Collection of items or entries to process.
-            skipped (int): The skipped parameter.
-        """
+        """Report freed bytes and item counts after cleanup finishes."""
         self.progress.setVisible(False)
         self.scan_btn.setEnabled(True)
         silent = "system" in self._silent_sweeps
