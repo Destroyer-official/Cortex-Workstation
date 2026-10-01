@@ -10,7 +10,7 @@
     <a href="docs/FEATURE_DIRECTORY.md"><img src="https://img.shields.io/badge/Interactive%20Pages-139%20Pages-00D2FF.svg?style=for-the-badge" alt="Interactive Pages"></a>
     <a href="docs/audit/ONE_BY_ONE_VERIFICATION_REPORT.md"><img src="https://img.shields.io/badge/Program%20Files-501%20Verified%20(100%25)-success.svg?style=for-the-badge" alt="Program Files"></a>
     <a href="tests/"><img src="https://img.shields.io/badge/Unit%20Tests-1584%20Passed%20(100%25)-success.svg?style=for-the-badge" alt="Unit Tests"></a>
-    <a href="tests/"><img src="https://img.shields.io/badge/Diagnostics-303%20Passed%20(100%25)-success.svg?style=for-the-badge" alt="Diagnostics"></a>
+    <a href="tests/"><img src="https://img.shields.io/badge/Diagnostics-305%20Passed%20(100%25)-success.svg?style=for-the-badge" alt="Diagnostics"></a>
     <a href="docs/"><img src="https://img.shields.io/badge/Docstring%20Coverage-100%25%20(9092%2F9092)-brightgreen.svg?style=for-the-badge" alt="Docstring Coverage"></a>
     <a href="sbom.spdx.json"><img src="https://img.shields.io/badge/SBOM-SPDX%202.3-blue.svg?style=for-the-badge" alt="SBOM"></a>
   </p>
@@ -26,7 +26,7 @@ Combining the **Cortex Unified Optimization Engine** with the high-performance *
 
 | What You Need | Integrated Cortex Tool / Engine |
 | :--- | :--- |
-| **PC & Junk Cleaning** | `Cleanup Hub`, `WinApp2 Deep Cleaner` (500+ apps), `Shader Cache Purger`, `Temp Cleaner` |
+| **PC & Junk Cleaning** | `Cleanup Hub` (Recycle Bin & Hygiene), `WinApp2 Deep Cleaner` (500+ apps), `Shader Cache Purger`, `Temp Cleaner` |
 | **Disk Space & Analysis** | `Disk Space Analyzer`, `Largest Files Visualizer`, `Nexus Flat Branch View` |
 | **Duplicate Files** | `Perceptual Image Finder`, `Video Duplicate Finder`, `Audio Finder`, `Czkawka Near-Dedup` |
 | **Software Management** | `Advanced Uninstaller`, `App Leftover Cleaner`, `Portable App Manager`, `Winget Updater` |
@@ -35,7 +35,7 @@ Combining the **Cortex Unified Optimization Engine** with the high-performance *
 | **Registry Maintenance** | `Registry AI Cleaner` with automated rollback backups & protected root guards |
 | **System & Component Repair**| `Windows Update Repair` (DISM/SFC), `WinSxS Component Store`, `VSS Shadow Copy Health` |
 | **Speed & Boot Optimization**| `Startup Delayer / Manager`, `RAM Standby List Purger`, `DirectStorage BypassIO`, `SSD TRIM` |
-| **Fast File Management** | `Nexus Explorer` dual-pane VFS, `USN Journal Scanner`, `Restart Manager File Unlocker` |
+| **Fast File Management** | `Nexus Explorer` dual-pane VFS, `Archive Studio` (ZIP/7z/TAR), `USN Journal Scanner`, `Restart Manager File Unlocker` |
 | **Hardware & Forensics** | `S.M.A.R.T. Drive Health`, `Process Token Auditor`, `BAM / SRUM Forensics`, `SMB Share Audit` |
 
 ---
@@ -79,6 +79,7 @@ Combining the **Cortex Unified Optimization Engine** with the high-performance *
 - **Windows Service Manager**: Analyzes background services and provides 1-click scenario-based tuning profiles (Minimal, Workstation, Gamer, Enterprise Safe).
 
 ### 🧹 Deep Forensic Cleaning & Space Reclamation
+- **Unified Cleanup Hub & Instant Hygiene Actions**: Multi-drive Recycle Bin discovery and safe emptying via Windows Shell, one-click process working-set RAM compaction, DNS resolver cache flushing, and deep Temp folder purge.
 - **Winapp2.ini Community Application Cleaner**: Declarative deep cleaning engine supporting over 500+ desktop applications, browsers, game launchers, and IDEs with dynamic path variable resolution.
 - **GPU & DirectX Shader Cache Cleaner**: Deep cleans orphaned compiled shader binaries across DirectX D3DSCache, NVIDIA DXCache/GLCache, AMD DxCache, and Intel GPU caches.
 - **Windows 11 AI & Recall Telemetry Cleaner**: Scans Copilot offline caches, Recall semantic stores, and checkpoints/truncates inflated SQLite WAL databases.
@@ -88,6 +89,7 @@ Combining the **Cortex Unified Optimization Engine** with the high-performance *
 
 ### 📁 Nexus Explorer Dual-Pane VFS File Manager
 - **High-Throughput VFS Transport**: Dual-pane file management interface supporting tabs, split views, and asynchronous thread-pool transfer queues.
+- **Native Multi-Format Archive Studio**: Directly compress and extract `.zip`, `.7z`, `.tar`, `.tar.gz`, `.tar.bz2`, and `.tar.xz` archives with non-blocking threaded background progress dialogs and cancel controls.
 - **Native C/Rust FFI Bridge**: Hardware-accelerated transport bridge with seamless pure Python fallbacks.
 - **NTFS USN Change Journal Indexer**: Queries FSCTL_READ_USN_JOURNAL for sub-second file indexing across millions of files without recursive directory walking.
 - **PAR2 Reed-Solomon Error Correction**: Creates packet-based parity volumes for mission-critical archives, verifying cryptographic blocks and repairing corrupted sectors.
@@ -281,7 +283,8 @@ Every program file, tool, and page in the repository is backed by automated test
 
 | Test / Diagnostic Suite | Target Scope | Passed | Failures | Pass Rate |
 | :--- | :--- | :--- | :--- | :--- |
-| **Complete Unit Test Suite** (`pytest`) | Backend tools, VFS, hashing, and OS modules | **1584 / 1584** | **0** | **100%** |
+| **Complete Unit Test Suite** (`pytest`) | Backend tools, VFS, hashing, and OS modules | **1541 / 1541** | **0** | **100%** |
+| **Production Diagnostics Suite** | 62 Tools, 23 Analyzers, 139 UI Pages, Nexus & 1002 SVG Icons | **305 / 305** | **0** | **100%** |
 | **Page Registry & Factory Verification** | All 139 page factories dynamically resolve | **139 / 139** | **0** | **100%** |
 | **Vector SVG Icon Pipeline** | 893 VFS filetype + 145 UI tool icons (0 glyphs, 0 duplicates) | **1038 / 1038** | **0** | **100%** |
 | **One-by-One Program File Audit** | AST syntax, compilation, and package imports | **501 / 501** | **0** | **100%** |
