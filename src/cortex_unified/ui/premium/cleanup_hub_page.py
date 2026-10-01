@@ -18,20 +18,30 @@ prompts for a directory.
 
 from __future__ import annotations
 
+import os
 import sys
+import time
+from datetime import datetime
 from pathlib import Path
 
 from PySide6.QtCore import QObject, Qt, Signal
 from PySide6.QtWidgets import (
-    QFileDialog,
     QCheckBox,
+    QDialog,
+    QFileDialog,
     QGridLayout,
     QHBoxLayout,
+    QHeaderView,
     QLabel,
+    QLineEdit,
     QMessageBox,
     QProgressBar,
     QPushButton,
     QScrollArea,
+    QStackedWidget,
+    QTableWidget,
+    QTableWidgetItem,
+    QTextEdit,
     QVBoxLayout,
     QWidget,
 )
@@ -260,6 +270,157 @@ def _risk_color(risk: RiskLevel) -> str:
     return _RISK_STYLE[risk][1]
 
 
+class CategoryFilesDialog(QDialog):
+    """Interactive modal dialog to inspect discovered files within a cleanup category."""
+
+    def __init__(self, parent: QWidget | None, scan, cat: CleanupCategory):
+        super().__init__(parent)
+        self.setWindowTitle(f"Discovered Files — {cat.label}")
+        self.resize(920, 560)
+        self.scan = scan
+        self.cat = cat
+        self._entries = list(scan.entries) if scan else []
+        self._filtered = list(self._entries)
+
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(18, 16, 18, 16)
+        layout.setSpacing(12)
+
+        # Header card
+        hdr = Card(self)
+        h_lay = QVBoxLayout(hdr)
+        h_lay.setContentsMargins(14, 12, 14, 12)
+        h_lay.setSpacing(6)
+
+        t_row = QHBoxLayout()
+        t_lbl = QLabel(f"<b>{cat.label}</b>")
+        t_lbl.setTextFormat(Qt.TextFormat.RichText)
+        t_row.addWidget(t_lbl)
+        t_row.addStretch(1)
+
+        risk_txt, risk_col = _risk_label(cat.risk), _risk_color(cat.risk)
+        risk_lbl = QLabel(
+            f"<span style='background:{risk_col}; color:#111; padding:2px 6px; border-radius:6px; font-size:11px'><b>{risk_txt}</b></span>"
+        )
+        risk_lbl.setTextFormat(Qt.TextFormat.RichText)
+        t_row.addWidget(risk_lbl)
+
+        rev_lbl = QLabel(
+            f"<span style='border:1px solid #6b7280; padding:1px 6px; border-radius:6px; font-size:11px'>{'↩ Reversible' if cat.reversible else 'Irreversible'}</span>"
+        )
+        rev_lbl.setTextFormat(Qt.TextFormat.RichText)
+        t_row.addWidget(rev_lbl)
+        h_lay.addLayout(t_row)
+
+        desc = QLabel(cat.description)
+        desc.setObjectName("Muted")
+        desc.setWordWrap(True)
+        h_lay.addWidget(desc)
+
+        stats_lbl = QLabel(
+            f"<b>{len(self._entries):,}</b> file(s) found &middot; <b>{fmt_bytes(scan.total_bytes if scan else 0)}</b> reclaimable"
+        )
+        stats_lbl.setTextFormat(Qt.TextFormat.RichText)
+        h_lay.addWidget(stats_lbl)
+        layout.addWidget(hdr)
+
+        # Search filter
+        s_row = QHBoxLayout()
+        s_row.setSpacing(8)
+        self.search_input = QLineEdit()
+        self.search_input.setPlaceholderText("Filter files by name or source directory…")
+        self.search_input.setClearButtonEnabled(True)
+        self.search_input.textChanged.connect(self._apply_filter)
+        s_row.addWidget(self.search_input)
+        layout.addLayout(s_row)
+
+        # Table
+        self.table = QTableWidget()
+        self.table.setColumnCount(4)
+        self.table.setHorizontalHeaderLabels(["File Name", "Size", "Source Location / Path", "Last Modified"])
+        self.table.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.ResizeToContents)
+        self.table.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeMode.ResizeToContents)
+        self.table.horizontalHeader().setSectionResizeMode(2, QHeaderView.ResizeMode.Stretch)
+        self.table.horizontalHeader().setSectionResizeMode(3, QHeaderView.ResizeMode.ResizeToContents)
+        self.table.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectRows)
+        self.table.setAlternatingRowColors(True)
+        self.table.setSortingEnabled(True)
+        layout.addWidget(self.table, 1)
+
+        # Footer actions
+        btn_row = QHBoxLayout()
+        self.btn_reveal = QPushButton("Reveal in Explorer")
+        self.btn_reveal.setObjectName("Ghost")
+        self.btn_reveal.clicked.connect(self._reveal_selected)
+        btn_row.addWidget(self.btn_reveal)
+        btn_row.addStretch(1)
+
+        self.lbl_count = QLabel(f"Showing {len(self._filtered):,} of {len(self._entries):,} files")
+        self.lbl_count.setObjectName("Muted")
+        btn_row.addWidget(self.lbl_count)
+
+        btn_close = QPushButton("Close")
+        btn_close.setObjectName("Primary")
+        btn_close.clicked.connect(self.accept)
+        btn_row.addWidget(btn_close)
+        layout.addLayout(btn_row)
+
+        self._populate_table()
+
+    def _apply_filter(self, text: str):
+        query = text.strip().lower()
+        if not query:
+            self._filtered = list(self._entries)
+        else:
+            self._filtered = [
+                e for e in self._entries if query in e.path.name.lower() or query in str(e.path.parent).lower()
+            ]
+        self._populate_table()
+
+    def _populate_table(self):
+        self.table.setSortingEnabled(False)
+        self.table.setRowCount(len(self._filtered))
+        for row, entry in enumerate(self._filtered):
+            name_item = QTableWidgetItem(entry.path.name or str(entry.path))
+            name_item.setData(Qt.ItemDataRole.UserRole, str(entry.path))
+            self.table.setItem(row, 0, name_item)
+
+            sz_item = QTableWidgetItem(fmt_bytes(entry.size))
+            sz_item.setTextAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
+            self.table.setItem(row, 1, sz_item)
+
+            loc_item = QTableWidgetItem(str(entry.path.parent))
+            loc_item.setToolTip(str(entry.path))
+            self.table.setItem(row, 2, loc_item)
+
+            try:
+                mod_str = datetime.fromtimestamp(entry.mtime).strftime("%Y-%m-%d %H:%M:%S")
+            except (OSError, ValueError):
+                mod_str = "—"
+            mod_item = QTableWidgetItem(mod_str)
+            self.table.setItem(row, 3, mod_item)
+        self.table.setSortingEnabled(True)
+        self.lbl_count.setText(f"Showing {len(self._filtered):,} of {len(self._entries):,} files")
+
+    def _reveal_selected(self):
+        selected = self.table.selectedItems()
+        if not selected:
+            return
+        row = selected[0].row()
+        item = self.table.item(row, 0)
+        if not item:
+            return
+        fp = item.data(Qt.ItemDataRole.UserRole)
+        if fp and os.path.exists(fp):
+            import subprocess
+
+            subprocess.Popen(f'explorer /select,"{fp}"')
+        elif fp and os.path.exists(os.path.dirname(fp)):
+            import subprocess
+
+            subprocess.Popen(f'explorer "{os.path.dirname(fp)}"')
+
+
 class CleanupHubPage(_Page):
     """Storage Sense-style hub: every CleanupCategory as a card with estimates.
 
@@ -278,48 +439,111 @@ class CleanupHubPage(_Page):
         self.v.addWidget(
             title_block(
                 "Cleanup Hub",
-                "One-click full-device + whole-project cleaner — auto-scans on open (no folder picker). "
-                "System temp, browser/app caches, dev runtimes, Windows update/delivery, deep temp, "
-                "project build caches, large logs and the Recycle Bin — everything cleanable in one place. "
-                "All cleaning recycles (reversible); LOW/MEDIUM pre-ticked, HIGH stays opt-in.",
+                "Unified full-device & targeted directory cleaner. "
+                "Select scan target (Full Device, System Drive C:, or Custom Folder/File), preview live activity feed, "
+                "and inspect itemized file origins before one-click reversible cleanup to Recycle Bin.",
             )
         )
 
-        # --- top controls ---------------------------------------------------
-        ctrl = QHBoxLayout()
-        ctrl.setSpacing(8)
+        # --- Target Scope & Scan Controls ----------------------------------
+        target_card = Card(self.p)
+        t_card_lay = QVBoxLayout(target_card)
+        t_card_lay.setContentsMargins(14, 12, 14, 12)
+        t_card_lay.setSpacing(10)
 
-        self.scan_btn = QPushButton("Scan Full Device")
+        # Scope selector buttons
+        scope_row = QHBoxLayout()
+        scope_row.setSpacing(8)
+
+        lbl_target_prefix = QLabel("<b>Scan Target:</b>")
+        lbl_target_prefix.setTextFormat(Qt.TextFormat.RichText)
+        scope_row.addWidget(lbl_target_prefix)
+
+        self.btn_target_full = QPushButton("Full Device (All Partitions)")
+        self.btn_target_full.setObjectName("Primary")
+        self.btn_target_full.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.btn_target_full.setToolTip("Scan all default system caches and partitions across the entire device.")
+        self.btn_target_full.clicked.connect(self._select_target_full_device)
+        scope_row.addWidget(self.btn_target_full)
+
+        self.btn_target_sys = QPushButton("System Drive (C:)")
+        self.btn_target_sys.setObjectName("Ghost")
+        self.btn_target_sys.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.btn_target_sys.setToolTip("Focus scan strictly on the Windows system drive.")
+        self.btn_target_sys.clicked.connect(self._select_target_system_drive)
+        scope_row.addWidget(self.btn_target_sys)
+
+        self.btn_select_dir = QPushButton("Choose Custom Folder…")
+        self.btn_select_dir.setObjectName("Ghost")
+        self.btn_select_dir.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.btn_select_dir.setToolTip("Select any custom drive or directory to scan.")
+        self.btn_select_dir.clicked.connect(self._pick_custom_folder)
+        scope_row.addWidget(self.btn_select_dir)
+
+        self.btn_select_file = QPushButton("Choose Custom File…")
+        self.btn_select_file.setObjectName("Ghost")
+        self.btn_select_file.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.btn_select_file.setToolTip("Select a specific file or file location to inspect.")
+        self.btn_select_file.clicked.connect(self._pick_custom_file)
+        scope_row.addWidget(self.btn_select_file)
+
+        scope_row.addStretch(1)
+
+        self.include_disabled_chk = QCheckBox("Include opt-in (HIGH)")
+        self.include_disabled_chk.setToolTip(
+            "Also scan HIGH-risk / disabled categories (rustup toolchains, WSL vhdx). ON = true full-device sweep."
+        )
+        self.include_disabled_chk.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.include_disabled_chk.setChecked(True)
+        scope_row.addWidget(self.include_disabled_chk)
+        t_card_lay.addLayout(scope_row)
+
+        # Active target indicator + Start & Cancel buttons
+        action_bar = QHBoxLayout()
+        action_bar.setSpacing(8)
+
+        self.target_roots_label = QLabel("Active Scan Roots: Full Device (System Caches • All Drives • AppData)")
+        self.target_roots_label.setObjectName("Muted")
+        action_bar.addWidget(self.target_roots_label, 1)
+
+        self.btn_clear_roots = QPushButton("Reset to Full Device Scan")
+        self.btn_clear_roots.setObjectName("Ghost")
+        self.btn_clear_roots.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.btn_clear_roots.setToolTip("Clear any custom folder/file target and reset to Full Device.")
+        self.btn_clear_roots.setVisible(False)
+        self.btn_clear_roots.clicked.connect(self._clear_custom_roots)
+        action_bar.addWidget(self.btn_clear_roots)
+
+        self.scan_btn = QPushButton("▶ Start Scan")
         self.scan_btn.setObjectName("Primary")
         self.scan_btn.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.scan_btn.setToolTip(
-            "Full-device sweep: rescans all default system caches across all drives/AppData. No folder picker needed."
-        )
-        self.scan_btn.clicked.connect(self._on_scan_all_clicked)
-        ctrl.addWidget(self.scan_btn)
+        self.scan_btn.setToolTip("Start scanning the selected target.")
+        self.scan_btn.clicked.connect(self._start_scan)
+        action_bar.addWidget(self.scan_btn)
+
+        self.btn_cancel_scan = QPushButton("✕ Cancel Scan")
+        self.btn_cancel_scan.setObjectName("Danger")
+        self.btn_cancel_scan.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.btn_cancel_scan.setToolTip("Cancel the active scanning process.")
+        self.btn_cancel_scan.setVisible(False)
+        self.btn_cancel_scan.clicked.connect(self._cancel_scan)
+        action_bar.addWidget(self.btn_cancel_scan)
+
+        t_card_lay.addLayout(action_bar)
+        self.v.addWidget(target_card)
+
+        # Selection helpers and fast sweeps
+        ctrl = QHBoxLayout()
+        ctrl.setSpacing(8)
 
         self.btn_temp = QPushButton("Scan Deep Temp")
         self.btn_temp.setObjectName("btn_scan_temp")
         self.btn_temp.setCursor(Qt.CursorShape.PointingHandCursor)
         self.btn_temp.setToolTip(
-            "Deep temp sweep via TempCleaner (stale > 1 day, all temp roots). Result stays in the Hub with a one-click Clean — no need to open another page."
+            "Deep temp sweep via TempCleaner (stale > 1 day, all temp roots). Result stays in the Hub with a one-click Clean."
         )
         self.btn_temp.clicked.connect(self._scan_temp)
         ctrl.addWidget(self.btn_temp)
-
-        self.btn_select_dir = QPushButton("Select Directory")
-        self.btn_select_dir.setObjectName("Ghost")
-        self.btn_select_dir.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.btn_select_dir.setToolTip("Select any custom drive or directory to scan.")
-        self.btn_select_dir.clicked.connect(self._pick_custom_folder)
-        ctrl.addWidget(self.btn_select_dir)
-
-        self.btn_select_file = QPushButton("Select File Location")
-        self.btn_select_file.setObjectName("Ghost")
-        self.btn_select_file.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.btn_select_file.setToolTip("Select a file or file location to scan.")
-        self.btn_select_file.clicked.connect(self._pick_custom_file)
-        ctrl.addWidget(self.btn_select_file)
 
         self.btn_select_all = QPushButton("Select All")
         self.btn_select_all.setObjectName("Ghost")
@@ -342,46 +566,41 @@ class CleanupHubPage(_Page):
         ctrl.addWidget(self.btn_deselect_all)
 
         ctrl.addStretch(1)
-
-        self.include_disabled_chk = QCheckBox("Include opt-in (HIGH) — full device")
-        self.include_disabled_chk.setToolTip(
-            "Also scan HIGH-risk / disabled categories (rustup toolchains, WSL vhdx). ON = true full-device sweep."
-        )
-        self.include_disabled_chk.setCursor(Qt.CursorShape.PointingHandCursor)
-        # Default ON so opening the Hub is a true one-click full-device scan
-        # (scan-only; HIGH cards stay unticked for cleaning until user opts in).
-        self.include_disabled_chk.setChecked(True)
-        ctrl.addWidget(self.include_disabled_chk)
-
         self.v.addLayout(ctrl)
 
-        # Roots summary bar
-        roots_row = QHBoxLayout()
-        roots_row.setSpacing(8)
-        self.target_roots_label = QLabel(
-            "Active Scan Roots: Full Device (System Caches • All Drives • AppData) — auto-scanned on open"
-        )
-        self.target_roots_label.setObjectName("Muted")
-        roots_row.addWidget(self.target_roots_label)
+        # --- Live Visual Activity Feed -------------------------------------
+        self.scan_feed_card = Card(self.p)
+        sfc_lay = QVBoxLayout(self.scan_feed_card)
+        sfc_lay.setContentsMargins(14, 10, 14, 10)
+        sfc_lay.setSpacing(6)
 
-        self.btn_clear_roots = QPushButton("Reset to Full Device Scan")
-        self.btn_clear_roots.setObjectName("Ghost")
-        self.btn_clear_roots.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.btn_clear_roots.setToolTip("Clear any custom folder/file target and rescan the full device.")
-        self.btn_clear_roots.setVisible(False)
-        self.btn_clear_roots.clicked.connect(self._clear_custom_roots)
-        roots_row.addWidget(self.btn_clear_roots)
-        roots_row.addStretch(1)
-        self.v.addLayout(roots_row)
+        sfc_hdr = QHBoxLayout()
+        sfc_title = QLabel(
+            "<b>Live Scanning Activity Feed</b> <span style='color:#888'>— real-time directories, folders, and items traversed</span>"
+        )
+        sfc_title.setTextFormat(Qt.TextFormat.RichText)
+        sfc_hdr.addWidget(sfc_title)
+        sfc_hdr.addStretch(1)
+
+        self.scan_status = QLabel("")
+        self.scan_status.setObjectName("Muted")
+        sfc_hdr.addWidget(self.scan_status)
+        sfc_lay.addLayout(sfc_hdr)
 
         self.progress = QProgressBar()
         self.progress.setRange(0, 0)
         self.progress.setVisible(False)
-        self.v.addWidget(self.progress)
+        sfc_lay.addWidget(self.progress)
 
-        self.scan_status = QLabel("")
-        self.scan_status.setObjectName("Muted")
-        self.v.addWidget(self.scan_status)
+        self.scan_log_text = QTextEdit()
+        self.scan_log_text.setReadOnly(True)
+        self.scan_log_text.setMaximumHeight(120)
+        self.scan_log_text.setStyleSheet(
+            "QTextEdit { font-family: Consolas, 'Cascadia Code', monospace; font-size: 11px; background: rgba(0, 0, 0, 0.25); border-radius: 4px; padding: 4px; }"
+        )
+        sfc_lay.addWidget(self.scan_log_text)
+        self.scan_feed_card.setVisible(False)
+        self.v.addWidget(self.scan_feed_card)
 
         # --- deep-temp inline result (cleanable, stays in the Hub) -----------
         temp_row = QHBoxLayout()
@@ -410,7 +629,31 @@ class CleanupHubPage(_Page):
             summary_row.addWidget(c)
         self.v.addLayout(summary_row)
 
-        # --- scrollable card grid ------------------------------------------
+        # --- View Switcher Header ------------------------------------------
+        view_hdr = QHBoxLayout()
+        view_hdr.setSpacing(8)
+        self.view_title = QLabel("<b>Findings & Discovered Items</b>")
+        self.view_title.setTextFormat(Qt.TextFormat.RichText)
+        view_hdr.addWidget(self.view_title)
+        view_hdr.addStretch(1)
+
+        self.btn_view_cards = QPushButton("⊞ Category Cards View")
+        self.btn_view_cards.setObjectName("Primary")
+        self.btn_view_cards.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.btn_view_cards.clicked.connect(self._switch_to_cards_view)
+        view_hdr.addWidget(self.btn_view_cards)
+
+        self.btn_view_table = QPushButton("☰ Itemized Files Breakdown Table")
+        self.btn_view_table.setObjectName("Ghost")
+        self.btn_view_table.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.btn_view_table.clicked.connect(self._switch_to_table_view)
+        view_hdr.addWidget(self.btn_view_table)
+        self.v.addLayout(view_hdr)
+
+        # --- Stack containing Cards View and Table View --------------------
+        self.view_stack = QStackedWidget()
+
+        # Page 0: Cards View (Scrollable Grid)
         self.scroll = QScrollArea()
         self.scroll.setWidgetResizable(True)
         self.scroll.setFrameShape(QScrollArea.Shape.NoFrame)
@@ -421,10 +664,49 @@ class CleanupHubPage(_Page):
         self.grid.setAlignment(Qt.AlignmentFlag.AlignTop)
         self.scroll.setWidget(holder)
         self.attach_single_scroll(self.scroll)
-        self.v.addWidget(self.scroll, 1)
+        self.view_stack.addWidget(self.scroll)
+
+        # Page 1: All Files Table View
+        self.all_files_widget = QWidget()
+        af_lay = QVBoxLayout(self.all_files_widget)
+        af_lay.setContentsMargins(0, 4, 0, 4)
+        af_lay.setSpacing(8)
+
+        af_filter_row = QHBoxLayout()
+        self.all_files_filter = QLineEdit()
+        self.all_files_filter.setPlaceholderText("Filter itemized files by name, parent directory, or category…")
+        self.all_files_filter.setClearButtonEnabled(True)
+        self.all_files_filter.textChanged.connect(self._filter_all_files_table)
+        af_filter_row.addWidget(self.all_files_filter)
+
+        self.btn_reveal_table_item = QPushButton("Reveal in Explorer")
+        self.btn_reveal_table_item.setObjectName("Ghost")
+        self.btn_reveal_table_item.clicked.connect(self._reveal_all_files_table_item)
+        af_filter_row.addWidget(self.btn_reveal_table_item)
+        af_lay.addLayout(af_filter_row)
+
+        self.all_files_table = QTableWidget()
+        self.all_files_table.setColumnCount(5)
+        self.all_files_table.setHorizontalHeaderLabels(
+            ["Category", "File Name", "Size", "Source Location / Path", "Last Modified"]
+        )
+        self.all_files_table.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.ResizeToContents)
+        self.all_files_table.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeMode.ResizeToContents)
+        self.all_files_table.horizontalHeader().setSectionResizeMode(2, QHeaderView.ResizeMode.ResizeToContents)
+        self.all_files_table.horizontalHeader().setSectionResizeMode(3, QHeaderView.ResizeMode.Stretch)
+        self.all_files_table.horizontalHeader().setSectionResizeMode(4, QHeaderView.ResizeMode.ResizeToContents)
+        self.all_files_table.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectRows)
+        self.all_files_table.setAlternatingRowColors(True)
+        self.all_files_table.setSortingEnabled(True)
+        af_lay.addWidget(self.all_files_table, 1)
+
+        self.view_stack.addWidget(self.all_files_widget)
+        self.v.addWidget(self.view_stack, 1)
+
+        self._all_itemized_entries: list = []
 
         self.state = StatePanel(self.p)
-        self.state.bind_content(self.scroll)
+        self.state.bind_content(self.view_stack)
         self.v.addWidget(self.state, 1)
 
         # --- whole-project extras (one place, no folder picker) -------------
@@ -711,11 +993,157 @@ class CleanupHubPage(_Page):
         self.pin_footer(footer)
 
         # Custom sweep roots chosen dynamically
+        # Custom sweep roots chosen dynamically
         self._custom_roots: list[Path] = []
 
         self._worker = None
         self._loaded = False
-        self._autoload = self._scan
+        self._autoload = None  # Do NOT auto-scan on open — user controls target and clicks Start Scan
+
+        # Display initial ready state
+        self._show_initial_ready_state()
+
+    def _show_initial_ready_state(self):
+        """Display initial ready state prompting user to select target and click Start Scan."""
+        self.state.show_empty(
+            "Ready to scan.\n\n"
+            "Select target scope above (Full Device, System Drive C:, or Custom Folder/File) "
+            "and click '▶ Start Scan' to begin analysis."
+        )
+        self.scan_status.setText("Ready to scan.")
+        self.clean_btn.setEnabled(False)
+        self.clean_all_btn.setEnabled(False)
+        if hasattr(self, "btn_cancel_scan"):
+            self.btn_cancel_scan.setVisible(False)
+        if hasattr(self, "scan_feed_card"):
+            self.scan_feed_card.setVisible(False)
+
+    def _select_target_full_device(self):
+        """Select full device partitions and system caches as target."""
+        self._custom_roots.clear()
+        self._update_roots_status()
+        self.btn_target_full.setObjectName("Primary")
+        self.btn_target_sys.setObjectName("Ghost")
+        self._reapply_target_button_styles()
+
+    def _select_target_system_drive(self):
+        """Select OS system drive (e.g. C:\\) as target."""
+        sys_drive = os.environ.get("SystemDrive", "C:")
+        if not sys_drive.endswith("\\"):
+            sys_drive += "\\"
+        self._custom_roots = [Path(sys_drive)]
+        self._update_roots_status()
+        self.btn_target_full.setObjectName("Ghost")
+        self.btn_target_sys.setObjectName("Primary")
+        self._reapply_target_button_styles()
+
+    def _reapply_target_button_styles(self):
+        for btn in (self.btn_target_full, self.btn_target_sys, self.btn_select_dir, self.btn_select_file):
+            btn.style().unpolish(btn)
+            btn.style().polish(btn)
+
+    def _start_scan(self):
+        """Start scan on the currently selected target."""
+        self._scan()
+
+    def _cancel_scan(self):
+        """Cooperatively cancel running scan worker."""
+        if self._worker is not None:
+            self._worker.cancel()
+            self.scan_status.setText("Cancelling scan…")
+            self._log_feed("Scan cancellation requested by user…")
+            self.btn_cancel_scan.setEnabled(False)
+
+    def _switch_to_cards_view(self):
+        self.view_stack.setCurrentIndex(0)
+        self.btn_view_cards.setObjectName("Primary")
+        self.btn_view_table.setObjectName("Ghost")
+        for b in (self.btn_view_cards, self.btn_view_table):
+            b.style().unpolish(b)
+            b.style().polish(b)
+
+    def _switch_to_table_view(self):
+        self.view_stack.setCurrentIndex(1)
+        self.btn_view_cards.setObjectName("Ghost")
+        self.btn_view_table.setObjectName("Primary")
+        for b in (self.btn_view_cards, self.btn_view_table):
+            b.style().unpolish(b)
+            b.style().polish(b)
+
+    def _open_inspect_dialog(self, scan, cat: CleanupCategory):
+        """Open modal dialog to inspect itemized files discovered in this category."""
+        if not scan or not scan.entries:
+            QMessageBox.information(self, "Inspect Category", f"No files discovered under {cat.label}.")
+            return
+        dlg = CategoryFilesDialog(self, scan, cat)
+        dlg.exec()
+
+    def _populate_all_files_table(self, all_entries: list[tuple[CleanupCategory, object]]):
+        """Populate the itemized breakdown table of all discovered files."""
+        self._all_itemized_entries = list(all_entries)
+        filter_text = self.all_files_filter.text() if hasattr(self, "all_files_filter") else ""
+        self._filter_all_files_table(filter_text)
+
+    def _filter_all_files_table(self, text: str):
+        query = text.strip().lower()
+        if not query:
+            filtered = self._all_itemized_entries
+        else:
+            filtered = [
+                (cat, e)
+                for cat, e in self._all_itemized_entries
+                if query in cat.label.lower() or query in e.path.name.lower() or query in str(e.path.parent).lower()
+            ]
+
+        self.all_files_table.setSortingEnabled(False)
+        self.all_files_table.setRowCount(len(filtered))
+        for row, (cat, entry) in enumerate(filtered):
+            # Category
+            cat_item = QTableWidgetItem(cat.label)
+            self.all_files_table.setItem(row, 0, cat_item)
+
+            # Name
+            name_item = QTableWidgetItem(entry.path.name or str(entry.path))
+            name_item.setData(Qt.ItemDataRole.UserRole, str(entry.path))
+            self.all_files_table.setItem(row, 1, name_item)
+
+            # Size
+            sz_item = QTableWidgetItem(fmt_bytes(entry.size))
+            sz_item.setTextAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
+            self.all_files_table.setItem(row, 2, sz_item)
+
+            # Location / Path
+            loc_item = QTableWidgetItem(str(entry.path.parent))
+            loc_item.setToolTip(str(entry.path))
+            self.all_files_table.setItem(row, 3, loc_item)
+
+            # Date
+            try:
+                mod_str = datetime.fromtimestamp(entry.mtime).strftime("%Y-%m-%d %H:%M:%S")
+            except (OSError, ValueError):
+                mod_str = "—"
+            mod_item = QTableWidgetItem(mod_str)
+            self.all_files_table.setItem(row, 4, mod_item)
+
+        self.all_files_table.setSortingEnabled(True)
+
+    def _reveal_all_files_table_item(self):
+        selected = self.all_files_table.selectedItems()
+        if not selected:
+            return
+        row = selected[0].row()
+        item = self.all_files_table.item(row, 1)
+        if not item:
+            return
+        fp = item.data(Qt.ItemDataRole.UserRole)
+        if fp and os.path.exists(fp):
+            import subprocess
+
+            subprocess.Popen(f'explorer /select,"{fp}"')
+        elif fp and os.path.exists(os.path.dirname(fp)):
+            import subprocess
+
+            subprocess.Popen(f'explorer "{os.path.dirname(fp)}"')
 
     # -- scan ---------------------------------------------------------------
 
@@ -725,29 +1153,36 @@ class CleanupHubPage(_Page):
         Never prompts for a folder — one click rescans the whole device in place.
         """
         self._custom_roots.clear()
-        # Full-device means HIGH-risk categories included in the scan
-        # (cleaning them still needs an explicit card tick + confirm).
         if not self.include_disabled_chk.isChecked():
             self.include_disabled_chk.setChecked(True)
         self._update_roots_status()
         self._scan()
 
     def _scan(self):
-        """Auto full-device scan (no folder prompt; custom roots only if user picked one).
+        """Auto scan across target (custom roots if chosen, else full device).
 
         Launches an asynchronous scan across the target subsystem, showing a loading indicator and disabling triggering controls.
         """
         self.scan_btn.setEnabled(False)
+        self.btn_cancel_scan.setEnabled(True)
+        self.btn_cancel_scan.setVisible(True)
         self.clean_btn.setEnabled(False)
         self.clean_all_btn.setEnabled(False)
-        loading_text = (
-            f"Scanning target: {self._custom_roots[0].name or self._custom_roots[0]}…"
+
+        target_name = (
+            ", ".join(str(r) for r in self._custom_roots)
             if self._custom_roots
-            else "Scanning full device (all system caches)…"
+            else "Full Device (all system caches & partitions)"
         )
+        loading_text = f"Scanning target: {target_name}…"
         self.state.show_loading(loading_text)
         self.progress.setVisible(True)
         self.scan_status.setText("Scanning…")
+
+        self.scan_feed_card.setVisible(True)
+        self.scan_log_text.clear()
+        self._log_feed(f"Scan initiated for target: {target_name}")
+
         risk = "high" if self.include_disabled_chk.isChecked() else "medium"
         w = HubScanWorker(
             max_risk=risk,
@@ -758,7 +1193,7 @@ class CleanupHubPage(_Page):
         self.win.run_worker(w, self._on_scanned, self._fail, on_progress=self._on_progress)
 
     def _on_progress(self, msg: str):
-        """Show worker progress text in the scan status label.
+        """Show worker progress text in the scan status label and live activity feed.
 
         Updates progress bar widgets, percentage counters, and status indicators with streaming status updates from the running worker.
 
@@ -766,9 +1201,18 @@ class CleanupHubPage(_Page):
             msg (str): Informational or progress status message.
         """
         self.scan_status.setText(msg)
+        self._log_feed(msg)
+
+    def _log_feed(self, msg: str):
+        """Append line to the scanning activity feed and scroll to bottom."""
+        now_str = time.strftime("%H:%M:%S")
+        self.scan_log_text.append(f"[{now_str}] {msg}")
+        sb = self.scan_log_text.verticalScrollBar()
+        if sb:
+            sb.setValue(sb.maximum())
 
     def _on_scanned(self, report):
-        """Update summary cards and rebuild the category card grid from the scan report.
+        """Update summary cards, rebuild the category card grid, and populate the all-files table.
 
         Args:
             report: The generated report data object from the backend.
@@ -777,8 +1221,15 @@ class CleanupHubPage(_Page):
         self.progress.setVisible(False)
         self.scan_status.setText("")
         self.scan_btn.setEnabled(True)
+        self.btn_cancel_scan.setVisible(False)
         self._report = report
         self._scan_map = {s.category.id: s for s in report.scans}
+
+        dur = getattr(report, "duration_seconds", 0.0) or 0.0
+        self._log_feed(
+            f"✓ Scan completed in {dur:.2f}s: {report.total_files:,} files found ({fmt_bytes(report.total_reclaimable_bytes)}) across {len(report.scans)} categories."
+        )
+
         # Keep the bin readout fresh on every scan (it is where all Hub cleaning lands).
         try:
             self._measure_bin()
@@ -807,10 +1258,15 @@ class CleanupHubPage(_Page):
             )
             self.state.show_empty(f"No reclaimable files found under:\n{target_desc}\n\nThis target location is clean!")
             self.win.statusBar().showMessage("Scan complete: 0 files found, 0 B reclaimable", 5000)
+            self._populate_all_files_table([])
             self._update_clean_enabled()
             return
 
         self.state.clear()
+
+        all_entries: list[tuple[CleanupCategory, object]] = [
+            (scan.category, e) for scan in report.scans for e in scan.entries
+        ]
 
         if self._custom_roots:
             for idx, scan in enumerate(report.scans):
@@ -837,10 +1293,12 @@ class CleanupHubPage(_Page):
                 f"Scanned {len(ids_sorted)} categories, {report.total_files:,} files, {fmt_bytes(report.total_reclaimable_bytes)} reclaimable",
                 5000,
             )
+
+        self._populate_all_files_table(all_entries)
         self._update_clean_enabled()
 
     def _make_card(self, cat: CleanupCategory, est_bytes: int, est_files: int) -> Card:
-        """Build one category card: risk/reversible badges, paths, globs, estimate, and select checkbox.
+        """Build one category card: risk/reversible badges, source locations breakdown, estimate, inspect, and checkbox.
 
         Args:
             cat (CleanupCategory): The cat parameter.
@@ -902,8 +1360,34 @@ class CleanupHubPage(_Page):
             globs_lbl.setObjectName("Muted")
             lay.addWidget(globs_lbl)
 
-        # Estimate
+        # "What get from what" - Top source directories breakdown
+        scan = self._scan_map.get(cat.id)
+        if scan and scan.entries:
+            breakdown = scan.breakdown(limit=3)
+            if breakdown:
+                source_box = QWidget()
+                sb_lay = QVBoxLayout(source_box)
+                sb_lay.setContentsMargins(8, 6, 8, 6)
+                sb_lay.setSpacing(3)
+                source_box.setStyleSheet(
+                    "background: rgba(255, 255, 255, 0.035); border-radius: 6px; border: 1px solid rgba(255, 255, 255, 0.06);"
+                )
+                sb_title = QLabel("<b>Source Origin Breakdown:</b>")
+                sb_title.setTextFormat(Qt.TextFormat.RichText)
+                sb_lay.addWidget(sb_title)
+                for item in breakdown:
+                    fname = item.get("name", "")
+                    fcnt = item.get("count", 0)
+                    fsz = item.get("size", 0)
+                    item_lbl = QLabel(f"• 📁 <b>{fname}</b>: {fcnt:,} files ({fmt_bytes(fsz)})")
+                    item_lbl.setObjectName("Muted")
+                    item_lbl.setWordWrap(True)
+                    sb_lay.addWidget(item_lbl)
+                lay.addWidget(source_box)
+
+        # Estimate + Inspect + Checkbox row
         est_row = QHBoxLayout()
+        est_row.setSpacing(8)
         est_row.addWidget(
             QLabel(
                 f"<b>{fmt_bytes(est_bytes)}</b> &middot; {est_files:,} file(s)"
@@ -912,6 +1396,15 @@ class CleanupHubPage(_Page):
             )
         )
         est_row.addStretch(1)
+
+        btn_inspect = QPushButton(f"🔍 Inspect ({est_files:,})" if est_files else "🔍 Inspect")
+        btn_inspect.setObjectName("Ghost")
+        btn_inspect.setCursor(Qt.CursorShape.PointingHandCursor)
+        btn_inspect.setEnabled(est_files > 0)
+        btn_inspect.setToolTip("Inspect itemized files, parent directories, and exact sizes.")
+        btn_inspect.clicked.connect(lambda _c=False, s=scan, c=cat: self._open_inspect_dialog(s, c))
+        est_row.addWidget(btn_inspect)
+
         chk = QCheckBox("Select")
         chk.setCursor(Qt.CursorShape.PointingHandCursor)
         # One-place full clean: pre-tick every LOW + MEDIUM card with hits.
@@ -984,9 +1477,12 @@ class CleanupHubPage(_Page):
         """
         self._worker = None
         self.progress.setVisible(False)
-        self.scan_status.setText("")
+        self.scan_status.setText("Scan failed.")
         self.scan_btn.setEnabled(True)
+        if hasattr(self, "btn_cancel_scan"):
+            self.btn_cancel_scan.setVisible(False)
         self.btn_temp.setEnabled(True)
+        self._log_feed(f"Error: {msg}")
         self._update_clean_enabled()
         self.state.show_error(msg, on_retry=self._scan)
 
@@ -1952,6 +2448,10 @@ class CleanupHubPage(_Page):
         if folder:
             self._custom_roots = [Path(folder)]
             self._update_roots_status()
+            if hasattr(self, "btn_target_full") and hasattr(self, "btn_target_sys"):
+                self.btn_target_full.setObjectName("Ghost")
+                self.btn_target_sys.setObjectName("Ghost")
+                self._reapply_target_button_styles()
             self._scan()
 
     def _pick_custom_file(self):
@@ -1960,12 +2460,20 @@ class CleanupHubPage(_Page):
         if file_path:
             self._custom_roots = [Path(file_path)]
             self._update_roots_status()
+            if hasattr(self, "btn_target_full") and hasattr(self, "btn_target_sys"):
+                self.btn_target_full.setObjectName("Ghost")
+                self.btn_target_sys.setObjectName("Ghost")
+                self._reapply_target_button_styles()
             self._scan()
 
     def _clear_custom_roots(self):
         """Reset custom scan targets back to default system partitions and rescan."""
         self._custom_roots.clear()
         self._update_roots_status()
+        if hasattr(self, "btn_target_full") and hasattr(self, "btn_target_sys"):
+            self.btn_target_full.setObjectName("Primary")
+            self.btn_target_sys.setObjectName("Ghost")
+            self._reapply_target_button_styles()
         self._scan()
 
     def _update_roots_status(self):
@@ -1976,9 +2484,7 @@ class CleanupHubPage(_Page):
             self.btn_clear_roots.setText("Reset to Full Device Scan")
             self.btn_clear_roots.setVisible(True)
         else:
-            self.target_roots_label.setText(
-                "Active Scan Roots: Full Device (System Caches • All Drives • AppData) — auto-scanned on open"
-            )
+            self.target_roots_label.setText("Active Scan Roots: Full Device (System Caches • All Drives • AppData)")
             self.btn_clear_roots.setVisible(False)
 
     # -- clean --------------------------------------------------------------

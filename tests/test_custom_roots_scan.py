@@ -209,3 +209,90 @@ class TestCleanupHubPageCustomRoots:
         page._update_roots_status()
         assert "Active Scan Roots: Full Device" in page.target_roots_label.text()
         assert page.btn_clear_roots.isHidden()
+
+    def test_cleanup_hub_initial_state_no_autoscan(self, window):
+        """CleanupHubPage opens in ready state without auto-scanning."""
+        page = CleanupHubPage(window)
+        assert page._autoload is None
+        assert page.scan_btn.isEnabled()
+        assert "Start Scan" in page.scan_btn.text()
+        assert not page.clean_btn.isEnabled()
+        assert not page.clean_all_btn.isEnabled()
+        assert page.state.mode() == "empty"
+
+    def test_cleanup_hub_target_selection_controls(self, window):
+        """Target scope buttons switch between full device and system drive."""
+        page = CleanupHubPage(window)
+        assert page._custom_roots == []
+
+        page._select_target_system_drive()
+        assert len(page._custom_roots) == 1
+        assert "Active Scan Target:" in page.target_roots_label.text()
+        assert not page.btn_clear_roots.isHidden()
+
+        page._select_target_full_device()
+        assert page._custom_roots == []
+        assert "Active Scan Roots: Full Device" in page.target_roots_label.text()
+        assert page.btn_clear_roots.isHidden()
+
+    def test_cleanup_hub_live_activity_logging(self, window):
+        """Live activity feed logs scanning events dynamically."""
+        page = CleanupHubPage(window)
+        page._log_feed("Testing live feed item 1")
+        page._on_progress("Testing live progress item 2")
+
+        log_content = page.scan_log_text.toPlainText()
+        assert "Testing live feed item 1" in log_content
+        assert "Testing live progress item 2" in log_content
+        assert page.scan_status.text() == "Testing live progress item 2"
+
+    def test_cleanup_hub_itemized_table_and_dialog(self, window, tmp_path: Path):
+        """Itemized table view and CategoryFilesDialog accurately display discovered files."""
+        from cortex_unified.ui.premium.cleanup_hub_page import CategoryFilesDialog
+
+        page = CleanupHubPage(window)
+        target_dir = tmp_path / "mock_app"
+        target_dir.mkdir()
+        file1 = target_dir / "cache1.tmp"
+        file1.write_bytes(b"data" * 100)
+        file2 = target_dir / "cache2.tmp"
+        file2.write_bytes(b"data" * 200)
+
+        cat = CleanupCategory(
+            id="custom_temp_files",
+            label="Temporary & Backup Files",
+            description="Temp files",
+            risk=RiskLevel.LOW,
+            paths=(target_dir,),
+            reversible=True,
+            default_enabled=True,
+        )
+        entries = [
+            FileEntry(path=file1, size=400, mtime=1700000000.0),
+            FileEntry(path=file2, size=800, mtime=1700000001.0),
+        ]
+        scan = CategoryScan(category=cat, entries=entries, total_bytes=1200)
+        report = CleanupReport(scans=[scan], duration_seconds=0.02)
+
+        page._on_scanned(report)
+
+        # Verify all-files breakdown table
+        assert page.all_files_table.rowCount() == 2
+        page._switch_to_table_view()
+        assert page.view_stack.currentIndex() == 1
+        page._switch_to_cards_view()
+        assert page.view_stack.currentIndex() == 0
+
+        # Filter all-files table
+        page._filter_all_files_table("cache1")
+        assert page.all_files_table.rowCount() == 1
+        page._filter_all_files_table("")
+        assert page.all_files_table.rowCount() == 2
+
+        # Verify CategoryFilesDialog
+        dlg = CategoryFilesDialog(page, scan, cat)
+        assert dlg.table.rowCount() == 2
+        dlg._apply_filter("cache2")
+        assert len(dlg._filtered) == 1
+        assert dlg.table.rowCount() == 1
+        dlg.close()

@@ -143,7 +143,7 @@ class RestartManagerUnlocker:
             return FileLockReport(str(target), False, False, scan_duration_ms=0.0)
 
         procs = self._get_locking_processes_native(str(target))
-        if not procs:
+        if procs is None:
             procs = self._get_locking_processes_psutil(str(target))
 
         is_locked = len(procs) > 0
@@ -157,10 +157,10 @@ class RestartManagerUnlocker:
             scan_duration_ms=dur,
         )
 
-    def _get_locking_processes_native(self, abs_path: str) -> List[LockingProcessInfo]:
+    def _get_locking_processes_native(self, abs_path: str) -> Optional[List[LockingProcessInfo]]:
         """Query rstrtmgr.dll for processes locking abs_path."""
         if not self._rstrtmgr:
-            return []
+            return None
 
         results: List[LockingProcessInfo] = []
         session_handle = ctypes.c_ulong(0)
@@ -174,7 +174,7 @@ class RestartManagerUnlocker:
                 session_key,
             )
             if res != 0:
-                return []
+                return None
 
             # 2. RmRegisterResources
             paths_array = (ctypes.c_wchar_p * 1)(abs_path)
@@ -189,7 +189,7 @@ class RestartManagerUnlocker:
             )
             if res != 0:
                 self._rstrtmgr.RmEndSession(session_handle)
-                return []
+                return None
 
             # 3. RmGetList
             n_proc_info_needed = ctypes.c_uint(0)
@@ -237,6 +237,7 @@ class RestartManagerUnlocker:
             self._rstrtmgr.RmEndSession(session_handle)
         except Exception as exc:
             self.logger.debug("RestartManager native query exception: %s", exc)
+            return None
 
         return results
 
